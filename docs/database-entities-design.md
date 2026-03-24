@@ -4,8 +4,6 @@
 
 本文档描述基础设施页面的数据库实体设计，包括实体定义、索引和业务规则。
 
-**模块路径**: `packages/base-backend/src/database/entities/`
-
 **版本**: 2.0.0
 
 ---

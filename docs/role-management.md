@@ -2,9 +2,7 @@
 
 ## 概述
 
-本文档描述角色管理页面的前端流程和核心业务。
-
-**模块路径**: `packages/base-frontend/src/app/pages/permission/`
+本文档描述角色管理页面的管理流程和核心业务规则。
 
 **版本**: 2.0.0
 
@@ -14,9 +12,8 @@
 
 1. [页面流程图](#页面流程图)
 2. [功能说明](#功能说明)
-3. [API 接口](#API 接口)
-4. [业务规则](#业务规则)
-5. [组件复用](#组件复用)
+3. [业务规则](#业务规则)
+4. [组件复用](#组件复用)
 
 ---
 
@@ -33,7 +30,7 @@ flowchart TD
     Start([进入角色管理页面]) --> RoleList[角色管理列表]
 
     RoleList --> LoadContext[获取当前上下文<br/>appId / appTypeId]
-    LoadContext --> LoadRoles[调用 getList API<br/>传入 appId 和/或 appTypeId]
+    LoadContext --> LoadRoles[加载角色列表]
     LoadRoles --> RenderRoles[渲染角色表格]
 
     RenderRoles --> CheckBuiltin{是否内置角色？}
@@ -49,7 +46,7 @@ flowchart TD
     Action -->|新建 | CreateRole[新建角色]
 
     PermissionPanel --> GetAppTypeId[根据角色获取 appTypeId]
-    GetAppTypeId --> GetPool[调用 getAppTypePermissions<br/>获取权限池<br/>含 pcAction 配置]
+    GetAppTypeId --> GetPool[获取权限池<br/>含 pcAction 配置]
     GetPool --> RolePermissionPanel[角色权限面板<br/>复用组件，与应用类型详情页行为一致]
 
     RolePermissionPanel --> SelectPermType[选择权限类型]
@@ -73,23 +70,23 @@ flowchart TD
     CheckPcAction --> SavePerm
     CheckApiAction --> SavePerm
 
-    SavePerm --> AssignAPI[调用 assignPermissions API<br/>{permissions: [{permissionId, pcAction[]}]}]
-    AssignAPI --> ClosePanel[关闭面板]
+    SavePerm --> SavePermConfirm[保存权限分配]
+    SavePermConfirm --> ClosePanel[关闭面板]
 
     EditRole --> EditDrawer[打开编辑抽屉]
-    EditDrawer --> UpdateAPI[调用 updateByCode API]
-    UpdateAPI --> RefreshList[刷新列表]
+    EditDrawer --> UpdateRole[更新角色]
+    UpdateRole --> RefreshList[刷新列表]
 
     DeleteRole --> Confirm{确认删除？}
-    Confirm -->|是 | DeleteAPI[调用 deleteByCode API]
+    Confirm -->|是 | DeleteRoleConfirm[删除角色]
     Confirm -->|否 | Cancel1[取消]
-    DeleteAPI --> RefreshList
+    DeleteRoleConfirm --> RefreshList
 
     CreateRole --> CreateForm[填写表单]
     CreateForm --> Validate{编码唯一？}
-    Validate -->|是 | CreateAPI[调用 create API]
+    Validate -->|是 | CreateRoleConfirm[创建角色]
     Validate -->|否 | ShowError[显示错误]
-    CreateAPI --> RefreshList
+    CreateRoleConfirm --> RefreshList
     ShowError --> CreateForm
 ```
 
@@ -118,85 +115,6 @@ flowchart TD
 | 勾选权限 | 勾选/取消勾选权限节点 |
 | pcAction 选择 | 点击 PAGE 节点展开 pcAction，勾选操作权限 |
 | 保存权限 | 提交权限分配配置到后端 |
-
----
-
-## API 接口
-
-### 获取角色列表
-
-```
-GET /sys/role/list
-Params: { appId?: string, appTypeId?: string, page: number, size: number }
-```
-
-### 获取角色详情
-
-```
-GET /sys/role/:code
-```
-
-### 创建角色
-
-```
-POST /sys/role
-Body: {
-  appId: string,
-  roleName: string,
-  roleCode: string,
-  roleDesc?: string
-}
-```
-
-### 更新角色
-
-```
-PUT /sys/role/:code
-Body: {
-  roleName?: string,
-  roleDesc?: string
-}
-```
-
-### 删除角色
-
-```
-DELETE /sys/role/:code
-```
-
-### 获取角色权限
-
-```
-GET /sys/role/:code/permissions
-Response: {
-  permissions: Array<{
-    permissionId: string,
-    permCode: string,
-    permName: string,
-    permissionType: string,
-    nodeType: string,
-    pcAction: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 分配权限
-
-```
-POST /sys/role/:code/permissions
-Body: {
-  permissions: Array<{
-    permissionId: string,
-    pcAction?: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 获取应用类型权限池
-
-```
-GET /sys/app-type/:typeCode/permissions
-```
 
 ---
 
@@ -252,19 +170,19 @@ GET /sys/app-type/:typeCode/permissions
 应用类型管理页面
 │
 ├── 查看内置角色列表
-│   └── 从 sys_role 查询 appTypeId=当前类型 AND isBuiltin=1
+│   └── 查询内置角色（appTypeId=当前类型 AND isBuiltin=1）
 │
 ├── 添加内置角色
-│   └── POST /sys/role {appTypeId, roleName, roleCode, isBuiltin=1}
+│   └── 创建角色并绑定 appTypeId，标记为内置角色
 │
 ├── 编辑内置角色
-│   └── PUT /sys/role/:code {roleName, roleDesc}
+│   └── 修改角色名称、描述
 │
 ├── 删除内置角色
-│   └── DELETE /sys/role/:code
+│   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── POST /sys/role/:code/permissions {permissions: [{permissionId, pcAction[]}]}
+    └── 从当前应用类型的权限池中选择权限（含 pcAction）
 ```
 
 ---
@@ -275,20 +193,20 @@ GET /sys/app-type/:typeCode/permissions
 角色管理页面
 │
 ├── 查看角色列表
-│   ├── 内置角色：从 sys_role 查询 appTypeId=当前应用类型 AND isBuiltin=1 (只读)
-│   └── 应用级角色：从 sys_role 查询 appId=当前应用 AND isBuiltin=0 (可编辑)
+│   ├── 内置角色：查询应用类型全局角色（只读）
+│   └── 应用级角色：查询应用实例专属角色（可编辑）
 │
 ├── 添加应用级角色
-│   └── POST /sys/role {appId, roleName, roleCode, isBuiltin=0}
+│   └── 创建角色并绑定 appId
 │
 ├── 编辑应用级角色
-│   └── PUT /sys/role/:code {roleName, roleDesc}
+│   └── 修改角色名称、描述
 │
 ├── 删除应用级角色
-│   └── DELETE /sys/role/:code
+│   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── POST /sys/role/:code/permissions {permissions: [{permissionId, pcAction[]}]}
+    └── 从所属应用类型的权限池中选择权限（含 pcAction）
 ```
 
 ---

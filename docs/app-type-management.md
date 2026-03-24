@@ -2,9 +2,7 @@
 
 ## 概述
 
-本文档描述应用类型管理页面的前端流程和核心业务。
-
-**模块路径**: `packages/base-frontend/src/app/pages/permission/`
+本文档描述应用类型管理页面的管理流程和核心业务规则。
 
 **版本**: 2.0.0
 
@@ -14,9 +12,8 @@
 
 1. [页面流程图](#页面流程图)
 2. [功能说明](#功能说明)
-3. [API 接口](#API 接口)
-4. [业务规则](#业务规则)
-5. [内置角色管理](#内置角色管理)
+3. [业务规则](#业务规则)
+4. [内置角色管理](#内置角色管理)
 
 ---
 
@@ -30,7 +27,7 @@ flowchart TD
     CheckDev -->|否 | NoAccess[无权限访问]
     CheckDev -->|是 | AppTypeList[应用类型列表页]
 
-    AppTypeList --> LoadList[调用 getList API]
+    AppTypeList --> LoadList[加载应用类型列表]
     LoadList --> RenderList[渲染表格]
 
     RenderList --> Action{选择操作}
@@ -45,8 +42,7 @@ flowchart TD
     PermissionPoolPanel --> SelectPermissions[勾选权限]
     PermissionPoolPanel --> SelectPcAction[勾选 pcAction]
     SelectPermissions --> SavePool[保存配置]
-    SavePool --> AssignPermissionsAPI[调用 assignPermissions API]
-    AssignPermissionsAPI --> RefreshPool[刷新权限池]
+    SavePool --> RefreshPool[刷新权限池]
 
     ViewRoles --> BuiltinRolesPanel[内置角色面板]
     BuiltinRolesPanel --> ManageRoles[添加/编辑/删除角色]
@@ -58,8 +54,8 @@ flowchart TD
     EditDrawer --> FillForm[填写表单<br/>typeName/icon/typeDesc]
     FillForm --> Validate{验证通过？}
     Validate -->|否 | ShowError[显示错误]
-    Validate -->|是 | UpdateAPI[调用 updateByCode API]
-    UpdateAPI --> RefreshList[刷新列表]
+    Validate -->|是 | UpdateType[更新应用类型]
+    UpdateType --> RefreshList[刷新列表]
     ShowError --> FillForm
 ```
 
@@ -106,108 +102,6 @@ flowchart TD
 
 ---
 
-## API 接口
-
-### 获取应用类型列表
-
-```
-GET /sys/app-type/list
-```
-
-### 获取应用类型详情
-
-```
-GET /sys/app-type/:code
-```
-
-### 更新应用类型
-
-```
-PUT /sys/app-type/:code
-Body: {
-  typeName?: string,
-  icon?: string,
-  typeDesc?: string
-}
-```
-
-### 获取权限池配置
-
-```
-GET /sys/app-type/:code/permissions
-Response: {
-  permissions: Array<{
-    permissionId: string,
-    permCode: string,
-    permName: string,
-    permissionType: string,
-    nodeType: string,
-    pcAction: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 配置权限池
-
-```
-POST /sys/app-type/:code/permissions
-Body: {
-  permissions: Array<{
-    permissionId: string,
-    pcAction?: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 获取内置角色列表
-
-```
-GET /sys/role/list?appTypeId=:typeCode&isBuiltin=1
-```
-
-### 创建内置角色
-
-```
-POST /sys/role
-Body: {
-  appTypeId: string,
-  roleName: string,
-  roleCode: string,
-  roleDesc?: string,
-  isBuiltin: 1
-}
-```
-
-### 更新内置角色
-
-```
-PUT /sys/role/:code
-Body: {
-  roleName?: string,
-  roleDesc?: string
-}
-```
-
-### 删除内置角色
-
-```
-DELETE /sys/role/:code
-```
-
-### 分配内置角色权限
-
-```
-POST /sys/role/:code/permissions
-Body: {
-  permissions: Array<{
-    permissionId: string,
-    pcAction?: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
----
-
 ## 业务规则
 
 ### 应用类型管理
@@ -219,9 +113,9 @@ Body: {
 
 ### 开发者模式鉴权
 
+- 应用类型管理页面仅限开发者模式访问
 - 通过后端接口鉴权实现
-- 当用户属于开发者时，返回的路由菜单中包含应用类型管理页面
-- 非开发者用户无法访问应用类型管理相关路由和 API
+- 非开发者用户无法访问应用类型管理相关功能
 
 ### 权限池约束
 
@@ -252,20 +146,19 @@ Body: {
 应用类型详情页 → 内置角色面板
 │
 ├── 查看内置角色列表
-│   └── 从 sys_role 查询 appTypeId=当前类型 AND isBuiltin=1
+│   └── 查询内置角色（appTypeId=当前类型 AND isBuiltin=1）
 │
 ├── 添加内置角色
-│   └── POST /sys/role {appTypeId, roleName, roleCode, isBuiltin=1}
+│   └── 创建角色并绑定 appTypeId，标记为内置角色
 │
 ├── 编辑内置角色
-│   └── PUT /sys/role/:code {roleName, roleDesc}
+│   └── 修改角色名称、描述
 │
 ├── 删除内置角色
-│   └── DELETE /sys/role/:code
+│   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── POST /sys/role/:code/permissions {permissions: [{permissionId, pcAction[]}]}
-        └── 权限来源：当前应用类型的权限池
+    └── 从当前应用类型的权限池中选择权限（含 pcAction）
 ```
 
 ### 内置角色查看位置

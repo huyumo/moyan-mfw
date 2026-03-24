@@ -2,11 +2,9 @@
 
 ## 概述
 
-本文档描述应用实例管理页面的前端流程和核心业务。
+本文档描述应用实例管理页面的管理流程和核心业务规则。
 
-**模块路径**: `packages/base-frontend/src/app/pages/permission/`
-
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -14,8 +12,8 @@
 
 1. [页面流程图](#页面流程图)
 2. [功能说明](#功能说明)
-3. [API 接口](#API 接口)
-4. [业务规则](#业务规则)
+3. [业务规则](#业务规则)
+4. [拥有者权限说明](#拥有者权限说明)
 
 ---
 
@@ -26,7 +24,7 @@ flowchart TD
     Start([进入应用列表页]) --> AppList[应用实例列表]
 
     AppList --> Filter[选择类型筛选]
-    Filter --> LoadApps[调用 getList API]
+    Filter --> LoadApps[加载应用列表]
     LoadApps --> RenderApps[渲染应用表格]
 
     RenderApps --> Action{选择操作}
@@ -35,32 +33,32 @@ flowchart TD
     Action -->|删除 | DeleteApp[删除应用]
     Action -->|新建 | CreateApp[新建应用]
 
-    AppDetail --> UserInfo[查看用户绑定]
-    UserInfo --> BindUserPanel[用户绑定面板]
-    BindUserPanel --> SearchUser[搜索用户手机号]
-    SearchUser --> GetUserAPI[调用 getByPhone API]
-    GetUserAPI --> SelectUser[选择用户]
-    SelectUser --> BindAPI[调用 bindUsers API]
-    BindAPI --> RefreshUsers[刷新用户列表]
+    AppDetail --> ShowInfo[展示应用基本信息]
+    ShowInfo --> ShowOwner[展示拥有者信息]
+    ShowOwner --> MemberLink[点击成员管理链接<br/>跳转到独立成员管理页面]
 
     EditApp --> EditDrawer[打开编辑抽屉]
-    EditDrawer --> LookupOwner[查询拥有者]
-    LookupOwner --> GetUserAPI
-    EditDrawer --> UpdateAPI[调用 updateByCode API]
-    UpdateAPI --> RefreshList[刷新列表]
+    EditDrawer --> SelectOwner[选择拥有者]
+    SelectOwner --> SearchUser[搜索用户手机号]
+    SearchUser --> GetUser[查询用户]
+    GetUser --> ConfirmOwner[确认拥有者]
+    ConfirmOwner --> UpdateApp[更新应用]
+    UpdateApp --> RefreshList[刷新列表]
 
     DeleteApp --> Confirm{确认删除？}
-    Confirm -->|是 | DeleteAPI[调用 deleteByCode API]
+    Confirm -->|是 | DeleteAppConfirm[删除应用]
     Confirm -->|否 | Cancel1[取消]
-    DeleteAPI --> RefreshList
+    DeleteAppConfirm --> RefreshList
 
     CreateApp --> CreateForm[填写表单]
     CreateForm --> SelectType[选择应用类型]
-    SelectType --> LookupOwner
-    LookupOwner --> Validate{验证通过？}
-    Validate -->|是 | CreateAPI[调用 create API]
+    CreateForm --> InputOwner[输入拥有者手机号]
+    SelectType --> SearchUser
+    SearchUser --> GetUser
+    GetUser --> Validate{验证通过？}
+    Validate -->|是 | CreateAppConfirm[创建应用]
     Validate -->|否 | ShowError[显示错误]
-    CreateAPI --> RefreshList
+    CreateAppConfirm --> RefreshList
     ShowError --> CreateForm
 ```
 
@@ -74,93 +72,26 @@ flowchart TD
 |------|------|
 | 列表展示 | 展示应用实例列表，支持分页 |
 | 类型筛选 | 按应用类型筛选应用实例 |
-| 新建应用 | 创建新的应用实例 |
-| 查看详情 | 查看应用详细信息及用户绑定 |
-| 编辑 | 修改应用信息 |
+| 新建应用 | 创建新的应用实例（需绑定拥有者） |
+| 查看详情 | 查看应用详细信息及拥有者信息 |
+| 编辑 | 修改应用信息，可变更拥有者 |
 | 删除 | 删除应用实例 |
+| 成员管理入口 | 跳转到成员管理页面（独立页面） |
 
 ### 应用详情页
 
 | 功能 | 说明 |
 |------|------|
 | 基本信息 | 展示应用详细信息 |
-| 用户绑定 | 查看绑定该应用的用户列表 |
-| 绑定用户 | 搜索用户并绑定到应用 |
-| 角色管理 | 管理应用级角色（见角色管理页面） |
+| 拥有者信息 | 展示当前应用拥有者的用户信息 |
+| 成员管理入口 | 提供跳转到成员管理页面的链接 |
 
-### 用户绑定面板
+### 编辑应用
 
 | 功能 | 说明 |
 |------|------|
-| 搜索用户 | 通过手机号搜索用户 |
-| 选择用户 | 从搜索结果中选择用户 |
-| 绑定用户 | 将用户绑定到应用 |
-| 解除绑定 | 解除用户与应用的绑定关系 |
-
----
-
-## API 接口
-
-### 获取应用列表
-
-```
-GET /sys/app/list
-Params: { appTypeId?: string, page: number, size: number }
-```
-
-### 获取应用详情
-
-```
-GET /sys/app/:code
-```
-
-### 创建应用
-
-```
-POST /sys/app
-Body: {
-  appTypeId: string,
-  appName: string,
-  appCode: string,
-  appDesc?: string,
-  appLogo?: string,
-  ownerId: string
-}
-```
-
-### 更新应用
-
-```
-PUT /sys/app/:code
-Body: {
-  appName?: string,
-  appDesc?: string,
-  appLogo?: string,
-  ownerId?: string
-}
-```
-
-### 删除应用
-
-```
-DELETE /sys/app/:code
-```
-
-### 绑定用户
-
-```
-POST /sys/app/:code/users
-Body: {
-  userIds: string[],
-  isDefault?: number
-}
-```
-
-### 获取拥有者信息
-
-```
-GET /sys/user/:id
-```
+| 修改应用信息 | 修改应用名称、描述、图标等 |
+| 变更拥有者 | 将应用转让给其他用户（必须保留一个拥有者） |
 
 ---
 
@@ -170,14 +101,16 @@ GET /sys/user/:id
 
 - `appCode` 全局唯一，创建后不可修改
 - 创建应用时必须选择应用类型
-- 创建应用时自动绑定拥有者到 `sys_user_app` 表
+- 创建应用时必须绑定拥有者
+- 应用实例必须始终有一个拥有者（不可解除绑定，只能变更）
 - 应用实例删除前需检查是否有关联数据
 
-### 用户绑定
+### 拥有者绑定
 
-- 一个用户可以绑定多个应用
-- 绑定关系存储在 `sys_user_app` 表
-- 可设置用户的默认应用
+- 拥有者通过 `sys_user_app` 表与应用实例关联
+- 一个用户可以拥有多个应用
+- 拥有者变更时，原拥有者的应用权限自动移除，新拥有者自动获得完整权限
+- 拥有者是独立的身份标识，不属于角色体系
 
 ### 应用类型关联
 
@@ -187,12 +120,54 @@ GET /sys/user/:id
 
 ---
 
+## 拥有者权限说明
+
+### 拥有者的特殊地位
+
+- **拥有者是应用的"老板"**：类似商铺所有者，拥有该应用的完整权限
+- **独立于角色体系**：拥有者身份不属于任何角色，是独立的权限来源
+- **自动获得完整权限**：拥有者自动获得该应用实例对应应用类型权限池的所有权限
+- **不可被分配角色**：拥有者在当前应用实体下不能有双重角色身份
+
+### 拥有者权限范围
+
+```
+拥有者权限 = 应用类型权限池中的所有权限
+           = ∪(所有 PC 权限 + 所有普通权限 + 所有 API 权限)
+           + 所有 pcAction 操作权限
+```
+
+### 拥有者变更流程
+
+```
+原拥有者 A ──[变更]──> 新拥有者 B
+    │                        │
+    ▼                        ▼
+移除 A 的应用权限        B 自动获得完整权限
+    │                        │
+    ▼                        ▼
+A 不再是该应用的拥有者    B 成为新拥有者
+```
+
+### 拥有者与其他应用
+
+- 拥有者可以是**其他应用实例**的成员（包括不同应用类型的应用）
+- 拥有者身份是按应用实例独立管理的
+- 一个用户可以同时是：
+  - 应用 A 的拥有者
+  - 应用 B 的成员（被分配了角色）
+  - 应用 C 的成员（被分配了角色）
+
+---
+
 ## 相关文档
 
 - [数据库实体设计](./database-entities-design.md)
 - [应用类型管理页面](./app-type-management.md)
 - [角色管理页面](./role-management.md)
+- [成员管理页面](./member-management.md)
 - [权限池配置流程](./permission-pool-setup.md)
+- [权限分配流程](./permission-assignment.md)
 
 ---
 
@@ -200,6 +175,7 @@ GET /sys/user/:id
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-24 | 重构：移除用户绑定功能，明确拥有者权限，添加成员管理入口说明 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

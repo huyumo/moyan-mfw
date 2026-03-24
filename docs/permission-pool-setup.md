@@ -4,10 +4,6 @@
 
 本文档描述应用类型权限池配置的详细流程和核心业务规则。
 
-**模块路径**:
-- 前端：`packages/base-frontend/src/app/pages/permission/`
-- 后端：`packages/base-backend/src/services/`
-
 **版本**: 2.0.0
 
 ---
@@ -18,9 +14,8 @@
 2. [权限池验证逻辑](#权限池验证逻辑)
 3. [权限池与角色权限关系](#权限池与角色权限关系)
 4. [并发处理机制](#并发处理机制)
-5. [API 接口](#API 接口)
-6. [业务规则](#业务规则)
-7. [pcAction 数据流](#pcAction 数据流)
+5. [业务规则](#业务规则)
+6. [pcAction 数据流](#pcAction-数据流)
 
 ---
 
@@ -30,22 +25,19 @@
 sequenceDiagram
     autonumber
     participant U as 用户
-    participant P as 前端页面<br/>(AppTypeDetailPage)
-    participant A as API 服务<br/>(PermissionApi)
-    participant S as 后端服务<br/>(AppTypeService)
-    participant D as 数据库<br/>(MySQL)
+    participant P as 前端页面
+    participant S as 后端服务
+    participant D as 数据库
 
     rect rgb(230, 240, 255)
         note right of U: 阶段 1: 进入权限池配置
         U->>P: 进入应用类型详情页
-        P->>A: GET /sys/app-type/:code
-        A->>S: getByCode(typeCode)
+        P->>S: 获取应用类型详情
         S->>D: 查询 app_type 详情
         S->>D: 查询 builtin_roles
         S->>D: 查询 permissions (含关联字段)
         D-->>S: 返回完整数据
-        S-->>A: 返回 AppTypeDetail
-        A-->>P: JSON 响应
+        S-->>P: 返回 AppTypeDetail
         P->>P: 渲染 PermissionPoolPanel
         P->>U: 显示权限池配置界面
     end
@@ -53,28 +45,25 @@ sequenceDiagram
     rect rgb(240, 250, 230)
         note right of U: 阶段 2: 加载各类权限
         U->>P: 切换到"PC 权限树"Tab
-        P->>A: GET /sys/permission/tree?type=PC
-        A->>S: getTree({permissionType: PC})
+        P->>S: 获取 PC 权限树
         S->>D: 查询 PC 权限树
         D-->>S: 返回 PermissionItem[]
-        S-->>A: 返回树形数据
-        A-->>P: 渲染 PcPermissionTreeSelect
+        S-->>P: 返回树形数据
+        P->>P: 渲染 PcPermissionTreeSelect
 
         U->>P: 切换到"普通权限"Tab
-        P->>A: GET /sys/permission/list?type=NORMAL
-        A->>S: getList(params, {permissionType: NORMAL})
+        P->>S: 获取普通权限列表
         S->>D: 分页查询普通权限
         D-->>S: 返回 PageResult
-        S-->>A: 返回数据
-        A-->>P: 渲染复选框列表
+        S-->>P: 返回数据
+        P->>P: 渲染复选框列表
 
         U->>P: 切换到"OpenAPI"Tab
-        P->>A: GET /sys/permission/tree?type=API
-        A->>S: getTree({permissionType: API})
+        P->>S: 获取 API 权限树
         S->>D: 查询 API 权限树
         D-->>S: 返回 PermissionItem[]
-        S-->>A: 返回树形数据
-        A-->>P: 渲染 ApiPermissionTreeSelect
+        S-->>P: 返回树形数据
+        P->>P: 渲染 ApiPermissionTreeSelect
     end
 
     rect rgb(255, 240, 240)
@@ -87,8 +76,7 @@ sequenceDiagram
         P->>P: 合并三类权限编码
         P->>P: 收集勾选的 pcAction
         P->>P: 去重 + 过滤
-        P->>A: POST /sys/app-type/:code/permissions<br/>{permissions: [{permissionId, pcAction[]}]}
-        A->>S: assignPermissions(typeCode, dto)
+        P->>S: 提交权限池配置
 
         note right of S: 事务处理开始
         S->>D: BEGIN TRANSACTION
@@ -105,8 +93,7 @@ sequenceDiagram
         S->>D: COMMIT
         note right of S: 事务处理结束
 
-        S-->>A: 返回成功
-        A-->>P: JSON 响应
+        S-->>P: 返回成功
         P->>P: 重新加载权限池
         P->>U: 显示"保存成功"提示
     end
@@ -236,56 +223,6 @@ sequenceDiagram
 
 ---
 
-## API 接口
-
-### 获取应用类型权限池
-
-```
-GET /sys/app-type/:code/permissions
-Response: {
-  permissions: Array<{
-    permissionId: string,
-    permCode: string,
-    permName: string,
-    permissionType: string,
-    nodeType: string,
-    pcAction: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 配置权限池
-
-```
-POST /sys/app-type/:code/permissions
-Body: {
-  permissions: Array<{
-    permissionId: string,
-    pcAction?: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 获取 PC 权限树
-
-```
-GET /sys/permission/tree?permissionType=PC
-```
-
-### 获取普通权限列表
-
-```
-GET /sys/permission/list?permissionType=NORMAL
-```
-
-### 获取 OpenAPI 权限树
-
-```
-GET /sys/permission/tree?permissionType=API
-```
-
----
-
 ## 业务规则
 
 ### 权限池约束
@@ -355,7 +292,7 @@ GET /sys/permission/tree?permissionType=API
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 配置流程，更新 API 接口 |
+| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 配置流程 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

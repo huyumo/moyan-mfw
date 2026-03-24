@@ -4,10 +4,6 @@
 
 本文档描述角色权限分配的详细流程和核心业务规则。
 
-**模块路径**:
-- 前端：`packages/base-frontend/src/app/pages/permission/`
-- 后端：`packages/base-backend/src/services/`
-
 **版本**: 2.0.0
 
 ---
@@ -18,8 +14,7 @@
 2. [权限验证逻辑](#权限验证逻辑)
 3. [权限继承规则](#权限继承规则)
 4. [pcAction 数据流](#pcAction-数据流)
-5. [API 接口](#API 接口)
-6. [业务规则](#业务规则)
+5. [业务规则](#业务规则)
 
 ---
 
@@ -29,10 +24,9 @@
 sequenceDiagram
     autonumber
     participant U as 用户
-    participant P as 前端页面<br/>(RoleManagementPage)
-    participant A as API 服务<br/>(PermissionApi)
-    participant S as 后端服务<br/>(RoleService)
-    participant D as 数据库<br/>(MySQL)
+    participant P as 前端页面
+    participant S as 后端服务
+    participant D as 数据库
 
     rect rgb(230, 240, 255)
         note right of U: 阶段 1: 打开权限分配面板
@@ -41,12 +35,10 @@ sequenceDiagram
         alt 内置角色且无权限分配权限
             P->>U: 禁用按钮 + 提示
         else 可分配权限
-            P->>A: GET /sys/role/:code/permissions
-            A->>S: getPermissions(roleCode)
+            P->>S: 获取角色权限
             S->>D: 查询角色权限关联
             D-->>S: 返回权限数据
-            S-->>A: 返回 PermissionItem[]
-            A-->>P: JSON 响应
+            S-->>P: 返回 PermissionItem[]
             P->>P: 打开 RolePermissionPanel
             P->>U: 显示权限分配界面
         end
@@ -54,12 +46,10 @@ sequenceDiagram
 
     rect rgb(240, 250, 230)
         note right of U: 阶段 2: 加载应用类型权限池
-        P->>A: GET /sys/app-type/:typeCode/permissions
-        A->>S: getAppTypePermissions(typeCode)
+        P->>S: 获取应用类型权限池
         S->>D: 查询 sys_app_type_permission 表
         D-->>S: 返回权限池配置 (含 pcAction)
-        S-->>A: 返回 PermissionPoolItem[]
-        A-->>P: 权限池数据
+        S-->>P: 返回 PermissionPoolItem[]
         note right of P: 后续权限选择器<br/>仅展示权限池中的节点和 pcAction
     end
 
@@ -89,8 +79,7 @@ sequenceDiagram
         U->>P: 点击"保存"按钮
         P->>P: 收集所有勾选的权限编码和 pcAction
         P->>P: 去重 + 过滤空值
-        P->>A: POST /sys/role/:code/permissions<br/>{permissions: [{permissionId, pcAction[]}]}
-        A->>S: assignPermissions(roleCode, dto)
+        P->>S: 提交权限分配配置
 
         note right of S: 事务处理开始
         S->>D: BEGIN TRANSACTION
@@ -101,8 +90,7 @@ sequenceDiagram
         S->>D: COMMIT
         note right of S: 事务处理结束
 
-        S-->>A: 返回成功
-        A-->>P: JSON 响应
+        S-->>P: 返回成功
         P->>P: 关闭面板
         P->>U: 显示"分配成功"提示
     end
@@ -227,54 +215,6 @@ graph LR
 
 ---
 
-## API 接口
-
-### 获取角色权限
-
-```
-GET /sys/role/:code/permissions
-Response: {
-  permissions: Array<{
-    permissionId: string,
-    permCode: string,
-    permName: string,
-    permissionType: string,
-    nodeType: string,
-    pcAction: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 分配权限
-
-```
-POST /sys/role/:code/permissions
-Body: {
-  permissions: Array<{
-    permissionId: string,
-    pcAction?: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
-### 获取应用类型权限池
-
-```
-GET /sys/app-type/:typeCode/permissions
-Response: {
-  permissions: Array<{
-    permissionId: string,
-    permCode: string,
-    permName: string,
-    permissionType: string,
-    nodeType: string,
-    pcAction: Array<{name: string, permCode: string}>
-  }>
-}
-```
-
----
-
 ## 业务规则
 
 ### 角色分类
@@ -328,7 +268,7 @@ Response: {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 分配流程，更新 API 接口 |
+| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 分配流程 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

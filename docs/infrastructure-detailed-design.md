@@ -4,11 +4,7 @@
 
 ## 概述
 
-本文档是基础设施页面设计文档的入口，详细描述数据库实体设计、ER 关系、前端页面流程和核心业务流程。
-
-**模块路径**:
-- 前端：`packages/base-frontend/src/app/pages/permission/`
-- 后端：`packages/base-backend/src/database/entities/`
+本文档是基础设施页面设计文档的入口，详细描述数据库实体设计、ER 关系、页面流程和核心业务流程。
 
 **版本**: 2.0.0
 

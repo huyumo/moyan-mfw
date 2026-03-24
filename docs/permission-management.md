@@ -2,9 +2,7 @@
 
 ## 概述
 
-本文档描述权限管理页面的前端流程和核心业务，包含 PC 权限树和 OpenAPI 权限管理。
-
-**模块路径**: `packages/base-frontend/src/app/pages/permission/`
+本文档描述权限管理页面的管理流程和核心业务，包含 PC 权限树和 OpenAPI 权限管理。
 
 **版本**: 2.0.0
 
@@ -14,8 +12,7 @@
 
 1. [PC 权限树管理](#1-pc-权限树管理)
 2. [OpenAPI 权限管理](#2-openapi-权限管理)
-3. [API 接口](#API 接口)
-4. [业务规则](#业务规则)
+3. [业务规则](#业务规则)
 
 ---
 
@@ -25,7 +22,7 @@
 
 ```mermaid
 flowchart TD
-    Start([进入 PC 权限树页面]) --> LoadTree[调用 getTree API]
+    Start([进入 PC 权限树页面]) --> LoadTree[加载权限树]
     LoadTree --> RenderTree[渲染权限树表格]
 
     RenderTree --> Search[输入关键词过滤]
@@ -59,16 +56,16 @@ flowchart TD
     RootCheck -->|否 | ShowError[显示错误]
 
     SaveNode --> IsEdit{是否编辑？}
-    IsEdit -->|是 | UpdateAPI[调用 updateByCode API]
-    IsEdit -->|否 | CreateAPI[调用 create API]
+    IsEdit -->|是 | UpdateNode[更新节点]
+    IsEdit -->|否 | CreateNode[创建节点]
 
-    UpdateAPI --> RefreshTree[刷新树]
-    CreateAPI --> RefreshTree
+    UpdateNode --> RefreshTree[刷新树]
+    CreateNode --> RefreshTree
 
     DeleteNode --> Confirm{确认删除？}
-    Confirm -->|是 | DeleteAPI[调用 deleteByCode API]
+    Confirm -->|是 | DeleteNodeConfirm[删除节点]
     Confirm -->|否 | Cancel1[取消]
-    DeleteAPI --> RefreshTree
+    DeleteNodeConfirm --> RefreshTree
 ```
 
 ### 功能说明
@@ -113,8 +110,8 @@ ROOT (MENU)
 flowchart TD
     Start([进入 OpenAPI 权限页面]) --> SyncCheck{是否需要同步？}
 
-    SyncCheck -->|是 | SyncAPI[调用 syncOpenApiNodes API]
-    SyncCheck -->|否 | LoadTree[调用 getTree API]
+    SyncCheck -->|是 | SyncAPI[同步 OpenAPI 权限]
+    SyncCheck -->|否 | LoadTree[加载权限树]
 
     SyncAPI --> ScanCode[扫描代码元数据]
     ScanCode --> ExtractAPI[提取 API 定义]
@@ -164,75 +161,6 @@ API:ROOT (API)
 - API 权限通过 `syncOpenApiNodes()` 自动同步代码元数据
 - 同步操作会对比数据库记录，执行更新/创建/删除操作
 - API 权限的参数和响应字段由代码元数据自动生成
-
----
-
-## API 接口
-
-### 获取权限树
-
-```
-GET /sys/permission/tree
-Params: { permissionType?: string }
-```
-
-### 创建权限
-
-```
-POST /sys/permission
-Body: {
-  permName: string,
-  permCode: string,
-  permDesc?: string,
-  permissionType: PermissionType,
-  nodeType: NodeType,
-  parentId?: string,
-  routePath?: string,
-  componentPath?: string,
-  iconName?: string,
-  sortOrder?: number,
-  isVisible?: number,
-  isCache?: number,
-  showMode?: ShowMode,
-  pcAction?: Array<{name: string, permCode: string}>  // 仅 PAGE 节点
-}
-```
-
-### 更新权限
-
-```
-PUT /sys/permission/:code
-Body: {
-  permName?: string,
-  permDesc?: string,
-  routePath?: string,
-  componentPath?: string,
-  iconName?: string,
-  sortOrder?: number,
-  isVisible?: number,
-  isCache?: number,
-  showMode?: ShowMode,
-  pcAction?: Array<{name: string, permCode: string}>  // 仅 PAGE 节点
-}
-```
-
-### 删除权限
-
-```
-DELETE /sys/permission/:code
-```
-
-### 同步 OpenAPI 权限
-
-```
-POST /sys/permission/sync-open-api
-```
-
-### 获取权限详情
-
-```
-GET /sys/permission/:code
-```
 
 ---
 
