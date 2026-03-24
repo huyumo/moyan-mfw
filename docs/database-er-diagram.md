@@ -317,10 +317,17 @@ API:ROOT (API)
 
 | PermissionType | NodeType | 用途 | 父节点要求 |
 |----------------|----------|------|------------|
-| PC | MENU | 目录/菜单 | 无（可为根节点） |
-| PC | PAGE | 页面权限 | 必须是 MENU |
-| NORMAL | TAG | 普通权限 | 必须是 MENU |
-| API | API | OpenAPI 权限 | 必须是 API（根节点除外） |
+| PC | MENU | PC 菜单/目录 | 无（可为根节点） |
+| PC | PAGE | PC 页面权限 | 必须是 MENU |
+| NORMAL | MENU | 普通权限目录 | 无（可为根节点） |
+| NORMAL | TAG | 普通权限（标签） | 必须是 MENU |
+| API | MENU | API 权限目录 | 无（可为根节点） |
+| API | API | OpenAPI 权限 | 必须是 MENU（根节点除外） |
+
+**说明**:
+- `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
+- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
 
 ---
 

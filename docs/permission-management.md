@@ -248,7 +248,7 @@ enum PermissionType {
 }
 
 enum NodeType {
-  MENU = 'MENU',            // 目录（用于 PC 权限的目录节点）
+  MENU = 'MENU',            // 目录（可与所有 PermissionType 组合使用）
   PAGE = 'PAGE',            // 页面（PermissionType=PC 时使用）
   TAG = 'TAG',              // 标签（PermissionType=NORMAL 时使用）
   API = 'API',              // API（PermissionType=API 时使用）
@@ -259,6 +259,22 @@ enum ShowMode {
   DEV = 'DEV',                   // 开发模式
 }
 ```
+
+### PermissionType 与 NodeType 对应关系
+
+| PermissionType | NodeType | 说明 |
+|----------------|----------|------|
+| PC | MENU | PC 菜单/目录 |
+| PC | PAGE | PC 页面权限（可包含 pcAction） |
+| NORMAL | MENU | 普通权限目录 |
+| NORMAL | TAG | 普通权限（标签） |
+| API | MENU | API 权限目录 |
+| API | API | OpenAPI 权限 |
+
+**说明**:
+- `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
+- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
 
 ### 权限编码
 
