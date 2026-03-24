@@ -80,8 +80,16 @@
 |----------------|----------|------|
 | PC | MENU | PC 菜单/目录 |
 | PC | PAGE | PC 页面权限（可包含 pcAction） |
+| NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
+| API | MENU | API 权限目录 |
 | API | API | OpenAPI 权限 |
+
+**说明**:
+- `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL/API) 组合使用，作为目录节点
+- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 
 ### pcAction 数据流
 
