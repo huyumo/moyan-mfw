@@ -8,18 +8,19 @@
 - 前端：`packages/base-frontend/src/app/pages/permission/`
 - 后端：`packages/base-backend/src/services/`
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
 ## 目录
 
-1. [完整流程图](##完整流程图)
-2. [权限池验证逻辑](##权限池验证逻辑)
-3. [权限池与角色权限关系](##权限池与角色权限关系)
-4. [并发处理机制](##并发处理机制)
-5. [API 接口](##API 接口)
-6. [业务规则](##业务规则)
+1. [完整流程图](#完整流程图)
+2. [权限池验证逻辑](#权限池验证逻辑)
+3. [权限池与角色权限关系](#权限池与角色权限关系)
+4. [并发处理机制](#并发处理机制)
+5. [API 接口](#API 接口)
+6. [业务规则](#业务规则)
+7. [pcAction 数据流](#pcAction 数据流)
 
 ---
 
@@ -52,8 +53,8 @@ sequenceDiagram
     rect rgb(240, 250, 230)
         note right of U: 阶段 2: 加载各类权限
         U->>P: 切换到"PC 权限树"Tab
-        P->>A: GET /sys/permission/tree?type=PC_MENU
-        A->>S: getTree({permissionType: PC_MENU})
+        P->>A: GET /sys/permission/tree?type=PC
+        A->>S: getTree({permissionType: PC})
         S->>D: 查询 PC 权限树
         D-->>S: 返回 PermissionItem[]
         S-->>A: 返回树形数据
@@ -79,11 +80,14 @@ sequenceDiagram
     rect rgb(255, 240, 240)
         note right of U: 阶段 3: 保存权限池配置
         U->>P: 勾选/取消勾选权限
+        U->>P: 点击 PAGE 节点展开 pcAction
+        U->>P: 勾选/取消勾选 pcAction
         U->>P: 点击"保存"按钮
 
         P->>P: 合并三类权限编码
+        P->>P: 收集勾选的 pcAction
         P->>P: 去重 + 过滤
-        P->>A: POST /sys/app-type/:code/permissions<br/>{permissionCodes: [...]}
+        P->>A: POST /sys/app-type/:code/permissions<br/>{permissions: [{permissionId, pcAction[]}]}
         A->>S: assignPermissions(typeCode, dto)
 
         note right of S: 事务处理开始
@@ -91,10 +95,10 @@ sequenceDiagram
         S->>D: DELETE FROM sys_app_type_permission<br/>WHERE appTypeId = ?
         D-->>S: 删除成功
 
-        loop 遍历权限编码
+        loop 遍历权限配置
             S->>D: 查询 permissionId by permCode
             D-->>S: 返回 permissionId
-            S->>D: INSERT INTO sys_app_type_permission<br/>(appTypeId, permissionId)
+            S->>D: INSERT INTO sys_app_type_permission<br/>(appTypeId, permissionId, pcAction)
             D-->>S: 插入成功
         end
 
@@ -114,7 +118,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    Start[开始保存权限池] --> CollectCodes[收集三类权限编码]
+    Start[开始保存权限池] --> CollectCodes[收集权限配置]
 
     CollectCodes --> MergeCodes[合并 PC + 普通 + API]
     MergeCodes --> Dedup[去重 + 过滤空值]
@@ -136,14 +140,20 @@ flowchart TD
     CheckAppType -->|否 | ShowError3[显示"应用类型不存在"]
     ShowError3 --> End3([结束])
 
-    CheckAppType -->|是 | StartTransaction[开启事务]
+    CheckAppType -->|是 | ValidatePcAction[验证 pcAction 有效性]
+    ValidatePcAction --> QueryPermission[查询权限的 pcAction 定义]
+    QueryPermission --> CheckPcAction{pcAction 在定义内？}
+
+    CheckPcAction -->|否 | ShowError4[显示"存在无效的 pcAction"]
+    CheckPcAction -->|是 | StartTransaction[开启事务]
+
     StartTransaction --> DeleteOld[删除旧关联记录]
     DeleteOld --> BatchInsert[批量插入新关联]
 
     BatchInsert --> VerifyInsert{插入成功？}
     VerifyInsert -->|否 | Rollback[回滚事务]
-    Rollback --> ShowError4[显示"数据库写入失败"]
-    ShowError4 --> End4([结束])
+    Rollback --> ShowError5[显示"数据库写入失败"]
+    ShowError5 --> End4([结束])
 
     VerifyInsert -->|是 | Commit[提交事务]
     Commit --> Success[返回成功]
@@ -157,14 +167,14 @@ flowchart TD
 ```mermaid
 graph TB
     subgraph 权限池配置
-        P1[PC 权限树选择] --> P4[权限编码集合]
+        P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
         P2[普通权限选择] --> P4
         P3[OpenAPI 权限选择] --> P4
         P4 --> P5[保存到 sys_app_type_permission]
     end
 
     subgraph 角色权限分配
-        R1[从权限池选择] --> R4[角色权限集合]
+        R1[从权限池选择] --> R4[角色权限集合 + pcAction 子集]
         R4 --> R5[保存到 sys_role_permission]
     end
 
@@ -181,7 +191,7 @@ graph TB
 
 **说明**:
 - 权限池配置是角色权限分配的前提
-- 角色权限必须是权限池的子集
+- 角色权限必须是权限池的子集（包括 pcAction）
 - 运行时权限验证先检查角色权限，再检查权限池包含
 
 ---
@@ -233,8 +243,14 @@ sequenceDiagram
 ```
 GET /sys/app-type/:code/permissions
 Response: {
-  permissionCodes: string[],
-  permissions: PermissionItem[]
+  permissions: Array<{
+    permissionId: string,
+    permCode: string,
+    permName: string,
+    permissionType: string,
+    nodeType: string,
+    pcAction: Array<{name: string, permCode: string}>
+  }>
 }
 ```
 
@@ -243,26 +259,29 @@ Response: {
 ```
 POST /sys/app-type/:code/permissions
 Body: {
-  permissionCodes: string[]
+  permissions: Array<{
+    permissionId: string,
+    pcAction?: Array<{name: string, permCode: string}>
+  }>
 }
 ```
 
 ### 获取 PC 权限树
 
 ```
-GET /sys/permission/tree?type=PC_MENU
+GET /sys/permission/tree?permissionType=PC
 ```
 
 ### 获取普通权限列表
 
 ```
-GET /sys/permission/list?type=NORMAL
+GET /sys/permission/list?permissionType=NORMAL
 ```
 
 ### 获取 OpenAPI 权限树
 
 ```
-GET /sys/permission/tree?type=API
+GET /sys/permission/tree?permissionType=API
 ```
 
 ---
@@ -275,17 +294,51 @@ GET /sys/permission/tree?type=API
 - 角色权限只能从所属应用类型的权限池中选择
 - 权限池为空时，该应用类型下的角色无法分配任何权限
 
+### pcAction 约束
+
+- `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- 权限池中的 `pcAction` 必须是对应权限 `pcAction` 定义的子集
+- 角色分配权限时，`pcAction` 必须是权限池中 `pcAction` 的子集
+
 ### 数据一致性
 
 - 权限池配置使用事务保证数据一致性
 - 删除权限池记录时，先删除所有旧记录，再插入新记录
-- 插入前验证所有权限编码的有效性
+- 插入前验证所有权限编码的有效性和 pcAction 的合法性
 
 ### 并发控制
 
 - 同一应用类型的权限池配置请求串行执行
 - 数据库行锁保证并发安全
 - 后提交的配置覆盖先提交的配置
+
+---
+
+## pcAction 数据流
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. 权限定义 (PermissionEntity)                                  │
+│    PAGE 节点：pcAction: [add, edit, delete]                     │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 权限池配置时读取并选择子集
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. 权限池 (AppTypePermissionEntity)                             │
+│    pcAction: [add, edit]  ← 子集                                │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 角色分配权限时读取并选择子集
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. 角色权限 (RolePermissionEntity)                              │
+│    pcAction: [add]  ← 子集                                      │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 运行时权限验证
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. 用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)      │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -302,6 +355,7 @@ GET /sys/permission/tree?type=API
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 配置流程，更新 API 接口 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

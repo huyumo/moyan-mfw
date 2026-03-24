@@ -4,7 +4,7 @@
 
 本文档描述基础设施页面的数据库 ER 关系和实体间关联。
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -85,6 +85,7 @@ erDiagram
         string permCode UK
         string permDesc
         enum permissionType
+        enum nodeType
         string parentId FK
         string routePath
         string componentPath
@@ -96,6 +97,7 @@ erDiagram
         int isCache
         enum showMode
         int permStatus
+        JSON pcAction
         datetime createTime
     }
 
@@ -108,6 +110,7 @@ erDiagram
         string email
         string avatar
         int gender
+        int isDeveloper
         int userStatus
         datetime createTime
     }
@@ -116,6 +119,7 @@ erDiagram
         string id PK
         string roleId FK
         string permissionId FK
+        JSON pcAction
         datetime createTime
     }
 
@@ -125,6 +129,7 @@ erDiagram
         string permissionId FK
         JSON paramFields
         JSON resultFields
+        JSON pcAction
         datetime createTime
     }
 
@@ -218,7 +223,8 @@ erDiagram
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
 │  │  权限池 A    │  │  内置角色   │  │  应用级角色  │         │
 │  │ [P1,P2,P3]  │  │  A1,A2     │  │  A-app1    │         │
-│  │             │  │ [P1,P2]     │  │ [P2,P3]     │         │
+│  │ [pcA1,pcA2] │  │ [P1,P2]     │  │ [P2,P3]     │         │
+│  │             │  │ [pcA1]      │  │ [pcA2]      │         │
 │  │ 所有角色的权 │  └─────────────┘  └─────────────┘         │
 │  │ 限都从权限池 │         │                  │               │
 │  │ 中选择       │         └──────────────────┘               │
@@ -233,7 +239,8 @@ erDiagram
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
 │  │  权限池 B    │  │  内置角色   │  │  应用级角色  │         │
 │  │ [P4,P5,P6]  │  │  B1,B2     │  │  B-app1    │         │
-│  │             │  │ [P4,P5]     │  │ [P5,P6]     │         │
+│  │ [pcB1,pcB2] │  │ [P4,P5]     │  │ [P5,P6]     │         │
+│  │             │  │ [pcB1]      │  │ [pcB2]      │         │
 │  │ 所有角色的权 │  └─────────────┘  └─────────────┘         │
 │  │ 限都从权限池 │         │                  │               │
 │  │ 中选择       │         └──────────────────┘               │
@@ -247,8 +254,9 @@ erDiagram
 1. 内置角色：不绑定 appId，仅绑定 appTypeId，为应用类型全局角色
 2. 应用级角色：必须绑定 appId，属于具体应用实例
 3. 所有角色的权限配置数据源均为应用类型权限池
-4. 权限 P1,P2,P3 仅在应用类型 A 中可用
-5. 权限 P4,P5,P6 仅在应用类型 B 中可用
+4. pcAction 数据流：Permission → AppTypePermission → RolePermission
+5. 权限 P1,P2,P3 仅在应用类型 A 中可用
+6. 权限 P4,P5,P6 仅在应用类型 B 中可用
 ```
 
 ---
@@ -260,49 +268,59 @@ erDiagram
 
 用户 U
 ├── 直接绑定的角色 R1
-│   └── 权限集合 {P1, P2, P3}
+│   └── 权限集合 {P1: [pcA1], P2: [pcA1, pcA2]}
 ├── 通过应用 A 绑定的角色 R2
-│   └── 权限集合 {P4, P5}
+│   └── 权限集合 {P3: [pcA1]}
 └── 通过应用类型 T 绑定的角色 R3
-    └── 权限集合 {P6, P7}
+    └── 权限集合 {P1: [pcA1, pcA2]}
 
-用户 U 的最终权限 = {P1, P2, P3, P4, P5, P6, P7}
-                    (并集)
+用户 U 的最终权限 =
+  P1: [pcA1, pcA2]  ← 并集（相同 permissionId 的 pcAction 合并）
+  P2: [pcA1, pcA2]
+  P3: [pcA1]
 ```
 
 ---
 
 ## 权限树形结构
 
-```
-Permission 树形示例:
+### 新的 PermissionType + NodeType 结构
 
-ROOT
-├── PC_MENU (菜单权限)
-│   ├── system (系统管理)
-│   │   ├── PC_PAGE
-│   │   │   ├── user-list (用户列表)
-│   │   │   │   ├── user-add (新增用户) [PC_ACTION]
-│   │   │   │   ├── user-edit (编辑用户) [PC_ACTION]
-│   │   │   │   └── user-delete (删除用户) [PC_ACTION]
-│   │   │   └── role-list (角色列表)
-│   │   │       └── role-edit (编辑角色) [PC_ACTION]
-│   │   └── PC_PAGE
-│   │       └── config-page (配置页面)
-│   └── PC_MENU
-│       └── business (业务管理)
-│           └── PC_PAGE
-│               └── order-list (订单列表)
-└── API (OpenAPI 权限)
-    ├── API:ROOT
-    │   └── API:MODULE:SYS
-    │       └── API:CONTROLLER:USER
-    │           ├── API:METHOD:getList
-    │           ├── API:METHOD:getById
-    │           └── API:METHOD:create
-    │       └── API:CONTROLLER:ROLE
-    │           └── API:METHOD:assignPermissions
 ```
+Permission 树形示例 (PC 权限):
+
+ROOT (MENU)
+├── system (MENU)
+│   ├── user-list (PAGE)
+│   │   └── pcAction: [user:add, user:edit, user:delete]
+│   ├── role-list (PAGE)
+│   │   └── pcAction: [role:add, role:edit]
+│   └── config-page (PAGE)
+│       └── pcAction: [config:save]
+└── business (MENU)
+    └── order-list (PAGE)
+        └── pcAction: [order:create, order:approve]
+
+Permission 树形示例 (API 权限):
+
+API:ROOT (API)
+└── API:MODULE:SYS (API)
+    ├── API:CONTROLLER:USER (API)
+    │   ├── API:METHOD:getList
+    │   ├── API:METHOD:getById
+    │   └── API:METHOD:create
+    └── API:CONTROLLER:ROLE (API)
+        └── API:METHOD:assignPermissions
+```
+
+### PermissionType 与 NodeType 对应关系
+
+| PermissionType | NodeType | 用途 | 父节点要求 |
+|----------------|----------|------|------------|
+| PC | MENU | 目录/菜单 | 无（可为根节点） |
+| PC | PAGE | 页面权限 | 必须是 MENU |
+| NORMAL | TAG | 普通权限 | 必须是 MENU |
+| API | API | OpenAPI 权限 | 必须是 API（根节点除外） |
 
 ---
 
@@ -319,6 +337,7 @@ ROOT
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-24 | 重构：更新 ER 图，添加 pcAction 字段，更新权限树结构 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

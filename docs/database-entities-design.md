@@ -6,7 +6,7 @@
 
 **模块路径**: `packages/base-backend/src/database/entities/`
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -47,10 +47,11 @@ class AppTypeEntity {
 - `idx_type_status` (typeStatus)
 
 **业务规则**:
-- `typeCode = 'system'` 为系统内置类型，不可编辑/删除
+- `typeCode = 'system'` 为系统内置类型，不可删除
 - `multiAppEnabled = 1` 表示该类型下可创建多个应用实例
-- 应用类型不允许前端新增、删除，仅允许后端程序启动时，通过代码因编码管理
+- 应用类型不允许前端新增、删除，仅允许后端程序启动时通过代码按编码管理
 - 前端仅允许编辑字段：typeName（应用类型名称）、icon（图标）、typeDesc（应用类型描述）
+- 应用类型管理页面仅限开发者模式访问
 
 ---
 
@@ -58,7 +59,7 @@ class AppTypeEntity {
 
 **表名**: `sys_app`
 
-**用途**: 具体的应用实例，归属于某个应用类型，必须且只能有1个拥有者。
+**用途**: 具体的应用实例，归属于某个应用类型，必须且只能有 1 个拥有者。
 
 ```typescript
 class AppEntity {
@@ -85,6 +86,7 @@ class AppEntity {
 **业务规则**:
 - `appCode` 全局唯一，创建后不可修改
 - 创建应用时自动绑定拥有者到 `sys_user_app` 表
+- 应用实例必须归属于一个应用类型
 
 ---
 
@@ -117,12 +119,12 @@ class RoleEntity {
 - `idx_role_status` (roleStatus)
 
 **业务规则**:
-- 内置角色 (`isBuiltin = 1`) 必须关联 `appTypeId`，不绑定 `appId`，为应用类型全局角色
-- 应用实体角色 (`isBuiltin = 0`) 必须绑定 `appId`，属于具体应用实例
-- 内置角色不允许在前端编辑、删除、分配权限，仅可在应用实例详情页查看
-- 应用实体角色可在应用实例详情页进行编辑、删除、权限分配操作
-- 内置角色和应用实体角色的权限配置行为一致：都从所属应用类型的权限池中选择
-- 前端实现：内置角色查看权限与应用实体角色分配权限使用同一组件 `RolePermissionPanel`
+- **内置角色** (`isBuiltin = 1`): 必须关联 `appTypeId`，不绑定 `appId`，为应用类型全局角色
+- **应用级角色** (`isBuiltin = 0`): 必须绑定 `appId`，属于具体应用实例
+- **内置角色管理位置**: 应用类型管理页面详情页，可进行添加、编辑、删除、分配权限操作
+- **内置角色查看位置**: 应用实例角色管理列表中只读显示
+- **应用级角色管理位置**: 应用实例角色管理页面，可进行编辑、删除、分配权限操作
+- 所有角色的权限配置都必须从所属应用类型的权限池中选择
 
 ---
 
@@ -130,7 +132,7 @@ class RoleEntity {
 
 **表名**: `sys_permission`
 
-**用途**: 定义权限节点，支持树形结构，包含菜单、页面、操作、API 等类型。
+**用途**: 定义权限节点，支持树形结构，包含 PC 权限、普通权限、API 权限等类型。
 
 ```typescript
 class PermissionEntity {
@@ -139,7 +141,7 @@ class PermissionEntity {
   permCode!: string;                                        // 权限编码 (varchar(128), 唯一索引)
   permDesc?: string;                                        // 权限描述 (varchar(255))
   permissionType!: PermissionType;                          // 权限类型 (enum)
-  nodeType?: NodeType;                                      // 节点类型 (enum) 根据 permissionType 设置，不能混淆使用
+  nodeType?: NodeType;                                      // 节点类型 (enum)
   parentId?: string;                                        // 父权限 ID (char(36), 自引用外键)
   routePath?: string;                                       // 路由路径 (varchar(255))
   componentPath?: string;                                   // 组件路径 (varchar(255))
@@ -151,7 +153,7 @@ class PermissionEntity {
   isCache!: number;                                         // 是否缓存：1-是 0-否 (tinyint(1), default 1)
   showMode!: ShowMode;                                      // 显示模式 (enum: NORMAL/DEV)
   permStatus!: number;                                      // 状态：1-启用 0-禁用 (tinyint(1), default 1)
-  pcAction?:Array<{name:string,permCode: string}>;          // pc 操作权限（按钮）(json)
+  pcAction?: Array<{name: string, permCode: string}>;       // PC 页面下的操作权限（按钮）(JSON)
   createTime!: Date;                                        // 创建时间 (datetime(3))
   updateTime?: Date;                                        // 更新时间 (datetime(3))
 }
@@ -166,20 +168,27 @@ enum PermissionType {
   API = 'API',                   // OpenAPI 权限
 }
 
+enum NodeType {
+  MENU = 'MENU',            // 目录（用于 PC 权限的目录节点）
+  PAGE = 'PAGE',            // 页面（PermissionType=PC 时使用）
+  TAG = 'TAG',              // 标签（PermissionType=NORMAL 时使用）
+  API = 'API',              // API（PermissionType=API 时使用）
+}
+
 enum ShowMode {
   NORMAL = 'NORMAL',             // 普通模式
   DEV = 'DEV',                   // 开发模式
 }
-
-enum NodeType {
-  MENU = 'MENU',            // 目录
-  PAGE = 'PAGE',            // 页面权限 PermissionType = PC 使用 PAGE
-  TAG = 'TAG',              // 普通权限 PermissionType = NORMAL 使用 TAG
-  API = 'API',              // OpenAPI 权限 PermissionType = API 使用 API
-}
-
-
 ```
+
+**PermissionType 与 NodeType 对应关系**:
+
+| PermissionType | NodeType | 说明 |
+|----------------|----------|------|
+| PC | MENU | PC 菜单/目录 |
+| PC | PAGE | PC 页面权限（可包含 pcAction） |
+| NORMAL | TAG | 普通权限（标签） |
+| API | API | OpenAPI 权限 |
 
 **索引**:
 - `idx_perm_code` (permCode)
@@ -188,9 +197,12 @@ enum NodeType {
 - `idx_perm_status` (permStatus)
 
 **业务规则**:
-- `PAGE|TAG|API` 类型的 `parentId` 必须指向 `MENU` 类型
+- `PAGE`、`TAG`、`API` 类型的 `parentId` 必须指向 `MENU` 类型
+- `pcAction` 字段仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `pcAction` 表示该页面下的所有操作权限（按钮）列表
 - API 权限通过 `syncOpenApiNodes()` 自动同步代码元数据
 - `showMode = DEV` 的权限仅对开发模式用户可见
+- `permCode` 全局唯一，创建后不可修改
 
 ---
 
@@ -211,6 +223,7 @@ class UserEntity {
   avatar?: string;                // 头像 (varchar(255))
   gender!: number;                // 性别：0-未知 1-男 2-女 (tinyint, default 0)
   userStatus!: number;            // 状态：1-启用 0-禁用 (tinyint(1), default 1)
+  isDeveloper?: number;           // 是否开发者：1-是 0-否 (tinyint(1), default 0)
   createTime!: Date;              // 创建时间 (datetime(3))
   updateTime?: Date;              // 更新时间 (datetime(3))
 }
@@ -221,6 +234,9 @@ class UserEntity {
 - `uk_phone` (phone, unique)
 - `idx_user_status` (userStatus)
 
+**业务规则**:
+- `isDeveloper = 1` 的用户可访问应用类型管理等开发者功能
+
 ---
 
 ## 6. 关联实体
@@ -229,14 +245,15 @@ class UserEntity {
 
 **表名**: `sys_role_permission`
 
-**用途**: 角色与权限的多对多关联。
+**用途**: 角色与权限的多对多关联，存储角色分配的权限及操作权限。
 
 ```typescript
 class RolePermissionEntity {
-  id!: string;                    // 主键 ID (UUID)
-  roleId!: string;                // 角色 ID (char(36), 外键)
-  permissionId!: string;          // 权限 ID (char(36), 外键)
-  createTime!: Date;              // 创建时间 (datetime(3))
+  id!: string;                                            // 主键 ID (UUID)
+  roleId!: string;                                        // 角色 ID (char(36), 外键)
+  permissionId!: string;                                  // 权限 ID (char(36), 外键)
+  pcAction?: Array<{name: string, permCode: string}>;     // 已勾选的操作权限（按钮）(JSON)
+  createTime!: Date;                                      // 创建时间 (datetime(3))
 }
 ```
 
@@ -244,6 +261,10 @@ class RolePermissionEntity {
 - `idx_role_id` (roleId)
 - `idx_permission_id` (permissionId)
 - `uk_role_permission` (roleId + permissionId, 唯一)
+
+**业务规则**:
+- `pcAction` 存储角色对该权限已勾选的操作权限子集
+- `pcAction` 的数据来源必须是对应权限在权限池中的 `pcAction` 配置
 
 ---
 
@@ -255,13 +276,13 @@ class RolePermissionEntity {
 
 ```typescript
 class AppTypePermissionEntity {
-  id!: string;                    // 主键 ID (UUID)
-  appTypeId!: string;             // 应用类型 ID (char(36), 外键)
-  permissionId!: string;          // 权限 ID (char(36), 外键)
-  paramFields?: JsonValue;        // 选中的参数字段配置 (JSON)
-  resultFields?: JsonValue;       // 选中的响应字段配置 (JSON)
-  pcAction?:Array<{name:string,permCode: string}>;  // pc 选中的操作权限（按钮）(json)
-  createTime!: Date;              // 创建时间 (datetime(3))
+  id!: string;                                            // 主键 ID (UUID)
+  appTypeId!: string;                                     // 应用类型 ID (char(36), 外键)
+  permissionId!: string;                                  // 权限 ID (char(36), 外键)
+  paramFields?: JsonValue;                                // 选中的 API 参数字段配置 (JSON)
+  resultFields?: JsonValue;                               // 选中的 API 响应字段配置 (JSON)
+  pcAction?: Array<{name: string, permCode: string}>;     // 选中的 PC 操作权限（按钮）(JSON)
+  createTime!: Date;                                      // 创建时间 (datetime(3))
 }
 ```
 
@@ -282,9 +303,15 @@ interface ApiField {
   example?: string;        // 示例值
 }
 
-// paramFields: ApiField[] - API 参数配置
-// resultFields: ApiField[] - API 响应字段配置
+// paramFields: ApiField[] - API 参数配置（子集）
+// resultFields: ApiField[] - API 响应字段配置（子集）
+// pcAction: {name, permCode}[] - PC 操作权限配置（子集）
 ```
+
+**业务规则**:
+- 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
+- 角色权限只能从所属应用类型的权限池中选择
+- `pcAction` 是 `Permission.pcAction` 的子集
 
 ---
 
@@ -355,6 +382,37 @@ class UserRoleEntity {
 
 ---
 
+## pcAction 数据流
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. 权限定义 (PermissionEntity)                                  │
+│    pcAction: [{name: '新增', permCode: 'user:add'},             │
+│              {name: '编辑', permCode: 'user:edit'},             │
+│              {name: '删除', permCode: 'user:delete'}]           │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 权限池配置时读取
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. 权限池配置 (AppTypePermissionEntity)                         │
+│    pcAction: [{name: '新增', permCode: 'user:add'},             │
+│              {name: '编辑', permCode: 'user:edit'}]  ← 子集     │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 角色分配权限时读取
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. 角色权限分配 (RolePermissionEntity)                          │
+│    pcAction: [{name: '新增', permCode: 'user:add'}]  ← 子集     │
+└────────────────────┬────────────────────────────────────────────┘
+                     │ 运行时权限验证
+                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. 用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 相关文档
 
 - [数据库 ER 关系图](./database-er-diagram.md)
@@ -369,6 +427,7 @@ class UserRoleEntity {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-24 | 重构：简化 PermissionType，新增 NodeType，添加 pcAction 字段 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---
