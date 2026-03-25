@@ -131,8 +131,8 @@ flowchart TD
 interface UserPermission {
   permissionId: string;
   permCode: string;
-  permissionType: 'PC' | 'NORMAL' | 'API';
-  nodeType?: 'MENU' | 'PAGE' | 'TAG' | 'API';
+  permissionType: 'PC' | 'NORMAL';
+  nodeType?: 'MENU' | 'PAGE' | 'TAG';
   pcAction?: Array<{name: string, permCode: string}>;
 }
 ```

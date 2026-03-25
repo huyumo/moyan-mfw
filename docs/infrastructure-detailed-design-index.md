@@ -83,12 +83,11 @@
 | PC | PAGE | PC 页面权限（可包含 pcAction） |
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
-| API | MENU | API 权限目录 |
 
 **说明**:
-- `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL/API) 组合使用，作为目录节点
-- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
-- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL) 组合使用，作为目录节点
+- 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
 - `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
@@ -137,14 +136,12 @@ RolePermission.pcAction (角色分配，子集)
 enum PermissionType {
   PC = 'PC',                     // PC 权限
   NORMAL = 'NORMAL',             // 普通权限
-  API = 'API',                   // API 权限
 }
 
 enum NodeType {
   MENU = 'MENU',            // 目录（用于 PC 权限的目录节点）
   PAGE = 'PAGE',            // 页面（PermissionType=PC 时使用）
   TAG = 'TAG',              // 标签（PermissionType=NORMAL 时使用）
-  API = 'API',              // API（PermissionType=API 时使用）
 }
 
 enum ShowMode {

@@ -90,8 +90,6 @@ erDiagram
         string parentId FK
         string routePath
         string componentPath
-        string apiPath
-        string apiMethod
         string iconName
         int sortOrder
         int isVisible
@@ -302,17 +300,6 @@ ROOT (MENU)
 └── business (MENU)
     └── order-list (PAGE)
         └── pcAction: [order:create, order:approve]
-
-Permission 树形示例 (API 权限):
-
-API:ROOT (API)
-└── API:MODULE:SYS (API)
-    ├── API:CONTROLLER:USER (API)
-    │   ├── API:METHOD:getList
-    │   ├── API:METHOD:getById
-    │   └── API:METHOD:create
-    └── API:CONTROLLER:ROLE (API)
-        └── API:METHOD:assignPermissions
 ```
 
 ### PermissionType 与 NodeType 对应关系
@@ -323,12 +310,11 @@ API:ROOT (API)
 | PC | PAGE | PC 页面权限 | 必须是 MENU |
 | NORMAL | MENU | 普通权限目录 | 无（可为根节点） |
 | NORMAL | TAG | 普通权限（标签） | 必须是 MENU |
-| API | MENU | API 权限目录 | 无（可为根节点） |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
-- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
-- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 ---

@@ -66,7 +66,7 @@ sequenceDiagram
         U->>P: 勾选/取消勾选 pcAction
         U->>P: 点击"保存"按钮
 
-        P->>P: 合并三类权限编码
+        P->>P: 合并两类权限编码
         P->>P: 收集勾选的 pcAction
         P->>P: 去重 + 过滤
         P->>S: 提交权限池配置
@@ -100,7 +100,7 @@ sequenceDiagram
 flowchart TD
     Start[开始保存权限池] --> CollectCodes[收集权限配置]
 
-    CollectCodes --> MergeCodes[合并 PC + 普通 + API]
+    CollectCodes --> MergeCodes[合并 PC + 普通]
     MergeCodes --> Dedup[去重 + 过滤空值]
 
     Dedup --> EmptyCheck{权限列表为空？}

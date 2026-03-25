@@ -135,7 +135,7 @@ class RoleEntity {
 
 **表名**: `sys_permission`
 
-**用途**: 定义权限节点，支持树形结构，包含 PC 权限、普通权限、API 权限等类型。
+**用途**: 定义权限节点，支持树形结构，包含 PC 权限、普通权限等类型。
 
 ```typescript
 class PermissionEntity {
@@ -148,8 +148,6 @@ class PermissionEntity {
   parentId?: string;                                        // 父权限 ID (char(36), 自引用外键)
   routePath?: string;                                       // 路由路径 (varchar(255))
   componentPath?: string;                                   // 组件路径 (varchar(255))
-  apiPath?: string;                                         // API 路径 (varchar(255))
-  apiMethod?: string;                                       // API 方法 (varchar(10))
   iconName?: string;                                        // 图标名称 (varchar(64))
   sortOrder!: number;                                       // 排序值 (int, default 0)
   isVisible!: number;                                       // 是否可见：1-是 0-否 (tinyint(1), default 1)
@@ -168,14 +166,12 @@ class PermissionEntity {
 enum PermissionType {
   PC = 'PC',                     // PC 权限
   NORMAL = 'NORMAL',             // 普通权限
-  API = 'API',                   // API 权限
 }
 
 enum NodeType {
   MENU = 'MENU',            // 目录（用于 PC 权限的目录节点）
   PAGE = 'PAGE',            // 页面（PermissionType=PC 时使用）
   TAG = 'TAG',              // 标签（PermissionType=NORMAL 时使用）
-  API = 'API',              // API（PermissionType=API 时使用）
 }
 
 enum ShowMode {
@@ -192,12 +188,11 @@ enum ShowMode {
 | PC | PAGE | PC 页面权限（可包含 pcAction） |
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
-| API | MENU | API 权限目录 |
 
 **说明**:
-- `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL/API) 组合使用，作为目录节点
-- 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
-- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL) 组合使用，作为目录节点
+- 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
+- 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
 - `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
@@ -208,7 +203,7 @@ enum ShowMode {
 - `idx_perm_status` (permStatus)
 
 **业务规则**:
-- `PAGE`、`TAG`、`API` 类型的 `parentId` 必须指向 `MENU` 类型
+- `PAGE`、`TAG` 类型的 `parentId` 必须指向 `MENU` 类型
 - `pcAction` 字段仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `pcAction` 表示该页面下的所有操作权限（按钮）列表
 - `showMode = DEV` 的权限仅对开发模式用户可见
@@ -289,8 +284,6 @@ class AppTypePermissionEntity {
   id!: string;                                            // 主键 ID (UUID)
   appTypeId!: string;                                     // 应用类型 ID (char(36), 外键)
   permissionId!: string;                                  // 权限 ID (char(36), 外键)
-  paramFields?: JsonValue;                                // 选中的 API 参数字段配置 (JSON)
-  resultFields?: JsonValue;                               // 选中的 API 响应字段配置 (JSON)
   pcAction?: Array<{name: string, permCode: string}>;     // 选中的 PC 操作权限（按钮）(JSON)
   createTime!: Date;                                      // 创建时间 (datetime(3))
 }
@@ -304,17 +297,6 @@ class AppTypePermissionEntity {
 **JSON 字段结构**:
 
 ```typescript
-interface ApiField {
-  name: string;            // 字段名
-  source: 'path' | 'query' | 'body' | 'response';
-  type?: string;           // 类型：string/number/boolean/object/array
-  required?: boolean;      // 是否必填
-  description?: string;    // 描述
-  example?: string;        // 示例值
-}
-
-// paramFields: ApiField[] - API 参数配置（子集）
-// resultFields: ApiField[] - API 响应字段配置（子集）
 // pcAction: {name, permCode}[] - PC 操作权限配置（子集）
 ```
 
