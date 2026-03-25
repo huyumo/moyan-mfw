@@ -25,8 +25,7 @@
 erDiagram
     SYS_APP_TYPE ||--o{ SYS_APP : "1:N 包含应用实例"
     SYS_APP_TYPE ||--o{ SYS_APP_TYPE_PERMISSION : "1:N 定义权限池"
-    SYS_APP_TYPE ||--o{ SYS_APP_TYPE_BUILTIN_ROLE : "1:N 定义内置角色"
-    SYS_APP_TYPE ||--o{ SYS_ROLE : "1:N 关联应用类型级角色"
+    SYS_APP_TYPE ||--o{ SYS_ROLE : "1:N 关联应用类型级角色 (内置角色)"
 
     SYS_APP ||--o{ SYS_USER_APP : "1:N 绑定用户"
     SYS_APP ||--o{ SYS_ROLE : "1:N 关联应用级角色"
@@ -126,16 +125,7 @@ erDiagram
         string id PK
         string appTypeId FK
         string permissionId FK
-        JSON paramFields
-        JSON resultFields
         JSON pcAction
-        datetime createTime
-    }
-
-    SYS_APP_TYPE_BUILTIN_ROLE {
-        string id PK
-        string appTypeId FK
-        string roleId FK
         datetime createTime
     }
 
@@ -143,7 +133,6 @@ erDiagram
         string id PK
         string userId FK
         string appId FK
-        int isDefault
         datetime createTime
     }
 
@@ -163,8 +152,7 @@ erDiagram
 |------|------|------|
 | AppType → App | 1:N | 一个应用类型可包含多个应用实例 |
 | AppType → AppTypePermission | 1:N | 一个应用类型有多个权限池配置 |
-| AppType → AppTypeBuiltinRole | 1:N | 一个应用类型有多个内置角色 |
-| AppType → Role | 1:N | 一个应用类型有多个应用类型级角色 |
+| AppType → Role | 1:N | 一个应用类型有多个应用类型级角色（通过 `sys_role.appTypeId` + `isBuiltin=1` 标识内置角色） |
 | App → UserApp | 1:N | 一个应用可绑定多个用户 |
 | App → Role | 1:N | 一个应用有多个应用级角色 |
 | Role → RolePermission | 1:N | 一个角色有多个权限分配 |
@@ -174,6 +162,8 @@ erDiagram
 | Permission → AppTypePermission | 1:N | 一个权限可加入多个权限池 |
 | User → UserApp | 1:N | 一个用户可拥有多个应用 |
 | User → UserRole | 1:N | 一个用户可拥有多个角色 |
+
+**注意**: 内置角色通过 `sys_role` 表的 `appTypeId` + `isBuiltin=1` 字段标识，无需单独的关联表。
 
 ---
 

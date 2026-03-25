@@ -83,9 +83,9 @@ class AppEntity {
 
 **业务规则**:
 - `appCode` 全局唯一，创建后不可修改
-- 创建应用时自动绑定拥有者到 `sys_user_app` 表
+- 创建应用时自动绑定拥有者到 `sys_user_app` 表（拥有者同时在 `sys_app.ownerId` 和 `sys_user_app` 中记录）
 - 应用实例必须归属于一个应用类型
-- 拥有者变更时，后端 Service 层用事务保证原子性（更新 ownerId + 调整拥有者角色绑定）
+- 拥有者变更时，后端 Service 层用事务保证原子性（更新 ownerId + 调整拥有者角色绑定 + 更新 sys_user_app 表）
 
 ---
 
@@ -128,6 +128,7 @@ class RoleEntity {
 - **应用级角色管理位置**: 应用实例角色管理页面，可进行编辑、删除、分配权限操作
 - 所有角色的权限配置都必须从所属应用类型的权限池中选择
 - 拥有者变更时，自动将原拥有者的拥有者角色移除，并将新拥有者绑定拥有者角色
+- **角色删除级联处理**: 删除角色时，先删除 `sys_role_permission` 中的权限关联，再删除 `sys_user_role` 中的用户关联，最后删除角色记录，所有操作在事务中执行
 
 ---
 
@@ -307,29 +308,7 @@ class AppTypePermissionEntity {
 
 ---
 
-### 1.8 AppTypeBuiltinRoleEntity (应用类型内置角色关联实体)
-
-**表名**: `sys_app_type_builtin_role`
-
-**用途**: 应用类型与内置角色的关联。
-
-```typescript
-class AppTypeBuiltinRoleEntity {
-  id!: string;                    // 主键 ID (UUID)
-  appTypeId!: string;             // 应用类型 ID (char(36), 外键)
-  roleId!: string;                // 角色 ID (char(36), 外键)
-  createTime!: Date;              // 创建时间 (datetime(3))
-}
-```
-
-**索引**:
-- `idx_app_type_id` (appTypeId)
-- `idx_role_id` (roleId)
-- `uk_app_type_builtin_role` (appTypeId + roleId, 唯一)
-
----
-
-### 1.9 UserAppEntity (用户应用关联实体)
+### 1.8 UserAppEntity (用户应用关联实体)
 
 **表名**: `sys_user_app`
 
@@ -340,7 +319,6 @@ class UserAppEntity {
   id!: string;                    // 主键 ID (UUID)
   userId!: string;                // 用户 ID (char(36), 外键)
   appId!: string;                 // 应用 ID (char(36), 外键)
-  isDefault!: number;             // 是否默认应用：1-是 0-否 (tinyint(1), default 0)
   createTime!: Date;              // 创建时间 (datetime(3))
 }
 ```
@@ -350,9 +328,17 @@ class UserAppEntity {
 - `idx_app_id` (appId)
 - `uk_user_app` (userId + appId, 唯一)
 
+**业务规则**:
+- 拥有者同时在 `sys_app.ownerId` 和 `sys_user_app` 表中记录
+- `sys_app.ownerId` 用于快速查询某个应用的拥有者（一对一）
+- `sys_user_app` 用于统一记录所有用户可访问的应用（包括拥有者和成员）
+- 创建应用时，拥有者自动添加到 `sys_user_app` 表
+- 拥有者变更时，需要同时更新 `sys_app.ownerId` 和 `sys_user_app` 表（移除原拥有者记录，添加新拥有者记录）
+- 一个用户可以拥有多个应用
+
 ---
 
-### 1.10 UserRoleEntity (用户角色关联实体)
+### 1.9 UserRoleEntity (用户角色关联实体)
 
 **表名**: `sys_user_role`
 

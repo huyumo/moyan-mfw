@@ -20,50 +20,27 @@
 ### 页面流程
 
 - [应用类型管理页面](./pages/app-type-management.md) - 应用类型列表、详情、编辑、权限池配置和内置角色管理
-- [应用实例管理页面](./pages/app-management.md) - 应用实例的 CRUD、用户绑定
+- [应用实例管理页面](./pages/app-management.md) - 应用实例的 CRUD、拥有者绑定流程
+- [成员管理页面](./pages/member-management.md) - 应用实例成员管理、角色分配流程
 - [角色管理页面](./pages/role-management.md) - 角色管理、权限分配流程
-- [权限管理页面](./pages/permission-management.md) - PC 权限树管理
+- [权限管理页面](./pages/permission-management.md) - PC 权限树管理流程
 
 ### 业务流程
 
-- [权限池配置流程](./flows/permission-pool-setup.md) - 权限池配置的详细流程
-- [权限分配流程](./flows/permission-assignment.md) - 角色权限分配的详细流程
+- [用户登录流程](./flows/user-login-flow.md) - 用户登录后的应用实例选择、权限加载和切换流程
+- [权限池配置流程](./flows/permission-pool-setup.md) - 应用类型权限池配置的详细流程和并发处理机制
+- [权限分配流程](./flows/permission-assignment.md) - 角色权限分配的详细流程和权限验证逻辑
+- [权限计算规则](./flows/permission-calculation-rules.md) - 用户最终权限的计算逻辑和规则说明
+- [开发者模式说明](./flows/developer-mode.md) - 开发者模式的定义、鉴权方式、可见功能
+- [系统初始化说明](./flows/system-initialization.md) - 内置应用类型、内置应用实例、初始数据的创建
 
 ---
 
-## 核心概念速查
+## 概述
 
-### 权限类型与节点类型
+本文档是基础设施页面设计文档的入口，完整内容请查看 [基础设施页面设计文档索引](./infrastructure-detailed-design-index.md)。
 
-| PermissionType | NodeType | 说明 |
-|----------------|----------|------|
-| PC | MENU | PC 菜单/目录 |
-| PC | PAGE | PC 页面权限（可包含 pcAction） |
-| NORMAL | TAG | 普通权限 |
-
-### pcAction 数据流
-
-```
-Permission.pcAction → AppTypePermission.pcAction → RolePermission.pcAction → 用户最终权限
-    (定义)              (权限池配置，子集)           (角色分配，子集)           (并集)
-```
-
-### 角色分类
-
-| 类型 | 绑定字段 | 管理位置 | 操作权限 |
-|------|----------|----------|----------|
-| 内置角色 | `appTypeId` | 应用类型管理页面 | 应用类型页面：增删改 + 分配权限 |
-| 应用级角色 | `appId` | 角色管理页面 | 增删改 + 分配权限 |
-
-### 权限池约束
-
-所有角色的权限配置都必须从所属应用类型的权限池中选择。
-
-### 用户最终权限
-
-```
-用户最终权限 = ∪(用户所有关联角色的 permissionId + pcAction)
-```
+**版本**: 2.0.0
 
 ---
 
