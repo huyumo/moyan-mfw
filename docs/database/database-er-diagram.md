@@ -25,7 +25,7 @@
 erDiagram
     SYS_APP_TYPE ||--o{ SYS_APP : "1:N 包含应用实例"
     SYS_APP_TYPE ||--o{ SYS_APP_TYPE_PERMISSION : "1:N 定义权限池"
-    SYS_APP_TYPE ||--o{ SYS_ROLE : "1:N 关联应用类型级角色 (内置角色)"
+    SYS_APP_TYPE ||--o{ SYS_ROLE : "1:N 关联内置角色"
 
     SYS_APP ||--o{ SYS_USER_APP : "1:N 绑定用户"
     SYS_APP ||--o{ SYS_ROLE : "1:N 关联应用级角色"
@@ -152,7 +152,7 @@ erDiagram
 |------|------|------|
 | AppType → App | 1:N | 一个应用类型可包含多个应用实例 |
 | AppType → AppTypePermission | 1:N | 一个应用类型有多个权限池配置 |
-| AppType → Role | 1:N | 一个应用类型有多个应用类型级角色（通过 `sys_role.appTypeId` + `isBuiltin=1` 标识内置角色） |
+| AppType → Role | 1:N | 一个应用类型有多个内置角色（通过 `sys_role.appTypeId` + `isBuiltin=1` 标识） |
 | App → UserApp | 1:N | 一个应用可绑定多个用户 |
 | App → Role | 1:N | 一个应用有多个应用级角色 |
 | Role → RolePermission | 1:N | 一个角色有多个权限分配 |
@@ -311,7 +311,7 @@ ROOT (MENU)
 
 ## 相关文档
 
-- [数据库实体设计](./entities-design.md)
+- [数据库实体设计](./database-entities-design.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [角色管理页面](../pages/role-management.md)
 - [权限池配置流程](../flows/permission-pool-setup.md)

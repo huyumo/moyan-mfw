@@ -231,7 +231,7 @@ R3 权限 = {P1: [pcA1, pcA2], P4: [pcA1]}
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用实例管理页面](./app-management.md)
 - [角色管理页面](./role-management.md)
 - [应用类型管理页面](./app-type-management.md)

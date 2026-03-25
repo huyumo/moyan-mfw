@@ -4,7 +4,7 @@
 
 本文档描述系统权限计算的详细规则和逻辑，包括用户最终权限的计算方式、pcAction 合并规则等。
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -226,7 +226,7 @@ sequenceDiagram
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [权限池配置流程](./permission-pool-setup.md)
 - [权限分配流程](./permission-assignment.md)
 - [用户登录流程](./user-login-flow.md)

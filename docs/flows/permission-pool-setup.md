@@ -273,7 +273,7 @@ sequenceDiagram
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [角色管理页面](../pages/role-management.md)
 - [权限分配流程](./permission-assignment.md)

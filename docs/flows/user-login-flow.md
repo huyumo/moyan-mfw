@@ -4,7 +4,7 @@
 
 本文档描述用户登录系统后的应用实例选择流程及权限加载机制。
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -199,7 +199,7 @@ sequenceDiagram
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用实例管理页面](../pages/app-management.md)
 - [成员管理页面](../pages/member-management.md)
 - [权限分配流程](./permission-assignment.md)

@@ -178,7 +178,7 @@ A 不再是该应用的拥有者    B 成为新拥有者
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用类型管理页面](./app-type-management.md)
 - [角色管理页面](./role-management.md)
 - [成员管理页面](./member-management.md)

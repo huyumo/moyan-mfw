@@ -238,7 +238,7 @@ flowchart TD
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用类型管理页面](./app-type-management.md)
 - [应用实例管理页面](./app-management.md)
 - [权限分配流程](../flows/permission-assignment.md)

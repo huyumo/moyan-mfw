@@ -4,7 +4,7 @@
 
 本文档描述开发者模式的定义、鉴权方式、可见功能等相关内容。
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -148,7 +148,7 @@ flowchart TD
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [权限管理页面](../pages/permission-management.md)
 - [系统初始化说明](./system-initialization.md)

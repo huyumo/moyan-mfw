@@ -393,7 +393,7 @@ class UserRoleEntity {
 
 ## 相关文档
 
-- [数据库 ER 关系图](./er-diagram.md)
+- [数据库 ER 关系图](./database-er-diagram.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [应用实例管理页面](../pages/app-management.md)
 - [角色管理页面](../pages/role-management.md)

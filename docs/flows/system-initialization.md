@@ -4,7 +4,7 @@
 
 本文档描述系统初始化时需要创建的基础数据，包括内置应用类型、内置应用实例、初始用户等。
 
-**版本**: 1.0.0
+**版本**: 2.0.0
 
 ---
 
@@ -188,6 +188,7 @@ class RoleEntity {
 
 ```
 sys_app.ownerId = admin 用户 ID
+sys_user_app: (userId = admin 用户 ID, appId = 系统内置应用实例 ID)
 sys_user_role: (userId = admin 用户 ID, roleId = 管理员角色 ID)
 ```
 
@@ -195,7 +196,7 @@ sys_user_role: (userId = admin 用户 ID, roleId = 管理员角色 ID)
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [开发者模式说明](./developer-mode.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [权限池配置流程](./permission-pool-setup.md)
@@ -206,6 +207,7 @@ sys_user_role: (userId = admin 用户 ID, roleId = 管理员角色 ID)
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-25 | 更新：补充拥有者绑定时 sys_user_app 表的记录说明 |
 | 1.0.0 | 2026-03-25 | 初始版本，描述系统初始化的基础数据创建 |
 
 ---

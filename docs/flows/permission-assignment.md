@@ -153,14 +153,12 @@ graph LR
 
     subgraph 角色权限
         C --> D[内置角色权限]
-        C --> E[应用类型级角色权限]
-        C --> F[应用级角色权限]
+        C --> E[应用级角色权限]
     end
 
     subgraph 用户最终权限计算
         D --> G{用户最终权限 = }
         E --> G
-        F --> G
         G --> H[所有关联角色的权限并集<br/>相同 permissionId 的 pcAction 合并]
     end
 
@@ -175,7 +173,7 @@ graph LR
 ```
 
 **核心规则**:
-- 所有角色（内置角色、应用类型级角色、应用级角色）的权限配置都必须从所属应用类型的权限池中选择
+- 所有角色（内置角色、应用级角色）的权限配置都必须从所属应用类型的权限池中选择
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限分配时，前端选择器仅展示该角色所属应用类型权限池中的权限节点
 - pcAction 也遵循相同的约束：角色中的 pcAction 必须是权限池中 pcAction 的子集
@@ -253,7 +251,7 @@ graph LR
 
 ## 相关文档
 
-- [数据库实体设计](../database/entities-design.md)
+- [数据库实体设计](../database/database-entities-design.md)
 - [角色管理页面](../pages/role-management.md)
 - [应用类型管理页面](../pages/app-type-management.md)
 - [权限池配置流程](./permission-pool-setup.md)
