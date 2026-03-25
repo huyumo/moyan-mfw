@@ -14,8 +14,8 @@
 
 ### 数据库设计
 
-- [数据库实体设计](./database/entities-design.md) - 所有数据库实体的详细定义
-- [数据库 ER 关系图](./database/er-diagram.md) - 实体间关系图和权限隔离机制
+- [数据库实体设计](./database/database-entities-design.md) - 所有数据库实体的详细定义
+- [数据库 ER 关系图](./database/database-er-diagram.md) - 实体间关系图和权限隔离机制
 
 ### 页面流程
 
