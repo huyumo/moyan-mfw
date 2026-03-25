@@ -14,20 +14,20 @@
 
 ### 数据库设计
 
-- [数据库实体设计](./database-entities-design.md) - 所有数据库实体的详细定义
-- [数据库 ER 关系图](./database-er-diagram.md) - 实体间关系图和权限隔离机制
+- [数据库实体设计](./database/entities-design.md) - 所有数据库实体的详细定义
+- [数据库 ER 关系图](./database/er-diagram.md) - 实体间关系图和权限隔离机制
 
 ### 页面流程
 
-- [应用类型管理页面](./app-type-management.md) - 应用类型列表、详情、编辑、权限池配置和内置角色管理
-- [应用实例管理页面](./app-management.md) - 应用实例的 CRUD、用户绑定
-- [角色管理页面](./role-management.md) - 角色管理、权限分配流程
-- [权限管理页面](./permission-management.md) - PC 权限树和 OpenAPI 权限管理
+- [应用类型管理页面](./pages/app-type-management.md) - 应用类型列表、详情、编辑、权限池配置和内置角色管理
+- [应用实例管理页面](./pages/app-management.md) - 应用实例的 CRUD、用户绑定
+- [角色管理页面](./pages/role-management.md) - 角色管理、权限分配流程
+- [权限管理页面](./pages/permission-management.md) - PC 权限树和 OpenAPI 权限管理
 
 ### 业务流程
 
-- [权限池配置流程](./permission-pool-setup.md) - 权限池配置的详细流程
-- [权限分配流程](./permission-assignment.md) - 角色权限分配的详细流程
+- [权限池配置流程](./flows/permission-pool-setup.md) - 权限池配置的详细流程
+- [权限分配流程](./flows/permission-assignment.md) - 角色权限分配的详细流程
 
 ---
 

@@ -257,9 +257,9 @@ graph LR
 
 ## 相关文档
 
-- [数据库实体设计](./database-entities-design.md)
-- [角色管理页面](./role-management.md)
-- [应用类型管理页面](./app-type-management.md)
+- [数据库实体设计](../database/entities-design.md)
+- [角色管理页面](../pages/role-management.md)
+- [应用类型管理页面](../pages/app-type-management.md)
 - [权限池配置流程](./permission-pool-setup.md)
 
 ---

@@ -74,6 +74,7 @@ erDiagram
         string roleCode UK
         string roleDesc
         int isBuiltin
+        int isOwner
         int roleStatus
         int sortOrder
         datetime createTime
@@ -257,6 +258,7 @@ erDiagram
 4. pcAction 数据流：Permission → AppTypePermission → RolePermission
 5. 权限 P1,P2,P3 仅在应用类型 A 中可用
 6. 权限 P4,P5,P6 仅在应用类型 B 中可用
+7. 拥有者角色 (isOwner=1)：每个应用类型必须有一个特殊的拥有者角色，不允许删除，拥有者自动绑定该角色
 ```
 
 ---
@@ -328,15 +330,16 @@ API:ROOT (API)
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
 - 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 ---
 
 ## 相关文档
 
-- [数据库实体设计](./database-entities-design.md)
-- [应用类型管理页面](./app-type-management.md)
-- [角色管理页面](./role-management.md)
-- [权限池配置流程](./permission-pool-setup.md)
+- [数据库实体设计](./entities-design.md)
+- [应用类型管理页面](../pages/app-type-management.md)
+- [角色管理页面](../pages/role-management.md)
+- [权限池配置流程](../flows/permission-pool-setup.md)
 
 ---
 

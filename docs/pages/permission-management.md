@@ -203,6 +203,9 @@ enum ShowMode {
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
 - 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
+- `PC` 权限类型用于 PC 后台管理系统的菜单和页面权限
+- `API` 权限类型用于 OpenAPI 接口的访问权限
+- `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 ### 权限编码
 
@@ -228,10 +231,10 @@ enum ShowMode {
 
 ## 相关文档
 
-- [数据库实体设计](./database-entities-design.md)
+- [数据库实体设计](../database/entities-design.md)
 - [应用类型管理页面](./app-type-management.md)
 - [角色管理页面](./role-management.md)
-- [权限池配置流程](./permission-pool-setup.md)
+- [权限池配置流程](../flows/permission-pool-setup.md)
 
 ---
 

@@ -85,6 +85,7 @@ class AppEntity {
 - `appCode` 全局唯一，创建后不可修改
 - 创建应用时自动绑定拥有者到 `sys_user_app` 表
 - 应用实例必须归属于一个应用类型
+- 拥有者变更时，后端 Service 层用事务保证原子性（更新 ownerId + 调整拥有者角色绑定）
 
 ---
 
@@ -103,6 +104,7 @@ class RoleEntity {
   roleCode!: string;              // 角色编码 (varchar(64), 唯一索引)
   roleDesc?: string;              // 角色描述 (varchar(255))
   isBuiltin!: number;             // 是否内置：1-是 0-否 (tinyint(1), default 0)
+  isOwner!: number;               // 是否拥有者角色：1-是 0-否 (tinyint(1), default 0)
   roleStatus!: number;            // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   sortOrder!: number;             // 排序值 (int, default 0)
   createTime!: Date;              // 创建时间 (datetime(3))
@@ -115,14 +117,17 @@ class RoleEntity {
 - `idx_role_app_type_id` (appTypeId)
 - `idx_role_code` (roleCode, unique)
 - `idx_role_status` (roleStatus)
+- `idx_is_owner` (isOwner)
 
 **业务规则**:
 - **内置角色** (`isBuiltin = 1`): 必须关联 `appTypeId`，不绑定 `appId`，为应用类型全局角色
 - **应用级角色** (`isBuiltin = 0`): 必须绑定 `appId`，属于具体应用实例
+- **拥有者角色** (`isOwner = 1`): 每个应用类型必须有一个特殊的"管理员"拥有者角色（应用类型的内置角色），该角色不允许删除，可以修改名称
 - **内置角色管理位置**: 应用类型管理页面详情页，可进行添加、编辑、删除、分配权限操作
 - **内置角色查看位置**: 应用实例角色管理列表中只读显示
 - **应用级角色管理位置**: 应用实例角色管理页面，可进行编辑、删除、分配权限操作
 - 所有角色的权限配置都必须从所属应用类型的权限池中选择
+- 拥有者变更时，自动将原拥有者的拥有者角色移除，并将新拥有者绑定拥有者角色
 
 ---
 
@@ -195,6 +200,7 @@ enum ShowMode {
 - 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
 - `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 **索引**:
 - `idx_perm_code` (permCode)
@@ -421,11 +427,11 @@ class UserRoleEntity {
 
 ## 相关文档
 
-- [数据库 ER 关系图](./database-er-diagram.md)
-- [应用类型管理页面](./app-type-management.md)
-- [应用实例管理页面](./app-management.md)
-- [角色管理页面](./role-management.md)
-- [权限管理页面](./permission-management.md)
+- [数据库 ER 关系图](./er-diagram.md)
+- [应用类型管理页面](../pages/app-type-management.md)
+- [应用实例管理页面](../pages/app-management.md)
+- [角色管理页面](../pages/role-management.md)
+- [权限管理页面](../pages/permission-management.md)
 
 ---
 

@@ -4,7 +4,7 @@
 
 本文档是基础设施页面设计文档的索引文件，将所有设计文档按功能和业务流程组织在一起。
 
-**版本**: 2.0.0
+**版本**: 2.2.0
 
 ---
 
@@ -14,25 +14,29 @@
 
 | 文档 | 说明 |
 |------|------|
-| [数据库实体设计](./database-entities-design.md) | 所有数据库实体的详细定义，包括字段、索引和业务规则 |
-| [数据库 ER 关系图](./database-er-diagram.md) | 实体间关系图、权限隔离机制和权限树形结构 |
+| [数据库实体设计](./database/entities-design.md) | 所有数据库实体的详细定义，包括字段、索引和业务规则 |
+| [数据库 ER 关系图](./database/er-diagram.md) | 实体间关系图、权限隔离机制和权限树形结构 |
 
 ### 页面流程
 
 | 文档 | 说明 |
 |------|------|
-| [应用类型管理页面](./app-type-management.md) | 应用类型列表、详情、编辑、权限池配置和内置角色管理流程 |
-| [应用实例管理页面](./app-management.md) | 应用实例的 CRUD、拥有者绑定流程 |
-| [成员管理页面](./member-management.md) | 应用实例成员管理、角色分配流程 |
-| [角色管理页面](./role-management.md) | 角色管理、权限分配流程，内置角色与应用级角色的区别 |
-| [权限管理页面](./permission-management.md) | PC 权限树和 OpenAPI 权限管理流程 |
+| [应用类型管理页面](./pages/app-type-management.md) | 应用类型列表、详情、编辑、权限池配置和内置角色管理流程 |
+| [应用实例管理页面](./pages/app-management.md) | 应用实例的 CRUD、拥有者绑定流程 |
+| [成员管理页面](./pages/member-management.md) | 应用实例成员管理、角色分配流程 |
+| [角色管理页面](./pages/role-management.md) | 角色管理、权限分配流程，内置角色与应用级角色的区别 |
+| [权限管理页面](./pages/permission-management.md) | PC 权限树和 OpenAPI 权限管理流程 |
 
 ### 业务流程
 
 | 文档 | 说明 |
 |------|------|
-| [权限池配置流程](./permission-pool-setup.md) | 应用类型权限池配置的详细流程和并发处理机制 |
-| [权限分配流程](./permission-assignment.md) | 角色权限分配的详细流程和权限验证逻辑 |
+| [用户登录流程](./flows/user-login-flow.md) | 用户登录后的应用实例选择、权限加载和切换流程 |
+| [权限池配置流程](./flows/permission-pool-setup.md) | 应用类型权限池配置的详细流程和并发处理机制 |
+| [权限分配流程](./flows/permission-assignment.md) | 角色权限分配的详细流程和权限验证逻辑 |
+| [权限计算规则](./flows/permission-calculation-rules.md) | 用户最终权限的计算逻辑和规则说明 |
+| [开发者模式说明](./flows/developer-mode.md) | 开发者模式的定义、鉴权方式、可见功能 |
+| [系统初始化说明](./flows/system-initialization.md) | 内置应用类型、内置应用实例、初始数据的创建 |
 
 ---
 
@@ -87,6 +91,7 @@
 - 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
 - `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 ### pcAction 数据流
 
@@ -123,6 +128,7 @@ RolePermission.pcAction (角色分配，子集)
 |------|----------|------|----------|----------|
 | 内置角色 | `appTypeId` | 应用类型全局角色 | 应用类型管理页面 | 应用类型页面：增删改 + 分配权限<br/>角色管理页面：只读 |
 | 应用级角色 | `appId` | 应用实例专属角色 | 角色管理页面 | 增删改 + 分配权限 |
+| 拥有者角色 | `appTypeId` | 每个应用类型必须有一个拥有者角色 (`isOwner=1`)，不允许删除 | 应用类型管理页面 | 自动绑定给应用实例拥有者 |
 
 ---
 
@@ -160,6 +166,7 @@ enum ShowMode {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.2.0 | 2026-03-25 | 重构：按 database/flows/pages 目录组织文档；新增用户登录流程、权限计算规则、开发者模式、系统初始化文档；添加拥有者角色说明 |
 | 2.1.0 | 2026-03-24 | 新增：成员管理页面文档，调整应用实例管理（拥有者权限） |
 | 2.0.0 | 2026-03-24 | 重构：添加 PermissionType/NodeType 说明，pcAction 数据流，更新角色分类 |
 | 1.0.0 | 2026-03-23 | 初始版本，将原基础设施详细设计文档拆分为独立文档 |

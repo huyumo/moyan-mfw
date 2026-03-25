@@ -172,10 +172,10 @@ flowchart TD
 
 ## 相关文档
 
-- [数据库实体设计](./database-entities-design.md)
+- [数据库实体设计](../database/entities-design.md)
 - [应用实例管理页面](./app-management.md)
 - [角色管理页面](./role-management.md)
-- [权限池配置流程](./permission-pool-setup.md)
+- [权限池配置流程](../flows/permission-pool-setup.md)
 
 ---
 
