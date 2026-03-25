@@ -1,0 +1,103 @@
+{
+  "version": "2.0.0",
+  "lastUpdated": "2026-03-25",
+  "description": "基础设施文档元数据索引 - 用于 AI 快速定位关键文档",
+
+  "coreModules": [
+    {
+      "id": "core-permissions",
+      "title": "权限系统核心概念",
+      "path": "./core/permissions.md",
+      "priority": 1,
+      "estimatedReadTime": "5min",
+      "tokenCount": "~1500",
+      "description": "pcAction 数据流、权限池隔离机制、权限验证逻辑"
+    },
+    {
+      "id": "core-roles",
+      "title": "角色体系核心概念",
+      "path": "./core/roles.md",
+      "priority": 2,
+      "estimatedReadTime": "5min",
+      "estimatedTokenCount": "~1200",
+      "description": "内置角色 vs 应用级角色、拥有者角色机制、角色继承规则"
+    },
+    {
+      "id": "core-architecture",
+      "title": "系统架构核心概念",
+      "path": "./core/architecture.md",
+      "priority": 3,
+      "estimatedReadTime": "5min",
+      "estimatedTokenCount": "~1000",
+      "description": "应用类型中心模式、五层架构、权限隔离机制"
+    }
+  ],
+
+  "navigationOrder": [
+    {
+      "sequence": 1,
+      "docPath": "./README.md",
+      "purpose": "入口导航",
+      "required": true
+    },
+    {
+      "sequence": 2,
+      "docPath": "./core/permissions.md",
+      "purpose": "理解权限系统基础",
+      "required": true
+    },
+    {
+      "sequence": 3,
+      "docPath": "./core/roles.md",
+      "purpose": "理解角色分类与继承",
+      "required": true
+    },
+    {
+      "sequence": 4,
+      "docPath": "./core/architecture.md",
+      "purpose": "理解整体架构",
+      "required": true
+    },
+    {
+      "sequence": 5,
+      "docPath": "./infrastructure-detailed-design-index.md",
+      "purpose": "系统整体设计视图",
+      "required": false
+    },
+    {
+      "sequence": 6,
+      "docPath": "./database/database-er-diagram.md",
+      "purpose": "数据库实体关系",
+      "required": false
+    },
+    {
+      "sequence": 7,
+      "docPath": "./flows/permission-assignment.md",
+      "purpose": "权限分配详细流程",
+      "required": false
+    }
+  ],
+
+  "issueTracking": {
+    "openIssues": 0,
+    "resolvedIssues": 23,
+    "lastReviewDate": "2026-03-24",
+    "trackingFile": "./tracking/REVIEW-ISSUES.md"
+  },
+
+  "changeHistory": {
+    "recentChanges": [
+      {
+        "date": "2026-03-25",
+        "type": "refactor",
+        "description": "文档分层架构改造，添加核心概念模块和元数据索引"
+      },
+      {
+        "date": "2026-03-24",
+        "type": "fix",
+        "description": "修复 23 个文档审查发现的问题"
+      }
+    ],
+    "changelogFile": "./tracking/CHANGELOG.md"
+  }
+}
