@@ -163,20 +163,10 @@ class RoleEntity {
 | page.system.app-type.list | 应用类型列表 | PAGE | menu.system.app-type | pcAction: [add, edit, delete] |
 | menu.system.permission | 权限管理 | MENU | menu.system | 权限管理菜单 |
 | page.system.permission.pc | PC 权限树 | PAGE | menu.system.permission | PC 权限管理页面 |
-| page.system.permission.api | API 权限 | PAGE | menu.system.permission | API 权限管理页面 |
 | menu.system.member | 成员管理 | MENU | menu.system | 成员管理菜单 |
 | page.system.member.list | 成员列表 | PAGE | menu.system.member | 成员管理页面 |
 
-### 6.2 API 权限
-
-API 权限通过扫描代码元数据自动同步，初始化的 API 权限包括：
-
-- 应用类型管理相关 API
-- 应用实例管理相关 API
-- 权限管理相关 API
-- 成员管理相关 API
-
-### 6.3 权限池配置
+### 6.2 权限池配置
 
 系统内置应用类型的权限池应该包含所有基础权限，以便内置角色可以分配。
 

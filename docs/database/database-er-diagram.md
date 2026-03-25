@@ -324,7 +324,6 @@ API:ROOT (API)
 | NORMAL | MENU | 普通权限目录 | 无（可为根节点） |
 | NORMAL | TAG | 普通权限（标签） | 必须是 MENU |
 | API | MENU | API 权限目录 | 无（可为根节点） |
-| API | API | OpenAPI 权限 | 必须是 MENU（根节点除外） |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点

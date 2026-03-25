@@ -53,15 +53,12 @@ flowchart TD
 
     SelectPermType -->|PC 权限 | PcTreeSelect[PC 权限树选择器<br/>仅展示权限池中的节点]
     SelectPermType -->|普通权限 | CommonList[普通权限列表<br/>仅展示权限池中的节点]
-    SelectPermType -->|OpenAPI| ApiTreeSelect[API 权限树选择器<br/>仅展示权限池中的节点]
 
     PcTreeSelect --> CheckPc[勾选 PC 权限]
     CommonList --> CheckCommon[勾选普通权限]
-    ApiTreeSelect --> CheckApi[勾选 API 权限]
 
     CheckPc --> ExpandPcAction[点击 PAGE 节点展开 pcAction]
     CheckCommon --> CheckPcAction[勾选普通权限]
-    CheckApi --> CheckApiAction[勾选 API 权限]
 
     ExpandPcAction --> LoadPoolPcAction[从权限池加载 pcAction 列表]
     LoadPoolPcAction --> SelectPcAction[勾选 pcAction<br/>必须是权限池 pcAction 的子集]
@@ -110,7 +107,7 @@ flowchart TD
 
 | 功能 | 说明 |
 |------|------|
-| 权限类型 Tab | 切换 PC 权限、普通权限、OpenAPI 权限 |
+| 权限类型 Tab | 切换 PC 权限、普通权限 |
 | 权限选择器 | 仅展示当前应用类型权限池中的权限节点 |
 | 勾选权限 | 勾选/取消勾选权限节点 |
 | pcAction 选择 | 点击 PAGE 节点展开 pcAction，勾选操作权限 |
@@ -158,7 +155,7 @@ flowchart TD
 
 **组件行为一致性**:
 - 所有场景下都从应用类型权限池获取数据
-- 都展示相同的权限选择器（PC 权限树、普通权限列表、OpenAPI 权限树）
+- 都展示相同的权限选择器（PC 权限树、普通权限列表）
 - 都支持 pcAction 的勾选和保存
 - 只读模式下禁用勾选和保存功能
 

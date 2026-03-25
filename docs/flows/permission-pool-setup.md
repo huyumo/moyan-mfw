@@ -57,13 +57,6 @@ sequenceDiagram
         D-->>S: 返回 PageResult
         S-->>P: 返回数据
         P->>P: 渲染复选框列表
-
-        U->>P: 切换到"OpenAPI"Tab
-        P->>S: 获取 API 权限树
-        S->>D: 查询 API 权限树
-        D-->>S: 返回 PermissionItem[]
-        S-->>P: 返回树形数据
-        P->>P: 渲染 ApiPermissionTreeSelect
     end
 
     rect rgb(255, 240, 240)
@@ -156,7 +149,6 @@ graph TB
     subgraph 权限池配置
         P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
         P2[普通权限选择] --> P4
-        P3[OpenAPI 权限选择] --> P4
         P4 --> P5[保存到 sys_app_type_permission]
     end
 

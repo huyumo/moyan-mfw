@@ -67,10 +67,6 @@ sequenceDiagram
             P->>P: 过滤权限池中的普通权限
             P->>U: 渲染复选框列表<br/>(仅权限池内节点)
             U->>P: 勾选/取消勾选
-        else OpenAPI 权限
-            P->>P: 过滤权限池中的 API 权限节点
-            P->>U: 渲染 API 权限树选择器<br/>(仅权限池内节点)
-            U->>P: 勾选/取消勾选节点
         end
     end
 

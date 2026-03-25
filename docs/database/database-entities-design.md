@@ -168,7 +168,7 @@ class PermissionEntity {
 enum PermissionType {
   PC = 'PC',                     // PC 权限
   NORMAL = 'NORMAL',             // 普通权限
-  API = 'API',                   // OpenAPI 权限
+  API = 'API',                   // API 权限
 }
 
 enum NodeType {
@@ -193,7 +193,6 @@ enum ShowMode {
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 | API | MENU | API 权限目录 |
-| API | API | OpenAPI 权限 |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL/API) 组合使用，作为目录节点
@@ -212,7 +211,6 @@ enum ShowMode {
 - `PAGE`、`TAG`、`API` 类型的 `parentId` 必须指向 `MENU` 类型
 - `pcAction` 字段仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `pcAction` 表示该页面下的所有操作权限（按钮）列表
-- API 权限通过 `syncOpenApiNodes()` 自动同步代码元数据
 - `showMode = DEV` 的权限仅对开发模式用户可见
 - `permCode` 全局唯一，创建后不可修改
 

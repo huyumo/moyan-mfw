@@ -25,7 +25,7 @@
 | [应用实例管理页面](./pages/app-management.md) | 应用实例的 CRUD、拥有者绑定流程 |
 | [成员管理页面](./pages/member-management.md) | 应用实例成员管理、角色分配流程 |
 | [角色管理页面](./pages/role-management.md) | 角色管理、权限分配流程，内置角色与应用级角色的区别 |
-| [权限管理页面](./pages/permission-management.md) | PC 权限树和 OpenAPI 权限管理流程 |
+| [权限管理页面](./pages/permission-management.md) | PC 权限树管理流程 |
 
 ### 业务流程
 
@@ -84,7 +84,6 @@
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 | API | MENU | API 权限目录 |
-| API | API | OpenAPI 权限 |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL/API) 组合使用，作为目录节点
@@ -138,7 +137,7 @@ RolePermission.pcAction (角色分配，子集)
 enum PermissionType {
   PC = 'PC',                     // PC 权限
   NORMAL = 'NORMAL',             // 普通权限
-  API = 'API',                   // OpenAPI 权限
+  API = 'API',                   // API 权限
 }
 
 enum NodeType {

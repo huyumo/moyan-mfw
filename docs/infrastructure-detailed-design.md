@@ -22,7 +22,7 @@
 - [应用类型管理页面](./pages/app-type-management.md) - 应用类型列表、详情、编辑、权限池配置和内置角色管理
 - [应用实例管理页面](./pages/app-management.md) - 应用实例的 CRUD、用户绑定
 - [角色管理页面](./pages/role-management.md) - 角色管理、权限分配流程
-- [权限管理页面](./pages/permission-management.md) - PC 权限树和 OpenAPI 权限管理
+- [权限管理页面](./pages/permission-management.md) - PC 权限树管理
 
 ### 业务流程
 
@@ -40,7 +40,6 @@
 | PC | MENU | PC 菜单/目录 |
 | PC | PAGE | PC 页面权限（可包含 pcAction） |
 | NORMAL | TAG | 普通权限 |
-| API | API | OpenAPI 权限 |
 
 ### pcAction 数据流
 

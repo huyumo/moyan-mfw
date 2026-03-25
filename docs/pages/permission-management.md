@@ -2,7 +2,7 @@
 
 ## 概述
 
-本文档描述权限管理页面的管理流程和核心业务，包含 PC 权限树和 OpenAPI 权限管理。
+本文档描述权限管理页面的管理流程和核心业务，包含 PC 权限树管理。
 
 **版本**: 2.0.0
 
@@ -11,8 +11,7 @@
 ## 目录
 
 1. [PC 权限树管理](#1-pc-权限树管理)
-2. [OpenAPI 权限管理](#2-openapi-权限管理)
-3. [业务规则](#业务规则)
+2. [业务规则](#业务规则)
 
 ---
 
@@ -102,68 +101,6 @@ ROOT (MENU)
 
 ---
 
-## 2. OpenAPI 权限管理
-
-### 页面流程图
-
-```mermaid
-flowchart TD
-    Start([进入 OpenAPI 权限页面]) --> SyncCheck{是否需要同步？}
-
-    SyncCheck -->|是 | SyncAPI[同步 OpenAPI 权限]
-    SyncCheck -->|否 | LoadTree[加载权限树]
-
-    SyncAPI --> ScanCode[扫描代码元数据]
-    ScanCode --> ExtractAPI[提取 API 定义]
-    ExtractAPI --> CompareDB[对比数据库记录]
-    CompareDB --> UpdateRecords[更新/创建/删除记录]
-    UpdateRecords --> LoadTree
-
-    LoadTree --> RenderTree[渲染 API 权限树]
-    RenderTree --> ViewDetail[查看 API 详情]
-
-    ViewDetail --> DetailDrawer[打开详情抽屉]
-    DetailDrawer --> ShowMethodInfo[显示方法信息]
-    DetailDrawer --> ShowParamFields[显示参数字段]
-    DetailDrawer --> ShowResultFields[显示响应字段]
-
-    ShowParamFields --> ParamTable[参数表格]
-    ShowResultFields --> ResultTable[响应表格]
-
-    ParamTable --> FieldInfo[字段名/类型/必填/描述]
-    ResultTable --> FieldInfo
-```
-
-### 功能说明
-
-| 功能 | 说明 |
-|------|------|
-| 同步 API | 扫描代码元数据，自动同步 API 权限到数据库 |
-| 树形展示 | 以树形结构展示 API 权限（Module -> Controller -> Method） |
-| 查看详情 | 查看 API 详细信息，包括参数和响应字段 |
-| 字段管理 | 查看参数字段和响应字段的类型、描述等 |
-
-### API 权限树结构
-
-```
-API:ROOT (API)
-└── API:MODULE:SYS (API)
-    ├── API:CONTROLLER:USER (API)
-    │   ├── API:METHOD:getList
-    │   ├── API:METHOD:getById
-    │   └── API:METHOD:create
-    └── API:CONTROLLER:ROLE (API)
-        └── API:METHOD:assignPermissions
-```
-
-### 业务规则
-
-- API 权限通过 `syncOpenApiNodes()` 自动同步代码元数据
-- 同步操作会对比数据库记录，执行更新/创建/删除操作
-- API 权限的参数和响应字段由代码元数据自动生成
-
----
-
 ## 业务规则
 
 ### 权限类型枚举
@@ -172,7 +109,7 @@ API:ROOT (API)
 enum PermissionType {
   PC = 'PC',                     // PC 权限
   NORMAL = 'NORMAL',             // 普通权限
-  API = 'API',                   // OpenAPI 权限
+  API = 'API',                   // API 权限
 }
 
 enum NodeType {
@@ -197,14 +134,12 @@ enum ShowMode {
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 | API | MENU | API 权限目录 |
-| API | API | OpenAPI 权限 |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
 - 3 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG/API` 节点作为叶子节点
 - `PC` 权限类型用于 PC 后台管理系统的菜单和页面权限
-- `API` 权限类型用于 OpenAPI 接口的访问权限
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 ### 权限编码
@@ -214,7 +149,6 @@ enum ShowMode {
   - MENU: `menu.{module}.{name}`
   - PAGE: `page.{module}.{name}`
   - TAG: `tag.{module}.{name}`
-  - API: `api:{module}:{controller}:{method}`
 
 ### 显示模式
 
