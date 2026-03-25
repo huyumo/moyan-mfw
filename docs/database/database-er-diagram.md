@@ -49,7 +49,7 @@ erDiagram
         int multiAppEnabled
         int typeStatus
         int sortOrder
-        datetime createTime
+        datetime createAt
     }
 
     SYS_APP {
@@ -62,7 +62,7 @@ erDiagram
         string ownerId FK
         int appStatus
         int sortOrder
-        datetime createTime
+        datetime createAt
     }
 
     SYS_ROLE {
@@ -76,7 +76,7 @@ erDiagram
         int isOwner
         int roleStatus
         int sortOrder
-        datetime createTime
+        datetime createAt
     }
 
     SYS_PERMISSION {
@@ -96,7 +96,7 @@ erDiagram
         enum showMode
         int permStatus
         JSON pcAction
-        datetime createTime
+        datetime createAt
     }
 
     SYS_USER {
@@ -110,7 +110,7 @@ erDiagram
         int gender
         int isDeveloper
         int userStatus
-        datetime createTime
+        datetime createAt
     }
 
     SYS_ROLE_PERMISSION {
@@ -118,7 +118,7 @@ erDiagram
         string roleId FK
         string permissionId FK
         JSON pcAction
-        datetime createTime
+        datetime createAt
     }
 
     SYS_APP_TYPE_PERMISSION {
@@ -126,21 +126,21 @@ erDiagram
         string appTypeId FK
         string permissionId FK
         JSON pcAction
-        datetime createTime
+        datetime createAt
     }
 
     SYS_USER_APP {
         string id PK
         string userId FK
         string appId FK
-        datetime createTime
+        datetime createAt
     }
 
     SYS_USER_ROLE {
         string id PK
         string userId FK
         string roleId FK
-        datetime createTime
+        datetime createAt
     }
 ```
 

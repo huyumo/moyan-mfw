@@ -8,6 +8,22 @@
 
 ---
 
+## 通用字段规范
+
+所有实体表均包含以下标准字段，用于审计追踪：
+
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| createAt | datetime(3) | 创建时间 |
+| updateAt | datetime(3) | 更新时间 |
+
+**说明**：
+- `createAt`：记录创建时间，创建后不可修改
+- `updateAt`：记录最后更新时间，每次更新时自动刷新
+- `createdBy` / `updateBy`：由数据库层面或基础实体基类统一管理，不在各实体中单独定义
+
+---
+
 ## 目录
 
 1. [AppTypeEntity (应用类型实体)](#11-apptypeentity-应用类型实体)
@@ -35,8 +51,8 @@ class AppTypeEntity {
   multiAppEnabled!: number;       // 是否支持多应用 (tinyint(1), default 0)
   typeStatus!: number;            // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   sortOrder!: number;             // 排序值 (int, default 0)
-  createTime!: Date;              // 创建时间 (datetime(3))
-  updateTime?: Date;              // 更新时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
+  updateAt?: Date;                // 更新时间 (datetime(3))
 }
 ```
 
@@ -70,8 +86,8 @@ class AppEntity {
   ownerId!: string;               // 拥有者 ID (char(36), 外键)
   appStatus!: number;             // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   sortOrder!: number;             // 排序值 (int, default 0)
-  createTime!: Date;              // 创建时间 (datetime(3))
-  updateTime?: Date;              // 更新时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
+  updateAt?: Date;                // 更新时间 (datetime(3))
 }
 ```
 
@@ -107,8 +123,8 @@ class RoleEntity {
   isOwner!: number;               // 是否拥有者角色：1-是 0-否 (tinyint(1), default 0)
   roleStatus!: number;            // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   sortOrder!: number;             // 排序值 (int, default 0)
-  createTime!: Date;              // 创建时间 (datetime(3))
-  updateTime?: Date;              // 更新时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
+  updateAt?: Date;                // 更新时间 (datetime(3))
 }
 ```
 
@@ -156,8 +172,8 @@ class PermissionEntity {
   showMode!: ShowMode;                                      // 显示模式 (enum: NORMAL/DEV)
   permStatus!: number;                                      // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   pcAction?: Array<{name: string, permCode: string}>;       // PC 页面下的操作权限（按钮）(JSON)
-  createTime!: Date;                                        // 创建时间 (datetime(3))
-  updateTime?: Date;                                        // 更新时间 (datetime(3))
+  createAt!: Date;                                          // 创建时间 (datetime(3))
+  updateAt?: Date;                                          // 更新时间 (datetime(3))
 }
 ```
 
@@ -230,8 +246,8 @@ class UserEntity {
   gender!: number;                // 性别：0-未知 1-男 2-女 (tinyint, default 0)
   userStatus!: number;            // 状态：1-启用 0-禁用 (tinyint(1), default 1)
   isDeveloper?: number;           // 是否开发者：1-是 0-否 (tinyint(1), default 0)
-  createTime!: Date;              // 创建时间 (datetime(3))
-  updateTime?: Date;              // 更新时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
+  updateAt?: Date;                // 更新时间 (datetime(3))
 }
 ```
 
@@ -259,7 +275,7 @@ class RolePermissionEntity {
   roleId!: string;                                        // 角色 ID (char(36), 外键)
   permissionId!: string;                                  // 权限 ID (char(36), 外键)
   pcAction?: Array<{name: string, permCode: string}>;     // 已勾选的操作权限（按钮）(JSON)
-  createTime!: Date;                                      // 创建时间 (datetime(3))
+  createAt!: Date;                                        // 创建时间 (datetime(3))
 }
 ```
 
@@ -286,7 +302,7 @@ class AppTypePermissionEntity {
   appTypeId!: string;                                     // 应用类型 ID (char(36), 外键)
   permissionId!: string;                                  // 权限 ID (char(36), 外键)
   pcAction?: Array<{name: string, permCode: string}>;     // 选中的 PC 操作权限（按钮）(JSON)
-  createTime!: Date;                                      // 创建时间 (datetime(3))
+  createAt!: Date;                                        // 创建时间 (datetime(3))
 }
 ```
 
@@ -319,7 +335,7 @@ class UserAppEntity {
   id!: string;                    // 主键 ID (UUID)
   userId!: string;                // 用户 ID (char(36), 外键)
   appId!: string;                 // 应用 ID (char(36), 外键)
-  createTime!: Date;              // 创建时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
 }
 ```
 
@@ -349,7 +365,7 @@ class UserRoleEntity {
   id!: string;                    // 主键 ID (UUID)
   userId!: string;                // 用户 ID (char(36), 外键)
   roleId!: string;                // 角色 ID (char(36), 外键)
-  createTime!: Date;              // 创建时间 (datetime(3))
+  createAt!: Date;                // 创建时间 (datetime(3))
 }
 ```
 
@@ -405,6 +421,7 @@ class UserRoleEntity {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.1.0 | 2026-03-25 | 统一字段命名：createTime → createAt，updateTime → updateAt |
 | 2.0.0 | 2026-03-24 | 重构：简化 PermissionType，新增 NodeType，添加 pcAction 字段 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 

@@ -139,7 +139,7 @@ class RoleEntity {
   isOwner!: number;       // 1 = 拥有者角色
   roleStatus!: number;
   sortOrder!: number;
-  createTime!: Date;
+  createAt!: Date;
 }
 ```
 
