@@ -41,8 +41,9 @@ interface PaginatedResponse<T> {
 ## 权限树相关
 
 ```typescript
-// 权限树节点（返回数据）
+// 权限树节点（返回数据）- 所有文档统一引用此定义
 interface PermissionTreeNode {
+  // 基础字段
   id: string;
   permName: string;
   permCode: string;
@@ -50,25 +51,33 @@ interface PermissionTreeNode {
   permissionType: 'PC' | 'NORMAL';
   nodeType: 'MENU' | 'PAGE' | 'TAG';
   parentId?: string;
+
+  // 路由相关
   routePath?: string;
   componentPath?: string;
   iconName?: string;
+
+  // 配置字段
   sortOrder: number;
   isVisible: number;
   isCache: number;
   showMode: 'NORMAL' | 'DEV';
   permStatus: number;
+
+  // PC 操作权限（仅 nodeType=PAGE 时有效）
   pcAction?: Array<{
     name: string;
     permCode: string;
   }>;
+
   // 配置状态（由后端根据上下文填充）
   inPool?: boolean;              // 是否在权限池中
   assigned?: boolean;            // 是否已分配给角色
+
   children?: PermissionTreeNode[];
 }
 
-// 权限树请求体（树形结构）
+// 权限树请求体（树形结构）- 所有文档统一引用此定义
 interface PermissionTreePayload {
   permissionId: string;
   checked: boolean;              // true=选中，false=取消
@@ -182,11 +191,22 @@ interface RoleDetail extends RoleBasic {
 
 ---
 
+## 数据类型说明
+
+| 类型 | 数据库类型 | API 返回格式 | 说明 |
+|------|-----------|-------------|------|
+| Date | datetime(3) | string | ISO 8601 格式，如 "2026-03-26T10:00:00.000Z" |
+| number | int/tinyint | number | 整数类型 |
+| string | varchar | string | 字符串类型 |
+
+---
+
 ## 更新历史
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
 | 1.0.0 | 2026-03-26 | 初始版本 |
+| 1.1.0 | 2026-03-26 | 统一 PermissionTreeNode 定义，添加数据类型说明 |
 
 ---
 

@@ -24,13 +24,14 @@
 
 **接口**: `GET /api/v1/permissions/tree`
 
-**使用场景**: 权限管理页面加载，展示权限树表格。
+**使用场景**: 权限管理页面加载，或用户选择应用后获取该应用的权限树。
 
 **请求参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| permissionType | string | 否 | 权限类型：PC / NORMAL |
+| appTypeId | string | 是 | 应用类型 ID（权限按应用类型隔离） |
+| permissionType | string | 否 | 权限类型：PC / NORMAL，默认 PC |
 | keyword | string | 否 | 关键词过滤 |
 
 **返回数据**:

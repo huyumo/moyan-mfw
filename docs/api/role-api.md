@@ -30,9 +30,11 @@
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| appId | string | 否 | 应用 ID（获取应用级角色） |
-| appTypeId | string | 否 | 应用类型 ID（获取内置角色） |
+| appId | string | 条件必填 | 应用 ID（获取应用级角色） |
+| appTypeId | string | 条件必填 | 应用类型 ID（获取内置角色） |
 | isBuiltin | number | 否 | 是否内置角色筛选：1-是 0-否 |
+
+**说明**: `appId` 和 `appTypeId` 至少需要一个，用于确定查询范围。
 
 **返回数据**:
 
@@ -199,29 +201,7 @@
 }
 ```
 
-**PermissionTreeNode 结构**:
-
-```typescript
-interface PermissionTreeNode {
-  id: string;
-  permName: string;
-  permCode: string;
-  permissionType: 'PC' | 'NORMAL';
-  nodeType: 'MENU' | 'PAGE' | 'TAG';
-  parentId?: string;
-  iconName?: string;
-  sortOrder: number;
-  // 角色权限配置状态
-  assigned: boolean;                       // 是否已分配给该角色
-  // pcAction 仅在 nodeType=PAGE 时有效
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-    assigned: boolean;                     // 是否已分配给该角色
-  }>;
-  children?: PermissionTreeNode[];
-}
-```
+**PermissionTreeNode 结构**: 见 [types.md#权限树相关](./types.md#权限树相关)
 
 ---
 

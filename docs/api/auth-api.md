@@ -211,6 +211,10 @@
 }
 ```
 
+**可能的错误码**: 见 [error-codes.md](./error-codes.md)
+- `40402` - 应用不存在
+- `40301` - 无权限访问
+
 **PermissionTreeNode 结构**:
 
 ```typescript

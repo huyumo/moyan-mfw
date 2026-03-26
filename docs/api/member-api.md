@@ -5,6 +5,8 @@
 > **数据结构**: [UserEntity](../database/database-entities-design.md#15-userentity-用户实体), [RoleEntity](../database/database-entities-design.md#13-roleentity-角色实体)
 >
 > **复用接口**: [搜索用户](./user-api.md#1-搜索用户)
+>
+> **认证**: 所有接口需要在请求头中携带 `Authorization: Bearer <token>`
 
 ---
 
