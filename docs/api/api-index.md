@@ -2,7 +2,7 @@
 
 > 基础设施 API 接口定义 - 按页面拆分
 >
-> **版本**: 1.0.0
+> **版本**: 1.1.0
 > **最后更新**: 2026-03-26
 
 ---
@@ -47,16 +47,24 @@
 
 ## 接口调用流程示例
 
-### 用户登录 + 获取权限树
+### 用户注册 + 登录 + 获取权限树
 
 ```
-1. POST /api/v1/auth/login
+1. POST /api/v1/users/register
+   → 注册新用户（账号 + 密码）
+
+2. POST /api/v1/auth/login
    → 获取 token, refreshToken
 
-2. GET /api/v1/auth/me
+3. GET /api/v1/auth/me
    → 获取用户详细信息 + 可访问的应用列表 (apps)
+   → 新注册用户 apps 为空，需要管理员分配应用和角色
 
-3. 用户选择一个应用后
+4. 管理员分配应用和角色后，用户重新登录
+   GET /api/v1/auth/me
+   → apps 列表包含已分配的应用
+
+5. 用户选择一个应用后
    GET /api/v1/auth/permissions?appCode={appCode}&permissionType=PC
    → 获取该应用下的 PC 权限树，用于渲染菜单和构建路由
 ```

@@ -5,6 +5,8 @@
 > **相关页面**: [应用类型管理页面](../pages/app-type-management.md)
 >
 > **数据结构**: [AppTypeEntity](../database/database-entities-design.md#11-apptypeentity-应用类型实体), [RoleEntity](../database/database-entities-design.md#13-roleentity-角色实体), [PermissionEntity](../database/database-entities-design.md#14-permissionentity-权限实体)
+>
+> **通用类型**: [PermissionTreeNode, PermissionTreePayload](./types.md#权限树相关)
 
 ---
 
