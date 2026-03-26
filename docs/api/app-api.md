@@ -18,6 +18,13 @@
 | `/api/v1/apps/:id` | PUT | 编辑应用基本信息 |
 | `/api/v1/apps/:id` | DELETE | 删除应用 |
 
+**认证要求**:
+
+除特别说明外，本接口所有请求均需在请求头中携带认证 Token：
+```
+Authorization: Bearer <token>
+```
+
 ---
 
 ## 1. 获取应用列表

@@ -65,7 +65,7 @@
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | username | string | 是 | 用户名（全局唯一） |
-| password | string | 是 | 密码 |
+| password | string | 是 | 密码（8-20 位，至少包含字母和数字） |
 | nickname | string | 否 | 昵称 |
 | phone | string | 否 | 手机号（全局唯一） |
 

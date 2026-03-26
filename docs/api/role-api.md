@@ -18,6 +18,13 @@
 | `/api/v1/roles/:id/permissions` | GET | 角色权限面板加载 |
 | `/api/v1/roles/:id/permissions` | PUT | 保存角色权限分配 |
 
+**认证要求**:
+
+除特别说明外，本接口所有请求均需在请求头中携带认证 Token：
+```
+Authorization: Bearer <token>
+```
+
 ---
 
 ## 1. 获取角色列表
