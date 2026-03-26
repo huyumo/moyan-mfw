@@ -12,6 +12,8 @@
 |------|------|----------|
 | `/api/v1/users/search` | GET | 搜索用户（选择拥有者/添加成员） |
 | `/api/v1/users/register` | POST | 用户注册 |
+| `/api/v1/users/validate` | GET | 验证用户名/手机号是否可用 |
+| `/api/v1/users/profile/phone` | PUT | 修改手机号 |
 
 ---
 
@@ -93,10 +95,106 @@
 }
 ```
 
+**验证规则**:
+
+```typescript
+// username 和 phone 统一验证唯一性
+// 1. username 不能与任何现有用户的 username 或 phone 重复
+// 2. phone 不能与任何现有用户的 username 或 phone 重复
+
+// 示例：
+// A 用户：username=13600000000, phone=13600000001  ✓ 允许
+// B 用户：username=13600000001, phone=13600000000  ✗ 不允许
+//    → 13600000001 已被 A 用作 phone，不能再作为 username
+//    → 13600000000 已被 A 用作 username，不能再作为 phone
+```
+
 **说明**:
 - 注册后的用户默认 `userStatus = 1`（启用状态）
 - 新用户需要被分配到应用并绑定角色后才能访问系统功能
-- 用户名和手机号全局唯一，注册时需验证
+- `username` 和 `phone` 都全局唯一，且不能交叉重复
+- 登录时 `identifier` 可以是 `username` 或 `phone`，由于唯一性约束，能唯一匹配用户
+
+---
+
+## 3. 验证用户名/手机号是否可用
+
+**接口**: `GET /api/v1/users/validate`
+
+**使用场景**: 注册页或修改个人信息时，实时验证用户名/手机号是否可用。
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| username | string | 否 | 待验证的用户名 |
+| phone | string | 否 | 待验证的手机号 |
+| userId | string | 否 | 当前用户 ID（修改个人信息时必填） |
+
+**返回数据**:
+
+```typescript
+{
+  code: number;
+  data: {
+    usernameAvailable: boolean;    // 用户名是否可用
+    phoneAvailable: boolean;       // 手机号是否可用
+  };
+  message?: string;
+}
+```
+
+**说明**:
+- `userId` 用于修改个人信息时排除自身
+- 验证逻辑：检查 `username` 和 `phone` 是否与现有用户冲突（包括交叉重复）
+
+---
+
+## 4. 修改手机号
+
+**接口**: `PUT /api/v1/users/profile/phone`
+
+**使用场景**: 用户在个人中心修改手机号。
+
+**请求头**: `Authorization: Bearer <token>`
+
+**请求体**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| newPhone | string | 是 | 新手机号 |
+
+```typescript
+{
+  newPhone: string;
+}
+```
+
+**返回数据**:
+
+```typescript
+{
+  code: number;
+  data: {
+    id: string;
+    phone: string;
+    updateAt: string;
+  };
+  message?: string;
+}
+```
+
+**验证规则**:
+
+```typescript
+// 检查 newPhone 是否已被其他用户使用
+// WHERE username = newPhone OR phone = newPhone
+// 如果存在，返回错误："手机号已被使用"
+```
+
+**说明**:
+- 修改后，用户可以用新手机号登录
+- `username` 保持不变，历史数据关联不受影响
 
 ---
 
@@ -105,7 +203,7 @@
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
 | 1.0.0 | 2026-03-26 | 初始版本 |
-| 1.1.0 | 2026-03-26 | 添加用户注册接口 |
+| 1.1.0 | 2026-03-26 | 添加验证规则和修改手机号接口 |
 
 ---
 

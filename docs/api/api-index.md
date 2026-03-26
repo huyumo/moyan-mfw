@@ -16,7 +16,7 @@
 | 角色管理接口 | 应用级角色的增删改查、权限分配 | [./role-api.md](./role-api.md) |
 | 成员管理接口 | 成员管理、角色分配 | [./member-api.md](./member-api.md) |
 | 权限管理接口 | PC 权限树管理、普通权限管理 | [./permission-api.md](./permission-api.md) |
-| 用户接口 | 用户搜索（复用接口） | [./user-api.md](./user-api.md) |
+| 用户接口 | 用户搜索、注册、验证、修改手机号 | [./user-api.md](./user-api.md) |
 | 认证接口 | 用户登录、Token 刷新、用户信息、权限树 | [./auth-api.md](./auth-api.md) |
 
 ---

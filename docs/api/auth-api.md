@@ -31,7 +31,7 @@
 
 ```typescript
 {
-  username: string;          // 用户名或手机号
+  identifier: string;        // 用户名或手机号
   password: string;          // 密码（明文，后端加密）
 }
 ```
@@ -55,6 +55,12 @@
   message?: string;
 }
 ```
+
+**说明**:
+
+- `identifier` 可以是 `username` 或 `phone`
+- 由于注册时保证了 `username` 和 `phone` 不会交叉重复，登录时能唯一匹配用户
+- 验证逻辑：`WHERE (username = ? OR phone = ?) AND password = ?`
 
 ---
 
