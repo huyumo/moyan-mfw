@@ -1,20 +1,21 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default withMermaid(defineConfig({
-  title: 'Moyan MFW 权限系统文档',
-  description: 'Moyan MFW 权限系统基础设施文档',
-  lastUpdated: true,
-  srcDir: './docs',
-  ignoreDeadLinks: ['ALL'],
-  mermaid: {
-    securityLevel: 'loose',
-  },
-  vite: {
-    define: {
-      'process.env': {}
-    }
-  },
+export default withMermaid(
+  defineConfig({
+    title: 'Moyan MFW 权限系统文档',
+    description: 'Moyan MFW 权限系统基础设施文档',
+    lastUpdated: true,
+    srcDir: './docs',
+    ignoreDeadLinks: ['ALL'],
+    vite: {
+      define: {
+        'process.env': {}
+      }
+    },
+    mermaid: {
+      securityLevel: 'loose',
+    },
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
@@ -117,5 +118,5 @@ export default withMermaid(defineConfig({
     search: {
       provider: 'local',
     },
-  },
-}))
+  })
+)
