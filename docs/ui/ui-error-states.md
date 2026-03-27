@@ -458,7 +458,7 @@ function handleError(error: Error): AppError {
 ## 相关文档
 
 - [API 错误码定义](../api/error-codes.md) - 错误码列表
-- [错误处理流程](../flows/error-handling.md) - 技术实现细节
+- [错误处理流程](../guides/error-handling.md) - 技术实现细节
 
 ---
 

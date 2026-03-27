@@ -236,9 +236,9 @@
 
 ## 相关资源
 
-- 元数据索引：[docs-manifest.json](./docs-manifest.json)
-- 问题追踪：[REVIEW-ISSUES.md](./tracking/REVIEW-ISSUES.md)
-- 文档导航：[docs-manifest.md](./docs-manifest.md)
+- 元数据索引：[docs-manifest.json](../docs-manifest.json)
+- 问题追踪：[REVIEW-ISSUES.md](./REVIEW-ISSUES.md)
+- 文档导航：[docs-manifest.md](../docs-manifest.md)
 - 术语表：[glossary.md](../glossary.md)
 
 ---
