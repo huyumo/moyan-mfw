@@ -14,6 +14,7 @@
   "author": "Moyan MFW Team",
   "license": "MIT",
   "devDependencies": {
+    "markdown-it": "^14.1.1",
     "mermaid": "^10.9.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
