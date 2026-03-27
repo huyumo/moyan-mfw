@@ -5,26 +5,11 @@
   "author": "Moyan MFW Team",
   "root": ".",
   "plugins": [
-    "mermaid-gb3",
-    "anchors",
-    "search-plus",
-    "sharing",
-    "fontsettings",
-    "livereload"
+    "mermaid"
   ],
   "pluginsConfig": {
-    "mermaid-gb3": {
-      "theme": "default",
-      "themeCSS": "",
-      "zoom": false
-    },
-    "sharing": {
-      "qq": true,
-      "weibo": true,
-      "twitter": false,
-      "facebook": false,
-      "google": false,
-      "all": false
+    "mermaid": {
+      "theme": "default"
     }
   },
   "styles": {

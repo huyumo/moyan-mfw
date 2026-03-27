@@ -1,0 +1,15 @@
+root: .
+title: Moyan MFW 权限系统文档
+description: Moyan MFW 权限系统基础设施文档
+language: zh-hans
+author: Moyan MFW Team
+
+plugins:
+  - mermaid
+
+pluginsConfig:
+  mermaid:
+    theme: default
+
+styles:
+  website: styles/website.css
