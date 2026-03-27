@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Stop-Process -Name ''python'' -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Remove-Item -Path ''e:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/_book'' -Recurse -Force\")"
+    ]
+  }
+}

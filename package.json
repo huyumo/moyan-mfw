@@ -2,20 +2,10 @@
   "name": "moyan-mfw-docs",
   "version": "2.0.0",
   "description": "Moyan MFW 权限系统基础设施文档",
-  "scripts": {
-    "docs:dev": "honkit serve",
-    "docs:build": "honkit build"
-  },
+  "scripts": {},
   "keywords": [
-    "docs",
-    "gitbook",
-    "honkit"
+    "docs"
   ],
   "author": "Moyan MFW Team",
-  "license": "MIT",
-  "devDependencies": {
-    "honkit": "^5.1.3",
-    "honkit-plugin-mermaid": "^0.1.4",
-    "mermaid": "^9.4.3"
-  }
+  "license": "MIT"
 }
