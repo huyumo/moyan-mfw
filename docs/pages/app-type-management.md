@@ -48,10 +48,10 @@ flowchart TD
     BuiltinRolesPanel --> ManageRoles[添加/编辑/删除角色]
     BuiltinRolesPanel --> AssignRolePerm[分配角色权限]
     ManageRoles --> RefreshRoles[刷新角色列表]
-    AssignRolePerm --> RolePermissionPanel[复用 RolePermissionPanel 组件<br/>仅展示当前应用类型权限池]
+    AssignRolePerm --> RolePermissionPanel[复用 RolePermissionPanel 组件<br>仅展示当前应用类型权限池]
 
     EditType --> EditDrawer[打开编辑抽屉]
-    EditDrawer --> FillForm[填写表单<br/>typeName/icon/typeDesc]
+    EditDrawer --> FillForm[填写表单<br>typeName/icon/typeDesc]
     FillForm --> Validate{验证通过？}
     Validate -->|否 | ShowError[显示错误]
     Validate -->|是 | UpdateType[更新应用类型]

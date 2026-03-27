@@ -29,7 +29,7 @@ flowchart TD
     FilterTree --> RenderFiltered[渲染过滤结果]
 
     RenderFiltered --> Action{选择操作}
-    Action -->|新建根节点 | CreateRoot[新建根节点<br/>NodeType=MENU]
+    Action -->|新建根节点 | CreateRoot[新建根节点<br>NodeType=MENU]
     Action -->|新建子节点 | CreateChild[新建子节点]
     Action -->|编辑 | EditNode[编辑节点]
     Action -->|删除 | DeleteNode[删除节点]
@@ -46,7 +46,7 @@ flowchart TD
     Menu --> ParentCheck{是否有父节点？}
     Page --> ParentCheck
 
-    ParentCheck -->|是 | ValidateParent[验证父节点类型<br/>必须是 MENU]
+    ParentCheck -->|是 | ValidateParent[验证父节点类型<br>必须是 MENU]
     ValidateParent -->|合法 | SaveNode[保存节点]
     ValidateParent -->|非法 | ShowParentError[显示父节点类型错误]
 

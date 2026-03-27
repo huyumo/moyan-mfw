@@ -73,13 +73,13 @@ sequenceDiagram
 
         note right of S: 事务处理开始
         S->>D: BEGIN TRANSACTION
-        S->>D: DELETE FROM sys_app_type_permission<br/>WHERE appTypeId = ?
+        S->>D: DELETE FROM sys_app_type_permission WHERE appTypeId = ?
         D-->>S: 删除成功
 
         loop 遍历权限配置
             S->>D: 查询 permissionId by permCode
             D-->>S: 返回 permissionId
-            S->>D: INSERT INTO sys_app_type_permission<br/>(appTypeId, permissionId, pcAction)
+            S->>D: INSERT INTO sys_app_type_permission (appTypeId, permissionId, pcAction)
             D-->>S: 插入成功
         end
 
@@ -113,7 +113,7 @@ flowchart TD
     ValidateCodes --> QueryDB[批量查询权限表]
     QueryDB --> CompareCount{数量匹配？}
 
-    CompareCount -->|否 | ShowError2[显示"存在无效权限编码<br/>" + 缺失列表]
+    CompareCount -->|否 | ShowError2[显示"存在无效权限编码 - " + 缺失列表]
     ShowError2 --> End2([结束])
 
     CompareCount -->|是 | CheckAppType{应用类型存在？}
@@ -138,6 +138,76 @@ flowchart TD
     VerifyInsert -->|是 | Commit[提交事务]
     Commit --> Success[返回成功]
     Success --> End5([完成])
+```
+
+---
+
+## 权限池与角色权限关系
+
+```mermaid
+graph TB
+    subgraph 权限池配置
+        P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
+        P2[普通权限选择] --> P4
+        P4 --> P5[保存到 sys_app_type_permission]
+    end
+```
+
+---
+
+## 并发处理机制
+
+```mermaid
+sequenceDiagram
+    participant U1 as 用户 A
+    participant U2 as 用户 B
+    participant S as AppTypeService
+    participant D as Database
+
+    U1->>S: 保存权限池配置
+    S->>D: BEGIN TRANSACTION
+    S->>D: DELETE FROM sys_app_type_permission WHERE appTypeId = X
+    S->>D: INSERT 新权限关联
+
+    U2->>S: 保存权限池配置
+    S->>D: BEGIN TRANSACTION
+    S->>D: DELETE FROM sys_app_type_permission WHERE appTypeId = X
+    note right of S: U1 事务未提交，U2 阻塞
+    S->>D: 等待锁释放
+
+    S->>D: COMMIT
+    note right of S: U1 提交完成
+    S-->>U1: 返回成功
+
+    S->>D: INSERT 新权限关联 (U2)
+    S->>D: COMMIT
+    S-->>U2: 返回成功
+```
+
+---
+
+## 业务规则
+
+### 权限池验证规则
+
+| 规则 | 说明 | 错误提示 |
+|------|------|----------|
+| 非空验证 | 权限列表不能为空（除非允许空池） | "至少选择一个权限" |
+| 有效性验证 | 所有权限编码必须存在于权限表中 | "存在无效权限编码" |
+| pcAction 验证 | pcAction 必须在权限定义的范围内 | "存在无效的 pcAction" |
+| 事务一致性 | 删除旧关联和插入新关联在同一事务中 | "数据库写入失败" |
+
+### pcAction 说明
+
+pcAction 是权限的细分操作标识，用于更细粒度的权限控制。
+
+---
+
+## 相关文档
+
+- [权限系统核心概念](../core/permissions.md) - pcAction 数据流说明
+- [权限分配流程](./permission-assignment.md) - 角色权限分配
+- [数据库实体设计](../database/database-entities-design.md) - sys_app_type_permission 表结构
 ```
 
 ---

@@ -35,7 +35,7 @@ flowchart TD
 
     AppDetail --> ShowInfo[展示应用基本信息]
     ShowInfo --> ShowOwner[展示拥有者信息]
-    ShowOwner --> MemberLink[点击成员管理链接<br/>跳转到独立成员管理页面]
+    ShowOwner --> MemberLink[点击成员管理链接<br>跳转到独立成员管理页面]
 
     EditApp --> EditDrawer[打开编辑抽屉]
     EditDrawer --> SelectOwner[选择拥有者]

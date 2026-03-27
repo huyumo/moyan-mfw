@@ -7,6 +7,22 @@ export default withMermaid(defineConfig({
   lastUpdated: true,
   srcDir: './docs',
   ignoreDeadLinks: ['ALL'],
+  mermaid: {
+    securityLevel: 'loose',
+    startOnLoad: false,
+  },
+  vite: {
+    optimizeDeps: {
+      include: [
+        'mermaid',
+        '@braintree/sanitize-url',
+        'dayjs',
+        'debug',
+        'cytoscape-cose-bilkent',
+        'cytoscape'
+      ]
+    }
+  },
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },

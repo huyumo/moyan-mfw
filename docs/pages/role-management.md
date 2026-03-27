@@ -29,12 +29,12 @@
 flowchart TD
     Start([进入角色管理页面]) --> RoleList[角色管理列表]
 
-    RoleList --> LoadContext[获取当前上下文<br/>appId / appTypeId]
+    RoleList --> LoadContext[获取当前上下文<br>appId / appTypeId]
     LoadContext --> LoadRoles[加载角色列表]
     LoadRoles --> RenderRoles[渲染角色表格]
 
     RenderRoles --> CheckBuiltin{是否内置角色？}
-    CheckBuiltin -->|是 | DisableAll[禁用编辑/删除/权限分配按钮<br/>提示：内置角色为应用类型全局角色<br/>请在应用类型管理页面管理]
+    CheckBuiltin -->|是 | DisableAll[禁用编辑/删除/权限分配按钮<br>提示：内置角色为应用类型全局角色<br>请在应用类型管理页面管理]
     CheckBuiltin -->|否 | EnableEdit[启用编辑/删除/权限分配按钮]
 
     DisableAll --> Action{选择操作}
@@ -46,13 +46,13 @@ flowchart TD
     Action -->|新建 | CreateRole[新建角色]
 
     PermissionPanel --> GetAppTypeId[根据角色获取 appTypeId]
-    GetAppTypeId --> GetPool[获取权限池<br/>含 pcAction 配置]
-    GetPool --> RolePermissionPanel[角色权限面板<br/>复用组件，与应用类型详情页行为一致]
+    GetAppTypeId --> GetPool[获取权限池<br>含 pcAction 配置]
+    GetPool --> RolePermissionPanel[角色权限面板<br>复用组件，与应用类型详情页行为一致]
 
     RolePermissionPanel --> SelectPermType[选择权限类型]
 
-    SelectPermType -->|PC 权限 | PcTreeSelect[PC 权限树选择器<br/>仅展示权限池中的节点]
-    SelectPermType -->|普通权限 | CommonList[普通权限列表<br/>仅展示权限池中的节点]
+    SelectPermType -->|PC 权限 | PcTreeSelect[PC 权限树选择器<br>仅展示权限池中的节点]
+    SelectPermType -->|普通权限 | CommonList[普通权限列表<br>仅展示权限池中的节点]
 
     PcTreeSelect --> CheckPc[勾选 PC 权限]
     CommonList --> CheckCommon[勾选普通权限]
@@ -61,7 +61,7 @@ flowchart TD
     CheckCommon --> CheckPcAction[勾选普通权限]
 
     ExpandPcAction --> LoadPoolPcAction[从权限池加载 pcAction 列表]
-    LoadPoolPcAction --> SelectPcAction[勾选 pcAction<br/>必须是权限池 pcAction 的子集]
+    LoadPoolPcAction --> SelectPcAction[勾选 pcAction<br>必须是权限池 pcAction 的子集]
 
     SelectPcAction --> SavePerm[保存权限]
     CheckPcAction --> SavePerm

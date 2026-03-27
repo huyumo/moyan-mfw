@@ -43,7 +43,7 @@ flowchart TD
 
     AssignRole --> OpenRolePanel[打开角色分配面板]
     OpenRolePanel --> LoadRoles[加载可选角色列表]
-    LoadRoles --> ShowRoles[展示可选角色<br/>内置角色 + 应用级角色]
+    LoadRoles --> ShowRoles[展示可选角色<br>内置角色 + 应用级角色]
     ShowRoles --> SelectRoles[勾选角色]
     SelectRoles --> SaveRoleAssign[保存角色分配]
     SaveRoleAssign --> RefreshList
