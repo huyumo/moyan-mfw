@@ -69,7 +69,182 @@ ROOT (MENU)
 
 ---
 
-## 3. 权限池隔离机制
+## 3. pcAction 存储结构与 API 请求体对比
+
+### 3.1 存储结构（数据库）
+
+| 表名 | 字段 | 类型 | 说明 |
+|------|------|------|------|
+| `sys_permission` | `pcAction` | JSON | 权限定义的操作集合 |
+| `sys_app_type_permission` | `pcAction` | JSON | 权限池中的操作子集 |
+| `sys_role_permission` | `pcAction` | JSON | 角色分配的操作子集 |
+
+**数据库存储格式示例** (`sys_permission.pcAction`):
+
+```json
+[
+  {
+    "id": "pa_001",
+    "permCode": "add",
+    "name": "新增",
+    "sortOrder": 1
+  },
+  {
+    "id": "pa_002",
+    "permCode": "edit",
+    "name": "编辑",
+    "sortOrder": 2
+  },
+  {
+    "id": "pa_003",
+    "permCode": "delete",
+    "name": "删除",
+    "sortOrder": 3
+  }
+]
+```
+
+### 3.2 API 请求体结构
+
+**权限池配置请求体**:
+
+```typescript
+interface PermissionPoolConfigRequest {
+  appTypeId: string;
+  permissions: Array<{
+    permissionId: string;
+    pcAction: Array<{
+      permCode: string;    // 仅需要 permCode，后端自动映射
+      checked: boolean;    // true=选中，false=取消
+    }>;
+  }>;
+}
+```
+
+**角色权限分配请求体**:
+
+```typescript
+interface RolePermissionAssignRequest {
+  roleId: string;
+  permissions: Array<{
+    permissionId: string;
+    pcAction: Array<{
+      permCode: string;    // 仅需要 permCode
+      checked: boolean;    // true=选中，false=取消
+    }>;
+  }>;
+}
+```
+
+### 3.3 存储结构 vs 请求体结构对比表
+
+| 维度 | 存储结构（数据库） | API 请求体结构 |
+|------|-------------------|---------------|
+| **用途** | 持久化完整权限定义 | 前端提交配置参数 |
+| **字段完整性** | 完整（id, permCode, name, sortOrder） | 精简（permCode, checked） |
+| **permCode** | 必需，用于权限校验 | 必需，用于标识操作 |
+| **id** | 必需，主键标识 | 不需要，后端自动处理 |
+| **name** | 必需，展示用 | 不需要，前端已有 |
+| **sortOrder** | 必需，排序用 | 不需要，使用存储的排序 |
+| **checked** | 不存在 | 必需，表示选中状态 |
+| **数据转换** | 原始数据 | 后端转换为存储格式 |
+
+### 3.4 字段映射和转换逻辑
+
+```
+前端请求体                          后端处理                          数据库存储
+─────────────────────────────────────────────────────────────────────────────
+
+{                                  {                                {
+  permissionId: "P001",              permissionId: "P001",            permissionId: "P001",
+  pcAction: [                        pcAction: [                        pcAction: [
+    { permCode: "add",                 → 查找权限池中 permCode="add"       { id: "pa_001",
+      checked: true }                    的完整定义                        permCode: "add",
+    { permCode: "edit",                                                    name: "编辑",
+      checked: true }                                                    sortOrder: 2 }
+    { permCode: "delete",
+      checked: false }   → 忽略（未选中）
+  ]                                ]                                ]
+}                                  }                                }
+```
+
+**转换伪代码**:
+
+```typescript
+// 后端转换逻辑
+function convertRequestToStorage(
+  request: RolePermissionAssignRequest,
+  permissionPool: PermissionPool[]
+): RolePermission[] {
+  return request.permissions.map(reqPerm => {
+    // 从权限池中查找完整的权限定义
+    const poolPerm = permissionPool.find(p => p.permissionId === reqPerm.permissionId);
+
+    // 过滤出选中的 pcAction，并转换为完整存储格式
+    const selectedPcActions = reqPerm.pcAction
+      .filter(action => action.checked)
+      .map(action => {
+        const poolAction = poolPerm.pcAction.find(pa => pa.permCode === action.permCode);
+        return {
+          id: poolAction.id,
+          permCode: poolAction.permCode,
+          name: poolAction.name,
+          sortOrder: poolAction.sortOrder
+        };
+      });
+
+    return {
+      roleId: request.roleId,
+      permissionId: reqPerm.permissionId,
+      pcAction: selectedPcActions
+    };
+  });
+}
+```
+
+### 3.5 转换示例
+
+**输入（前端请求体）**:
+
+```json
+{
+  "roleId": "role_001",
+  "permissions": [
+    {
+      "permissionId": "P001",
+      "pcAction": [
+        { "permCode": "add", "checked": true },
+        { "permCode": "edit", "checked": true },
+        { "permCode": "delete", "checked": false }
+      ]
+    }
+  ]
+}
+```
+
+**输出（数据库存储）**:
+
+```json
+[
+  {
+    "roleId": "role_001",
+    "permissionId": "P001",
+    "pcAction": [
+      { "id": "pa_001", "permCode": "add", "name": "新增", "sortOrder": 1 },
+      { "id": "pa_002", "permCode": "edit", "name": "编辑", "sortOrder": 2 }
+    ]
+  }
+]
+```
+
+**关键说明**:
+1. `checked: false` 的操作不会被存储
+2. 后端自动补充 `id`、`name`、`sortOrder` 等字段
+3. 前端只需关心 `permCode` 和 `checked` 状态
+
+---
+
+## 4. 权限池隔离机制
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -96,7 +271,7 @@ ROOT (MENU)
 
 ---
 
-## 4. 权限验证逻辑
+## 5. 权限验证逻辑
 
 ### 4.1 前端按钮/菜单显示
 
@@ -135,7 +310,7 @@ flowchart TD
 
 ---
 
-## 5. 关键业务规则
+## 6. 关键业务规则
 
 | 规则 | 说明 |
 |------|------|
@@ -146,7 +321,7 @@ flowchart TD
 
 ---
 
-## 6. 相关文档
+## 7. 相关文档
 
 - [权限分配详细流程](../flows/permission-assignment.md) - 完整的权限分配序列图
 - [数据库实体设计](../database/database-entities-design.md) - 表结构定义

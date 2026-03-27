@@ -176,6 +176,192 @@ A 不再是该应用的拥有者    B 成为新拥有者
 
 ---
 
+## 拥有者账号异常兜底机制
+
+### 背景
+
+当应用拥有者账号出现异常（如账号被禁用、离职、失联等）时，需要有一套完整的兜底机制来确保应用的持续管理和运营。
+
+### 账号异常检测触发条件
+
+| 异常类型 | 触发条件 | 检测方式 |
+|----------|----------|----------|
+| 账号被禁用 | 拥有者账号 `status = 0` | 定时任务扫描 |
+| 账号被删除 | 拥有者账号被软删除或硬删除 | 外键约束/定时任务 |
+| 拥有者失联 | 拥有者超过 30 天未登录且无法联系 | 人工上报 |
+| 拥有者离职 | HR 系统同步离职状态 | 系统对接 |
+| 应用无拥有者 | `sys_app.ownerId` 指向不存在用户 | 数据完整性检查 |
+
+### 拥有者转移机制
+
+#### 自动转移（系统托管场景）
+
+**适用场景**:
+- 系统内置应用（`appCode = 'system-instance'`）
+- 配置了托管策略的应用
+
+**转移规则**:
+```
+1. 检测原拥有者账号异常
+2. 查找应用的"备用拥有者"（如有配置）
+3. 如无备用拥有者，转移至系统管理员账号（phone = 'system-admin'）
+4. 记录审计日志（operation_type = 'APP_OWNER_AUTO_TRANSFER'）
+```
+
+**配置方式**:
+在 `sys_app` 表中增加备用拥有者字段：
+```sql
+ALTER TABLE sys_app ADD COLUMN backup_owner_id BIGINT DEFAULT NULL COMMENT '备用拥有者 ID';
+```
+
+#### 手动转移（超级管理员介入）
+
+**适用场景**:
+- 普通应用拥有者异常
+- 需要人工确认的转移场景
+
+**操作流程**:
+
+1. **超级管理员发起转移**
+
+```
+PUT /api/v1/apps/{appId}/owner/transfer
+{
+  "newOwnerId": 123,           // 新拥有者用户 ID
+  "reason": "原拥有者已离职",   // 转移原因
+  "confirmBy": "admin-001"     // 超级管理员 ID
+}
+```
+
+2. **权限校验**
+   - 操作人必须是超级管理员（`isSuperAdmin = 1`）
+   - 目标用户必须存在且账号正常
+
+3. **执行转移**
+   - 移除原拥有者的拥有者角色
+   - 绑定新拥有者的拥有者角色
+   - 更新 `sys_app.ownerId`
+   - 更新 `sys_user_app` 记录
+   - 记录审计日志
+
+4. **通知相关方**
+   - 通知新拥有者（站内信/邮件/短信）
+   - 通知应用成员（可选）
+
+### 应急操作示例
+
+#### 场景一：拥有者账号被禁用
+
+```sql
+-- 1. 查询受影响的應用
+SELECT a.id, a.app_code, a.app_name, u.name as owner_name, u.status
+FROM sys_app a
+JOIN sys_user u ON a.owner_id = u.id
+WHERE u.status = 0;  -- 账号被禁用
+
+-- 2. 将应用转移至系统管理员
+UPDATE sys_app a
+SET a.owner_id = (SELECT id FROM sys_user WHERE phone = '13800000000')
+WHERE a.owner_id IN (SELECT id FROM sys_user WHERE status = 0);
+
+-- 3. 更新 sys_user_app 记录（移除原拥有者，添加新拥有者）
+-- 需要应用层 Service 处理，确保事务一致性
+```
+
+#### 场景二：拥有者离职
+
+```typescript
+// 伪代码示例：超级管理员执行拥有者转移
+async function transferOwnerDueToResignation(appId: string, newOwnerId: number, adminId: number) {
+  const app = await appRepository.findById(appId);
+  const oldOwnerId = app.ownerId;
+
+  // 权限校验
+  const admin = await userRepository.findById(adminId);
+  if (!admin.isSuperAdmin) {
+    throw new Error('无权限执行拥有者转移');
+  }
+
+  // 开启事务
+  const transaction = await db.beginTransaction();
+  try {
+    // 1. 移除原拥有者的拥有者角色
+    await userAppRepository.removeOwnerRole(oldOwnerId, appId, transaction);
+
+    // 2. 绑定新拥有者的拥有者角色
+    const ownerRole = await roleRepository.findOwnerRoleByAppType(app.appTypeId);
+    await userRoleRepository.bind({
+      userId: newOwnerId,
+      roleId: ownerRole.id,
+      appId: appId
+    }, transaction);
+
+    // 3. 更新 sys_user_app
+    await userAppRepository.remove(oldOwnerId, appId, transaction);
+    await userAppRepository.add({
+      userId: newOwnerId,
+      appId: appId,
+      isOwner: 1
+    }, transaction);
+
+    // 4. 更新 sys_app.ownerId
+    await appRepository.update(appId, { ownerId: newOwnerId }, transaction);
+
+    // 5. 记录审计日志
+    await auditLogService.log({
+      operatorId: adminId,
+      operationType: 'APP_OWNER_MANUAL_TRANSFER',
+      operationModule: 'APP',
+      operationDesc: `因原拥有者离职，手动转移应用拥有者：${oldOwnerId} -> ${newOwnerId}`,
+      appId: app.id,
+      targetId: appId,
+      beforeData: { ownerId: oldOwnerId },
+      afterData: { ownerId: newOwnerId },
+      status: 1
+    });
+
+    await transaction.commit();
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+}
+```
+
+#### 场景三：应用无拥有者（数据异常修复）
+
+```sql
+-- 检测无拥有者或拥有者无效的应用
+SELECT a.id, a.app_code, a.app_name, a.owner_id
+FROM sys_app a
+LEFT JOIN sys_user u ON a.owner_id = u.id
+WHERE a.owner_id IS NULL OR u.id IS NULL;
+
+-- 修复：转移至指定管理员
+UPDATE sys_app
+SET owner_id = (SELECT id FROM sys_user WHERE phone = '13800000000' LIMIT 1)
+WHERE owner_id IS NULL OR owner_id NOT IN (SELECT id FROM sys_user);
+
+-- 同步更新 sys_user_app
+-- 需要在应用层处理，确保数据一致性
+```
+
+### 预防措施
+
+1. **双拥有者机制（可选）**
+   - 允许一个应用配置一个主拥有者和一个备用拥有者
+   - 主拥有者异常时，备用拥有者自动接管
+
+2. **定期健康检查**
+   - 每周扫描所有应用，检查拥有者账号状态
+   - 发现异常时，提前通知超级管理员
+
+3. **拥有者变更通知**
+   - 拥有者变更时，通知所有应用成员
+   - 确保成员知晓当前应用负责人
+
+---
+
 ## 相关文档
 
 - [数据库实体设计](../database/database-entities-design.md)
@@ -184,6 +370,7 @@ A 不再是该应用的拥有者    B 成为新拥有者
 - [成员管理页面](./member-management.md)
 - [权限池配置流程](../flows/permission-pool-setup.md)
 - [权限分配流程](../flows/permission-assignment.md)
+- [审计日志设计](../api/audit-log-design.md)
 
 ---
 
