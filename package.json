@@ -1,6 +1,7 @@
 {
   "name": "moyan-mfw-docs",
   "version": "2.0.0",
+  "type": "module",
   "description": "Moyan MFW 权限系统基础设施文档",
   "scripts": {
     "docs:dev": "vitepress dev docs",
@@ -18,5 +19,8 @@
     "mermaid": "^10.9.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
+  },
+  "dependencies": {
+    "markdown-it-mermaid": "^0.2.5"
   }
 }

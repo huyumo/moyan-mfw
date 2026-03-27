@@ -151,55 +151,53 @@ interface RolePermissionAssignRequest {
 
 ### 3.4 字段映射和转换逻辑
 
+**数据流转过程**:
+
+```mermaid
+flowchart LR
+    A[前端请求体<br/>permCode + checked] --> B{后端处理}
+    B --> C[数据库存储<br/>完整字段]
+
+    subgraph 转换步骤
+        B1[过滤 checked=true 的项] --> B2[根据 permCode<br/>查找权限池完整定义]
+        B2 --> B3[补充 id/name/sortOrder 字段]
+    end
+
+    B --> B1
+    B3 --> C
 ```
-前端请求体                          后端处理                          数据库存储
-─────────────────────────────────────────────────────────────────────────────
 
-{                                  {                                {
-  permissionId: "P001",              permissionId: "P001",            permissionId: "P001",
-  pcAction: [                        pcAction: [                        pcAction: [
-    { permCode: "add",                 → 查找权限池中 permCode="add"       { id: "pa_001",
-      checked: true }                    的完整定义                        permCode: "add",
-    { permCode: "edit",                                                    name: "编辑",
-      checked: true }                                                    sortOrder: 2 }
-    { permCode: "delete",
-      checked: false }   → 忽略（未选中）
-  ]                                ]                                ]
-}                                  }                                }
-```
+**字段映射表**:
 
-**转换伪代码**:
+| 前端请求体字段 | 后端处理 | 数据库存储字段 |
+|----------------|----------|----------------|
+| `permCode` | 作为查找键 | `permCode` |
+| `checked: true` | 保留该项 | - |
+| `checked: false` | 忽略该项 | - |
+| - | 查找权限池，补充完整信息 | `id` |
+| - | 从权限池获取 | `name` |
+| - | 从权限池获取 | `sortOrder` |
 
-```typescript
-// 后端转换逻辑
-function convertRequestToStorage(
-  request: RolePermissionAssignRequest,
-  permissionPool: PermissionPool[]
-): RolePermission[] {
-  return request.permissions.map(reqPerm => {
-    // 从权限池中查找完整的权限定义
-    const poolPerm = permissionPool.find(p => p.permissionId === reqPerm.permissionId);
+**转换示例**:
 
-    // 过滤出选中的 pcAction，并转换为完整存储格式
-    const selectedPcActions = reqPerm.pcAction
-      .filter(action => action.checked)
-      .map(action => {
-        const poolAction = poolPerm.pcAction.find(pa => pa.permCode === action.permCode);
-        return {
-          id: poolAction.id,
-          permCode: poolAction.permCode,
-          name: poolAction.name,
-          sortOrder: poolAction.sortOrder
-        };
-      });
+```mermaid
+sequenceDiagram
+    participant Front as 前端
+    participant Back as 后端
+    participant Pool as 权限池
+    participant DB as 数据库
 
-    return {
-      roleId: request.roleId,
-      permissionId: reqPerm.permissionId,
-      pcAction: selectedPcActions
-    };
-  });
-}
+    Front->>Back: {permCode: "add", checked: true}
+    Front->>Back: {permCode: "edit", checked: true}
+    Front->>Back: {permCode: "delete", checked: false}
+
+    Back->>Back: 过滤掉 checked=false 的项
+    Back->>Pool: 查找 permCode="add" 的完整定义
+    Pool-->>Back: {id:"pa_001", permCode:"add", name:"新增", sortOrder:1}
+    Back->>Pool: 查找 permCode="edit" 的完整定义
+    Pool-->>Back: {id:"pa_002", permCode:"edit", name:"编辑", sortOrder:2}
+
+    Back->>DB: 存储完整字段
 ```
 
 ### 3.5 转换示例
@@ -329,4 +327,4 @@ flowchart TD
 
 ---
 
-*本文档是核心概念模块的一部分，建议按顺序阅读：permissions.md → roles.md → architecture.md*
+*本文档是核心概念模块的一部分，建议按顺序阅读：[permissions.md](./permissions.md) → [roles.md](./roles.md) → [architecture.md](./architecture.md)*

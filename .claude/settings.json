@@ -1,7 +1,32 @@
 {
   "permissions": {
     "allow": [
-      "Bash(powershell -Command \"Stop-Process -Name ''python'' -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Remove-Item -Path ''e:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/_book'' -Recurse -Force\")"
+      "Bash(powershell -Command \"Stop-Process -Name ''python'' -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Remove-Item -Path ''e:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/_book'' -Recurse -Force\")",
+      "Read(//c/Users/16898/AppData/Local/Temp/claude/e--Moyan-moyan-mfw-workspace-workspace04-moyan-mfw/e19d4ec8-b57a-431e-b4af-8c1d7201f93a/tasks/**)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(grep -l Mermaid docs/.vitepress/dist/assets/*.js)",
+      "Bash(grep -o vitepress-plugin-mermaid docs/.vitepress/dist/assets/chunks/*.js)",
+      "Bash(grep 'mermaid' docs/.vitepress/dist/assets/chunks/framework*.js)",
+      "Bash(grep -o Mermaid docs/.vitepress/dist/assets/chunks/*.js)",
+      "Bash(grep -r Mermaid docs/.vitepress/dist/assets/*.js)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git rm:*)",
+      "Bash(grep -o 'mermaid' docs/.vitepress/dist/assets/*.js)",
+      "Bash(grep -o 'import.*mermaid' docs/.vitepress/dist/assets/*.js)",
+      "Bash(grep -l 'from.*mermaid' docs/.vitepress/dist/assets/chunks/*.js)",
+      "Bash(grep mermaid:*)",
+      "Bash(ls docs/.vitepress/dist/assets/*.js)",
+      "Bash(grep -l \"Mermaid\\\\|mermaid\" docs/.vitepress/dist/assets/*.js)",
+      "Bash(find docs/.vitepress/dist -name *.js -exec grep -l \"initialize.*mermaid\\\\|mermaid\\\\.run\" {})",
+      "Bash(2)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -o \"mermaid\\\\.run\\\\|mermaid\\\\.initialize\" docs/.vitepress/dist/assets/chunks/theme*.js)",
+      "Bash(cat docs/.vitepress/dist/assets/chunks/theme*.js)",
+      "Bash(grep -o from.*theme docs/.vitepress/dist/assets/chunks/framework*.js)",
+      "Bash(findstr :5177)",
+      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/database/**)"
     ]
   }
 }

@@ -175,4 +175,4 @@
 
 ---
 
-*本文档是核心概念模块的一部分，建议按顺序阅读：permissions.md → roles.md → architecture.md*
+*本文档是核心概念模块的一部分，建议按顺序阅读：[permissions.md](./permissions.md) → [roles.md](./roles.md) → [architecture.md](./architecture.md)*
