@@ -6,6 +6,10 @@ export default withMermaid({
   lastUpdated: true,
   srcDir: './docs',
   ignoreDeadLinks: ['ALL'],
+  mermaid: {
+    securityLevel: 'loose',
+    startOnLoad: true,
+  },
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
