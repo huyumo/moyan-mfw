@@ -29,12 +29,12 @@ module.exports = {
 };
 EOF
 
-# Fix mermaid-load.js - proper rendering logic
+# Fix mermaid-load.js - proper rendering logic for Mermaid v9/v10
 cat > "$PLUGIN_DIR/assets/mermaid-load.js" << 'EOF'
 require(['gitbook', 'jquery'], function (gitbook, $) {
     $(document).ready(function () {
         mermaid.initialize({
-            startOnLoad: true,
+            startOnLoad: false,
             theme: 'default',
             securityLevel: 'loose',
         });
@@ -50,12 +50,20 @@ require(['gitbook', 'jquery'], function (gitbook, $) {
                 const mermaidDiv = $('<div>').addClass('mermaid').text(mermaidCode);
                 pre.replaceWith(mermaidDiv);
             });
-            if (mermaid && mermaid.contentLoaded) {
+            // Support Mermaid v9/v10 API
+            if (mermaid && mermaid.run) {
+                mermaid.run({ querySelector: '.mermaid:not([data-processed])' });
+            } else if (mermaid && mermaid.contentLoaded) {
                 mermaid.contentLoaded();
+            } else if (mermaid && mermaid.init) {
+                mermaid.init(undefined, $('.mermaid'));
             }
         }, 100);
     });
 });
 EOF
+
+# Update mermaid.min.js to use the installed version
+cp node_modules/mermaid/dist/mermaid.min.js "$PLUGIN_DIR/assets/mermaid.min.js"
 
 echo "Fixed honkit-plugin-mermaid"
