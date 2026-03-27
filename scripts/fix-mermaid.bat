@@ -27,7 +27,7 @@ echo         } >> %PLUGIN_DIR%\index.js
 echo     } >> %PLUGIN_DIR%\index.js
 echo }; >> %PLUGIN_DIR%\index.js
 
-REM Fix mermaid-load.js - proper rendering logic for Mermaid v9/v10
+REM Fix mermaid-load.js for Mermaid v9
 echo require(['gitbook', 'jquery'], function (gitbook, $) { > %PLUGIN_DIR%\assets\mermaid-load.js
 echo     $(document).ready(function () { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo         mermaid.initialize({ >> %PLUGIN_DIR%\assets\mermaid-load.js
@@ -35,9 +35,14 @@ echo             startOnLoad: false, >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             theme: 'default', >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             securityLevel: 'loose', >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo         }); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo         renderMermaidCharts(); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo     }); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo. >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo     gitbook.events.bind('page.change', function () { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo         renderMermaidCharts(); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo     }); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo. >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo     function renderMermaidCharts() { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo         setTimeout(function() { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             $('code.lang-mermaid').each(function (i, e) { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo                 const code = $(e); >> %PLUGIN_DIR%\assets\mermaid-load.js
@@ -47,18 +52,14 @@ echo                 let mermaidCode = code.text(); >> %PLUGIN_DIR%\assets\merma
 echo                 const mermaidDiv = $('<div>').addClass('mermaid').text(mermaidCode); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo                 pre.replaceWith(mermaidDiv); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             }); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             if (mermaid ^&^& mermaid.run) { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 mermaid.run({ querySelector: '.mermaid:not([data-processed])' }); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             } else if (mermaid ^&^& mermaid.contentLoaded) { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo             if (mermaid ^&^& mermaid.contentLoaded) { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo                 mermaid.contentLoaded(); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             } else if (mermaid ^&^& mermaid.init) { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 mermaid.init(undefined, $('.mermaid')); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             } >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo         }, 100); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo     }); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo         }, 200); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo     } >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo }); >> %PLUGIN_DIR%\assets\mermaid-load.js
 
-REM Update mermaid.min.js to use the installed version
+REM Update mermaid.min.js to use the installed version (v9)
 copy /Y node_modules\mermaid\dist\mermaid.min.js %PLUGIN_DIR%\assets\mermaid.min.js
 
 echo Fixed honkit-plugin-mermaid

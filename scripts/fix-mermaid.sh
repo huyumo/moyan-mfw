@@ -29,7 +29,7 @@ module.exports = {
 };
 EOF
 
-# Fix mermaid-load.js - proper rendering logic for Mermaid v9/v10
+# Fix mermaid-load.js - proper rendering logic for Mermaid v9
 cat > "$PLUGIN_DIR/assets/mermaid-load.js" << 'EOF'
 require(['gitbook', 'jquery'], function (gitbook, $) {
     $(document).ready(function () {
@@ -38,9 +38,14 @@ require(['gitbook', 'jquery'], function (gitbook, $) {
             theme: 'default',
             securityLevel: 'loose',
         });
+        renderMermaidCharts();
     });
 
     gitbook.events.bind('page.change', function () {
+        renderMermaidCharts();
+    });
+
+    function renderMermaidCharts() {
         setTimeout(function() {
             $('code.lang-mermaid').each(function (i, e) {
                 const code = $(e);
@@ -50,20 +55,16 @@ require(['gitbook', 'jquery'], function (gitbook, $) {
                 const mermaidDiv = $('<div>').addClass('mermaid').text(mermaidCode);
                 pre.replaceWith(mermaidDiv);
             });
-            // Support Mermaid v9/v10 API
-            if (mermaid && mermaid.run) {
-                mermaid.run({ querySelector: '.mermaid:not([data-processed])' });
-            } else if (mermaid && mermaid.contentLoaded) {
+            // Mermaid v9 uses contentLoaded()
+            if (mermaid && mermaid.contentLoaded) {
                 mermaid.contentLoaded();
-            } else if (mermaid && mermaid.init) {
-                mermaid.init(undefined, $('.mermaid'));
             }
-        }, 100);
-    });
+        }, 200);
+    }
 });
 EOF
 
-# Update mermaid.min.js to use the installed version
+# Update mermaid.min.js to use the installed version (v9 for AMD support)
 cp node_modules/mermaid/dist/mermaid.min.js "$PLUGIN_DIR/assets/mermaid.min.js"
 
 echo "Fixed honkit-plugin-mermaid"
