@@ -9,18 +9,10 @@ export default withMermaid(defineConfig({
   ignoreDeadLinks: ['ALL'],
   mermaid: {
     securityLevel: 'loose',
-    startOnLoad: false,
   },
   vite: {
-    optimizeDeps: {
-      include: [
-        'mermaid',
-        '@braintree/sanitize-url',
-        'dayjs',
-        'debug',
-        'cytoscape-cose-bilkent',
-        'cytoscape'
-      ]
+    define: {
+      'process.env': {}
     }
   },
   themeConfig: {
@@ -124,11 +116,6 @@ export default withMermaid(defineConfig({
     ],
     search: {
       provider: 'local',
-    },
-  },
-  markdown: {
-    image: {
-      lazyLoading: true,
     },
   },
 }))
