@@ -31,6 +31,7 @@ infrastructure-detailed-design-index.md (系统整体设计)
 | [权限系统](./core/permissions.md) | pcAction 数据流、权限池、验证逻辑 | 5min |
 | [角色体系](./core/roles.md) | 内置角色、应用级角色、拥有者机制 | 5min |
 | [系统架构](./core/architecture.md) | 应用类型中心模式、五层架构 | 5min |
+| [术语表](./glossary.md) | 专业术语中英文对照与使用场景 | 5min |
 
 ### 数据库设计（优先级：高）
 
@@ -46,6 +47,7 @@ infrastructure-detailed-design-index.md (系统整体设计)
 | [权限分配流程](./flows/permission-assignment.md) | 角色权限分配详细流程 | 10min |
 | [权限池配置流程](./flows/permission-pool-setup.md) | 应用类型权限池配置 | 8min |
 | [系统初始化流程](./flows/system-initialization.md) | 系统启动时初始化逻辑 | 5min |
+| [用户登录流程](./flows/user-login-flow.md) | 用户登录、应用实例选择与权限加载 | 5min |
 
 ### 页面设计（优先级：中）
 
@@ -95,12 +97,12 @@ database/database-entities-design.md  # 数据库定义 (sys_app_type, sys_app)
 
 ## 📊 文档统计
 
-- **核心模块**: 3 个
+- **核心模块**: 4 个
 - **数据库文档**: 2 个
-- **流程文档**: 3 个
+- **流程文档**: 4 个
 - **页面文档**: 3 个
 - **追踪文档**: 2 个
-- **总计**: ~13 个核心文档
+- **总计**: ~15 个核心文档
 
 ---
 

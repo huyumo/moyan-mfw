@@ -25,8 +25,10 @@ docs/
 ## 核心文档
 
 - [核心概念模块](./core/) - 权限、角色、架构基础概念
+- [术语表](./glossary.md) - 专业术语中英文对照
 - [系统架构索引](./infrastructure-detailed-design-index.md) - 整体设计视图
 - [数据库 ER 图](./database/database-er-diagram.md) - 实体关系可视化
+- [用户登录流程](./flows/user-login-flow.md) - 登录、应用选择与权限加载
 
 ---
 
