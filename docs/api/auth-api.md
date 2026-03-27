@@ -222,6 +222,7 @@ interface PermissionTreeNode {
   id: string;
   permName: string;
   permCode: string;
+  permDesc?: string;              // 权限描述
   permissionType: 'PC' | 'NORMAL';
   nodeType: 'MENU' | 'PAGE' | 'TAG';
   parentId?: string;
@@ -232,6 +233,7 @@ interface PermissionTreeNode {
   isVisible: number;
   isCache: number;
   showMode: 'NORMAL' | 'DEV';
+  permStatus: number;             // 状态：1-启用 0-禁用
   // pcAction 仅在 nodeType=PAGE 时有效
   pcAction?: Array<{
     name: string;

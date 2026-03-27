@@ -18,6 +18,13 @@
 | `/api/v1/permissions/:id` | PUT | 更新权限节点 |
 | `/api/v1/permissions/:id` | DELETE | 删除权限节点 |
 
+**认证要求**:
+
+除特别说明外，本接口所有请求均需在请求头中携带认证 Token：
+```
+Authorization: Bearer <token>
+```
+
 ---
 
 ## 1. 获取权限树
@@ -97,7 +104,7 @@
 
 **约束**:
 - `nodeType = PAGE` 时，`parentId` 必须指向 `nodeType = MENU` 的节点
-- `nodeType = ROOT` 时，不传 `parentId`
+- 创建根节点时，不传 `parentId`
 - `pcAction` 仅在 `permissionType = PC` 且 `nodeType = PAGE` 时有效
 
 **返回数据**:
