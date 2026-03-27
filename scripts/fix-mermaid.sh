@@ -29,52 +29,53 @@ module.exports = {
 };
 EOF
 
-# Fix mermaid-load.js - proper rendering logic for Mermaid v9
+# Fix mermaid-load.js - 不使用 AMD/RequireJS
 cat > "$PLUGIN_DIR/assets/mermaid-load.js" << 'EOF'
-require(['gitbook', 'jquery'], function (gitbook, $) {
-    // 定义渲染函数
+// Mermaid v9 渲染脚本 - 不使用 AMD/RequireJS
+(function() {
+    function init() {
+        if (!window.mermaid) {
+            console.log('Mermaid not loaded yet, retrying...');
+            setTimeout(init, 100);
+            return;
+        }
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'default',
+            securityLevel: 'loose',
+        });
+        renderMermaidCharts();
+    }
+
     function renderMermaidCharts() {
         setTimeout(function() {
-            $('code.lang-mermaid').each(function (i, e) {
-                const code = $(e);
-                const pre = code.parent('pre');
-
-                // 如果已经渲染成 SVG，跳过
-                if (pre.find('svg').length > 0) return;
-
-                // 获取 mermaid 代码（纯文本）
-                let mermaidCode = code.text();
-
-                // 创建 mermaid 容器
-                const mermaidDiv = $('<div>').addClass('mermaid').text(mermaidCode);
-
-                // 替换 pre 标签
-                pre.replaceWith(mermaidDiv);
-            });
-
-            // Mermaid v9 uses contentLoaded()
+            var codeBlocks = document.querySelectorAll('code.lang-mermaid');
+            for (var i = 0; i < codeBlocks.length; i++) {
+                var code = codeBlocks[i];
+                var pre = code.parentNode;
+                if (pre.querySelector('svg')) continue;
+                var mermaidCode = code.textContent;
+                var mermaidDiv = document.createElement('div');
+                mermaidDiv.className = 'mermaid';
+                mermaidDiv.textContent = mermaidCode;
+                pre.parentNode.replaceChild(mermaidDiv, pre);
+            }
             if (mermaid && typeof mermaid.contentLoaded === 'function') {
                 mermaid.contentLoaded();
             }
         }, 300);
     }
 
-    $(document).ready(function () {
-        // 初始化 mermaid v9
-        mermaid.initialize({
-            startOnLoad: false,
-            theme: 'default',
-            securityLevel: 'loose',
-        });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 
-        // 渲染当前页面
+    document.addEventListener('gitbook.page.change', function() {
         renderMermaidCharts();
     });
-
-    gitbook.events.bind('page.change', function () {
-        renderMermaidCharts();
-    });
-});
+})();
 EOF
 
 # Update mermaid.min.js to use the installed version (v9 for AMD support)
