@@ -29,6 +29,22 @@ echo }; >> %PLUGIN_DIR%\index.js
 
 REM Fix mermaid-load.js for Mermaid v9
 echo require(['gitbook', 'jquery'], function (gitbook, $) { > %PLUGIN_DIR%\assets\mermaid-load.js
+echo     function renderMermaidCharts() { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo         setTimeout(function() { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo             $('code.lang-mermaid').each(function (i, e) { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 const code = $(e); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 const pre = code.parent('pre'); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 if (pre.find('svg').length ^> 0) return; >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 let mermaidCode = code.text(); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 const mermaidDiv = $('^<div^>').addClass('mermaid').text(mermaidCode); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 pre.replaceWith(mermaidDiv); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo             }); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo             if (mermaid ^&^& typeof mermaid.contentLoaded === 'function') { >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo                 mermaid.contentLoaded(); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo             } >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo         }, 300); >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo     } >> %PLUGIN_DIR%\assets\mermaid-load.js
+echo. >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo     $(document).ready(function () { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo         mermaid.initialize({ >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo             startOnLoad: false, >> %PLUGIN_DIR%\assets\mermaid-load.js
@@ -41,22 +57,6 @@ echo. >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo     gitbook.events.bind('page.change', function () { >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo         renderMermaidCharts(); >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo     }); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo. >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo     function renderMermaidCharts() { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo         setTimeout(function() { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             $('code.lang-mermaid').each(function (i, e) { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 const code = $(e); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 const pre = code.parent('pre'); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 if (pre.find('svg').length ^> 0) return; >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 let mermaidCode = code.text(); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 const mermaidDiv = $('<div>').addClass('mermaid').text(mermaidCode); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 pre.replaceWith(mermaidDiv); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             }); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             if (mermaid ^&^& mermaid.contentLoaded) { >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo                 mermaid.contentLoaded(); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo             } >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo         }, 200); >> %PLUGIN_DIR%\assets\mermaid-load.js
-echo     } >> %PLUGIN_DIR%\assets\mermaid-load.js
 echo }); >> %PLUGIN_DIR%\assets\mermaid-load.js
 
 REM Update mermaid.min.js to use the installed version (v9)
