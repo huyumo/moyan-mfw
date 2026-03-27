@@ -1,0 +1,33 @@
+{
+  "title": "Moyan MFW 权限系统文档",
+  "description": "Moyan MFW 权限系统基础设施文档",
+  "language": "zh-hans",
+  "author": "Moyan MFW Team",
+  "root": ".",
+  "plugins": [
+    "mermaid-gb3",
+    "anchors",
+    "search-plus",
+    "sharing",
+    "fontsettings",
+    "livereload"
+  ],
+  "pluginsConfig": {
+    "mermaid-gb3": {
+      "theme": "default",
+      "themeCSS": "",
+      "zoom": false
+    },
+    "sharing": {
+      "qq": true,
+      "weibo": true,
+      "twitter": false,
+      "facebook": false,
+      "google": false,
+      "all": false
+    }
+  },
+  "styles": {
+    "website": "styles/website.css"
+  }
+}
