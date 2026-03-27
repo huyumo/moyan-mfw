@@ -3,7 +3,7 @@
   "description": "Moyan MFW 权限系统基础设施文档",
   "language": "zh-hans",
   "author": "Moyan MFW Team",
-  "root": ".",
+  "root": "./docs",
   "plugins": [
     "mermaid"
   ],
@@ -13,6 +13,6 @@
     }
   },
   "styles": {
-    "website": "styles/website.css"
+    "website": "docs/styles/website.css"
   }
 }

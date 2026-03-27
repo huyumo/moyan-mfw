@@ -3,8 +3,8 @@
   "version": "2.0.0",
   "description": "Moyan MFW 权限系统基础设施文档",
   "scripts": {
-    "docs:dev": "cd docs && honkit serve",
-    "docs:build": "cd docs && honkit build"
+    "docs:dev": "honkit serve",
+    "docs:build": "honkit build"
   },
   "keywords": [
     "docs",
