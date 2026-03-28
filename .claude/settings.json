@@ -26,7 +26,25 @@
       "Bash(cat docs/.vitepress/dist/assets/chunks/theme*.js)",
       "Bash(grep -o from.*theme docs/.vitepress/dist/assets/chunks/framework*.js)",
       "Bash(findstr :5177)",
-      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/database/**)"
+      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/database/**)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(git:*)",
+      "Bash(echo:*)",
+      "Bash(tr:*)",
+      "Bash(head:*)",
+      "Edit(.claude/**)",
+      "Write(.claude/**)"
     ]
+  },
+  "hooks": {
+    "Stop": [{
+      "hooks": [{
+        "type": "command",
+        "command": "bash -c 'if git diff --quiet && git diff --cached --quiet; then exit 0; fi; git add -A; if git diff --cached --quiet; then exit 0; fi; CHANGES=$(git diff --cached --name-only 2>/dev/null | head -5 | tr \"\\n\" \", \"); if [ -n \"$CHANGES\" ]; then git commit -m \"chore: auto-commit [$CHANGES]\" --no-verify 2>/dev/null && echo \"[auto-commit] changes committed\" || echo \"[auto-commit] commit skipped\"; fi' 2>/dev/null || true",
+        "timeout": 30,
+        "statusMessage": "自动提交变更..."
+      }]
+    }]
   }
 }
