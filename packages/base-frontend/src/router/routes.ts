@@ -21,13 +21,17 @@ const viewModules = import.meta.glob(
 );
 
 /**
+ * 404 页面路径
+ */
+const NOT_FOUND_PATH = '../views/not-found/Index.vue';
+
+/**
  * 获取页面组件的加载函数
- * @param dirName - views 下的目录名（如 'dashboard', 'system/user-list'）
+ * @param dirName - views 下的目录名（如 '/dashboard', '/system/user-list'）
  * @returns 组件加载函数，找不到则返回 404 页面
  */
-function getViewComponent(dirName: string) {
+export function getViewComponent(dirName: string) {
   const basePath = `../views${dirName}/`;
-  const notFoundPath = '../views/not-found/Index.vue';
 
   // 按优先级查找：Index.vue > index.ts > index.tsx
   const componentPath1 = `${basePath}Index.vue`;
@@ -45,7 +49,7 @@ function getViewComponent(dirName: string) {
   }
 
   // 找不到文件，返回 404 页面
-  return () => import(notFoundPath);
+  return () => import(NOT_FOUND_PATH);
 }
 
 /**
@@ -57,7 +61,7 @@ const AdminLayout = () => import('../layouts/AdminLayout.vue');
  * 403 和 404 页面（直接静态导入）
  */
 const ForbiddenPage = () => import('../views/forbidden/Index.vue');
-const NotFoundPage = () => import('../views/not-found/Index.vue');
+const NotFoundPage = () => import(NOT_FOUND_PATH);
 
 /**
  * 创建基础管理后台路由的选项接口。
@@ -70,8 +74,6 @@ export interface CreateBaseAdminRoutesOptions {
 /**
  * 规范化业务路由。
  * 移除路径前的斜杠并设置默认需要认证。
- * @param route 原始路由配置。
- * @returns 规范化后的路由配置。
  */
 function normalizeBusinessRoute(route: RouteRecordRaw): RouteRecordRaw {
   const normalizedPath = route.path.replace(/^\/+/, '');
@@ -87,11 +89,11 @@ function normalizeBusinessRoute(route: RouteRecordRaw): RouteRecordRaw {
 
 /**
  * 合并业务路由到基础子路由。
- * @param children 基础子路由数组。
- * @param businessRoutes 业务路由数组。
- * @returns 合并后的路由数组。
  */
-function mergeBusinessChildren(children: RouteRecordRaw[], businessRoutes: RouteRecordRaw[] = []): RouteRecordRaw[] {
+function mergeBusinessChildren(
+  children: RouteRecordRaw[],
+  businessRoutes: RouteRecordRaw[] = []
+): RouteRecordRaw[] {
   const merged = [...children];
   const existed = new Set(children.map((item) => item.path));
 

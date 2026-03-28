@@ -10,7 +10,6 @@
  */
 export * from './create-base-admin-app';
 export * from './router';
-export * from './views';
 export * from './layouts';
 export * from './config/layout-defaults';
 export * from './types/layout-types';
