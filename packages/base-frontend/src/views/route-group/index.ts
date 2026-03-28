@@ -3,4 +3,4 @@
  * @description 导出路由分组视图组件
  */
 
-export { default } from './index.vue';
+export { default } from './Index.vue';

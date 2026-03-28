@@ -3,4 +3,4 @@
  * @description 导出登录页面组件
  */
 
-export { default } from './index.vue';
+export { default } from './Index.vue';

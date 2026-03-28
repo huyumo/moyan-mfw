@@ -3,4 +3,4 @@
  * @description 导出仪表盘页面组件
  */
 
-export { default } from './index.vue';
+export { default } from './Index.vue';

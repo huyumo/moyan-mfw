@@ -3,4 +3,4 @@
  * @description 导出 403 权限不足页面组件
  */
 
-export { default } from './index.vue';
+export { default } from './Index.vue';

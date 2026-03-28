@@ -3,4 +3,4 @@
  * @description 导出 404 页面不存在组件
  */
 
-export { default } from './index.vue';
+export { default } from './Index.vue';
