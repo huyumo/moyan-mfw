@@ -5,10 +5,12 @@
 import { createBaseAdminApp } from 'moyan-mfw-base-frontend';
 import { HeaderAvatarPanel, HeaderCommonActions } from './components/Layout';
 import { businessThemes } from './themes';
+import { businessRoutes } from './router';
 
 // 创建并启动管理后台应用
 const admin = createBaseAdminApp({
   title: '墨焱前端演示',
+  routes: businessRoutes,
   themes: businessThemes,
   defaultTheme: 'sunset',
   layout: {
