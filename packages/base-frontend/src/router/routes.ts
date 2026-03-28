@@ -67,6 +67,9 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
   // 1. 收集所有配置
   for (const [path, config] of Object.entries(pageConfigs)) {
     // 跳过 404 和 forbidden 页面（它们有特殊处理）
+
+    // console.log('path:', path,config);
+
     if (path.includes('/not-found/') || path.includes('/forbidden/')) {
       continue;
     }
@@ -79,6 +82,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
 
     configMap.set(relativePath, config as PageConfig);
   }
+  console.log('configMap:', configMap);
 
   // 2. 按层级组织路由
   const routeMap = new Map<string, RouteRecordRaw>();

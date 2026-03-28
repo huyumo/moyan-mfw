@@ -32,7 +32,7 @@ export interface PageConfig {
 /**
  * 自动扫描 views 目录下所有 index.ts / index.tsx 配置文件
  */
-const pageConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
+const pageConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
   eager: true,
   import: 'default',
 });
@@ -47,7 +47,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
   for (const [path, config] of Object.entries(pageConfigs)) {
     // 从路径提取相对路径（不带前导/）
     const relativePath = path
-      .replace('../views/', '')
+      .replace('./views/', '')
       .replace('/index.ts', '')
       .replace('/index.tsx', '');
 
