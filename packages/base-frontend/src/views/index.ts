@@ -18,7 +18,7 @@
 /**
  * 自动加载所有 Index.vue | index.ts | index.tsx 文件
  */
-const viewModules = import.meta.glob<{ default?: unknown }>(
+const viewModules = import.meta.glob(
   './*/Index.{vue,ts,tsx}',
   { eager: false }
 );
@@ -44,9 +44,9 @@ function dirNameToComponentName(dirName: string): string {
  * @param dirName - 目录名
  * @returns 组件加载函数
  */
-export function getPageModule(dirName: string): (() => Promise<unknown>) | undefined {
+export function getPageModule(dirName: string) {
   const path = `./${dirName}/Index.vue`;
-  return viewModules[path];
+  return viewModules[path] as (() => Promise<unknown>) | undefined;
 }
 
 /**
@@ -65,14 +65,3 @@ export function getPageNames(): string[] {
     })
     .sort();
 }
-
-// 导出所有页面组件（按目录名自动命名）
-Object.entries(viewModules).forEach(([path, loader]) => {
-  const dirName = path.replace('./', '').split('/')[0];
-  const componentName = dirNameToComponentName(dirName);
-  Object.defineProperty(exports, componentName, {
-    get: () => () => loader().then((mod) => mod.default),
-    enumerable: true,
-    configurable: true,
-  });
-});

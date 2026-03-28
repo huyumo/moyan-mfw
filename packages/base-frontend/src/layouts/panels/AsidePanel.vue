@@ -24,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import MenuTreeNode from '../../components/MenuTreeNode.vue';
+import MenuTreeNode from '../components/menu/MenuTreeNode.vue';
 import type { SideMenuItem } from '../../types/layout-types';
 
 defineProps<{

@@ -193,7 +193,7 @@ import {
   Sunny,
 } from '@element-plus/icons-vue';
 import { computed, reactive, ref, watch, type PropType } from 'vue';
-import LayoutModeIcon from '../../components/LayoutModeIcon.vue';
+import LayoutModeIcon from '../components/layout/LayoutModeIcon.vue';
 import type { ColorSchemeMode, LayoutMode, LayoutStyleConfig, ThemeOption } from '../../types/layout-types';
 import { settingsPanelText as text } from './settings-panel-text';
 const props = defineProps({

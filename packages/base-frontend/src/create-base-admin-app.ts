@@ -17,7 +17,7 @@ import type {
   LayoutStyleConfig,
   ThemeRegistry,
 } from './types/layout-types';
-import BaseAdminRoot from './components/BaseAdminRoot.vue';
+import BaseAdminRoot from './layouts/components/base/BaseAdminRoot.vue';
 import { createBaseAdminRouter, type CreateBaseAdminRouterOptions } from './router';
 import { createMenuTreeFromRoutes, dedupeMenuTree } from './router/menu-tree';
 import { useLayoutStore } from './store/layout-store';

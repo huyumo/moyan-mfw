@@ -14,9 +14,8 @@ import type { RouteRecordRaw } from 'vue-router';
 
 /**
  * 自动加载 views 目录下所有页面组件
- * 匹配模式：../views/**/Index.{vue,ts,tsx}
  */
-const viewModules = import.meta.glob<unknown>(
+const viewModules = import.meta.glob(
   '../views/**/Index.{vue,ts,tsx}',
   { eager: false }
 );

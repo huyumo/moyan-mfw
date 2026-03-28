@@ -91,8 +91,8 @@
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { AUTH_TOKEN_STORAGE_KEY } from '../router';
-import { useLayoutStore } from '../store/layout-store';
+import { AUTH_TOKEN_STORAGE_KEY } from '../../router';
+import { useLayoutStore } from '../../store/layout-store';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../types/layout-types';
 
 /** 登录表单状态。 */
@@ -243,4 +243,4 @@ onMounted(() => {
 });
 </script>
 
-<style scoped src="../styles/login-page.scss" lang="scss"></style>
+<style scoped src="./login-page.scss" lang="scss"></style>
