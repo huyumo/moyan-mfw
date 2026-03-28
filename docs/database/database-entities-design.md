@@ -165,7 +165,7 @@ class PermissionEntity {
   parentId?: string;                                        // 父权限 ID (char(36), 自引用外键)
   routePath?: string;                                       // 路由路径 (varchar(255), v3.0 新增)
   isAutoSync?: number;                                      // 是否同步生成：1-是 0-否 (tinyint(1), default 0, v3.0 新增)
-  componentPath?: string;                                   // 组件路径 (varchar(255))
+  externalUrl?: string;                                     // 外部链接 (varchar(500), v5.0 新增)
   iconName?: string;                                        // 图标名称 (varchar(64))
   sortOrder!: number;                                       // 排序值 (int, default 0)
   isVisible!: number;                                       // 是否可见：1-是 0-否 (tinyint(1), default 1)
@@ -185,6 +185,22 @@ class PermissionEntity {
 **字段变更说明 (v4.0)**:
 - `permissionValue`: 新增字段，位运算存储权限值，替代 `pcAction` 字段
 - `pcAction`: 已移除，改用 `permissionValue` 使用位运算存储
+
+**字段变更说明 (v5.0)**:
+- `componentPath`: 已移除，组件路径由前端约定式路由自动推导（permCode = 路由路径 = 组件目录）
+- `externalUrl`: 新增字段，用于标记外部链接（有值时表示该权限节点指向外部 URL）
+
+**约定式路由规则**:
+
+| permCode | 路由路径 | 组件路径 |
+|----------|----------|----------|
+| `system/user-list` | `/system/user-list` | `src/views/system/user-list/Index.vue` |
+| `business/order/manage` | `/business/order/manage` | `src/views/business/order/manage/Index.vue` |
+
+**外部链接处理**:
+- `externalUrl` 有值时，前端根据 URL 协议判断：
+  - `http://` 或 `https://` → 新窗口打开或 iframe 嵌入
+  - `iframe://` 开头 → 移除前缀后用 iframe 嵌入
 
 **枚举类型**:
 

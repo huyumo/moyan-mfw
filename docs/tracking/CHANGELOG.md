@@ -1,6 +1,66 @@
 # 基础设施文档变更日志
 
-> 版本：3.0.0 | 最后更新：2026-03-28
+> 版本：5.0.0 | 最后更新：2026-03-28
+
+---
+
+## [5.0.0] - 2026-03-28
+
+### 约定式路由设计
+
+**核心变更**: 移除 `componentPath` 字段，组件路径由前端约定式路由自动推导。
+
+**设计理念**:
+- `permCode` = 路由路径 = 组件目录
+- 每个页面组件统一为 `Index.vue | index.ts | index.tsx`
+- 复用组件放在 `components/` 子目录或 `../common/` 共享目录
+
+**推导规则**:
+
+| permCode | 路由路径 | 组件路径 |
+|----------|----------|----------|
+| `system/user-list` | `/system/user-list` | `src/views/system/user-list/Index.vue` |
+| `business/order/manage` | `/business/order/manage` | `src/views/business/order/manage/Index.vue` |
+
+**特殊场景处理**:
+- 外部链接：使用 `externalUrl` 字段标记
+  - `http://` 或 `https://` → 新窗口打开或 iframe 嵌入
+  - `iframe://` 开头 → 移除前缀后用 iframe 嵌入
+
+### 数据库实体变更
+
+- **PermissionEntity** (`database/database-entities-design.md`)
+  - 移除：`componentPath` 字段
+  - 新增：`externalUrl` 字段（v5.0）
+  - 更新：字段变更说明，添加约定式路由规则
+
+### API 类型变更
+
+- **PermissionTreeNode** (`api/types.md`)
+  - 移除：`componentPath` 字段
+  - 新增：`externalUrl` 字段（v5.0）
+  - 新增：约定式路由规则说明
+
+- **PermissionTreePayload** - 无变更
+
+### API 接口变更
+
+- **权限管理接口** (`api/permission-api.md`)
+  - 创建/更新权限请求体：移除 `componentPath`，新增 `externalUrl`
+  - Permission 数据结构：移除 `componentPath`，新增 `externalUrl`
+  - 新增约定式路由规则说明
+
+- **认证接口** (`api/auth-api.md`)
+  - PermissionTreeNode 数据结构：移除 `componentPath`，新增 `externalUrl`
+
+### 优势
+
+| 优势 | 说明 |
+|------|------|
+| 配置极简 | 99% 的权限只需配置 permCode，自动推导路由和组件 |
+| 目录清晰 | 文件系统目录 = 权限树 = 路由表，新人容易理解 |
+| 类型安全 | 每个页面有独立的 index.ts 定义 Props/状态 |
+| 减少错误 | 避免手动配置 componentPath 导致的拼写错误
 
 ---
 

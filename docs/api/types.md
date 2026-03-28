@@ -54,7 +54,7 @@ interface PermissionTreeNode {
 
   // 路由相关
   routePath?: string;            // v3.0 新增 - 同步功能使用
-  componentPath?: string;
+  externalUrl?: string;          // v5.0 新增 - 外部链接
   iconName?: string;
 
   // 配置字段
@@ -83,6 +83,22 @@ interface PermissionTreePayload {
   children?: PermissionTreePayload[];
 }
 ```
+
+**约定式路由规则 (v5.0)**:
+
+- `componentPath` 字段已移除，组件路径由前端根据 `permCode` 自动推导
+- 推导规则：`permCode` = 路由路径 = 组件目录
+  - 路由路径：`/${permCode}`
+  - 组件路径：`src/views/${permCode}/Index.vue`
+- 示例：
+  - `permCode = "system/user-list"` → 路由 `/system/user-list` → 组件 `src/views/system/user-list/Index.vue`
+  - `permCode = "business/order/manage"` → 路由 `/business/order/manage` → 组件 `src/views/business/order/manage/Index.vue`
+
+**外部链接处理**:
+- `externalUrl` 有值时，表示该权限节点指向外部链接
+- 前端根据 URL 协议判断处理方式：
+  - `http://` 或 `https://` → 新窗口打开或 iframe 嵌入
+  - `iframe://` 开头 → 移除前缀后用 iframe 嵌入
 
 ---
 

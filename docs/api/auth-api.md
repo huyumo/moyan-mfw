@@ -339,7 +339,7 @@ interface PermissionTreeNode {
   nodeType: 'MENU' | 'PAGE' | 'TAG';
   parentId?: string;
   routePath?: string;
-  componentPath?: string;
+  externalUrl?: string;           // v5.0 新增 - 外部链接
   iconName?: string;
   sortOrder: number;
   isVisible: number;
@@ -351,6 +351,10 @@ interface PermissionTreeNode {
   children?: PermissionTreeNode[];
 }
 ```
+
+**约定式路由 (v5.0)**:
+- `componentPath` 字段已移除，组件路径由前端根据 `permCode` 自动推导
+- 推导规则：`permCode` = 路由路径 = 组件目录
 
 ---
 

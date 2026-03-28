@@ -71,8 +71,8 @@ Authorization: Bearer <token>
 | nodeType | string | 是 | 节点类型：MENU / PAGE / TAG |
 | parentId | string | 否 | 父节点 ID（根节点不传） |
 | permDesc | string | 否 | 权限描述 |
-| routePath | string | 否 | 路由路径 |
-| componentPath | string | 否 | 组件路径 |
+| routePath | string | 否 | 路由路径（v3.0 新增，同步功能使用） |
+| externalUrl | string | 否 | 外部链接（v5.0 新增，有值时表示外部链接） |
 | iconName | string | 否 | 图标名称 |
 | sortOrder | number | 否 | 排序值 |
 | isVisible | number | 否 | 是否可见：1-是 0-否 |
@@ -90,7 +90,7 @@ Authorization: Bearer <token>
   parentId?: string;
   permDesc?: string;
   routePath?: string;
-  componentPath?: string;
+  externalUrl?: string;          // v5.0 新增 - 外部链接
   iconName?: string;
   sortOrder?: number;
   isVisible?: number;
@@ -107,6 +107,7 @@ Authorization: Bearer <token>
 - 创建根节点时，不传 `parentId`
 - `permissionValue` 在 `permissionType = PC` 且 `nodeType = PAGE` 时有效（PC 页面权限）
 - `permissionValue` 在 `permissionType = NORMAL` 且 `nodeType = TAG` 时有效（普通权限标签）
+- v5.0 起，组件路径由前端根据 `permCode` 自动推导（约定式路由），无需传 `componentPath`
 
 **返回数据**:
 
@@ -163,7 +164,7 @@ Authorization: Bearer <token>
   permName?: string;
   permDesc?: string;
   routePath?: string;
-  componentPath?: string;
+  externalUrl?: string;          // v5.0 新增 - 外部链接
   iconName?: string;
   sortOrder?: number;
   isVisible?: number;
@@ -322,7 +323,7 @@ interface Permission {
   nodeType: 'MENU' | 'PAGE' | 'TAG';
   parentId?: string;
   routePath?: string;
-  componentPath?: string;
+  externalUrl?: string;          // v5.0 新增 - 外部链接
   iconName?: string;
   sortOrder: number;
   isVisible: number;
@@ -334,6 +335,12 @@ interface Permission {
   updateAt?: string;
 }
 ```
+
+**约定式路由 (v5.0)**:
+- `componentPath` 字段已移除，组件路径由前端根据 `permCode` 自动推导
+- 推导规则：`permCode` = 路由路径 = 组件目录
+  - 路由路径：`/${permCode}`
+  - 组件路径：`src/views/${permCode}/Index.vue`
 
 ---
 
