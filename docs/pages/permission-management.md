@@ -1,8 +1,16 @@
-# 权限管理页面文档
+# 权限管理页面文档（普通权限 NORMAL）
 
 ## 概述
 
-本文档描述权限管理页面的管理流程和核心业务，包含 PC 权限树管理。
+本文档描述**普通权限**（PermissionType=NORMAL）的管理页面和核心业务。
+
+**适用范围**:
+- **权限类型**: `PermissionType.NORMAL`
+- **节点类型**: `MENU`（目录） + `TAG`（标签）
+- **使用场景**: 移动端、非后台管理系统的权限管理
+- **管理方式**: 手动创建、编辑、删除
+
+> 💡 **提示**: PC 权限管理请使用 [PC 权限管理页面](./pc-permission-management.md)，支持路由同步功能。
 
 **版本**: 2.0.0
 
@@ -10,18 +18,18 @@
 
 ## 目录
 
-1. [PC 权限树管理](#1-pc-权限树管理)
+1. [权限树管理](#1-权限树管理)
 2. [业务规则](#业务规则)
 
 ---
 
-## 1. PC 权限树管理
+## 1. 权限树管理
 
 ### 页面流程图
 
 ```mermaid
 flowchart TD
-    Start([进入 PC 权限树页面]) --> LoadTree[加载权限树]
+    Start([进入权限管理页面]) --> LoadTree[加载权限树]
     LoadTree --> RenderTree[渲染权限树表格]
 
     RenderTree --> Search[输入关键词过滤]
@@ -41,10 +49,10 @@ flowchart TD
     OpenDrawer --> FillForm[填写表单]
     FillForm --> SelectType[选择权限类型和节点类型]
     SelectType --> Menu{NodeType=MENU}
-    SelectType --> Page{NodeType=PAGE}
+    SelectType --> Tag{NodeType=TAG}
 
     Menu --> ParentCheck{是否有父节点？}
-    Page --> ParentCheck
+    Tag --> ParentCheck
 
     ParentCheck -->|是 | ValidateParent[验证父节点类型<br>必须是 MENU]
     ValidateParent -->|合法 | SaveNode[保存节点]
@@ -71,12 +79,11 @@ flowchart TD
 
 | 功能 | 说明 |
 |------|------|
-| 树形展示 | 以树形结构展示 PC 权限，支持展开/折叠 |
+| 树形展示 | 以树形结构展示普通权限，支持展开/折叠 |
 | 关键词过滤 | 输入关键词过滤树节点 |
 | 新建根节点 | 创建根节点权限（NodeType=MENU） |
-| 新建子节点 | 在选中节点下创建子节点（MENU 或 PAGE） |
+| 新建子节点 | 在选中节点下创建子节点（MENU 或 TAG） |
 | 编辑节点 | 修改权限节点信息 |
-| 编辑 pcAction | 编辑 PAGE 节点的操作权限列表 |
 | 删除节点 | 删除权限节点及其子节点 |
 
 ### 权限类型 hierarchy
@@ -85,19 +92,16 @@ flowchart TD
 ROOT (MENU)
 └── 一级菜单 (MENU)
     ├── 二级菜单 (MENU)
-    │   └── 页面 (PAGE)
-    │       └── pcAction: [{name: '新增', permCode: 'xxx:add'}, ...]
-    └── 页面 (PAGE)
-        └── pcAction: [{name: '编辑', permCode: 'xxx:edit'}, ...]
+    │   └── 标签权限 (TAG)
+    └── 标签权限 (TAG)
 ```
 
 ### 业务规则
 
-- `NodeType.PAGE` 的 `parentId` 必须指向 `NodeType.MENU` 类型
+- `NodeType.TAG` 的 `parentId` 必须指向 `NodeType.MENU` 类型
 - 根节点只能创建 `NodeType.MENU` 类型
-- `pcAction` 字段仅存储在 `NodeType.PAGE` 节点上
-- `pcAction` 表示该页面下的所有操作权限（按钮）列表
 - 删除节点时级联删除所有子节点
+- **注意**: 本文档不涉及 `pcAction` 配置，PC 权限的 pcAction 配置请参考 [PC 权限管理页面](./pc-permission-management.md)
 
 ---
 
@@ -144,19 +148,12 @@ enum ShowMode {
 - `permCode` 全局唯一，创建后不可修改
 - 建议编码格式：
   - MENU: `menu.{module}.{name}`
-  - PAGE: `page.{module}.{name}`
   - TAG: `tag.{module}.{name}`
 
 ### 显示模式
 
 - `showMode = NORMAL`: 普通模式，对所有用户可见
 - `showMode = DEV`: 开发模式，仅对开发模式用户可见
-
-### pcAction 管理
-
-- `pcAction` 仅在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上有效
-- `pcAction` 格式：`[{name: string, permCode: string}]`
-- `pcAction` 的 `permCode` 必须全局唯一
 
 ---
 
@@ -166,6 +163,7 @@ enum ShowMode {
 - [应用类型管理页面](./app-type-management.md)
 - [角色管理页面](./role-management.md)
 - [权限池配置流程](../flows/permission-pool-setup.md)
+- [PC 权限管理页面](./pc-permission-management.md) - PC 权限专用页面，支持路由同步
 
 ---
 
@@ -173,7 +171,8 @@ enum ShowMode {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| 2.0.0 | 2026-03-24 | 重构：使用新的 PermissionType 和 NodeType，添加 pcAction 管理 |
+| 2.0.0 | 2026-03-24 | 重构：使用新的 PermissionType 和 NodeType |
+| 2.0.1 | 2026-03-28 | 明确适用范围：NORMAL 权限类型，移除 pcAction 相关描述 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---
