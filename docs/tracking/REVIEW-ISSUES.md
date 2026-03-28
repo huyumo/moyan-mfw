@@ -290,4 +290,13 @@
 
 ---
 
+## 相关资源
+
+- 文档导航：[docs-manifest.md](../docs-manifest.md)
+- 变更日志：[CHANGELOG.md](./CHANGELOG.md)
+- 评审报告：[.claude/team/archive/](../../.claude/team/archive/)（详细评审报告）
+- 会议纪要：[.claude/team/meetings/](../../.claude/team/meetings/)（团队会议记录）
+
+---
+
 *本文档由基础设施文档审查生成，最后更新：2026-03-27 (P2 级问题修复)*

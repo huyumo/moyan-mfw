@@ -240,6 +240,8 @@
 - 问题追踪：[REVIEW-ISSUES.md](./REVIEW-ISSUES.md)
 - 文档导航：[docs-manifest.md](../docs-manifest.md)
 - 术语表：[glossary.md](../glossary.md)
+- 团队档案：[.claude/team/archive/](../../.claude/team/archive/)（评审报告、行动计划等）
+- 会议纪要：[.claude/team/meetings/](../../.claude/team/meetings/)（团队会议记录）
 
 ---
 

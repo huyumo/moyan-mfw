@@ -34,17 +34,30 @@
       "Bash(tr:*)",
       "Bash(head:*)",
       "Edit(.claude/**)",
-      "Write(.claude/**)"
+      "Write(.claude/**)",
+      "Bash(mv docs/tracking/COMPREHENSIVE-REVIEW-REPORT.md .claude/team/archive/)",
+      "Bash(mv docs/tracking/IMPROVEMENT-ACTION-PLAN.md .claude/team/archive/)",
+      "Bash(mv docs/tracking/PM-RECOMMENDATIONS.md .claude/team/archive/)",
+      "Bash(mv docs/tracking/REVIEW-REPORT.md .claude/team/archive/)",
+      "Bash(mv docs/tracking/PROJECT-DELIVERY-REPORT.md .claude/team/archive/)"
+    ],
+    "additionalDirectories": [
+      "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",
+      "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team\\meetings"
     ]
   },
   "hooks": {
-    "Stop": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash -c 'if git diff --quiet && git diff --cached --quiet; then exit 0; fi; git add -A; if git diff --cached --quiet; then exit 0; fi; CHANGES=$(git diff --cached --name-only 2>/dev/null | head -5 | tr \"\\n\" \", \"); if [ -n \"$CHANGES\" ]; then git commit -m \"chore: auto-commit [$CHANGES]\" --no-verify 2>/dev/null && echo \"[auto-commit] changes committed\" || echo \"[auto-commit] commit skipped\"; fi' 2>/dev/null || true",
-        "timeout": 30,
-        "statusMessage": "自动提交变更..."
-      }]
-    }]
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if git diff --quiet && git diff --cached --quiet; then exit 0; fi; git add -A; if git diff --cached --quiet; then exit 0; fi; CHANGES=$(git diff --cached --name-only 2>/dev/null | head -5 | tr \"\\n\" \", \"); if [ -n \"$CHANGES\" ]; then git commit -m \"chore: auto-commit [$CHANGES]\" --no-verify 2>/dev/null && echo \"[auto-commit] changes committed\" || echo \"[auto-commit] commit skipped\"; fi' 2>/dev/null || true",
+            "timeout": 30,
+            "statusMessage": "自动提交变更..."
+          }
+        ]
+      }
+    ]
   }
 }
