@@ -17,6 +17,8 @@
 | `/api/v1/permissions/:id` | GET | 获取权限详情 |
 | `/api/v1/permissions/:id` | PUT | 更新权限节点 |
 | `/api/v1/permissions/:id` | DELETE | 删除权限节点 |
+| `/api/v1/permissions/sync` | POST | 同步路由到权限树（新增） |
+| `/api/v1/permissions/compare` | GET | 比对路由与权限树差异（新增） |
 
 **认证要求**:
 
@@ -218,6 +220,142 @@ Authorization: Bearer <token>
   message?: string;
 }
 ```
+
+---
+
+## 6. 同步路由到权限树
+
+**接口**: `POST /api/v1/permissions/sync`
+
+**使用场景**: 在 PC 权限管理页面点击"同步路由"按钮，将前端路由配置同步到权限树。
+
+**请求体**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| dryRun | boolean | 否 | 是否仅预览：true=预览，false=执行，默认 false |
+
+```typescript
+{
+  dryRun?: boolean;
+}
+```
+
+**返回数据**:
+
+```typescript
+{
+  code: number;
+  data: {
+    synced: boolean;
+    summary: {
+      added: number;
+      updated: number;
+      unchanged: number;
+    };
+    details: Array<{
+      type: 'add' | 'update' | 'unchanged';
+      permCode: string;
+      permName: string;
+      nodeType: 'MENU' | 'PAGE';
+      routePath: string;
+      message?: string;
+    }>;
+  };
+  message?: string;
+}
+```
+
+**业务规则**:
+- 仅同步 PC 权限，不影响 NORMAL 权限
+- 同步生成权限树结构，pcAction 为空
+- 路由新增 → 添加权限节点
+- 路由删除 → 标记 `permStatus=0`（不物理删除）
+- 路由名称变更 → 更新 `permName`
+
+---
+
+## 7. 比对路由与权限树差异
+
+**接口**: `GET /api/v1/permissions/compare`
+
+**使用场景**: 在 PC 权限管理页面点击"检查差异"按钮，或在应用启动时自动检测。
+
+**返回数据**:
+
+```typescript
+{
+  code: number;
+  data: {
+    hasDiff: boolean;
+    diffCount: number;
+    diffs: Array<{
+      type: 'missing' | 'mismatch' | 'extra';
+      permCode?: string;
+      permName?: string;
+      routePath?: string;
+      suggestedPermCode?: string;
+      suggestion: string;
+    }>;
+  };
+  message?: string;
+}
+```
+
+**差异类型说明**:
+
+| 类型 | 说明 | 建议操作 |
+|------|------|----------|
+| missing | 路由存在，权限不存在 | 添加权限节点 |
+| mismatch | 路由与权限名称不一致 | 更新权限名称 |
+| extra | 权限存在，路由已删除 | 禁用权限节点 |
+
+---
+
+## 8. pcAction 管理接口
+
+### 8.1 添加 pcAction
+
+**接口**: `POST /api/v1/permissions/:id/pc-actions`
+
+**使用场景**: 在 PAGE 权限节点下添加操作权限（按钮权限）。
+
+**路径参数**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | string | 是 | 权限 ID（必须是 PAGE 节点） |
+
+**请求体**:
+```typescript
+{
+  name: string;
+  permCode: string;
+}
+```
+
+### 8.2 编辑 pcAction
+
+**接口**: `PUT /api/v1/permissions/:id/pc-actions/:permCode`
+
+**路径参数**:
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | string | 是 | 权限 ID |
+| permCode | string | 是 | 操作编码 |
+
+**请求体**:
+```typescript
+{
+  name?: string;
+}
+```
+
+### 8.3 删除 pcAction
+
+**接口**: `DELETE /api/v1/permissions/:id/pc-actions/:permCode`
+
+**约束**:
+- 已用于角色权限配置的 pcAction 不允许删除
 
 ---
 

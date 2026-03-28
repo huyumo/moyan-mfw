@@ -163,7 +163,8 @@ class PermissionEntity {
   permissionType!: PermissionType;                          // 权限类型 (enum)
   nodeType?: NodeType;                                      // 节点类型 (enum)
   parentId?: string;                                        // 父权限 ID (char(36), 自引用外键)
-  routePath?: string;                                       // 路由路径 (varchar(255))
+  routePath?: string;                                       // 路由路径 (varchar(255), v3.0 新增)
+  isAutoSync?: number;                                      // 是否同步生成：1-是 0-否 (tinyint(1), default 0, v3.0 新增)
   componentPath?: string;                                   // 组件路径 (varchar(255))
   iconName?: string;                                        // 图标名称 (varchar(64))
   sortOrder!: number;                                       // 排序值 (int, default 0)
@@ -176,6 +177,10 @@ class PermissionEntity {
   updateAt?: Date;                                          // 更新时间 (datetime(3))
 }
 ```
+
+**字段变更说明 (v3.0)**:
+- `routePath`: 新增字段，用于标记权限节点来源的路由路径，同步功能使用
+- `isAutoSync`: 新增字段，为 1 时表示该节点由路由同步生成，节点结构不可编辑
 
 **枚举类型**:
 
@@ -218,6 +223,8 @@ enum ShowMode {
 - `idx_permission_type` (permissionType)
 - `idx_parent_id` (parentId)
 - `idx_perm_status` (permStatus)
+- `idx_route_path` (routePath) - **v3.0 新增**
+- `idx_auto_sync` (isAutoSync) - **v3.0 新增**
 
 **业务规则**:
 - `PAGE`、`TAG` 类型的 `parentId` 必须指向 `MENU` 类型
@@ -225,6 +232,8 @@ enum ShowMode {
 - `pcAction` 表示该页面下的所有操作权限（按钮）列表
 - `showMode = DEV` 的权限仅对开发模式用户可见
 - `permCode` 全局唯一，创建后不可修改
+- `isAutoSync = 1` 的节点，前端禁止编辑节点结构（permName、parentId 等），但可配置 pcAction
+- `routePath` 用于同步功能比对路由与权限树的差异
 
 ---
 
