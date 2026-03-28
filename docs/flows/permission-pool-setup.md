@@ -54,7 +54,7 @@ sequenceDiagram
         U->>P: 切换到"普通权限"Tab
         P->>S: 获取普通权限列表
         S->>D: 分页查询普通权限
-        D-->>S: 返回 PageResult
+        D-->>S: 返回 PermissionItem[]
         S-->>P: 返回数据
         P->>P: 渲染复选框列表
     end
@@ -208,7 +208,7 @@ pcAction 是权限的细分操作标识，用于更细粒度的权限控制。
 - [权限系统核心概念](../core/permissions.md) - pcAction 数据流说明
 - [权限分配流程](./permission-assignment.md) - 角色权限分配
 - [数据库实体设计](../database/database-entities-design.md) - sys_app_type_permission 表结构
-```
+
 
 ---
 
@@ -218,7 +218,7 @@ pcAction 是权限的细分操作标识，用于更细粒度的权限控制。
 graph TB
     subgraph 权限池配置
         P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
-        P2[普通权限选择] --> P4
+        P2[普通权限树选择] --> P4
         P4 --> P5[保存到 sys_app_type_permission]
     end
 
