@@ -30,9 +30,9 @@ ROOT (MENU)
 
 **组合规则**:
 - `PC + MENU` = PC 菜单目录
-- `PC + PAGE` = PC 页面权限（父节点必须是 MENU）
+- `PC + PAGE` = PC 页面权限（支持 permissionValue，父节点必须是 MENU）
 - `NORMAL + MENU` = 普通权限目录
-- `NORMAL + TAG` = 普通权限标签
+- `NORMAL + TAG` = 普通权限标签（支持 permissionValue）
 
 ---
 
@@ -41,7 +41,7 @@ ROOT (MENU)
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. 权限定义 (sys_permission.permissionValue)                    │
-│    定义 PAGE 节点可用的所有操作：ADD|EDIT|DELETE = 7n           │
+│    定义 PAGE/TAG 节点可用的所有操作：ADD|EDIT|DELETE = 7n       │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 权限池配置时选择子集
                      ▼
@@ -67,6 +67,7 @@ ROOT (MENU)
 - 子层的 `permissionValue` 必须是父层定义集合的**子集**
 - 验证公式：`(childValue & parentValue) === childValue`
 - 权限验证时，使用位运算检查用户权限值是否包含所需操作
+- PC 权限和普通权限都遵循相同的 permissionValue 约束规则
 
 ---
 

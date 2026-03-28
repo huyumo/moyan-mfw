@@ -79,7 +79,7 @@ Authorization: Bearer <token>
 | isCache | number | 否 | 是否缓存：1-是 0-否 |
 | showMode | string | 否 | 显示模式：NORMAL / DEV |
 | permStatus | number | 否 | 状态：1-启用 0-禁用 |
-| permissionValue | bigint | 否 | 位运算权限值（仅 PC 权限且 PAGE 节点有效），如 7n = ADD\|EDIT\|DELETE |
+| permissionValue | bigint | 否 | 位运算权限值（PC 权限的 PAGE 节点、普通权限的 TAG 节点有效），如 7n = ADD\|EDIT\|DELETE |
 
 ```typescript
 {
@@ -103,8 +103,10 @@ Authorization: Bearer <token>
 
 **约束**:
 - `nodeType = PAGE` 时，`parentId` 必须指向 `nodeType = MENU` 的节点
+- `nodeType = TAG` 时，`parentId` 必须指向 `nodeType = MENU` 的节点
 - 创建根节点时，不传 `parentId`
-- `permissionValue` 仅在 `permissionType = PC` 且 `nodeType = PAGE` 时有效
+- `permissionValue` 在 `permissionType = PC` 且 `nodeType = PAGE` 时有效（PC 页面权限）
+- `permissionValue` 在 `permissionType = NORMAL` 且 `nodeType = TAG` 时有效（普通权限标签）
 
 **返回数据**:
 

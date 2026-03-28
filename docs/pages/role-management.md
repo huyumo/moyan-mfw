@@ -58,14 +58,14 @@ flowchart TD
     CommonList --> CheckCommon[勾选普通权限]
 
     CheckPc --> ExpandPermissionValue[点击 PAGE 节点展开 permissionValue 位选项]
-    CheckCommon --> CheckPermissionValue[勾选普通权限]
+    CheckCommon --> ExpandNormalPermissionValue[点击 TAG 节点展开 permissionValue 位选项]
 
     ExpandPermissionValue --> LoadPoolPermissionValue[从权限池加载 permissionValue 选项]
+    ExpandNormalPermissionValue --> LoadPoolPermissionValue
+
     LoadPoolPermissionValue --> SelectPermissionValue[勾选 permissionValue 位<br>必须是权限池 permissionValue 的子集]
 
     SelectPermissionValue --> SavePerm[保存权限]
-    CheckPermissionValue --> SavePerm
-    CheckApiAction --> SavePerm
 
     SavePerm --> SavePermConfirm[保存权限分配]
     SavePermConfirm --> ClosePanel[关闭面板]
@@ -110,7 +110,7 @@ flowchart TD
 | 权限类型 Tab | 切换 PC 权限、普通权限 |
 | 权限选择器 | 仅展示当前应用类型权限池中的权限节点 |
 | 勾选权限 | 勾选/取消勾选权限节点 |
-| permissionValue 选择 | 点击 PAGE 节点展开 permissionValue 位选项，勾选操作权限 |
+| permissionValue 选择 | 点击 PAGE 节点或 TAG 节点展开 permissionValue 位选项，勾选操作权限 |
 | 保存权限 | 提交权限分配配置到后端 |
 
 ---
@@ -134,7 +134,7 @@ flowchart TD
 
 - 角色权限中的 `permissionValue` 必须是权限池中对应权限 `permissionValue` 的子集
 - 保存时自动验证 `permissionValue` 的合法性（位运算子集检查）
-- `permissionValue` 仅在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上有效
+- `permissionValue` 适用于 PC 权限（PAGE 节点）和普通权限（TAG 节点）
 
 ### 角色编码
 

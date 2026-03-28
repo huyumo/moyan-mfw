@@ -65,7 +65,7 @@ interface PermissionTreeNode {
   permStatus: number;
   isAutoSync?: number;           // v3.0 新增 - 1=同步生成 0=手动添加
 
-  // PC 操作权限（仅 nodeType=PAGE 时有效）- v4.0 改为位运算
+  // 操作权限（PC 权限的 PAGE 节点、普通权限的 TAG 节点有效）- v4.0 改为位运算
   permissionValue?: bigint;      // 位运算权限值，如 7n = ADD|EDIT|DELETE
 
   // 配置状态（由后端根据上下文填充）

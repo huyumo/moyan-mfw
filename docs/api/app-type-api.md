@@ -112,7 +112,7 @@ interface PermissionTreeNode {
   sortOrder: number;
   // 权限池配置状态
   inPool: boolean;                       // 是否已加入权限池
-  // permissionValue 仅在 nodeType=PAGE 且 permissionType=PC 时有效
+  // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效
   permissionValue?: bigint;              // 位运算权限值
   children?: PermissionTreeNode[];
 }
