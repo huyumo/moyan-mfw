@@ -247,8 +247,8 @@ Authorization: Bearer <token>
 ```typescript
 // RouteNode 接口定义
 interface RouteNode {
-  path: string;        // 路由路径，如 '/system' 或 'app-type'
-  name: string;        // 路由名称，如 'System'
+  path: string;        // 路由路径，如 'system' 或 'app-type'
+  name: string;        // 路由名称，如 '系统管理'
   children?: RouteNode[];  // 子路由（有 children 表示 MENU 节点）
 }
 
@@ -268,42 +268,42 @@ interface RouteNode {
   "dryRun": false,
   "routes": [
     {
-      "path": "/system",
-      "name": "System",
+      "path": "system",
+      "name": "系统管理",
       "children": [
         {
           "path": "app-type",
-          "name": "AppType",
+          "name": "应用类型管理",
           "children": [
             {
               "path": "list",
-              "name": "AppTypeList"
+              "name": "应用类型列表"
             }
           ]
         },
         {
           "path": "permission",
-          "name": "Permission",
+          "name": "权限管理",
           "children": [
             {
               "path": "pc",
-              "name": "PcPermission"
+              "name": "PC权限管理"
             }
           ]
         }
       ]
     },
     {
-      "path": "/business",
-      "name": "Business",
+      "path": "business",
+      "name": "业务管理",
       "children": [
         {
           "path": "order",
-          "name": "Order",
+          "name": "订单管理",
           "children": [
             {
               "path": "list",
-              "name": "OrderList"
+              "name": "订单列表"
             }
           ]
         }
