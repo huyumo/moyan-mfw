@@ -7,23 +7,46 @@
  *    - Index.vue (优先)
  *    - index.ts
  *    - index.tsx
- * 3. 如果路由配置了某个页面，但对应目录下没有找到上述文件，则自动重定向到 404 页面
+ * 3. 如果路由配置了某个页面，但对应目录下没有找到上述文件，则自动显示 404 页面
  */
 
 import type { RouteRecordRaw } from 'vue-router';
 
 /**
- * 动态导入页面组件的辅助函数
- * @param dirName - views 下的目录名
- * @returns 组件加载函数，如果找不到文件则返回 404 页面
+ * 自动加载 views 目录下所有页面组件
+ * 匹配模式：../views/**/Index.{vue,ts,tsx}
  */
-export function importPage(dirName: string) {
-  return () =>
-    import(`../views/${dirName}/Index.vue`).catch(() =>
-      import(`../views/${dirName}/index.ts`).catch(() =>
-        import(`../views/${dirName}/index.tsx`).catch(() => import('../views/not-found/Index.vue'))
-      )
-    );
+const viewModules = import.meta.glob<unknown>(
+  '../views/**/Index.{vue,ts,tsx}',
+  { eager: false }
+);
+
+/**
+ * 获取页面组件的加载函数
+ * @param dirName - views 下的目录名（如 'dashboard', 'system/user-list'）
+ * @returns 组件加载函数，找不到则返回 404 页面
+ */
+function getViewComponent(dirName: string) {
+  const basePath = `../views${dirName}/`;
+  const notFoundPath = '../views/not-found/Index.vue';
+
+  // 按优先级查找：Index.vue > index.ts > index.tsx
+  const componentPath1 = `${basePath}Index.vue`;
+  const componentPath2 = `${basePath}index.ts`;
+  const componentPath3 = `${basePath}index.tsx`;
+
+  if (viewModules[componentPath1]) {
+    return viewModules[componentPath1];
+  }
+  if (viewModules[componentPath2]) {
+    return viewModules[componentPath2];
+  }
+  if (viewModules[componentPath3]) {
+    return viewModules[componentPath3];
+  }
+
+  // 找不到文件，返回 404 页面
+  return () => import(notFoundPath);
 }
 
 /**
@@ -32,7 +55,7 @@ export function importPage(dirName: string) {
 const AdminLayout = () => import('../layouts/AdminLayout.vue');
 
 /**
- * 403 和 404 页面（直接使用静态导入）
+ * 403 和 404 页面（直接静态导入）
  */
 const ForbiddenPage = () => import('../views/forbidden/Index.vue');
 const NotFoundPage = () => import('../views/not-found/Index.vue');
@@ -99,7 +122,7 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
     {
       path: 'dashboard',
       name: 'AdminDashboard',
-      component: importPage('dashboard'),
+      component: getViewComponent('/dashboard'),
       meta: {
         title: '首页',
         requiresAuth: true,
@@ -115,7 +138,7 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
     {
       path: '/login',
       name: 'AdminLogin',
-      component: importPage('login'),
+      component: getViewComponent('/login'),
       meta: {
         title: '登录',
         menu: false,

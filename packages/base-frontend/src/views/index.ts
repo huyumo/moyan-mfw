@@ -6,7 +6,7 @@
  * 加载规则：
  * 1. 每个子目录被视为一个页面
  * 2. 按优先级加载：Index.vue > index.ts > index.tsx
- * 3. 如果目录下没有这三个类文件，则该目录不会被加载
+ * 3. 如果目录下没有这三类文件，则该目录不会被加载
  *
  * 导出格式：
  * - 按目录名驼峰命名导出，例如：
@@ -15,15 +15,13 @@
  *   - user-center/ => UserCenterPage
  */
 
-const PAGE_FILES = import.meta.glob<{ default?: unknown }>('./*/Index.{vue,tsx,ts}', {
-  eager: false,
-  import: 'default',
-});
-
-const INDEX_TS_FILES = import.meta.glob<{ default?: unknown }>('./*/index.{ts,tsx}', {
-  eager: false,
-  import: 'default',
-});
+/**
+ * 自动加载所有 Index.vue | index.ts | index.tsx 文件
+ */
+const viewModules = import.meta.glob<{ default?: unknown }>(
+  './*/Index.{vue,ts,tsx}',
+  { eager: false }
+);
 
 /**
  * 将目录名转换为驼峰命名的页面组件名
@@ -42,28 +40,25 @@ function dirNameToComponentName(dirName: string): string {
 }
 
 /**
- * 获取所有已注册的页面组件
- */
-export const pageModules: Record<string, () => Promise<unknown>> = { ...PAGE_FILES };
-
-/**
  * 按目录名获取页面组件
  * @param dirName - 目录名
  * @returns 组件加载函数
  */
 export function getPageModule(dirName: string): (() => Promise<unknown>) | undefined {
   const path = `./${dirName}/Index.vue`;
-  const tsPath = `./${dirName}/index.ts`;
-  const tsxPath = `./${dirName}/index.tsx`;
-
-  return PAGE_FILES[path] || INDEX_TS_FILES[tsPath] || INDEX_TS_FILES[tsxPath];
+  return viewModules[path];
 }
+
+/**
+ * 获取所有已注册的页面组件
+ */
+export const pageModules = viewModules;
 
 /**
  * 获取所有页面组件名称列表
  */
 export function getPageNames(): string[] {
-  return Object.keys(PAGE_FILES)
+  return Object.keys(viewModules)
     .map((path) => {
       const dirName = path.replace('./', '').split('/')[0];
       return dirNameToComponentName(dirName);
@@ -72,7 +67,7 @@ export function getPageNames(): string[] {
 }
 
 // 导出所有页面组件（按目录名自动命名）
-Object.entries(PAGE_FILES).forEach(([path, loader]) => {
+Object.entries(viewModules).forEach(([path, loader]) => {
   const dirName = path.replace('./', '').split('/')[0];
   const componentName = dirNameToComponentName(dirName);
   Object.defineProperty(exports, componentName, {
@@ -80,17 +75,4 @@ Object.entries(PAGE_FILES).forEach(([path, loader]) => {
     enumerable: true,
     configurable: true,
   });
-});
-
-// 导出 index.ts / index.tsx 的页面
-Object.entries(INDEX_TS_FILES).forEach(([path, loader]) => {
-  const dirName = path.replace('./', '').split('/')[0];
-  const componentName = dirNameToComponentName(dirName);
-  if (!exports[componentName]) {
-    Object.defineProperty(exports, componentName, {
-      get: () => () => loader().then((mod) => mod.default),
-      enumerable: true,
-      configurable: true,
-    });
-  }
 });
