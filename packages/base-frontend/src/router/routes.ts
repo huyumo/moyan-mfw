@@ -1,14 +1,41 @@
 /**
  * @fileoverview 路由配置。
+ *
+ * 路由页面加载规则：
+ * 1. 页面组件必须存放在 src/views/ 目录下
+ * 2. 每个页面是一个独立目录，目录内必须包含以下文件之一：
+ *    - Index.vue (优先)
+ *    - index.ts
+ *    - index.tsx
+ * 3. 如果路由配置了某个页面，但对应目录下没有找到上述文件，则自动重定向到 404 页面
  */
 
 import type { RouteRecordRaw } from 'vue-router';
 
+/**
+ * 动态导入页面组件的辅助函数
+ * @param dirName - views 下的目录名
+ * @returns 组件加载函数，如果找不到文件则返回 404 页面
+ */
+export function importPage(dirName: string) {
+  return () =>
+    import(`../views/${dirName}/Index.vue`).catch(() =>
+      import(`../views/${dirName}/index.ts`).catch(() =>
+        import(`../views/${dirName}/index.tsx`).catch(() => import('../views/not-found/Index.vue'))
+      )
+    );
+}
+
+/**
+ * 动态导入布局组件
+ */
 const AdminLayout = () => import('../layouts/AdminLayout.vue');
-const DashboardPage = () => import('../pages/DashboardPage.vue');
-const ForbiddenPage = () => import('../pages/ForbiddenPage.vue');
-const LoginPage = () => import('../pages/LoginPage.vue');
-const NotFoundPage = () => import('../pages/NotFoundPage.vue');
+
+/**
+ * 403 和 404 页面（直接使用静态导入）
+ */
+const ForbiddenPage = () => import('../views/forbidden/Index.vue');
+const NotFoundPage = () => import('../views/not-found/Index.vue');
 
 /**
  * 创建基础管理后台路由的选项接口。
@@ -72,7 +99,7 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
     {
       path: 'dashboard',
       name: 'AdminDashboard',
-      component: DashboardPage,
+      component: importPage('dashboard'),
       meta: {
         title: '首页',
         requiresAuth: true,
@@ -88,7 +115,7 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
     {
       path: '/login',
       name: 'AdminLogin',
-      component: LoginPage,
+      component: importPage('login'),
       meta: {
         title: '登录',
         menu: false,
