@@ -149,32 +149,93 @@ export const permissionRoutes = [
 
 ## 3. 同步逻辑设计
 
-### 3.1 同步流程图
+### 3.1 设计说明
+
+**为什么由前端推送路由数据？**
+
+| 方案 | 优点 | 缺点 | 结论 |
+|------|------|------|------|
+| 后端读取 TS 文件 | 无需前端处理 | TypeScript 无法直接执行，前后端耦合 | ❌ 不可行 |
+| 前端推送 JSON | 前后端解耦，路由运行时数据准确 | 前端需要转换格式 | ✅ 推荐 |
+
+**同步方式**:
+- 前端从 Vue Router 实例中提取路由结构
+- 转换为 JSON 格式推送给后端
+- 后端解析 JSON 并生成 permCode、permName 等字段
+
+### 3.2 同步流程图
 
 ```mermaid
 flowchart TD
-    A[读取 permission-routes.ts] --> B[解析路由树]
-    B --> C[遍历路由节点]
-    C --> D{有 children?}
-    D -->|是 | E[nodeType = MENU]
-    D -->|否 | F[nodeType = PAGE]
-    E --> G[生成 permCode]
-    F --> G
-    G --> H[生成 permName<br/>从路由 name 或 path 转换]
-    H --> I[确定 parentId<br/>从路由嵌套关系]
-    I --> J{权限已存在？}
-    J -->|是 | K[更新 permName]
-    J -->|否 | L[插入新权限]
-    K --> M{还有节点？}
-    L --> M
-    M -->|是 | C
-    M -->|否 | N[同步完成<br/>permissionValue=0n，待配置]
+    A[前端：读取 Vue Router 实例] --> B[前端：过滤有效路由<br/>隐藏路由/登录页/404 等]
+    B --> C[前端：转换为 RouteNode[]]
+    C --> D[POST /api/v1/permissions/sync<br/>routes: RouteNode[]]
+    D --> E[后端：遍历路由节点]
+    E --> F{有 children?}
+    F -->|是 | G[nodeType = MENU]
+    F -->|否 | H[nodeType = PAGE]
+    G --> I[生成 permCode<br/>如：menu.system.user]
+    H --> I
+    I --> J[生成 permName<br/>从路由 name 或 path 转换]
+    J --> K[确定 parentId<br/>从路由嵌套关系]
+    K --> L{权限已存在？}
+    L -->|是 | M[更新 permName/parentId]
+    L -->|否 | N[插入新权限]
+    M --> O{还有节点？}
+    N --> O
+    O -->|是 | E
+    O -->|否 | P[同步完成<br/>permissionValue=0n，待配置]
 ```
 
-### 3.2 permCode 生成算法
+### 3.3 前端路由数据提取
 
 ```typescript
-function generatePermCode(route: RouteRecordRaw, parentPermCode?: string): string {
+// 前端同步逻辑实现
+async function syncPermissionRoutes(appTypeId: string, dryRun = false) {
+  const router = useRouter()
+  const routes = router.getRoutes()
+
+  // 过滤有效路由（排除登录页、404、隐藏路由等）
+  const validRoutes = routes
+    .filter(r => {
+      // 排除：登录页、403、404、重定向路由
+      if (['/login', '/403', '/404'].includes(r.path)) return false
+      if (r.meta?.hidden === true) return false
+      if (r.redirect) return false
+      return true
+    })
+    .map(r => ({
+      path: r.path,
+      name: r.name as string,
+      children: r.children?.map(c => ({
+        path: c.path,
+        name: c.name as string,
+        children: c.children?.map(cc => ({
+          path: cc.path,
+          name: cc.name as string
+        }))
+      }))
+    }))
+
+  // 发送给后端
+  return request.post('/api/v1/permissions/sync', {
+    appTypeId,
+    dryRun,
+    routes: validRoutes
+  })
+}
+```
+
+### 3.4 permCode 生成算法（后端）
+
+```typescript
+interface SyncRouteNode {
+  path: string;
+  name: string;
+  children?: SyncRouteNode[];
+}
+
+function generatePermCode(route: SyncRouteNode, parentPermCode?: string, level = 0): string {
   // 提取 path 中的有效部分（去除前导/）
   const pathSegment = route.path.replace(/^\//, '')
 
@@ -194,20 +255,20 @@ function generatePermCode(route: RouteRecordRaw, parentPermCode?: string): strin
 }
 
 // 示例
-generatePermCode({ path: '/system' })
+generatePermCode({ path: '/system', name: 'System' })
   // → "menu.system"
 
-generatePermCode({ path: 'app-type' }, 'menu.system')
+generatePermCode({ path: 'app-type', name: 'AppType' }, 'menu.system')
   // → "menu.system.app-type"
 
-generatePermCode({ path: 'list', children: undefined }, 'menu.system.app-type')
+generatePermCode({ path: 'list', name: 'AppTypeList' }, 'menu.system.app-type')
   // → "page.system.app-type.list"
 ```
 
-### 3.3 permName 生成规则
+### 3.5 permName 生成规则（后端）
 
 ```typescript
-function generatePermName(route: RouteRecordRaw): string {
+function generatePermName(route: SyncRouteNode): string {
   // 优先使用 name 转中文（可配置映射表）
   // 其次使用 path 转中文
   const nameMap: Record<string, string> = {
@@ -220,17 +281,18 @@ function generatePermName(route: RouteRecordRaw): string {
     'MemberList': '成员列表'
   }
 
-  return nameMap[route.name as string] || route.path
+  return nameMap[route.name] || route.path
 }
 ```
 
-### 3.4 同步策略
+### 3.6 同步策略
 
 | 场景 | 策略 | 说明 |
 |------|------|------|
 | 路由新增 | 添加权限节点 | 路由存在，权限不存在→新增 |
 | 路由删除 | 标记禁用 | 路由删除，权限 `permStatus=0`（不物理删除） |
 | 路由名称变更 | 更新 permName | 保持 permCode 不变 |
+| 路由移动（层级变化） | 更新 parentId | 根据新的嵌套关系 |
 | permissionValue | 不同步 | 同步后在 PC 权限管理页面手动配置 |
 
 ---
@@ -271,12 +333,31 @@ CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
 
 ### 5.1 同步权限树
 
-**接口**: `POST /api/permission/sync`
+**接口**: `POST /api/v1/permissions/sync`
 
 **请求**:
 ```json
 {
-  "dryRun": true      // true=预览，false=执行
+  "appTypeId": "app-type-uuid",
+  "dryRun": false,
+  "routes": [
+    {
+      "path": "/system",
+      "name": "System",
+      "children": [
+        {
+          "path": "app-type",
+          "name": "AppType",
+          "children": [
+            {
+              "path": "list",
+              "name": "AppTypeList"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -289,6 +370,7 @@ CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
     "summary": {
       "added": 3,
       "updated": 1,
+      "removed": 0,
       "unchanged": 5
     },
     "details": [
@@ -297,12 +379,16 @@ CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
         "routePath": "/system/user",
         "permCode": "menu.system.user",
         "permName": "用户管理",
-        "nodeType": "MENU"
+        "nodeType": "MENU",
+        "parentId": "menu.system"
       },
       {
         "type": "update",
         "routePath": "/system/role",
         "permCode": "menu.system.role",
+        "permName": "角色管理",
+        "nodeType": "MENU",
+        "parentId": "menu.system",
         "changes": {
           "permName": { "old": "角色", "new": "角色管理" }
         }
@@ -414,21 +500,43 @@ permissionValue 通过权限更新接口直接配置，无需单独的 pc-action
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { comparePermission, syncPermission } from '@/api/permission'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const syncing = ref(false)
 const diffCount = ref(0)
 const diffs = ref([])
 const previewVisible = ref(false)
 
-onMounted(async () => {
-  const res = await comparePermission()
-  if (res.data.hasDiff) {
-    diffCount.value = res.data.diffCount
-  }
-})
+// 从 Vue Router 实例中提取路由数据
+function extractRouteData() {
+  const routes = router.getRoutes()
+
+  // 过滤有效路由（排除登录页、404、隐藏路由等）
+  return routes
+    .filter(r => {
+      if (['/login', '/403', '/404'].includes(r.path)) return false
+      if (r.meta?.hidden === true) return false
+      if (r.redirect) return false
+      return true
+    })
+    .map(r => ({
+      path: r.path,
+      name: r.name as string,
+      children: r.children?.map(c => ({
+        path: c.path,
+        name: c.name as string,
+        children: c.children?.map(cc => ({
+          path: cc.path,
+          name: cc.name as string
+        }))
+      }))
+    }))
+}
 
 const handleCompare = async () => {
-  const res = await comparePermission()
+  const routes = extractRouteData()
+  const res = await comparePermission({ routes })
   diffs.value = res.data.diffs
   diffCount.value = res.data.diffCount
   previewVisible.value = true
@@ -441,7 +549,12 @@ const handleSync = async () => {
 const confirmSync = async () => {
   syncing.value = true
   try {
-    await syncPermission({ dryRun: false })
+    const routes = extractRouteData()
+    await syncPermission({
+      appTypeId: currentAppTypeId.value,
+      dryRun: false,
+      routes
+    })
     ElMessage.success('同步成功')
     emit('refresh')
   } catch (e) {
@@ -512,21 +625,21 @@ const confirmSync = async () => {
 
 ## 9. 附录：同步示例
 
-### 9.1 输入（路由配置）
+### 9.1 输入（前端推送的路由数据）
 
-```typescript
+```json
 [
   {
-    path: '/system',
-    name: 'System',
-    children: [
+    "path": "/system",
+    "name": "System",
+    "children": [
       {
-        path: 'app-type',
-        name: 'AppType',
-        children: [
+        "path": "app-type",
+        "name": "AppType",
+        "children": [
           {
-            path: 'list',
-            name: 'AppTypeList'
+            "path": "list",
+            "name": "AppTypeList"
           }
         ]
       }

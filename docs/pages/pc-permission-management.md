@@ -268,12 +268,34 @@ interface DiffItem {
 
 ```typescript
 // POST /api/v1/permissions/sync
-async function syncPermission(dryRun: boolean) {
+async function syncPermission(options: {
+  appTypeId: string;
+  dryRun?: boolean;
+  routes: RouteNode[];  // 从 Vue Router 实例提取的路由数据
+}) {
   return request({
     url: '/api/v1/permissions/sync',
     method: 'post',
-    data: { dryRun }
+    data: options
   })
+}
+```
+
+**请求参数**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| appTypeId | string | 是 | 应用类型 ID |
+| dryRun | boolean | 否 | 是否仅预览，默认 false |
+| routes | RouteNode[] | 是 | 路由树结构，从前端 Vue Router 实例提取 |
+
+**RouteNode 结构**:
+
+```typescript
+interface RouteNode {
+  path: string;        // 路由路径
+  name: string;        // 路由名称
+  children?: RouteNode[];  // 子路由
 }
 ```
 

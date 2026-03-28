@@ -638,54 +638,135 @@ Authorization: Bearer <token>
 ### 6.5 同步路由
 
 ```http
-POST /api/permissions/sync-routes
+POST /api/v1/permissions/sync
 Content-Type: application/json
 Authorization: Bearer <token>
 
 {
   "appTypeId": "app-type-uuid",
-  "confirm": true
+  "dryRun": false,
+  "routes": [
+    {
+      "path": "/system",
+      "name": "System",
+      "children": [
+        {
+          "path": "app-type",
+          "name": "AppType",
+          "children": [
+            {
+              "path": "list",
+              "name": "AppTypeList"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+**请求参数说明**:
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| appTypeId | string | 是 | 应用类型 ID |
+| dryRun | boolean | 否 | 是否仅预览，默认 false |
+| routes | RouteNode[] | 是 | 路由树结构，从前端 Vue Router 实例提取 |
+
+**RouteNode 结构**:
+
+```typescript
+interface RouteNode {
+  path: string;        // 路由路径
+  name: string;        // 路由名称
+  children?: RouteNode[];  // 子路由
+}
+```
+
+**响应**:
+
+```json
+{
+  "code": 0,
+  "data": {
+    "synced": true,
+    "summary": {
+      "added": 2,
+      "updated": 1,
+      "removed": 0,
+      "unchanged": 5
+    },
+    "details": [
+      {
+        "type": "add",
+        "permCode": "menu.system.user",
+        "permName": "用户管理",
+        "nodeType": "MENU",
+        "routePath": "/system/user"
+      }
+    ]
+  }
 }
 ```
 
 ### 6.6 比对路由差异
 
 ```http
-GET /api/permissions/diff-routes?appTypeId=uuid
+GET /api/v1/permissions/compare
+Content-Type: application/json
 Authorization: Bearer <token>
+
+{
+  "appTypeId": "app-type-uuid",
+  "routes": [...]  // 前端路由数据
+}
 ```
 
 **响应**:
+
 ```json
 {
   "code": 0,
   "data": {
-    "newRoutes": [
+    "hasDiff": true,
+    "diffCount": 3,
+    "diffs": [
       {
-        "path": "/system/new-page",
-        "permCode": "system/new-page",
-        "permName": "新页面"
-      }
-    ],
-    "removedRoutes": [
+        "type": "missing",
+        "routePath": "/system/new-page",
+        "suggestedPermCode": "menu.system.new-page",
+        "permName": "新页面",
+        "suggestion": "添加菜单权限"
+      },
       {
-        "id": "uuid",
-        "permCode": "system/old-page",
-        "permName": "旧页面"
-      }
-    ],
-    "modifiedRoutes": [
+        "type": "mismatch",
+        "permCode": "menu.system",
+        "diff": {
+          "routeName": "System",
+          "permName": "系统"
+        },
+        "suggestion": "更新权限名称为'系统管理'"
+      },
       {
-        "id": "uuid",
-        "permCode": "system/changed-page",
-        "changes": {
-          "permName": { "old": "旧名称", "new": "新名称" }
-        }
+        "type": "extra",
+        "permCode": "old-menu",
+        "permName": "旧菜单",
+        "routePath": null,
+        "suggestion": "路由已删除，建议禁用该权限"
       }
     ]
   }
 }
 ```
+
+**差异类型说明**:
+
+| 类型 | 说明 | 建议操作 |
+|------|------|----------|
+| missing | 路由存在，权限不存在 | 添加权限节点 |
+| mismatch | 路由与权限名称不一致 | 更新权限名称 |
+| extra | 权限存在，路由已删除 | 禁用权限节点 |
 
 ---
 

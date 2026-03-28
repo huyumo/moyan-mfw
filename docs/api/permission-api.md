@@ -226,15 +226,90 @@ Authorization: Bearer <token>
 
 **使用场景**: 在 PC 权限管理页面点击"同步路由"按钮，将前端路由配置同步到权限树。
 
+**设计说明**:
+
+> **为什么由前端推送路由数据？**
+>
+> 1. `permission-routes.ts` 是 TypeScript 源码，后端无法直接执行
+> 2. 前端路由可能经过动态计算、条件过滤，后端读取的不一定是运行时实际的路由
+> 3. 前后端通常是独立部署的，后端不一定能访问前端源码
+>
+> 因此，采用**前端主动推送完整路由数据**的方式，后端只负责解析 JSON 并同步到数据库。
+
 **请求体**:
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
+| appTypeId | string | 是 | 应用类型 ID（权限按应用类型隔离） |
 | dryRun | boolean | 否 | 是否仅预览：true=预览，false=执行，默认 false |
+| routes | RouteNode[] | 是 | 前端路由树结构（见下方示例） |
 
 ```typescript
+// RouteNode 接口定义
+interface RouteNode {
+  path: string;        // 路由路径，如 '/system' 或 'app-type'
+  name: string;        // 路由名称，如 'System'
+  children?: RouteNode[];  // 子路由（有 children 表示 MENU 节点）
+}
+
+// 请求体示例
 {
+  appTypeId: string;
   dryRun?: boolean;
+  routes: RouteNode[];
+}
+```
+
+**请求体完整示例**:
+
+```json
+{
+  "appTypeId": "app-type-uuid",
+  "dryRun": false,
+  "routes": [
+    {
+      "path": "/system",
+      "name": "System",
+      "children": [
+        {
+          "path": "app-type",
+          "name": "AppType",
+          "children": [
+            {
+              "path": "list",
+              "name": "AppTypeList"
+            }
+          ]
+        },
+        {
+          "path": "permission",
+          "name": "Permission",
+          "children": [
+            {
+              "path": "pc",
+              "name": "PcPermission"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/business",
+      "name": "Business",
+      "children": [
+        {
+          "path": "order",
+          "name": "Order",
+          "children": [
+            {
+              "path": "list",
+              "name": "OrderList"
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -246,29 +321,92 @@ Authorization: Bearer <token>
   data: {
     synced: boolean;
     summary: {
-      added: number;
-      updated: number;
-      unchanged: number;
+      added: number;      // 新增的权限节点数
+      updated: number;    // 更新的权限节点数
+      removed: number;    // 禁用的权限节点数
+      unchanged: number;  // 无变化的权限节点数
     };
     details: Array<{
-      type: 'add' | 'update' | 'unchanged';
-      permCode: string;
-      permName: string;
+      type: 'add' | 'update' | 'remove' | 'unchanged';
+      permCode: string;   // 自动生成的权限编码
+      permName: string;   // 权限名称
       nodeType: 'MENU' | 'PAGE';
-      routePath: string;
-      message?: string;
+      routePath: string;  // 完整路由路径
+      parentId?: string;  // 父权限 ID
+      message?: string;   // 附加说明
     }>;
   };
   message?: string;
 }
 ```
 
+**返回数据示例**:
+
+```json
+{
+  "code": 200,
+  "data": {
+    "synced": true,
+    "summary": {
+      "added": 2,
+      "updated": 1,
+      "removed": 0,
+      "unchanged": 5
+    },
+    "details": [
+      {
+        "type": "add",
+        "permCode": "menu.business.order.detail",
+        "permName": "订单详情",
+        "nodeType": "PAGE",
+        "routePath": "/business/order/detail",
+        "parentId": "menu.business.order",
+        "message": "新增页面权限"
+      },
+      {
+        "type": "update",
+        "permCode": "menu.system.permission",
+        "permName": "权限管理",
+        "nodeType": "MENU",
+        "routePath": "/system/permission",
+        "parentId": "menu.system",
+        "message": "更新权限名称"
+      }
+    ]
+  }
+}
+```
+
 **业务规则**:
-- 仅同步 PC 权限，不影响 NORMAL 权限
-- 同步生成权限树结构，permissionValue 为 0n
-- 路由新增 → 添加权限节点
-- 路由删除 → 标记 `permStatus=0`（不物理删除）
-- 路由名称变更 → 更新 `permName`
+
+| 规则 | 说明 |
+|------|------|
+| 仅同步 PC 权限 | 不影响 NORMAL 权限类型 |
+| permissionValue | 同步生成权限树结构，`permissionValue=0n`，后续手动配置 |
+| 路由新增 | 添加权限节点（`nodeType`、`parentId` 根据路由结构自动计算） |
+| 路由删除 | 标记 `permStatus=0`（不物理删除，保留历史数据） |
+| 路由名称变更 | 更新 `permName` |
+| 路由移动 | 更新 `parentId`（根据路由嵌套关系） |
+
+**permCode 生成规则**:
+
+```
+路由结构                          生成的 permCode 规则
+─────────────────────────────────────────────────────────────
+/system                         → menu.system
+  /app-type                     → menu.system.app-type
+    /list                       → page.system.app-type.list
+  /permission                   → menu.system.permission
+    /pc                         → page.system.permission.pc
+
+拼接规则:
+1. 根路径 (如 `/system`) → `menu.system`
+2. 一级子路径 (如 `/system/app-type`) → `menu.system.app-type`
+3. 二级子路径 (如 `/system/app-type/list`) → `page.system.app-type.list`
+4. MENU / PAGE 的判断:
+   - 有 children 的路由节点 → MENU
+   - 无 children 的路由节点 → PAGE
+```
 
 ---
 
