@@ -53,7 +53,7 @@ interface PermissionTreeNode {
   parentId?: string;
 
   // 路由相关
-  routePath?: string;
+  routePath?: string;            // v3.0 新增 - 同步功能使用
   componentPath?: string;
   iconName?: string;
 
@@ -63,6 +63,7 @@ interface PermissionTreeNode {
   isCache: number;
   showMode: 'NORMAL' | 'DEV';
   permStatus: number;
+  isAutoSync?: number;           // v3.0 新增 - 1=同步生成 0=手动添加
 
   // PC 操作权限（仅 nodeType=PAGE 时有效）
   pcAction?: Array<{
