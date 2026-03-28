@@ -271,7 +271,7 @@ sequenceDiagram
 
 ## 5. 权限验证逻辑
 
-### 4.1 前端按钮/菜单显示
+### 5.1 前端按钮/菜单显示
 
 ```typescript
 // 伪代码示例
@@ -285,25 +285,86 @@ function canPerformAction(permissionId: string, action: string): boolean {
 }
 ```
 
-### 4.2 后端接口权限验证
+### 5.2 后端接口权限验证
+
+**推荐方式：使用 `permCode`（开发友好）**：
 
 ```typescript
-// 伪代码示例
-@RequirePermission(permissionId = "user-list", pcAction = "delete")
+// 方式 1：使用 permCode（推荐）
+// 优势：开发时无需知道 UUID，代码可读性强，权限变更不影响代码
+@RequirePermission(permCode = "system.user-list", pcAction = "delete")
 async deleteUser(userId: string) {
-  // 框架自动验证用户是否有 user-list 权限的 delete 操作
+  // 框架自动根据 permCode 查询 permissionId，再验证用户权限
 }
 ```
 
-### 4.3 验证流程
+**备选方式：使用 `permissionId`（需预分配 UUID 或代码生成）**：
+
+```typescript
+// 方式 2：使用 permissionId
+// 适用场景：权限编码固定，通过初始化脚本预分配 UUID
+@RequirePermission(permissionId = "550e8400-e29b-41d4-a716-446655440000", pcAction = "delete")
+async deleteUser(userId: string) {
+  // 直接使用 UUID 验证，性能略优（无需 permCode→ID 转换）
+}
+```
+
+**框架内部处理逻辑**：
+
+```typescript
+// 权限验证器伪代码
+async validatePermission(param: { permissionId?: string; permCode?: string }, action: string) {
+  let id: string;
+
+  if (param.permissionId) {
+    // 方式 2：直接使用 ID
+    id = param.permissionId;
+  } else if (param.permCode) {
+    // 方式 1：根据 permCode 查询 ID（缓存优先）
+    id = await this.cache.getPermissionId(param.permCode);
+  } else {
+    throw new Error('permissionId 或 permCode 必须提供一个');
+  }
+
+  // 验证用户是否有该权限
+  const hasPermission = userPermissions.has(id);
+  if (!hasPermission) {
+    throw new ForbiddenException('无权限访问');
+  }
+
+  // 验证 pcAction
+  const actions = userPermissions.get(id);
+  if (!actions?.includes(action)) {
+    throw new ForbiddenException(`无 ${action} 操作权限`);
+  }
+}
+```
+
+### 5.3 验证流程
+
+**方式 1：使用 permCode（推荐）**：
 
 ```mermaid
 flowchart TD
-    A[用户发起请求] --> B{检查权限 ID}
-    B -->|无权限 | C[拒绝访问]
-    B -->|有权限 | D{检查 pcAction}
-    D -->|无操作权限 | C
-    D -->|有操作权限 | E[允许访问]
+    A[用户发起请求] --> B{注解参数}
+    B -->|permCode| C[查询缓存/数据库<br/>permCode → permissionId]
+    C --> D{检查权限 ID}
+    D -->|无权限 | E[拒绝访问]
+    D -->|有权限 | F{检查 pcAction}
+    F -->|无操作权限 | E
+    F -->|有操作权限 | G[允许访问]
+```
+
+**方式 2：使用 permissionId**：
+
+```mermaid
+flowchart TD
+    A[用户发起请求] --> B{注解参数}
+    B -->|permissionId| C[检查权限 ID]
+    C -->|无权限 | D[拒绝访问]
+    C -->|有权限 | E{检查 pcAction}
+    E -->|无操作权限 | D
+    E -->|有操作权限 | F[允许访问]
 ```
 
 ---

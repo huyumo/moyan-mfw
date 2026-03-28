@@ -1,6 +1,44 @@
 # 基础设施文档变更日志
 
-> 版本：2.4.0 | 最后更新：2026-03-28
+> 版本：2.5.0 | 最后更新：2026-03-28
+
+---
+
+## [2.5.0] - 2026-03-28
+
+### 修复
+
+- **P1-05 修复**: 权限验证示例使用 permCode 而非 UUID
+  - 更新 `docs/core/permissions.md` 第 5 节"权限验证逻辑"
+  - 添加两种方式对比：permCode（推荐）vs permissionId（备选）
+  - 添加框架内部处理逻辑伪代码
+  - 添加两种验证流程图（permCode 转换 vs 直接使用 ID）
+
+### 更新内容详情
+
+**更新前**（有误导性）:
+```typescript
+@RequirePermission(permissionId = "user-list", pcAction = "delete")
+```
+
+**更新后**（推荐方式）:
+```typescript
+// 方式 1：使用 permCode（推荐）
+// 优势：开发时无需知道 UUID，代码可读性强，权限变更不影响代码
+@RequirePermission(permCode = "system.user-list", pcAction = "delete")
+
+// 方式 2：使用 permissionId（需预分配 UUID 或代码生成）
+@RequirePermission(permissionId = "550e8400-e29b-41d4-a716-446655440000", pcAction = "delete")
+```
+
+### 验收结果
+
+| 验收项 | 状态 |
+|--------|------|
+| P1-05 已修复 | ✅ |
+| 文档示例清晰，区分两种使用方式 | ✅ |
+| 添加了框架内部处理逻辑说明 | ✅ |
+| 添加了两种验证流程图 | ✅ |
 
 ---
 
