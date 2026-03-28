@@ -1,0 +1,15 @@
+# AI identity files
+.ai-identity.md
+
+# Build artifacts
+dist/
+node_modules/
+*.log
+
+# Temporary files
+.tmp/
+tmp-*.txt
+**/tsconfig.tsbuildinfo
+
+# Compact SCSS files (line-count optimized)
+packages/base-frontend/src/app/styles/admin-layout-settings.scss

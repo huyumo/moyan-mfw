@@ -1,0 +1,141 @@
+.mfw-login-page {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 22%, transparent),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 90% 90%,
+      color-mix(in srgb, var(--mfw-success-color, #14b8a6) 18%, transparent),
+      transparent 40%
+    ),
+    var(--mfw-app-bg, #f4f7fc);
+}
+
+.mfw-login-layout {
+  width: min(1040px, 100%);
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+}
+
+.mfw-login-layout__aside,
+.mfw-login-layout__panel {
+  background: var(--mfw-surface-bg, #fff);
+  border: 1px solid var(--mfw-border-color, #d8e1ec);
+  border-radius: 20px;
+  box-shadow: var(--mfw-card-shadow, 0 20px 60px rgba(15, 23, 42, 0.12));
+}
+
+.mfw-login-layout__aside {
+  padding: 26px;
+  display: flex;
+  align-items: stretch;
+}
+
+.mfw-login-layout__panel {
+  padding: 28px;
+}
+
+.mfw-login-brand-card {
+  width: 100%;
+  display: grid;
+  gap: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 28px;
+    color: var(--mfw-text-color, #1f2937);
+  }
+
+  p {
+    margin: 0;
+    color: var(--mfw-muted-text-color, #5e6a7d);
+    line-height: 1.6;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    color: var(--mfw-muted-text-color, #5e6a7d);
+    display: grid;
+    gap: 6px;
+  }
+}
+
+.mfw-login-brand-card__badge {
+  margin: 0;
+  display: inline-flex;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  background: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 15%, transparent);
+  color: var(--mfw-primary-color, #2f6ef6);
+}
+
+.mfw-login-header {
+  h1 {
+    margin: 0;
+    font-size: 30px;
+  }
+
+  p {
+    margin: 10px 0 0;
+    color: var(--mfw-muted-text-color, #5e6a7d);
+  }
+}
+
+.mfw-login-methods {
+  margin: 16px 0 8px;
+}
+
+.mfw-login-submit {
+  width: 100%;
+}
+
+.mfw-login-footer {
+  margin-top: 12px;
+}
+
+.mfw-login-tip,
+.mfw-login-extension-empty {
+  margin: 0;
+  color: var(--mfw-muted-text-color, #5e6a7d);
+  font-size: 12px;
+}
+
+.mfw-login-extension-state {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--mfw-muted-text-color, #5e6a7d);
+  background: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 8%, transparent);
+  font-size: 12px;
+}
+
+.mfw-login-extension-state.is-error {
+  color: #b42318;
+  background: color-mix(in srgb, #b42318 12%, transparent);
+}
+
+.mfw-login-submit:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 80%, white 20%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 960px) {
+  .mfw-login-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mfw-login-layout__aside {
+    display: none;
+  }
+}

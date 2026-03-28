@@ -1,0 +1,314 @@
+.mfw-admin-shell.has-dark-header .mfw-admin-header {
+  background: linear-gradient(135deg, #0f172a 0%, #172554 55%, #1e293b 100%);
+  border-bottom-color: rgba(148, 163, 184, 0.35);
+}
+
+.mfw-admin-shell.has-dark-sidebar .mfw-admin-sidebar {
+  background: #0f172a;
+  border-right-color: #1e293b;
+  color: #f1f5f9;
+}
+
+.mfw-admin-shell.has-dark-sidebar .mfw-admin-sidebar-footer {
+  border-top-color: #1e293b;
+  color: #cbd5e1;
+}
+
+.mfw-admin-shell.has-dark-sidebar .mfw-admin-menu {
+  .el-menu-item,
+  .el-sub-menu__title {
+    color: #e2e8f0 !important;
+  }
+
+  .el-menu-item:hover,
+  .el-sub-menu__title:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .el-menu-item.is-active {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  /* 子菜单 */
+  .el-sub-menu .el-menu {
+    background: rgba(0, 0, 0, 0.2);
+
+    .el-menu-item {
+      color: #cbd5e1 !important;
+
+      &:hover {
+        color: #ffffff !important;
+      }
+    }
+  }
+}
+
+.mfw-admin-shell.has-dark-sidebar-children .mfw-admin-menu {
+  .el-sub-menu .el-menu {
+    background: rgba(15, 23, 42, 0.58);
+    border-radius: 10px;
+  }
+}
+
+/* ========================================
+   深色模式 - 内容区域修复
+   ======================================== */
+
+/* 卡片和表格背景 */
+.mfw-admin-shell.has-dark-sidebar {
+  /* 卡片背景 */
+  .mfw-dashboard-card,
+  .mfw-admin-breadcrumb-wrap,
+  .mfw-admin-tabs-wrap {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  /* 表格样式 */
+  .el-table {
+    background: #1e293b;
+    color: #e2e8f0;
+    
+    &::before {
+      background-color: #334155;
+    }
+  }
+
+  .el-table__header th {
+    background: #0f172a;
+    color: #f1f5f9;
+    border-color: #334155;
+  }
+
+  .el-table__row {
+    background: #1e293b;
+    color: #e2e8f0;
+    
+    &:hover {
+      background: #334155;
+    }
+  }
+
+  .el-table td {
+    border-color: #334155;
+    color: #e2e8f0;
+  }
+
+  /* 表格操作按钮 */
+  .el-button--primary {
+    color: #60a5fa;
+    border-color: #60a5fa;
+  }
+
+  .el-button--success {
+    color: #4ade80;
+    border-color: #4ade80;
+  }
+
+  .el-button--danger {
+    color: #f87171;
+    border-color: #f87171;
+  }
+
+  /* 标签 */
+  .el-tag {
+    background: #334155;
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+
+  /* 输入框 */
+  .el-input__wrapper,
+  .el-textarea__inner {
+    background: #0f172a;
+    border-color: #334155;
+    color: #e2e8f0;
+    
+    .el-input__inner {
+      color: #e2e8f0;
+    }
+    
+    &::placeholder {
+      color: #64748b;
+    }
+  }
+
+  /* 下拉菜单 */
+  .el-dropdown-menu {
+    background: #1e293b;
+    border-color: #334155;
+    
+    .el-dropdown-menu__item {
+      color: #e2e8f0;
+      
+      &:hover {
+        background: #334155;
+      }
+    }
+  }
+
+  /* 对话框 */
+  .el-dialog {
+    background: #1e293b;
+    border-color: #334155;
+    
+    .el-dialog__header {
+      border-bottom-color: #334155;
+    }
+    
+    .el-dialog__title {
+      color: #f1f5f9;
+    }
+    
+    .el-dialog__body {
+      color: #e2e8f0;
+    }
+  }
+
+  /* 选择器和日期控件 */
+  .el-picker-panel,
+  .el-select-dropdown {
+    background: #1e293b;
+    border-color: #334155;
+    
+    .el-picker-panel__content,
+    .el-select-dropdown__item {
+      color: #e2e8f0;
+      
+      &:hover {
+        background: #334155;
+      }
+      
+      &.selected {
+        color: #60a5fa;
+      }
+    }
+  }
+
+  /* 单选框和复选框 */
+  .el-radio__input.is-checked + .el-radio__label,
+  .el-checkbox__input.is-checked + .el-checkbox__label {
+    color: #60a5fa;
+  }
+
+  .el-radio__label,
+  .el-checkbox__label {
+    color: #e2e8f0;
+  }
+
+  /* 分页器 */
+  .el-pagination {
+    color: #e2e8f0;
+    
+    .el-pagination__total,
+    .el-pagination__sizes {
+      color: #cbd5e1;
+    }
+    
+    .el-pager li {
+      color: #e2e8f0;
+      
+      &:hover {
+        background: #334155;
+      }
+      
+      &.is-active {
+        color: #60a5fa;
+      }
+    }
+    
+    .btn-prev,
+    .btn-next {
+      color: #e2e8f0;
+      
+      &:hover {
+        color: #60a5fa;
+      }
+    }
+  }
+
+  /* 消息提示 */
+  .el-message {
+    background: #1e293b;
+    border-color: #334155;
+    color: #e2e8f0;
+    
+    &.el-message--success {
+      border-color: #4ade80;
+      color: #4ade80;
+    }
+    
+    &.el-message--warning {
+      border-color: #fbbf24;
+      color: #fbbf24;
+    }
+    
+    &.el-message--error {
+      border-color: #f87171;
+      color: #f87171;
+    }
+  }
+
+  /* 抽屉 */
+  .el-drawer {
+    background: #1e293b;
+    border-color: #334155;
+    
+    .el-drawer__header {
+      border-bottom-color: #334155;
+      color: #f1f5f9;
+    }
+    
+    .el-drawer__body {
+      color: #e2e8f0;
+    }
+  }
+
+  /* 面包屑 */
+  .el-breadcrumb {
+    .el-breadcrumb__item {
+      color: #e2e8f0;
+      
+      .el-breadcrumb__inner {
+        color: #e2e8f0;
+      }
+      
+      &:last-child .el-breadcrumb__inner {
+        color: #f1f5f9;
+      }
+    }
+  }
+
+  /* 标签页 */
+  .el-tabs {
+    .el-tabs__item {
+      color: #cbd5e1;
+      
+      &:hover {
+        color: #f1f5f9;
+      }
+      
+      &.is-active {
+        color: #60a5fa;
+      }
+    }
+    
+    .el-tabs__content {
+      color: #e2e8f0;
+    }
+  }
+
+  /* 空状态 */
+  .el-empty {
+    .el-empty__description {
+      color: #cbd5e1;
+    }
+  }
+
+  /* 加载 */
+  .el-loading-mask {
+    background-color: rgba(15, 23, 42, 0.8);
+  }
+}

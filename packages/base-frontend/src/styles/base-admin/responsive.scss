@@ -1,0 +1,82 @@
+@use "./tokens-and-reset" as *;
+
+@media (max-width: $breakpoint-xl) {
+  .mfw-dashboard-grid--stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mfw-dashboard-grid--content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .mfw-admin-header {
+    gap: 8px;
+    padding: 0 10px;
+  }
+
+  .mfw-admin-menu-toggle {
+    display: inline-grid;
+  }
+
+  .mfw-admin-collapse-toggle {
+    display: none;
+  }
+
+  .mfw-admin-primary-nav,
+  .mfw-admin-top-nav {
+    justify-content: flex-start;
+  }
+
+  .mfw-admin-sidebar {
+    position: fixed;
+    left: 0;
+    top: var(--mfw-header-height, 64px);
+    bottom: 0;
+    z-index: 101;
+    transform: translateX(-100%);
+    width: min(300px, 82vw);
+    box-shadow: 12px 0 26px rgba(17, 24, 39, 0.15);
+
+    &.is-mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  .layout-mode-top .mfw-admin-content {
+    padding-inline: 12px;
+  }
+
+  .mfw-admin-content {
+    width: 100%;
+    padding: 12px 10px 20px;
+  }
+
+  .mfw-admin-tabs-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .mfw-admin-brand-tagline {
+    display: none;
+  }
+
+  .mfw-admin-header-actions {
+    gap: 4px;
+
+    .el-button {
+      padding: 6px;
+    }
+  }
+
+  .mfw-admin-avatar-trigger strong {
+    display: none;
+  }
+
+  .mfw-dashboard-grid--stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,260 @@
+.mfw-admin-content {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 18px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.mfw-admin-breadcrumb-wrap {
+  background: var(--mfw-surface-bg, #fff);
+  border: 1px solid var(--mfw-border-color, #d8e1ec);
+  border-radius: var(--mfw-card-radius, 12px);
+  padding: 10px 14px;
+  flex-shrink: 0;
+}
+
+.mfw-admin-tabs-wrap {
+  margin-top: 12px;
+  border: 1px solid var(--mfw-border-color, #d8e1ec);
+  border-radius: var(--mfw-radius-lg, 10px);
+  background: var(--mfw-surface-bg, #fff);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mfw-admin-tabs {
+  flex: 1;
+  min-width: 0;
+
+  .el-tabs__header {
+    margin: 0;
+  }
+
+  .el-tabs__item {
+    border-radius: 8px 8px 0 0;
+  }
+}
+
+.mfw-admin-tab-label {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.mfw-admin-content-inner {
+  width: min(100%, var(--mfw-content-max-width, 1360px));
+  margin-top: 14px;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.mfw-admin-style-form {
+  padding-right: 6px;
+}
+
+/* ========================================
+   设置面板样式
+   ======================================== */
+
+/* ========================================
+   Element Plus 组件样式覆盖
+   ======================================== */
+
+/**
+ * 统一按钮圆角
+ */
+.el-button {
+  border-radius: var(--mfw-radius-md, 6px) !important;
+
+  &--round {
+    border-radius: var(--mfw-radius-full, 9999px) !important;
+  }
+}
+
+/**
+ * 统一卡片圆角
+ */
+.el-card {
+  border-radius: var(--mfw-card-radius, 8px) !important;
+}
+
+/**
+ * 统一对话框圆角
+ */
+.el-dialog,
+.el-drawer {
+  border-radius: var(--mfw-radius-lg, 10px) !important;
+}
+
+/**
+ * 统一输入框圆角
+ */
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: var(--mfw-radius-md, 6px) !important;
+}
+
+/**
+ * 统一下拉菜单圆角
+ */
+.el-dropdown-menu,
+.el-popover,
+.el-tooltip__popper {
+  border-radius: var(--mfw-radius-md, 6px) !important;
+}
+
+/**
+ * 设置面板操作按钮区
+ */
+.mfw-admin-settings-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0 0;
+  margin-top: 16px;
+  border-top: 1px solid var(--mfw-border-color, #e4e7ed);
+
+  .el-button {
+    flex: 1;
+  }
+}
+
+/**
+ * 设置面板分组
+ */
+.mfw-admin-settings-group {
+  margin-bottom: 20px;
+
+  .mfw-admin-settings-group-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--mfw-text-color, #1f2a37);
+
+    .el-icon {
+      color: var(--mfw-primary-color, #2f6ef6);
+    }
+  }
+}
+
+/**
+ * 开关列表
+ */
+.mfw-admin-switch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/**
+ * 开关项 - 左右布局
+ */
+.mfw-admin-switch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+
+  .mfw-admin-switch-label {
+    flex: 1;
+    font-size: 14px;
+    color: var(--mfw-text-color, #1f2a37);
+    text-align: left;
+  }
+
+  .el-switch {
+    flex-shrink: 0;
+  }
+}
+
+.layout-mode-top {
+  .mfw-admin-main {
+    display: block;
+  }
+
+  .mfw-admin-content {
+    width: 100%;
+    padding-inline: 20px;
+  }
+}
+
+.layout-mode-dual {
+  .mfw-admin-primary-nav {
+    justify-content: flex-start;
+  }
+}
+
+.mfw-admin-shell.is-dark {
+  /* 全局深色模式 - CSS 变量覆盖 */
+  --mfw-menu-text-color: #e2e8f0;
+  --mfw-menu-text-hover: #ffffff;
+  --mfw-menu-text-active: #ffffff;
+  --mfw-menu-bg: transparent;
+  --mfw-menu-item-hover-bg: rgba(255, 255, 255, 0.08);
+  --mfw-menu-item-active-bg: rgba(255, 255, 255, 0.12);
+
+  /* 侧边栏容器背景 - 深色模式使用深色背景 */
+  .mfw-admin-sidebar {
+    background: #1e293b;
+    border-right-color: #334155;
+
+    .mfw-admin-menu {
+      /* 菜单项文字颜色 */
+      .el-menu-item,
+      .el-sub-menu__title {
+        color: var(--mfw-menu-text-color) !important;
+      }
+
+      .el-menu-item:hover,
+      .el-sub-menu__title:hover {
+        color: var(--mfw-menu-text-hover) !important;
+        background: var(--mfw-menu-item-hover-bg);
+      }
+
+      .el-menu-item.is-active {
+        background: var(--mfw-menu-item-active-bg) !important;
+        color: var(--mfw-menu-text-active) !important;
+      }
+
+      /* 子菜单背景 */
+      .el-sub-menu .el-menu {
+        background: rgba(0, 0, 0, 0.2);
+
+        .el-menu-item {
+          color: #cbd5e1 !important;
+
+          &:hover {
+            color: #ffffff !important;
+          }
+        }
+      }
+    }
+
+    /* 侧边栏 footer */
+    .mfw-admin-sidebar-footer {
+      color: #94a3b8;
+      border-top-color: #334155;
+    }
+  }
+
+  /* 卡片和面包屑边框 */
+  .mfw-admin-tabs-wrap,
+  .mfw-admin-breadcrumb-wrap,
+  .mfw-dashboard-card,
+  .mfw-login-panel,
+  .mfw-exception-card {
+    border-color: color-mix(in srgb, var(--mfw-border-color, #233451) 92%, transparent);
+  }
+}

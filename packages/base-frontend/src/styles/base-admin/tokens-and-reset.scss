@@ -1,0 +1,67 @@
+$breakpoint-xl: 1200px;
+$breakpoint-md: 960px;
+$breakpoint-sm: 720px;
+
+:root {
+  color-scheme: light;
+}
+
+.mfw-admin-shell {
+  --el-color-primary: var(--mfw-primary-color, #2f6ef6);
+  --el-color-primary-light-3: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 80%, white 20%);
+  --el-color-primary-light-5: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 60%, white 40%);
+  --el-color-primary-light-7: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 40%, white 60%);
+  --el-color-primary-light-8: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 20%, white 80%);
+  --el-color-primary-light-9: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 10%, white 90%);
+  --el-color-primary-dark-2: color-mix(in srgb, var(--mfw-primary-color, #2f6ef6) 80%, black 20%);
+  --el-color-primary-rgb: var(--mfw-primary-color-rgb, 47, 110, 246);
+
+  --el-bg-color: var(--mfw-surface-bg, #ffffff);
+  --el-bg-color-page: var(--mfw-app-bg, #f3f6fb);
+  --el-bg-color-overlay: var(--mfw-surface-bg, #ffffff);
+
+  --el-text-color-primary: var(--mfw-text-color, #1f2a37);
+  --el-text-color-regular: var(--mfw-text-color, #1f2a37);
+  --el-text-color-secondary: var(--mfw-muted-text-color, #5e6a7d);
+  --el-text-color-placeholder: var(--mfw-muted-text-color, #a8abb2);
+  --el-text-color-disabled: var(--mfw-muted-text-color, #c0c4cc);
+
+  --el-border-color: var(--mfw-border-color, #dcdfe6);
+  --el-border-color-light: var(--mfw-border-color, #e4e7ed);
+  --el-border-color-lighter: var(--mfw-border-color, #ebeef5);
+  --el-border-color-extra-light: var(--mfw-border-color, #f2f6fc);
+
+  --el-fill-color: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 6%, transparent);
+  --el-fill-color-light: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 3%, transparent);
+  --el-fill-color-lighter: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 2%, transparent);
+  --el-fill-color-extra-light: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 1%, transparent);
+  --el-fill-color-dark: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 8%, transparent);
+  --el-fill-color-darker: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 10%, transparent);
+  --el-fill-color-blank: var(--mfw-surface-bg, #ffffff);
+
+  --el-card-shadow: var(--mfw-card-shadow, 0 8px 24px rgba(17, 24, 39, 0.04));
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: "IBM Plex Sans", "Segoe UI", "PingFang SC", sans-serif;
+  background: var(--mfw-app-bg, #f3f6fb);
+  color: var(--mfw-text-color, #1f2a37);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

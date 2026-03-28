@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "composite": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "moyan-mfw-core": ["./packages/core/dist"],
+      "moyan-mfw-base-backend": ["./packages/base-backend/dist"],
+      "moyan-mfw-base-frontend": ["./packages/base-frontend/dist"],
+      "moyan-mfw-base-api": ["./packages/base-api/dist"]
+    }
+  },
+  "exclude": ["node_modules", "dist"]
+}

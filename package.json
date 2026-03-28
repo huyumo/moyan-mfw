@@ -1,26 +1,48 @@
 {
-  "name": "moyan-mfw-docs",
-  "version": "2.0.0",
-  "type": "module",
-  "description": "Moyan MFW 权限系统基础设施文档",
+  "name": "moyan-mfw",
+  "version": "1.0.0",
+  "description": "Moyan backend management framework",
+  "private": true,
   "scripts": {
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs:preview": "vitepress preview docs",
+    "dev:frontend": "pnpm --filter moyan-frontend dev",
+    "build": "pnpm -r build",
+    "build:frontend": "pnpm --filter moyan-frontend build",
+    "lint": "node tools/run-eslint-targets.cjs",
+    "lint:fix": "node tools/run-eslint-targets.cjs --fix",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "typecheck:vue": "pnpm --filter moyan-frontend typecheck:vue",
+    "typecheck": "pnpm run typecheck:vue",
+    "test:comment-rule": "node tools/eslint-plugin-moyan/rules/comment-compliance.test.mjs"
   },
-  "keywords": [
-    "docs",
-    "vitepress"
-  ],
-  "author": "Moyan MFW Team",
-  "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.38.0",
+    "@playwright/test": "^1.58.2",
+    "cypress": "^15.12.0",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsdoc": "^61.1.9",
+    "eslint-plugin-vue": "^10.5.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.5.2",
+    "prettier": "^3.6.2",
+    "typescript": "^5.3.3",
+    "typescript-eslint": "^8.46.2",
+    "vue-eslint-parser": "^10.2.0",
     "markdown-it": "^14.1.1",
     "mermaid": "^10.9.0",
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
   },
-  "dependencies": {
+    "dependencies": {
     "markdown-it-mermaid": "^0.2.5"
-  }
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
 }
