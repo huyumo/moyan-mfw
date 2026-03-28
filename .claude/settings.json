@@ -39,7 +39,8 @@
       "Bash(mv docs/tracking/IMPROVEMENT-ACTION-PLAN.md .claude/team/archive/)",
       "Bash(mv docs/tracking/PM-RECOMMENDATIONS.md .claude/team/archive/)",
       "Bash(mv docs/tracking/REVIEW-REPORT.md .claude/team/archive/)",
-      "Bash(mv docs/tracking/PROJECT-DELIVERY-REPORT.md .claude/team/archive/)"
+      "Bash(mv docs/tracking/PROJECT-DELIVERY-REPORT.md .claude/team/archive/)",
+      "Read(//c/Users/16898/AppData/Local/Temp/claude/e--Moyan-moyan-mfw-workspace-workspace04-moyan-mfw/6f7081fd-9154-4c11-8a6e-a19e37b4f53a/tasks/**)"
     ],
     "additionalDirectories": [
       "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",
