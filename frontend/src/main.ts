@@ -3,8 +3,8 @@
  */
 
 import { createBaseAdminApp } from 'moyan-mfw-base-frontend';
-import { HeaderAvatarPanel, HeaderCommonActions } from './business/components/Layout';
-import { businessThemes } from './business/themes';
+import { HeaderAvatarPanel, HeaderCommonActions } from './components/Layout';
+import { businessThemes } from './themes';
 
 // 创建并启动管理后台应用
 const admin = createBaseAdminApp({
