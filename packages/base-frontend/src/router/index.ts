@@ -55,11 +55,65 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
  * @returns 可直接挂载到应用的路由实例。
  */
 export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
-  const resolvedRoutes = options.routes ?? createBaseAdminRoutes();
+  // 如果传入了 routes，直接使用；否则使用自动扫描生成的路由
+  const baseRoutes = options.routes ?? createBaseAdminRoutes();
+
+  // 如果传入了 routes，需要将它们包装在主布局下
+  const finalRoutes = options.routes
+    ? [
+        {
+          path: '/login',
+          name: 'AdminLogin',
+          component: () => import('../views/login/Index.vue'),
+          meta: {
+            title: '登录',
+            menu: false,
+          },
+        },
+        {
+          path: '/',
+          component: () => import('../layouts/AdminLayout.vue'),
+          meta: {
+            requiresAuth: true,
+            menu: false,
+          },
+          children: [
+            {
+              path: '',
+              redirect: '/dashboard',
+            },
+            ...options.routes,
+          ],
+        },
+        {
+          path: '/403',
+          name: 'AdminForbidden',
+          component: () => import('../views/forbidden/Index.vue'),
+          meta: {
+            title: '权限不足',
+            requiresAuth: true,
+            menu: false,
+          },
+        },
+        {
+          path: '/404',
+          name: 'AdminNotFound',
+          component: () => import('../views/not-found/Index.vue'),
+          meta: {
+            title: '页面不存在',
+            menu: false,
+          },
+        },
+        {
+          path: '/:pathMatch(.*)*',
+          redirect: '/404',
+        },
+      ]
+    : baseRoutes;
 
   const router = createRouter({
     history: options.history ?? createWebHistory(options.base),
-    routes: resolvedRoutes,
+    routes: finalRoutes,
   });
 
   const appTitle = options.title ?? '墨焱管理后台';

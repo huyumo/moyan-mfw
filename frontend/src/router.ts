@@ -61,9 +61,9 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
     const segments = relativePath.split('/').filter(Boolean);
     const fullPath = '/' + segments.join('/');
 
-    // 创建路由
+    // 使用完整路径作为路由 path
     const route: RouteRecordRaw = {
-      path: segments[segments.length - 1] || '',
+      path: fullPath,
       name: `Route_${segments.join('_')}` || 'Root',
       component: config.page as RouteRecordRaw['component'],
       meta: {
@@ -85,7 +85,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
   for (const [fullPath, route] of routeMap.entries()) {
     const parentPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
 
-    if (!parentPath) {
+    if (!parentPath || parentPath === '/') {
       // 根级路由
       rootRoutes.push(route);
     } else {
