@@ -195,4 +195,14 @@ graph LR
 
 ---
 
+## 更新历史
+
+| 版本 | 日期 | 变更说明 |
+|------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：permissionValue 使用 bigint 类型 |
+| 2.0.0 | 2026-03-25 | 重构：统一角色分类和拥有者机制说明 |
+| 1.0.0 | 2026-03-24 | 初始版本 |
+
+---
+
 *本文档是核心概念模块的一部分，建议按顺序阅读：[permissions.md](./permissions.md) → [roles.md](./roles.md) → [architecture.md](./architecture.md)*

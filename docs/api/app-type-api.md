@@ -229,6 +229,114 @@ interface PermissionTreePayload {
 }
 ```
 
+**并发场景说明**:
+
+| 场景 | 描述 | 处理方式 |
+|------|------|----------|
+| 多管理员同时配置权限池 | 两个管理员同时打开权限配置面板并提交 | 使用乐观锁，后提交的请求会失败并提示刷新重试 |
+| 权限池配置与角色分配并发 | 一个管理员配置权限池，另一个管理员分配角色权限 | 角色分配时需验证权限池约束，权限池收缩时需检查角色引用 |
+| 权限池收缩时有角色引用 | 权限池移除某权限，但角色仍在引用 | 拒绝收缩请求，提示先解除角色引用 |
+
+**并发测试场景**:
+
+```typescript
+// 测试场景 1：多管理员并发配置权限池
+async function test_concurrentPoolConfig() {
+  const appTypeId = 'oa'
+
+  // 管理员 A：设置为全权限
+  const requestA = updatePermissionPool(appTypeId, { pcTree: [{ permissionId: 'p1', checked: true, permissionValue: 7n }] })
+
+  // 管理员 B：同时设置为部分权限
+  const requestB = updatePermissionPool(appTypeId, { pcTree: [{ permissionId: 'p1', checked: true, permissionValue: 3n }] })
+
+  const [resultA, resultB] = await Promise.allSettled([requestA, requestB])
+
+  // 验证：最终值应该是 3n 或 7n，不应该是中间状态
+  const finalConfig = await getPermissionPool(appTypeId)
+  assert(
+    finalConfig.pcTree[0].permissionValue === 3n || finalConfig.pcTree[0].permissionValue === 7n,
+    '最终值应该是一个有效状态'
+  )
+}
+
+// 测试场景 2：权限池收缩与角色分配并发
+async function test_concurrentPoolShrinkAndRoleAssign() {
+  const appTypeId = 'oa'
+  const roleId = 'role-001'
+
+  // 管理员 A：收缩权限池（移除 DELETE 权限）
+  const shrinkPool = updatePermissionPool(appTypeId, {
+    pcTree: [{ permissionId: 'p1', checked: true, permissionValue: 3n }]  // 仅 ADD|EDIT
+  })
+
+  // 管理员 B：同时给角色分配权限（包含 DELETE）
+  const assignRole = assignRolePermission(roleId, {
+    pcTree: [{ permissionId: 'p1', assigned: true, permissionValue: 7n }]  // 包含 DELETE
+  })
+
+  await Promise.all([shrinkPool, assignRole])
+
+  // 验证：如果角色分配先完成，权限池收缩应该失败
+  // 或者：如果权限池收缩先完成，角色分配应该因约束检查失败
+}
+
+// 测试场景 3：边界值测试
+async function test_boundaryValues() {
+  // 测试：permissionValue 最大值（10 位全权限）
+  const maxValue = 1023n
+  await updatePermissionPool('oa', { pcTree: [{ permissionId: 'p1', checked: true, permissionValue: maxValue }] })
+
+  // 测试：permissionValue = 0（无任何操作权限）
+  const zeroValue = 0n
+  await updatePermissionPool('oa', { pcTree: [{ permissionId: 'p1', checked: true, permissionValue: zeroValue }] })
+
+  // 测试：permissionValue 超出范围（11 位）
+  const invalidValue = 2047n
+  try {
+    await updatePermissionPool('oa', { pcTree: [{ permissionId: 'p1', checked: true, permissionValue: invalidValue }] })
+    assert(false, '应该抛出异常：permissionValue 超出定义范围')
+  } catch (error) {
+    assert(error.code === 'INVALID_PERMISSION_VALUE', '应该返回权限值无效错误')
+  }
+}
+```
+
+**实现建议**:
+
+```typescript
+// 后端：乐观锁实现并发控制
+async function updatePermissionPool(appTypeId, config) {
+  const transaction = await db.beginTransaction()
+
+  try {
+    // 获取当前版本
+    const current = await transaction.query(
+      'SELECT version FROM sys_app_type WHERE id = ?',
+      [appTypeId]
+    )
+
+    // 更新时检查版本号（乐观锁）
+    const updated = await transaction.query(
+      'UPDATE sys_app_type SET permissionPoolVersion = permissionPoolVersion + 1, version = version + 1 WHERE id = ? AND version = ?',
+      [appTypeId, current.version]
+    )
+
+    if (updated.affectedRows === 0) {
+      throw new Error('并发冲突：配置已被其他管理员修改，请刷新后重试')
+    }
+
+    // 保存权限池配置
+    await savePoolConfig(transaction, appTypeId, config)
+
+    await transaction.commit()
+  } catch (error) {
+    await transaction.rollback()
+    throw error
+  }
+}
+```
+
 ---
 
 ## 5. 内置角色管理
@@ -427,6 +535,7 @@ interface PermissionTreePayload {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 4.0.0 | 2026-03-28 | 位运算权限设计：PermissionTreePayload 新增 permissionValue 字段 |
 | 1.0.0 | 2026-03-26 | 初始版本，统一权限池和角色权限的请求体结构 |
 
 ---

@@ -376,4 +376,15 @@ flowchart TD
 
 ---
 
+## 更新历史
+
+| 版本 | 日期 | 变更说明 |
+|------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
+| 2.1.0 | 2026-03-27 | 添加前后端权限计算泳道图 (P1-08) |
+| 2.0.0 | 2026-03-25 | 重构：统一 PermissionType + NodeType 双层设计 |
+| 1.0.0 | 2026-03-24 | 初始版本 |
+
+---
+
 *本文档是核心概念模块的一部分，建议按顺序阅读：[permissions.md](./permissions.md) → [roles.md](./roles.md) → [architecture.md](./architecture.md)*

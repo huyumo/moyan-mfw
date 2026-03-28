@@ -154,6 +154,118 @@
 }
 ```
 
+**Token 刷新机制时序图**:
+
+```mermaid
+sequenceDiagram
+    participant Frontend as 前端
+    participant Backend as 后端 API
+    participant Redis as Redis(Token 存储)
+    participant DB as 数据库
+
+    Note over Frontend,DB: Token 过期检测机制
+
+    Frontend->>Frontend: 请求前检查 Token 有效期
+    alt Token 未过期 (>10 分钟)
+        Frontend->>Backend: 正常请求 (携带 Token)
+        Backend->>Redis: 验证 Token 有效性
+        Redis-->>Backend: Token 有效
+        Backend-->>Frontend: 返回数据
+    else Token 即将过期 (≤10 分钟)
+        Note over Frontend: 使用 refreshToken 刷新 Token
+        Frontend->>Backend: POST /api/v1/auth/refresh<br/>(refreshToken)
+        Backend->>Redis: 查询 refreshToken 对应的用户
+        Redis-->>Backend: 返回用户信息
+        Backend->>DB: 验证用户状态 (是否禁用)
+        DB-->>Backend: 用户状态正常
+        Backend->>Backend: 生成新 token + refreshToken
+        Backend->>Redis: 存储新 token (TTL=2 小时)<br/>存储新 refreshToken(TTL=7 天)<br/>删除旧 token/refreshToken
+        Backend-->>Frontend: 返回新 token + refreshToken
+        Frontend->>Frontend: 本地存储新 token/refreshToken
+        Frontend->>Backend: 使用新 Token 继续请求
+    end
+
+    Note over Frontend,DB: 错误处理
+
+    alt refreshToken 已过期/无效
+        Backend-->>Frontend: 401 Token 已过期<br/>重定向到登录页
+    else 用户已被禁用
+        Backend-->>Frontend: 403 用户已禁用<br/>清除本地 token/refreshToken
+    end
+```
+
+**Token 刷新策略说明**:
+
+| 场景 | 处理方式 |
+|------|----------|
+| Token 有效期 > 10 分钟 | 正常使用，无需刷新 |
+| Token 有效期 ≤ 10 分钟 | 空闲时自动刷新（静默刷新） |
+| 请求返回 401 | Token 已过期，尝试刷新 Token |
+| 刷新 Token 失败 | 清除本地存储，跳转到登录页 |
+
+**前端实现建议**:
+
+```typescript
+// Axios 拦截器示例
+let isRefreshing = false
+let refreshPromise: Promise<string> | null = null
+
+axios.interceptors.response.use(
+  response => response,
+  async error => {
+    const { config, response } = error
+    const originalRequest = config
+
+    // 401 错误且未尝试过刷新
+    if (response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+
+      // 如果正在刷新，等待刷新完成
+      if (isRefreshing) {
+        const newToken = await refreshPromise
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return axios(originalRequest)
+      }
+
+      // 开始刷新 Token
+      isRefreshing = true
+      refreshPromise = refreshAccessToken()
+        .then(newToken => {
+          isRefreshing = false
+          refreshPromise = null
+          return newToken
+        })
+        .catch(err => {
+          isRefreshing = false
+          refreshPromise = null
+          // 刷新失败，跳转到登录页
+          redirectToLogin()
+          return Promise.reject(err)
+        })
+
+      const newToken = await refreshPromise
+      originalRequest.headers.Authorization = `Bearer ${newToken}`
+      return axios(originalRequest)
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+// Token 刷新函数
+async function refreshAccessToken(): Promise<string> {
+  const refreshToken = localStorage.getItem('refreshToken')
+  const response = await axios.post('/api/v1/auth/refresh', { refreshToken })
+  const { token, refreshToken: newRefreshToken } = response.data.data
+
+  // 本地存储新 Token
+  localStorage.setItem('token', token)
+  localStorage.setItem('refreshToken', newRefreshToken)
+
+  return token
+}
+```
+
 ---
 
 ## 5. 修改密码
@@ -246,6 +358,7 @@ interface PermissionTreeNode {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 4.0.0 | 2026-03-28 | 位运算权限设计：PermissionTreeNode 新增 permissionValue 字段 |
 | 1.0.0 | 2026-03-26 | 初始版本 |
 
 ---

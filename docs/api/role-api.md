@@ -261,6 +261,7 @@ interface PermissionTreePayload {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 4.0.0 | 2026-03-28 | 位运算权限设计：PermissionTreePayload 新增 permissionValue 字段 |
 | 1.0.0 | 2026-03-26 | 初始版本 |
 
 ---

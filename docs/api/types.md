@@ -193,6 +193,60 @@ interface RoleDetail extends RoleBasic {
 | Date | datetime(3) | string | ISO 8601 格式，如 "2026-03-26T10:00:00.000Z" |
 | number | int/tinyint | number | 整数类型 |
 | string | varchar | string | 字符串类型 |
+| bigint | bigint | string | **位运算权限值**（permissionValue）：后端使用 bigint 存储，API 返回时转换为**十进制数字字符串**，前端使用 `BigInt()` 转换后参与位运算 |
+
+---
+
+## permissionValue 序列化说明
+
+**bigint 类型在 JSON 中无法直接传输**，系统采用以下序列化方式：
+
+### 后端 → 前端（响应数据）
+
+```typescript
+// 数据库存储：permissionValue = 7n (bigint)
+// API 响应：转换为十进制字符串
+{
+  permissionId: "perm-001",
+  permissionValue: "7"    // 字符串格式，非数字
+}
+
+// 前端处理：使用 BigInt() 转换
+const permValue = BigInt(response.permissionValue)  // "7" → 7n
+const hasAddPermission = (permValue & 1n) !== 0n   // 位运算检查
+```
+
+### 前端 → 后端（请求数据）
+
+```typescript
+// 前端请求：使用字符串或 BigInt 字面量
+{
+  permissionId: "perm-001",
+  permissionValue: "7"    // 方式 1：字符串（推荐）
+  // 或
+  permissionValue: 7n     // 方式 2：BigInt 字面量（需要 TS 支持）
+}
+
+// 后端处理：解析为 bigint
+const permValue = BigInt(request.permissionValue)  // "7" → 7n
+```
+
+### 常用 permissionValue 示例
+
+| 操作组合 | 位运算表达式 | 十进制值 | API 传输值 |
+|----------|-------------|---------|-----------|
+| ADD | `1n` | 1 | `"1"` |
+| ADD \| EDIT | `1n \| 2n` | 3 | `"3"` |
+| ADD \| EDIT \| DELETE | `1n \| 2n \| 4n` | 7 | `"7"` |
+| ADD \| EDIT \| DELETE \| EXPORT | `1n \| 2n \| 4n \| 8n` | 15 | `"15"` |
+| 全权限 (10 位) | `1023n` | 1023 | `"1023"` |
+
+### 注意事项
+
+1. **不要使用 JSON.stringify() 直接序列化 bigint**，会抛出错误
+2. **前后端统一使用字符串传输**，避免精度丢失
+3. **前端必须进行类型转换**：`BigInt(value)` 后才能参与位运算
+4. **后端必须解析字符串**：`new BigDecimal(value)` 或 `BigInteger.valueOf()`
 
 ---
 

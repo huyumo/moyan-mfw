@@ -339,6 +339,212 @@ sequenceDiagram
 
 ---
 
+## 7. 测试用例示例
+
+### 7.1 位运算权限计算测试
+
+**测试用例 1: 单个权限位检查**
+
+```typescript
+// 测试数据
+const userPermissionValue = 7n  // 0b0111 = ADD|EDIT|DELETE
+
+// 测试：检查是否有 ADD 权限
+function test_hasAddPermission() {
+  const result = (userPermissionValue & 1n) !== 0n
+  assert(result === true, '应该有 ADD 权限')
+}
+
+// 测试：检查是否有 EDIT 权限
+function test_hasEditPermission() {
+  const result = (userPermissionValue & 2n) !== 0n
+  assert(result === true, '应该有 EDIT 权限')
+}
+
+// 测试：检查是否有 EXPORT 权限
+function test_hasExportPermission() {
+  const result = (userPermissionValue & 8n) !== 0n
+  assert(result === false, '应该没有 EXPORT 权限')
+}
+```
+
+**测试用例 2: 多权限位检查（OR 逻辑）**
+
+```typescript
+// 测试数据
+const userPermissionValue = 7n  // ADD|EDIT|DELETE
+
+// 测试：是否有 ADD 或 EXPORT 权限
+function test_hasAddOrExport() {
+  const required = [1n, 8n]  // ADD | EXPORT
+  const mask = required.reduce((acc, bit) => acc | bit, 0n)
+  const result = (userPermissionValue & mask) !== 0n
+  assert(result === true, '应该有 ADD 或 EXPORT 权限（满足 ADD）')
+}
+
+// 测试：是否有 EXPORT 或 IMPORT 权限
+function test_hasExportOrImport() {
+  const required = [8n, 16n]  // EXPORT | IMPORT
+  const mask = required.reduce((acc, bit) => acc | bit, 0n)
+  const result = (userPermissionValue & mask) !== 0n
+  assert(result === false, '应该没有 EXPORT 或 IMPORT 权限')
+}
+```
+
+**测试用例 3: 多权限位检查（AND 逻辑）**
+
+```typescript
+// 测试数据
+const userPermissionValue = 7n  // ADD|EDIT|DELETE
+
+// 测试：是否同时有 ADD 和 EDIT 权限
+function test_hasAddAndEdit() {
+  const required = [1n, 2n]  // ADD | EDIT
+  const mask = required.reduce((acc, bit) => acc | bit, 0n)
+  const result = (userPermissionValue & mask) === mask
+  assert(result === true, '应该同时有 ADD 和 EDIT 权限')
+}
+
+// 测试：是否同时有 ADD、EDIT 和 EXPORT 权限
+function test_hasAddEditExport() {
+  const required = [1n, 2n, 8n]  // ADD | EDIT | EXPORT
+  const mask = required.reduce((acc, bit) => acc | bit, 0n)
+  const result = (userPermissionValue & mask) === mask
+  assert(result === false, '应该没有 EXPORT 权限，不满足条件')
+}
+```
+
+### 7.2 权限池约束测试
+
+**测试用例 4: 权限池子集验证**
+
+```typescript
+// 测试数据
+const poolValue = 7n   // 权限池：ADD|EDIT|DELETE
+const roleValue = 3n   // 角色：ADD|EDIT
+
+// 测试：角色权限是否是权限池的子集
+function test_rolePermissionIsSubsetOfPool() {
+  const result = (roleValue & poolValue) === roleValue
+  assert(result === true, '角色权限应该是权限池的子集')
+}
+
+// 测试：角色权限超出权限池范围
+function test_rolePermissionExceedsPool() {
+  const invalidRoleValue = 15n  // ADD|EDIT|DELETE|EXPORT
+  const result = (invalidRoleValue & poolValue) === invalidRoleValue
+  assert(result === false, '角色权限超出权限池范围，验证失败')
+}
+```
+
+### 7.3 用户最终权限计算测试
+
+**测试用例 5: 多角色权限合并**
+
+```typescript
+// 测试数据：用户绑定三个角色
+const role1Value = 3n   // ADD|EDIT
+const role2Value = 4n   // DELETE
+const role3Value = 8n   // EXPORT
+
+// 测试：用户最终权限 = 所有角色权限的 OR
+function test_userFinalPermission() {
+  const userValue = role1Value | role2Value | role3Value
+  assert(userValue === 15n, '用户最终权限应该是 ADD|EDIT|DELETE|EXPORT')
+
+  // 验证用户是否有 DELETE 权限
+  const hasDelete = (userValue & 4n) !== 0n
+  assert(hasDelete === true, '用户应该有 DELETE 权限')
+}
+```
+
+**测试用例 6: 相同权限 ID 的 permissionValue 合并**
+
+```typescript
+// 测试数据：两个角色对同一权限 ID 有不同的 permissionValue
+const roleId1_permValue = 3n  // ADD|EDIT
+const roleId2_permValue = 4n  // DELETE
+const permissionId = 'perm-001'
+
+// 测试：同一权限 ID 的 permissionValue 合并
+function test_samePermissionIdMerge() {
+  // 用户最终权限 = role1Value | role2Value
+  const userValue = roleId1_permValue | roleId2_permValue
+  assert(userValue === 7n, '同一权限 ID 的 permissionValue 应该合并为 ADD|EDIT|DELETE')
+}
+```
+
+### 7.4 边界值测试
+
+**测试用例 7: 边界值测试**
+
+```typescript
+// 测试：permissionValue = 0（无任何权限）
+function test_zeroPermission() {
+  const userValue = 0n
+  assert((userValue & 1n) === 0n, '应该没有任何权限')
+}
+
+// 测试：permissionValue = 1023（10 位全权限）
+function test_fullPermissions() {
+  const userValue = 1023n  // 0b1111111111 = 10 位全 1
+  assert((userValue & 1n) !== 0n, '应该有 ADD 权限')
+  assert((userValue & 512n) !== 0n, '应该有 ARCHIVE 权限')
+  assert((userValue & 1023n) === 1023n, '应该拥有全权限')
+}
+
+// 测试：permissionValue 超出 10 位范围
+function test_exceedPermissionRange() {
+  const userValue = 2047n  // 0b11111111111 = 11 位
+  // 系统应该验证 permissionValue 不超过定义的范围
+  const maxPermValue = 1023n
+  const isValid = userValue <= maxPermValue
+  assert(isValid === false, 'permissionValue 超出 10 位范围，应该拒绝')
+}
+```
+
+### 7.5 并发测试场景
+
+**测试用例 8: 并发权限更新**
+
+```typescript
+// 场景：两个管理员同时修改同一角色的权限
+async function test_concurrentPermissionUpdate() {
+  const roleId = 'role-001'
+
+  // 模拟并发请求
+  const [result1, result2] = await Promise.allSettled([
+    updateRolePermission(roleId, 7n),   // 请求 1：设置为 ADD|EDIT|DELETE
+    updateRolePermission(roleId, 15n),  // 请求 2：设置为 ADD|EDIT|DELETE|EXPORT
+  ])
+
+  // 验证：后提交的请求应该覆盖先提交的请求
+  const finalValue = await getRolePermission(roleId)
+  assert(
+    finalValue === 7n || finalValue === 15n,
+    '最终值应该是 7n 或 15n，不应该是中间状态'
+  )
+}
+
+// 缓解建议：使用乐观锁或分布式锁
+async function updateRolePermissionWithLock(roleId, newValue) {
+  // 方式 1：乐观锁（版本号）
+  const current = await db.query(
+    'SELECT permissionValue, version FROM sys_role_permission WHERE roleId = ?',
+    [roleId]
+  )
+  const updated = await db.query(
+    'UPDATE sys_role_permission SET permissionValue = ?, version = version + 1 WHERE roleId = ? AND version = ?',
+    [newValue, roleId, current.version]
+  )
+  if (updated.affectedRows === 0) {
+    throw new Error('并发冲突，请重试')
+  }
+}
+```
+
+---
+
 ## 相关文档
 
 - [数据库实体设计](../database/database-entities-design.md)
