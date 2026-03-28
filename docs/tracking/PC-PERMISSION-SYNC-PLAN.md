@@ -1,176 +1,236 @@
-# PC 权限同步功能方案设计
+# PC 权限同步功能方案设计 (v2.0)
 
 **文档编号**: PLAN-PC-SYNC-2026-0328
-**版本**: v1.0 草案
+**版本**: v2.0 - 严格遵循现有数据结构
 **编制日期**: 2026-03-28
-**编制人**: 技术团队 (@tech-lead, @backend, @frontend)
-**审核人**: @pm
+**编制人**: 技术团队
 
 ---
 
-## 1. 需求概述
+## 1. 方案修订说明
 
-### 1.1 背景
+### v2.0 主要变更
 
-当前 PC 权限管理系统中，权限树数据需要手动录入创建，存在以下问题：
-- 重复劳动：需同时维护路由配置和权限树两份数据
-- 数据不一致：容易出现有权限无菜单或有菜单无权限的情况
-- 维护成本高：路由变更后需手动同步更新权限树
-
-### 1.2 目标
-
-实现 PC 权限树与前端路由自动同步，减少手动维护成本，确保数据一致性。
-
-### 1.3 核心需求
-
-| 需求 | 说明 | 优先级 |
-|------|------|--------|
-| 路由同步 | 点击同步按钮，从前端路由生成权限树 | P0 |
-| 自动比对 | 启动时自动比对路由与权限树差异 | P0 |
-| 权限树只读 | 同步后的权限树不允许编辑结构 | P0 |
-| pcAction 可编辑 | 可对叶子节点的 pcAction 进行增删改 | P0 |
-| 手动补充 | 支持手动添加特殊权限（不在路由中） | P1 |
-| 数据迁移 | 已有权限数据迁移到新结构 | P1 |
+| 变更项 | v1.0 问题 | v2.0 修正 |
+|--------|----------|----------|
+| pcAction 格式 | 自创格式 `actionName/actionType` | 采用现有格式 `name/permCode` |
+| 权限类型映射 | 未定义 | 路由→PC 权限，手动添加支持 NORMAL |
+| 表结构变更 | 新增字段过多 | 仅新增 `routePath` 字段用于同步标记 |
+| 同步范围 | 模糊 | 仅同步 PC 权限树，不影响 NORMAL |
 
 ---
 
-## 2. 技术架构
+## 2. 与现有设计融合
 
-### 2.1 整体架构
+### 2.1 现有数据结构（严格遵循）
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        前端应用层                                │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐             │
-│  │ 路由配置文件 │  │ 同步按钮组件 │  │ 权限树组件  │             │
-│  │ (router.ts) │  │(SyncButton) │  │(只读 Tree)  │             │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘             │
-│         │                │                │                     │
-└─────────┼────────────────┼────────────────┼─────────────────────┘
-          │                │                │
-          │ HTTP           │ HTTP           │
-          │ GET /routes    │ POST /sync     │ GET /tree
-          │                │                │
-          ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        API 网关层                                │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │ /api/routes     │  │ /api/sync       │  │ /api/permission │ │
-│  │ 获取路由配置     │  │ 同步权限树       │  │ 权限 CRUD       │ │
-│  └────────┬────────┘  └────────┬────────┘  └────────┬────────┘ │
-└───────────┼────────────────────┼────────────────────┼───────────┘
-            │                    │                    │
-            ▼                    ▼                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        服务层                                   │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │ RouteService    │  │ SyncService     │  │PermissionService│ │
-│  │ - parseRoutes   │  │ - compare       │  │ - treeBuilder   │ │
-│  │ - buildTree     │  │ - sync          │  │ - actionManager │ │
-│  │                 │  │ - migrate       │  │                 │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
-            │                    │                    │
-            ▼                    ▼                    ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        数据持久层                               │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────────────────────────────────────────────────────┐│
-│  │ sys_permission (新增 is_auto_sync, route_path 字段)        ││
-│  │ sys_pc_action (不变)                                       ││
-│  └─────────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────────┘
+**sys_permission.pcAction 格式**:
+```json
+[
+  { "name": "新增", "permCode": "add" },
+  { "name": "编辑", "permCode": "edit" },
+  { "name": "删除", "permCode": "delete" }
+]
 ```
 
-### 2.2 数据流
-
+**PermissionType + NodeType 架构**:
 ```
-1. 同步流程：
-   用户点击同步 → 读取路由配置 → 解析构建树 → 比对差异 → 用户确认 → 写入数据库
+PC 权限树:
+├── MENU (目录)
+│   └── PAGE (页面)
+│       └── pcAction: [{name, permCode}]
 
-2. 展示流程：
-   页面加载 → 请求权限树 → 构建只读树形 → 渲染节点 → 加载 pcAction
-
-3. 比对流程：
-   应用启动 → 请求比对接口 → 返回差异列表 → 提示用户 → 选择同步/忽略
+NORMAL 权限树:
+├── MENU (目录)
+│   └── TAG (标签)
 ```
+
+### 2.2 同步边界
+
+| 同步内容 | 说明 |
+|----------|------|
+| ✅ PC + MENU 节点 | 从路由 `meta.menu` 生成 |
+| ✅ PC + PAGE 节点 | 从路由 path 生成 |
+| ✅ pcAction | 从路由 `meta.actions` 生成 |
+| ❌ NORMAL 权限 | 不同步，保持手动管理 |
 
 ---
 
-## 3. 数据库设计
+## 3. 前端路由配置规范
 
-### 3.1 表结构变更
+### 3.1 路由配置模板
 
-#### sys_permission 表
+```typescript
+// src/router/permission-routes.ts
+// 这是 PC 权限系统管理的 routelist
 
-| 字段 | 类型 | 说明 | 变更类型 |
-|------|------|------|----------|
-| id | BIGINT | 主键 | 不变 |
-| parent_id | BIGINT | 父节点 ID | 不变 |
-| name | VARCHAR(100) | 节点名称 | 不变 |
-| route_path | VARCHAR(255) | 路由 path | **新增** |
-| route_name | VARCHAR(100) | 路由 name | **新增** |
-| component | VARCHAR(255) | 组件路径 | 不变 |
-| sort | INT | 排序 | 不变 |
-| is_auto_sync | TINYINT(1) | 是否自动同步生成 | **新增** |
-| is_editable | TINYINT(1) | 是否可编辑（手动添加的节点） | **新增** |
-| created_at | DATETIME | 创建时间 | 不变 |
-| updated_at | DATETIME | 更新时间 | 不变 |
+export const permissionRoutes = [
+  {
+    path: '/system',
+    name: 'System',
+    component: 'Layout',
+    meta: {
+      title: '系统管理',
+      icon: 'setting',
+      menuType: 'PC',           // 标记为 PC 权限
+      nodeType: 'MENU',         // 目录节点
+      permCode: 'system'        // 权限编码（可选，默认用 path）
+    },
+    children: [
+      {
+        path: 'user-manage',
+        name: 'UserManage',
+        component: 'system/user/index',
+        meta: {
+          title: '用户管理',
+          icon: 'user',
+          menuType: 'PC',
+          nodeType: 'PAGE',     // 页面节点
+          permCode: 'user-manage',
+          actions: [            // pcAction 定义
+            { name: '新增', permCode: 'add' },
+            { name: '编辑', permCode: 'edit' },
+            { name: '删除', permCode: 'delete' },
+            { name: '导出', permCode: 'export' }
+          ]
+        }
+      },
+      {
+        path: 'role-manage',
+        name: 'RoleManage',
+        component: 'system/role/index',
+        meta: {
+          title: '角色管理',
+          icon: 'role',
+          menuType: 'PC',
+          nodeType: 'PAGE',
+          permCode: 'role-manage',
+          actions: [
+            { name: '新增', permCode: 'add' },
+            { name: '编辑', permCode: 'edit' },
+            { name: '删除', permCode: 'delete' }
+          ]
+        }
+      }
+    ]
+  }
+]
+```
 
-#### sys_pc_action 表
+### 3.2 路由 meta 字段说明
 
-| 字段 | 类型 | 说明 | 变更类型 |
-|------|------|------|----------|
-| id | BIGINT | 主键 | 不变 |
-| permission_id | BIGINT | 所属权限节点 ID | 不变 |
-| action_name | VARCHAR(100) | 权限名称 (如 user:view) | 不变 |
-| action_type | VARCHAR(50) | 操作类型 (view/create/edit/delete) | 不变 |
-| description | VARCHAR(255) | 描述 | 不变 |
-| is_active | TINYINT(1) | 是否启用 | 不变 |
-| created_at | DATETIME | 创建时间 | 不变 |
-| updated_at | DATETIME | 更新时间 | 不变 |
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `menuType` | 'PC' | 是 | 固定为 'PC'，标识属于 PC 权限体系 |
+| `nodeType` | 'MENU'/'PAGE' | 是 | MENU=目录，PAGE=页面 |
+| `permCode` | string | 建议 | 权限编码，默认用 path |
+| `actions` | Array | PAGE 节点必填 | pcAction 定义 |
+| `title` | string | 是 | 菜单名称 |
+| `icon` | string | 建议 | 菜单图标 |
 
-### 3.2 字段说明
+---
 
-**is_auto_sync**:
-- `1`: 自动同步生成（节点结构只读）
-- `0`: 手动创建（节点结构可编辑）
+## 4. 同步逻辑设计
 
-**is_editable**:
-- `1`: 允许编辑节点信息（手动添加的特殊权限）
-- `0`: 不允许编辑节点信息（同步生成的节点）
+### 4.1 路由 → 权限节点映射
 
-### 3.3 迁移脚本
+```
+路由配置                          →   权限节点 (sys_permission)
+─────────────────────────────────────────────────────────────────────
+{                                    {
+  path: '/system',                     permName: '系统管理',
+  meta: {                              permCode: 'system',
+    title: '系统管理',                  permissionType: 'PC',
+    menuType: 'PC',                    nodeType: 'MENU',
+    icon: 'setting'                    iconName: 'setting',
+  }                                    routePath: '/system',
+}                                      parentId: null,
+                                       // MENU 节点无 pcAction
+                                     }
+
+{                                    {
+  path: 'user-manage',                 permName: '用户管理',
+  meta: {                              permCode: 'user-manage',
+    title: '用户管理',                  permissionType: 'PC',
+    menuType: 'PC',                    nodeType: 'PAGE',
+    actions: [                         routePath: '/system/user-manage',
+      { name: '新增', permCode: 'add' }  parentId: [system 的 id],
+    ]                                  pcAction: [
+  }                                      { name: '新增', permCode: 'add' }
+}                                        ]
+                                     }
+```
+
+### 4.2 同步流程图
+
+```mermaid
+flowchart TD
+    A[读取路由配置 permission-routes.ts] --> B[解析路由树]
+    B --> C[遍历路由节点]
+    C --> D{nodeType?}
+    D -->|MENU| E[创建 MENU 权限节点]
+    D -->|PAGE| F[创建 PAGE 权限节点]
+    F --> G[从 meta.actions 提取 pcAction]
+    E --> H[写入 sys_permission]
+    G --> H
+    H --> I{还有节点？}
+    I -->|是 | C
+    I -->|否 | J[同步完成]
+```
+
+### 4.3 同步策略
+
+| 场景 | 策略 | 说明 |
+|------|------|------|
+| 路由新增 | 添加权限节点 | 路由存在，权限不存在→新增 |
+| 路由删除 | 标记禁用 | 路由删除，权限 `permStatus=0`（不物理删除） |
+| 路由名称变更 | 更新 permName | 保持 permCode 不变 |
+| pcAction 新增 | 追加 | 合并到现有 pcAction 数组 |
+| pcAction 删除 | 保留 | 不自动删除，避免影响已有角色权限 |
+
+---
+
+## 5. 数据库变更
+
+### 5.1 表结构变更（最小化）
+
+**sys_permission 表**:
+
+| 字段 | 类型 | 说明 | 变更 |
+|------|------|------|------|
+| routePath | VARCHAR(255) | 路由 path，用于比对 | **新增，可空** |
+| isAutoSync | TINYINT(1) | 是否同步生成 | **新增，default 0** |
+
+**变更说明**:
+- `routePath`: 用于标记该权限节点是否由路由同步生成，以及用于比对差异
+- `isAutoSync`: 为 1 时，节点结构（permName, parentId 等）不可编辑
+
+### 5.2 迁移脚本
 
 ```sql
--- 1. 添加新字段
+-- Step 1: 添加新字段
 ALTER TABLE sys_permission
-ADD COLUMN route_path VARCHAR(255) COMMENT '路由 path' AFTER name,
-ADD COLUMN route_name VARCHAR(100) COMMENT '路由 name' AFTER route_path,
-ADD COLUMN is_auto_sync TINYINT(1) DEFAULT 0 COMMENT '是否自动同步生成' AFTER sort,
-ADD COLUMN is_editable TINYINT(1) DEFAULT 1 COMMENT '是否可编辑' AFTER is_auto_sync;
+ADD COLUMN routePath VARCHAR(255) COMMENT '路由 path，同步时使用' AFTER permCode,
+ADD COLUMN isAutoSync TINYINT(1) DEFAULT 0 COMMENT '是否同步生成：1-是 0-否' AFTER routePath;
 
--- 2. 已有数据标记为手动创建（可编辑）
-UPDATE sys_permission SET is_auto_sync = 0, is_editable = 1 WHERE id > 0;
+-- Step 2: 已有数据标记为手动创建
+UPDATE sys_permission SET isAutoSync = 0 WHERE id > 0;
 
--- 3. 添加索引
-CREATE INDEX idx_route_path ON sys_permission(route_path);
-CREATE INDEX idx_auto_sync ON sys_permission(is_auto_sync);
+-- Step 3: 添加索引
+CREATE INDEX idx_route_path ON sys_permission(routePath);
+CREATE INDEX idx_auto_sync ON sys_permission(isAutoSync);
+
+-- Step 4: 备份（安全起见）
+CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
 ```
 
 ---
 
-## 4. API 接口设计
+## 6. API 接口设计
 
-### 4.1 获取路由配置
+### 6.1 获取路由配置
 
-**请求**:
-```
-GET /api/routes
-```
+**接口**: `GET /api/permission/routes`
 
 **响应**:
 ```json
@@ -181,21 +241,24 @@ GET /api/routes
       {
         "path": "/system",
         "name": "System",
-        "component": "Layout",
         "meta": {
           "title": "系统管理",
-          "icon": "setting"
+          "menuType": "PC",
+          "nodeType": "MENU",
+          "permCode": "system"
         },
         "children": [
           {
-            "path": "/system/user",
-            "name": "UserManage",
-            "component": "system/user/index",
+            "path": "user-manage",
             "meta": {
               "title": "用户管理",
-              "icon": "user"
-            },
-            "actions": ["view", "create", "edit", "delete"]
+              "menuType": "PC",
+              "nodeType": "PAGE",
+              "permCode": "user-manage",
+              "actions": [
+                { "name": "新增", "permCode": "add" }
+              ]
+            }
           }
         ]
       }
@@ -204,16 +267,15 @@ GET /api/routes
 }
 ```
 
-### 4.2 同步权限树
+### 6.2 同步权限树
+
+**接口**: `POST /api/permission/sync`
 
 **请求**:
-```
-POST /api/permission/sync
-Content-Type: application/json
-
+```json
 {
-  "dryRun": true,  // true=仅预览差异，false=执行同步
-  "strategy": "merge"  // merge=合并，replace=替换
+  "dryRun": true,      // true=预览，false=执行
+  "strategy": "merge"  // merge=合并，update=更新
 }
 ```
 
@@ -224,46 +286,32 @@ Content-Type: application/json
   "data": {
     "synced": true,
     "summary": {
-      "added": 5,
-      "removed": 2,
-      "updated": 3
+      "added": 2,      // 新增节点数
+      "updated": 1,    // 更新节点数
+      "unchanged": 5   // 无变更节点数
     },
     "details": [
       {
         "type": "add",
-        "path": "/system/role",
-        "name": "角色管理",
-        "message": "新增节点"
-      },
-      {
-        "type": "remove",
-        "path": "/system/old",
-        "name": "旧菜单",
-        "message": "路由已删除"
-      }
-    ],
-    "preview": [
-      {
-        "path": "/system",
-        "name": "系统管理",
-        "status": "unchanged"
-      },
-      {
-        "path": "/system/user",
+        "path": "/system/user-manage",
         "name": "用户管理",
-        "status": "added"
+        "message": "新增页面权限"
+      },
+      {
+        "type": "update",
+        "path": "/system/role-manage",
+        "changes": {
+          "permName": { "old": "角色", "new": "角色管理" }
+        }
       }
     ]
   }
 }
 ```
 
-### 4.3 比对差异
+### 6.3 比对差异
 
-**请求**:
-```
-GET /api/permission/compare
-```
+**接口**: `GET /api/permission/compare`
 
 **响应**:
 ```json
@@ -275,37 +323,35 @@ GET /api/permission/compare
     "diffs": [
       {
         "type": "missing",
-        "path": "/system/role",
-        "name": "角色管理",
+        "routePath": "/system/user-manage",
+        "permName": "用户管理",
         "suggestion": "添加到权限树"
       },
       {
-        "type": "extra",
-        "path": "/old/menu",
-        "name": "旧菜单",
-        "suggestion": "从权限树移除"
+        "type": "mismatch",
+        "routePath": "/system",
+        "permCode": "system",
+        "diff": {
+          "routeTitle": "系统管理",
+          "permName": "系统"
+        },
+        "suggestion": "更新权限名称"
       },
       {
-        "type": "mismatch",
-        "path": "/system/user",
-        "name": "用户管理",
-        "diff": {
-          "routeTitle": "用户管理",
-          "permissionTitle": "用户管理 V1"
-        },
-        "suggestion": "更新节点名称"
+        "type": "extra",
+        "permCode": "old-menu",
+        "permName": "旧菜单",
+        "routePath": null,
+        "suggestion": "路由已删除，建议禁用该权限"
       }
     ]
   }
 }
 ```
 
-### 4.4 获取权限树
+### 6.4 获取权限树
 
-**请求**:
-```
-GET /api/permission/tree
-```
+**接口**: `GET /api/permission/tree`
 
 **响应**:
 ```json
@@ -314,31 +360,25 @@ GET /api/permission/tree
   "data": {
     "tree": [
       {
-        "id": 1,
-        "name": "系统管理",
-        "path": "/system",
-        "is_auto_sync": 1,
-        "is_editable": 0,
+        "id": "1",
+        "permName": "系统管理",
+        "permCode": "system",
+        "permissionType": "PC",
+        "nodeType": "MENU",
+        "routePath": "/system",
+        "isAutoSync": 1,
         "children": [
           {
-            "id": 2,
-            "name": "用户管理",
-            "path": "/system/user",
-            "is_auto_sync": 1,
-            "is_editable": 0,
-            "pcActions": [
-              {
-                "id": 101,
-                "actionName": "user:view",
-                "actionType": "view",
-                "is_active": true
-              },
-              {
-                "id": 102,
-                "actionName": "user:create",
-                "actionType": "create",
-                "is_active": true
-              }
+            "id": "2",
+            "permName": "用户管理",
+            "permCode": "user-manage",
+            "permissionType": "PC",
+            "nodeType": "PAGE",
+            "routePath": "/system/user-manage",
+            "isAutoSync": 1,
+            "pcAction": [
+              { "name": "新增", "permCode": "add" },
+              { "name": "编辑", "permCode": "edit" }
             ],
             "children": []
           }
@@ -347,12 +387,14 @@ GET /api/permission/tree
     ],
     "manualNodes": [
       {
-        "id": 99,
-        "name": "特殊权限",
-        "path": "manual_001",
-        "is_auto_sync": 0,
-        "is_editable": 1,
-        "pcActions": [],
+        "id": "99",
+        "permName": "特殊权限",
+        "permCode": "manual-001",
+        "permissionType": "PC",
+        "nodeType": "PAGE",
+        "routePath": null,
+        "isAutoSync": 0,
+        "pcAction": [],
         "children": []
       }
     ]
@@ -360,86 +402,60 @@ GET /api/permission/tree
 }
 ```
 
-### 4.5 pcAction 管理
+### 6.5 pcAction 管理接口
 
-#### 4.5.1 添加 pcAction
+**保持现有接口不变**，仅遵循现有 `name/permCode` 格式：
 
-**请求**:
-```
-POST /api/permission/:permissionId/actions
-Content-Type: application/json
-
-{
-  "actionName": "user:export",
-  "actionType": "export",
-  "description": "导出用户数据",
-  "is_active": true
-}
-```
-
-#### 4.5.2 编辑 pcAction
-
-**请求**:
-```
-PUT /api/permission/:permissionId/actions/:actionId
-Content-Type: application/json
-
-{
-  "actionName": "user:export",
-  "description": "导出用户数据和报表",
-  "is_active": true
-}
-```
-
-#### 4.5.3 删除 pcAction
-
-**请求**:
-```
-DELETE /api/permission/:permissionId/actions/:actionId
-```
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/permission/:id/actions` | POST | 添加 pcAction |
+| `/api/permission/:id/actions/:permCode` | PUT | 编辑 pcAction |
+| `/api/permission/:id/actions/:permCode` | DELETE | 删除 pcAction |
 
 ---
 
-## 5. 前端实现方案
+## 7. 前端实现
 
-### 5.1 组件结构
+### 7.1 PC 权限管理页面布局
 
 ```
-src/views/permission/
-├── index.vue              # PC 权限管理主页面
-├── components/
-│   ├── PermissionTree.vue # 权限树组件（只读）
-│   ├── SyncButton.vue     # 同步按钮组件
-│   ├── DiffPreview.vue    # 差异预览组件
-│   ├── PcActionList.vue   # pcAction 列表组件
-│   └── PcActionForm.vue   # pcAction 表单组件
-└── composables/
-    ├── usePermissionSync.ts   # 同步逻辑
-    ├── usePermissionTree.ts   # 树形逻辑
-    └── usePcAction.ts         # pcAction 逻辑
+┌─────────────────────────────────────────────────────────────────┐
+│  PC 权限管理                                      [同步路由] [检查差异] │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────────────┐   ┌─────────────────────────────────┐ │
+│  │   权限树 (只读)      │   │   pcAction 管理                  │ │
+│  │                     │   │                                 │ │
+│  │ 📁 系统管理 (同步)   │   │ 选中节点：用户管理               │ │
+│  │   📄 用户管理        │   │                                 │ │
+│  │   📄 角色管理        │   │  操作权限列表：                 │ │
+│  │                     │   │  ┌────────────────────────────┐ │ │
+│  │ 📁 业务管理 (手动)   │   │  │ 新增  [edit] [delete]      │ │ │
+│  │   📄 订单管理        │   │  │ 编辑  [edit] [delete]      │ │ │
+│  │                     │   │  │ 删除  [edit] [delete]      │ │ │
+│  │                     │   │  └────────────────────────────┘ │ │
+│  │                     │   │  [+ 添加操作权限]               │ │
+│  └─────────────────────┘   └─────────────────────────────────┘ │
+│                                                                 │
+│  [手动添加权限]                                                  │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-### 5.2 同步按钮组件
+### 7.2 同步按钮组件
 
 ```vue
 <template>
-  <div class="sync-button-group">
-    <el-button
-      type="primary"
-      @click="handleSync"
-      :loading="syncing"
-    >
+  <div class="sync-actions">
+    <el-button type="primary" @click="handleSync" :loading="syncing">
       同步路由
     </el-button>
-
-    <el-badge :value="diffCount" :hidden="diffCount === 0">
-      <el-button @click="handleCompare">
-        检查差异
-      </el-button>
-    </el-badge>
+    <el-button @click="handleCompare">
+      检查差异
+      <el-badge :value="diffCount" :hidden="diffCount === 0" />
+    </el-button>
 
     <!-- 差异预览弹窗 -->
-    <DiffPreview
+    <DiffPreviewDialog
       v-model:visible="previewVisible"
       :diffs="diffs"
       @confirm="confirmSync"
@@ -449,7 +465,7 @@ src/views/permission/
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { compareRoutes, syncPermissions } from '@/api/permission'
+import { comparePermission, syncPermission } from '@/api/permission'
 
 const syncing = ref(false)
 const diffCount = ref(0)
@@ -457,29 +473,28 @@ const diffs = ref([])
 const previewVisible = ref(false)
 
 onMounted(async () => {
-  // 启动时自动比对
-  const res = await compareRoutes()
+  // 页面加载时自动比对
+  const res = await comparePermission()
   if (res.data.hasDiff) {
     diffCount.value = res.data.diffCount
   }
 })
 
 const handleCompare = async () => {
-  const res = await compareRoutes()
+  const res = await comparePermission()
   diffs.value = res.data.diffs
   diffCount.value = res.data.diffCount
   previewVisible.value = true
 }
 
 const handleSync = async () => {
-  // 先预览差异
-  await handleCompare()
+  await handleCompare()  // 先预览
 }
 
-const confirmSync = async (strategy: 'merge' | 'replace') => {
+const confirmSync = async () => {
   syncing.value = true
   try {
-    await syncPermissions({ dryRun: false, strategy })
+    await syncPermission({ dryRun: false })
     ElMessage.success('同步成功')
     emit('refresh')
   } catch (e) {
@@ -492,59 +507,40 @@ const confirmSync = async (strategy: 'merge' | 'replace') => {
 </script>
 ```
 
-### 5.3 权限树组件（只读）
+### 7.3 权限树展示（只读）
 
 ```vue
 <template>
-  <div class="permission-tree-container">
-    <div class="tree-header">
-      <span class="title">权限树（只读）</span>
-      <el-tooltip content="同步生成的节点不可编辑结构，可手动添加特殊权限">
-        <el-icon><Info-Filled /></el-icon>
-      </el-tooltip>
-    </div>
+  <el-tree
+    :data="treeData"
+    :props="defaultProps"
+    node-key="id"
+    default-expand-all
+    :expand-on-click-node="false"
+  >
+    <template #default="{ node, data }">
+      <div class="tree-node">
+        <span class="node-icon">{{ getNodeIcon(data.nodeType) }}</span>
+        <span class="node-name">{{ node.label }}</span>
+        <span class="node-code">{{ data.permCode }}</span>
 
-    <el-tree
-      :data="treeData"
-      :props="treeProps"
-      :expand-on-click-node="false"
-      node-key="id"
-      default-expand-all
-    >
-      <template #default="{ node, data }">
-        <div class="tree-node">
-          <span class="node-name">{{ node.label }}</span>
-          <span class="node-path">{{ data.path }}</span>
-          <el-tag
-            v-if="data.is_auto_sync"
-            size="small"
-            type="info"
-          >
-            同步
-          </el-tag>
-          <el-tag
-            v-else
-            size="small"
-            type="warning"
-          >
-            手动
-          </el-tag>
-        </div>
-      </template>
-    </el-tree>
+        <!-- 同步标记 -->
+        <el-tag
+          v-if="data.isAutoSync === 1"
+          size="small"
+          type="info"
+          class="sync-tag"
+        >
+          同步
+        </el-tag>
 
-    <!-- 手动添加节点区域 -->
-    <div class="manual-section">
-      <el-divider>手动添加的权限</el-divider>
-      <el-button
-        type="primary"
-        size="small"
-        @click="showAddManualDialog"
-      >
-        + 添加特殊权限
-      </el-button>
-    </div>
-  </div>
+        <!-- pcAction 预览 -->
+        <span v-if="data.pcAction" class="action-preview">
+          [{{ data.pcAction.length }} 个操作]
+        </span>
+      </div>
+    </template>
+  </el-tree>
 </template>
 
 <script setup lang="ts">
@@ -552,15 +548,19 @@ import { getPermissionTree } from '@/api/permission'
 import { ref, onMounted } from 'vue'
 
 const treeData = ref([])
-const treeProps = {
+const defaultProps = {
   children: 'children',
-  label: 'name'
+  label: 'permName'
 }
 
 onMounted(async () => {
   const res = await getPermissionTree()
   treeData.value = res.data.tree
 })
+
+const getNodeIcon = (nodeType: string) => {
+  return nodeType === 'MENU' ? '📁' : '📄'
+}
 </script>
 
 <style scoped>
@@ -568,304 +568,24 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
 }
 
-.node-path {
+.node-code {
   font-size: 12px;
   color: #999;
 }
 
-.manual-section {
-  margin-top: 20px;
-  padding: 16px;
-  border: 1px dashed #ddd;
+.sync-tag {
+  margin-left: 8px;
+}
+
+.action-preview {
+  font-size: 12px;
+  color: #666;
+  margin-left: auto;
 }
 </style>
-```
-
-### 5.4 pcAction 管理组件
-
-```vue
-<template>
-  <div class="pc-action-panel">
-    <div class="panel-header">
-      <span class="title">操作权限 (pcAction)</span>
-      <el-button type="primary" size="small" @click="showAddAction">
-        + 添加操作权限
-      </el-button>
-    </div>
-
-    <el-table :data="actions" border>
-      <el-table-column prop="actionName" label="权限标识" />
-      <el-table-column prop="actionType" label="类型">
-        <template #default="{ row }">
-          <el-tag :type="getActionTypeColor(row.actionType)">
-            {{ row.actionType }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column prop="description" label="描述" />
-      <el-table-column prop="is_active" label="状态">
-        <template #default="{ row }">
-          <el-switch
-            v-model="row.is_active"
-            @change="toggleActionStatus(row)"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="180">
-        <template #default="{ row }">
-          <el-button size="small" @click="editAction(row)">编辑</el-button>
-          <el-button
-            size="small"
-            type="danger"
-            @click="deleteAction(row)"
-          >
-            删除
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
-</template>
-```
-
----
-
-## 6. 同步逻辑详细设计
-
-### 6.1 同步流程图
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        同步流程                                 │
-└─────────────────────────────────────────────────────────────────┘
-
-  用户点击同步按钮
-         │
-         ▼
-  ┌─────────────────┐
-  │ 1. 读取路由配置 │
-  │ GET /api/routes │
-  └────────┬────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ 2. 解析路由树    │
-  │ RouteService    │
-  │ - parseRoutes() │
-  │ - buildTree()   │
-  └────────┬────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ 3. 获取当前权限树 │
-  │ GET /tree       │
-  └────────┬────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ 4. 比对差异      │
-  │ - 新增节点       │
-  │ - 删除节点       │
-  │ - 更新节点       │
-  └────────┬────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ 5. 展示差异预览   │
-  │ (dryRun=true)   │
-  └────────┬────────┘
-           │
-           ▼
-     用户确认同步？
-           │
-    ┌──────┴──────┐
-    │             │
-   是            否
-    │             │
-    ▼             ▼
-  ┌─────────┐   结束
-  │6.执行同步 │
-  │SyncService│
-  │- compare()│
-  │- sync()   │
-  └─────┬─────┘
-        │
-        ▼
-  ┌─────────────────┐
-  │ 7. 写入数据库    │
-  │ - 插入新节点     │
-  │ - 标记删除节点   │
-  │ - 更新变更节点   │
-  └────────┬────────┘
-           │
-           ▼
-  ┌─────────────────┐
-  │ 8. 返回结果      │
-  │ - 同步成功/失败  │
-  │ - 变更统计       │
-  └─────────────────┘
-```
-
-### 6.2 比对算法
-
-```typescript
-interface RouteNode {
-  path: string
-  name: string
-  children?: RouteNode[]
-}
-
-interface PermissionNode {
-  id: number
-  path: string
-  name: string
-  is_auto_sync: number
-  children?: PermissionNode[]
-}
-
-interface DiffResult {
-  type: 'add' | 'remove' | 'update'
-  route?: RouteNode
-  permission?: PermissionNode
-  message: string
-}
-
-/**
- * 比对路由树和权限树
- */
-function compareTrees(
-  routes: RouteNode[],
-  permissions: PermissionNode[]
-): DiffResult[] {
-  const diffs: DiffResult[] = []
-
-  // 1. 查找新增节点（路由存在，权限不存在）
-  const routeMap = buildPathMap(routes)
-  const permissionMap = buildPathMap(permissions)
-
-  for (const [path, route] of routeMap.entries()) {
-    if (!permissionMap.has(path)) {
-      diffs.push({
-        type: 'add',
-        route,
-        message: `新增节点：${route.name} (${path})`
-      })
-    }
-  }
-
-  // 2. 查找删除节点（权限存在且为同步生成，路由不存在）
-  for (const [path, permission] of permissionMap.entries()) {
-    if (!routeMap.has(path) && permission.is_auto_sync === 1) {
-      diffs.push({
-        type: 'remove',
-        permission,
-        message: `删除节点：${permission.name} (${path})`
-      })
-    }
-  }
-
-  // 3. 查找更新节点（名称变更）
-  for (const [path, route] of routeMap.entries()) {
-    const permission = permissionMap.get(path)
-    if (permission && permission.name !== route.name) {
-      diffs.push({
-        type: 'update',
-        route,
-        permission,
-        message: `更新节点：${permission.name} → ${route.name}`
-      })
-    }
-  }
-
-  return diffs
-}
-```
-
-### 6.3 同步策略
-
-| 策略 | 说明 | 适用场景 |
-|------|------|----------|
-| merge（合并） | 仅新增缺失节点，不删除已有节点 | 首次同步、增量更新 |
-| replace（替换） | 完全替换，删除路由中不存在的节点 | 重构后重新同步 |
-
-### 6.4 手动添加节点处理
-
-```typescript
-// 手动添加的节点标记
-interface ManualPermissionNode {
-  id: number
-  path: string  // manual_001, manual_002...
-  name: string
-  is_auto_sync: 0  // 手动添加
-  is_editable: 1   // 可编辑
-  parent_id: number | null
-}
-
-// 同步时保留手动节点
-function syncWithManualNodes(routes: RouteNode[], manualNodes: ManualPermissionNode[]) {
-  const syncedTree = buildTreeFromRoutes(routes)
-
-  // 将手动节点挂载到对应位置或根节点
-  for (const manual of manualNodes) {
-    if (manual.parent_id) {
-      // 挂载到指定父节点
-      attachToParent(syncedTree, manual)
-    } else {
-      // 作为根节点
-      syncedTree.push(manual)
-    }
-  }
-
-  return syncedTree
-}
-```
-
----
-
-## 7. 数据迁移方案
-
-### 7.1 迁移策略
-
-| 数据类型 | 迁移策略 | 说明 |
-|----------|----------|------|
-| 已有权限节点 | 标记为手动创建 | `is_auto_sync=0, is_editable=1` |
-| 已有 pcAction | 保留不变 | 保持现有关联关系 |
-| 已有角色权限 | 保留不变 | 不影响现有权限分配 |
-
-### 7.2 迁移步骤
-
-```sql
--- Step 1: 备份数据
-CREATE TABLE sys_permission_backup AS SELECT * FROM sys_permission;
-CREATE TABLE sys_pc_action_backup AS SELECT * FROM sys_pc_action;
-
--- Step 2: 添加新字段（见 3.3 迁移脚本）
-
--- Step 3: 标记已有数据
-UPDATE sys_permission
-SET is_auto_sync = 0,
-    is_editable = 1
-WHERE id > 0;
-
--- Step 4: 验证
-SELECT
-  COUNT(*) as total,
-  SUM(CASE WHEN is_auto_sync = 0 THEN 1 ELSE 0 END) as manual,
-  SUM(CASE WHEN is_auto_sync = 1 THEN 1 ELSE 0 END) as auto
-FROM sys_permission;
-```
-
-### 7.3 回滚方案
-
-```sql
--- 如有问题，回滚数据
-DROP TABLE sys_permission;
-DROP TABLE sys_pc_action;
-
-RENAME TABLE sys_permission_backup TO sys_permission;
-RENAME TABLE sys_pc_action_backup TO sys_pc_action;
 ```
 
 ---
@@ -874,40 +594,30 @@ RENAME TABLE sys_pc_action_backup TO sys_pc_action;
 
 ### 8.1 任务分解
 
-| 阶段 | 任务 | 负责人 | 工时 | 依赖 |
-|------|------|--------|------|------|
-| 1 | 数据库表结构变更 | @backend | 2h | - |
-| 2 | 后端 API 开发-基础接口 | @backend | 4h | 1 |
-| 3 | 后端 API 开发-同步接口 | @backend | 4h | 1 |
-| 4 | 后端 API 开发-比对接口 | @backend | 2h | 1 |
-| 5 | 前端组件-SyncButton | @frontend | 2h | - |
-| 6 | 前端组件-PermissionTree | @frontend | 4h | - |
-| 7 | 前端组件-DiffPreview | @frontend | 3h | - |
-| 8 | 前端组件-PcAction 管理 | @frontend | 4h | - |
-| 9 | 前后端联调 | @backend, @frontend | 4h | 2-8 |
-| 10 | 数据迁移 | @backend | 2h | 1 |
-| 11 | 测试用例编写 | @qa | 4h | 9 |
-| 12 | 文档编写 | @doc | 2h | 9 |
+| 阶段 | 任务 | 负责人 | 工时 |
+|------|------|--------|------|
+| 1 | 数据库表结构变更 | @backend | 1h |
+| 2 | 后端 API - 获取路由 | @backend | 2h |
+| 3 | 后端 API - 同步接口 | @backend | 4h |
+| 4 | 后端 API - 比对接口 | @backend | 2h |
+| 5 | 前端 - 同步按钮组件 | @frontend | 2h |
+| 6 | 前端 - 权限树展示 | @frontend | 3h |
+| 7 | 前端 - pcAction 管理 | @frontend | 3h |
+| 8 | 前后端联调 | @backend, @frontend | 3h |
+| 9 | 测试 | @qa | 3h |
+| 10 | 文档更新 | @doc | 2h |
+| **合计** | | | **25h** |
 
 ### 8.2 里程碑
 
-| 里程碑 | 日期 | 交付物 |
-|--------|------|--------|
-| M1: 数据库就绪 | Day 1 | 表结构变更完成 |
-| M2: API 完成 | Day 3 | 所有接口可用 |
-| M3: 前端完成 | Day 5 | 所有组件可用 |
-| M4: 联调完成 | Day 6 | 端到端可用 |
-| M5: 测试通过 | Day 7 | 测试报告 |
-| M6: 上线发布 | Day 8 | 正式发布 |
-
-### 8.3 风险评估
-
-| 风险 | 概率 | 影响 | 应对措施 |
-|------|------|------|----------|
-| 路由格式不统一 | 中 | 高 | 制定路由规范，增加格式校验 |
-| 大量历史数据迁移 | 低 | 中 | 分批迁移，提供回滚方案 |
-| 前端组件兼容性问题 | 中 | 低 | 充分测试，保留降级方案 |
-| 同步导致权限丢失 | 低 | 高 | merge 策略优先，人工确认 |
+| 里程碑 | 交付物 | 时间 |
+|--------|--------|------|
+| M1 | 数据库就绪 | Day 1 上午 |
+| M2 | API 完成 | Day 2 下午 |
+| M3 | 前端完成 | Day 3 下午 |
+| M4 | 联调完成 | Day 4 上午 |
+| M5 | 测试通过 | Day 4 下午 |
+| M6 | 上线发布 | Day 5 |
 
 ---
 
@@ -917,48 +627,69 @@ RENAME TABLE sys_pc_action_backup TO sys_pc_action;
 
 | 编号 | 验收项 | 标准 |
 |------|--------|------|
-| F1 | 路由同步功能 | 点击同步按钮，正确生成权限树 |
-| F2 | 自动比对功能 | 启动时自动检测差异并提示 |
-| F3 | 权限树只读 | 同步节点不可编辑结构 |
-| F4 | pcAction 可编辑 | 可对 pcAction 进行增删改 |
-| F5 | 手动添加节点 | 支持添加特殊权限节点 |
+| F1 | 路由同步 | 点击同步，正确生成 PC 权限树 |
+| F2 | 自动比对 | 页面加载时自动检测差异 |
+| F3 | 权限树只读 | isAutoSync=1 的节点不可编辑结构 |
+| F4 | pcAction 可编辑 | 可对 pcAction 增删改 |
+| F5 | 手动添加 | 支持手动添加权限节点 |
 | F6 | 差异预览 | 同步前展示变更预览 |
 
-### 9.2 性能验收
+### 9.2 数据验收
 
 | 编号 | 验收项 | 标准 |
 |------|--------|------|
-| P1 | 同步接口响应 | < 3s (1000 节点内) |
-| P2 | 比对接口响应 | < 1s |
-| P3 | 树形加载响应 | < 2s |
-
-### 9.3 数据验收
-
-| 编号 | 验收项 | 标准 |
-|------|--------|------|
-| D1 | 数据迁移完整 | 迁移后数据无丢失 |
-| D2 | 回滚有效 | 回滚后数据一致 |
+| D1 | pcAction 格式 | 严格遵循 `{name, permCode}` 格式 |
+| D2 | 权限类型 | 同步生成 PC 权限，不影响 NORMAL |
+| D3 | 数据迁移 | 已有数据标记为 isAutoSync=0 |
 
 ---
 
 ## 10. 附录
 
-### 10.1 术语表
+### 10.1 关键代码片段
 
-| 术语 | 说明 |
-|------|------|
-| pcAction | 权限操作，如 user:view、user:create |
-| 权限树 | 树形结构的权限节点 |
-| 同步 | 从路由配置生成/更新权限树 |
-| 比对 | 比较路由和权限树的差异 |
+**后端同步服务 (伪代码)**:
+
+```typescript
+class PermissionSyncService {
+  async sync(routes: RouteConfig[], strategy: 'merge' | 'update') {
+    const existingPerms = await this.permissionRepo.findAll()
+    const diffs = this.compare(routes, existingPerms)
+
+    for (const diff of diffs) {
+      if (diff.type === 'add') {
+        await this.createPermissionFromRoute(diff.route)
+      } else if (diff.type === 'update') {
+        await this.updatePermission(diff.perm, diff.route)
+      } else if (diff.type === 'extra') {
+        // 标记禁用，不物理删除
+        await this.disablePermission(diff.perm)
+      }
+    }
+  }
+
+  private createPermissionFromRoute(route: RouteConfig) {
+    return this.permissionRepo.save({
+      permName: route.meta.title,
+      permCode: route.meta.permCode || route.path,
+      permissionType: 'PC',
+      nodeType: route.meta.nodeType,
+      routePath: route.path,
+      isAutoSync: 1,
+      pcAction: route.meta.actions || [],
+      parentId: this.findParentId(route.path)
+    })
+  }
+}
+```
 
 ### 10.2 参考文档
 
-- [现有权限系统设计](./core/permissions.md)
-- [数据库设计](./database/database-entities-design.md)
-- [API 接口文档](./api/api-index.md)
+- [权限系统核心概念](./core/permissions.md)
+- [数据库实体设计](./database/database-entities-design.md)
+- [权限分配流程](./flows/permission-assignment.md)
 
 ---
 
-**文档版本**: v1.0 草案
-**待办**: 等待老板评审确认
+**版本**: v2.0
+**状态**: 待老板评审
