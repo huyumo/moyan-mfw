@@ -144,7 +144,7 @@ flowchart TD
 
 ```
 拥有者权限 = 拥有者角色 (isOwner=1) 的权限
-           = ∪(角色分配的所有 permissionId + pcAction)
+           = 所有角色 permissionValue 的位运算 OR
            (拥有者角色的权限通常覆盖权限池中的所有权限)
 ```
 

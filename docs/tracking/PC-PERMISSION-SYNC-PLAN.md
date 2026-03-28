@@ -1,13 +1,22 @@
-# PC 权限同步功能方案设计 (v3.0)
+# PC 权限同步功能方案设计 (v4.0)
 
 **文档编号**: PLAN-PC-SYNC-2026-0328
-**版本**: v3.0 - permCode 自动拼接、actions 后置配置
-**编制日期**: 2026-03-28
+**版本**: v4.0 - permissionValue 位运算权限设计
+**最后更新**: 2026-03-28
 **编制人**: 技术团队
 
 ---
 
 ## 1. 方案修订说明
+
+### v4.0 核心变更（位运算权限设计）
+
+| 变更项 | v3.0 设计 | v4.0 修正 |
+|--------|----------|----------|
+| **权限存储** | pcAction JSON 数组 | permissionValue: bigint 位运算 |
+| **权限配置** | 同步后在 PC 权限管理页面配置 pcAction | 同步时生成 permissionValue=0n，后续配置位运算权限 |
+| **同步范围** | 仅同步权限树结构，pcAction 后置配置 | 仅同步权限树结构，permissionValue 后置配置 |
+| **API 接口** | pc-actions 管理接口 | 已移除，改用 permissionValue 字段 |
 
 ### v3.0 核心变更（响应老板意见）
 
@@ -15,14 +24,14 @@
 |--------|----------|----------|
 | **actions 定义** | 路由中前置定义 actions | ❌ 删除，不在路由中定义 |
 | **permCode 生成** | 路由中手动填写 permCode | ✅ 从路由结构自动拼接 |
-| **pcAction 配置** | 同步时生成 pcAction | ✅ 同步后在 PC 权限管理页面配置 |
-| **同步范围** | 同步权限 + pcAction | ✅ 仅同步权限树结构，pcAction 后置配置 |
+| **permissionValue 配置** | 同步时生成 permissionValue | ✅ 同步后在 PC 权限管理页面配置 |
+| **同步范围** | 同步权限 + permissionValue | ✅ 仅同步权限树结构，permissionValue 后置配置 |
 
 ### 设计原则
 
 1. **路由配置最小化**：路由只定义 `path`、`name`、`component`，不定义权限相关元数据
 2. **permCode 自动拼接**：从路由嵌套结构自动生成（如 `/system/user` → `menu.system.user`）
-3. **pcAction 后置配置**：同步生成权限树后，在 PC 权限管理页面配置 pcAction
+3. **permissionValue 后置配置**：同步生成权限树后，在 PC 权限管理页面配置 permissionValue
 
 ---
 
@@ -159,7 +168,7 @@ flowchart TD
     K --> M{还有节点？}
     L --> M
     M -->|是 | C
-    M -->|否 | N[同步完成<br/>pcAction 为空，待配置]
+    M -->|否 | N[同步完成<br/>permissionValue=0n，待配置]
 ```
 
 ### 3.2 permCode 生成算法
@@ -222,7 +231,7 @@ function generatePermName(route: RouteRecordRaw): string {
 | 路由新增 | 添加权限节点 | 路由存在，权限不存在→新增 |
 | 路由删除 | 标记禁用 | 路由删除，权限 `permStatus=0`（不物理删除） |
 | 路由名称变更 | 更新 permName | 保持 permCode 不变 |
-| pcAction | 不同步 | 同步后在 PC 权限管理页面手动配置 |
+| permissionValue | 不同步 | 同步后在 PC 权限管理页面手动配置 |
 
 ---
 
@@ -342,13 +351,13 @@ CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
 }
 ```
 
-### 5.3 pcAction 管理接口（现有接口保持不变）
+### 5.3 permissionValue 配置（通过更新接口）
+
+permissionValue 通过权限更新接口直接配置，无需单独的 pc-actions 管理接口。
 
 | 接口 | 方法 | 说明 |
 |------|------|------|
-| `/api/permission/:id/pc-actions` | POST | 添加 pcAction |
-| `/api/permission/:id/pc-actions/:permCode` | PUT | 编辑 pcAction |
-| `/api/permission/:id/pc-actions/:permCode` | DELETE | 删除 pcAction |
+| `PUT /api/v1/permissions/:id` | PUT | 更新 permissionValue 字段 |
 
 ---
 
@@ -362,10 +371,10 @@ CREATE TABLE sys_permission_backup_20260328 AS SELECT * FROM sys_permission;
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────┐   ┌─────────────────────────────────┐ │
-│  │   权限树 (只读)      │   │   pcAction 配置面板              │ │
+│  │   权限树 (只读)      │   │   permissionValue 配置面板        │ │
 │  │                     │   │                                 │ │
 │  │ 📁 系统管理 (同步)   │   │  选中节点：应用类型列表          │ │
-│  │   📄 应用类型列表    │   │  (PAGE 节点，可配置 pcAction)     │ │
+│  │   📄 应用类型列表    │   │  (PAGE 节点，可配置 permissionValue)│ │
 │  │   📄 角色管理        │   │                                 │ │
 │  │                     │   │  操作权限列表：                 │ │
 │  │ 📁 业务管理 (同步)   │   │  ┌────────────────────────────┐ │ │
@@ -459,7 +468,7 @@ const confirmSync = async () => {
 | 4 | 后端 API - 比对接口 | @backend | 2h |
 | 5 | 前端 - 同步按钮组件 | @frontend | 2h |
 | 6 | 前端 - 权限树展示（只读） | @frontend | 3h |
-| 7 | 前端 - pcAction 管理面板 | @frontend | 4h |
+| 7 | 前端 - permissionValue 配置面板 | @frontend | 4h |
 | 8 | 前后端联调 | @both | 3h |
 | 9 | 测试 | @qa | 3h |
 | 10 | 文档更新 | @doc | 2h |
@@ -484,10 +493,10 @@ const confirmSync = async () => {
 
 | 编号 | 验收项 | 标准 |
 |------|--------|------|
-| F1 | 路由同步 | 点击同步，正确生成 PC 权限树（无 pcAction） |
+| F1 | 路由同步 | 点击同步，正确生成 PC 权限树（permissionValue=0n） |
 | F2 | permCode 自动生成 | 从路由结构自动拼接，无需手动填写 |
 | F3 | 权限树只读 | isAutoSync=1 的节点不可编辑结构 |
-| F4 | pcAction 可配置 | 可在 PAGE 节点配置 pcAction |
+| F4 | permissionValue 可配置 | 可在 PAGE 节点配置 permissionValue |
 | F5 | 手动添加 | 支持手动添加权限节点 |
 | F6 | 差异预览 | 同步前展示变更预览 |
 
@@ -495,9 +504,9 @@ const confirmSync = async () => {
 
 | 编号 | 验收项 | 标准 |
 |------|--------|------|
-| D1 | pcAction 格式 | 严格遵循 `{name, permCode}` 格式 |
+| D1 | permissionValue 格式 | 位运算 bigint 值，如 7n = ADD\|EDIT\|DELETE |
 | D2 | 权限类型 | 同步生成 PC 权限，不影响 NORMAL |
-| D3 | 同步后 pcAction | 为空，需手动配置 |
+| D3 | 同步后 permissionValue | 为 0n，需手动配置 |
 
 ---
 
@@ -536,7 +545,7 @@ const confirmSync = async () => {
     "nodeType": "MENU",
     "routePath": "/system",
     "isAutoSync": 1,
-    "pcAction": [],
+    "permissionValue": 0n,
     "children": [
       {
         "permCode": "menu.system.app-type",
@@ -544,7 +553,7 @@ const confirmSync = async () => {
         "nodeType": "MENU",
         "routePath": "/system/app-type",
         "isAutoSync": 1,
-        "pcAction": [],
+        "permissionValue": 0n,
         "children": [
           {
             "permCode": "page.system.app-type.list",
@@ -552,7 +561,7 @@ const confirmSync = async () => {
             "nodeType": "PAGE",
             "routePath": "/system/app-type/list",
             "isAutoSync": 1,
-            "pcAction": [],
+            "permissionValue": 0n,
             "children": []
           }
         ]
@@ -564,15 +573,11 @@ const confirmSync = async () => {
 
 ### 9.3 后续配置（PC 权限管理页面）
 
-选中 `page.system.app-type.list` 节点，配置 pcAction：
+选中 `page.system.app-type.list` 节点，配置 permissionValue：
 
 ```json
 {
-  "pcAction": [
-    { "name": "新增", "permCode": "add" },
-    { "name": "编辑", "permCode": "edit" },
-    { "name": "删除", "permCode": "delete" }
-  ]
+  "permissionValue": 7n  // ADD(1) | EDIT(2) | DELETE(4)
 }
 ```
 

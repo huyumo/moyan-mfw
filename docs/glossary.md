@@ -131,29 +131,65 @@
 
 ## P
 
-### pcAction (页面操作权限)
+### Perm (全局权限位枚举)
 
 | 项目 | 说明 |
 |------|------|
-| **全称** | Page Control Action |
-| **类型** | JSON Array |
-| **对应表** | `sys_permission.pcAction`、`sys_app_type_permission.pcAction`、`sys_role_permission.pcAction` |
+| **全称** | Permission Bit |
+| **类型** | bigint (位运算) |
+| **对应表** | `sys_permission.permissionValue`、`sys_app_type_permission.permissionValue`、`sys_role_permission.permissionValue` |
 | **使用场景** | 定义页面内的操作权限，如"新增"、"编辑"、"删除"按钮权限 |
 
-**说明**: pcAction 是权限系统的最小粒度，用于控制页面内的具体操作。它在三层结构中传递：
-1. **权限定义层**: `sys_permission.pcAction` 定义 PAGE 节点的所有可用操作
-2. **权限池层**: `sys_app_type_permission.pcAction` 配置应用类型可选的操作子集
-3. **角色权限层**: `sys_role_permission.pcAction` 分配角色实际拥有的操作
+**说明**: Perm 是权限系统的最小粒度，使用位运算存储。它在三层结构中传递：
+1. **权限定义层**: `sys_permission.permissionValue` 定义 PAGE 节点的所有可用操作（位运算值）
+2. **权限池层**: `sys_app_type_permission.permissionValue` 配置应用类型可选的操作子集（位运算值）
+3. **角色权限层**: `sys_role_permission.permissionValue` 分配角色实际拥有的操作（位运算值）
 
-**数据结构**:
-```json
-[
-  { "id": "pa_001", "permCode": "add", "name": "新增", "sortOrder": 1 },
-  { "id": "pa_002", "permCode": "edit", "name": "编辑", "sortOrder": 2 }
-]
+**全局权限位定义**:
+```typescript
+enum Perm {
+  ADD     = 1n,    // 00001
+  EDIT    = 2n,    // 00010
+  DELETE  = 4n,    // 00100
+  EXPORT  = 8n,    // 01000
+  IMPORT  = 16n,   // 10000
+  VIEW    = 32n,   // 100000
+  APPROVE = 64n,   // 1000000
+  REJECT  = 128n,  // 10000000
+  PUBLISH = 256n,  // 100000000
+  ARCHIVE = 512n,  // 1000000000
+}
 ```
 
-**相关术语**: [权限](#permission-权限)、[权限池](#permission-pool-权限池)
+**位运算示例**:
+```typescript
+// ADD | EDIT = 3n (00011)
+const addEdit = Perm.ADD | Perm.EDIT
+
+// 验证是否有 ADD 权限
+if ((userValue & Perm.ADD) !== 0n) { /* 有权限 */ }
+```
+
+**相关术语**: [权限](#permission-权限)、[权限池](#permission-pool-权限池)、[permissionValue](#permissionvalue-位运算权限值)
+
+---
+
+### permissionValue (位运算权限值)
+
+| 项目 | 说明 |
+|------|------|
+| **类型** | bigint |
+| **对应表** | `sys_permission.permissionValue`、`sys_app_type_permission.permissionValue`、`sys_role_permission.permissionValue` |
+| **说明** | 使用位运算存储的权限值，替代原有的 pcAction JSON 数组 |
+
+**位运算公式**:
+| 操作 | 公式 | 说明 |
+|------|------|------|
+| 合并权限 | `a \| b` | 取并集 |
+| 验证权限 | `(value & required) !== 0n` | 是否有指定权限 |
+| 子集检查 | `(child & parent) === child` | child 是否是 parent 的子集 |
+
+**相关术语**: [Perm](#perm-全局权限位枚举)、[权限](#permission-权限)
 
 ---
 
@@ -165,9 +201,10 @@
 | **对应表** | `sys_permission` |
 | **使用场景** | 控制用户可访问的菜单、页面和操作 |
 
-**说明**: 权限是系统访问控制的基本单位，具有树形结构（MENU → PAGE → pcAction）。权限通过 [PermissionType](#permissiontype-权限类型) 和 [NodeType](#nodetype-节点类型) 双层设计。
+**说明**: 权限是系统访问控制的基本单位，具有树形结构（MENU → PAGE）。权限通过 [PermissionType](#permissiontype-权限类型) 和 [NodeType](#nodetype-节点类型) 双层设计。
+PAGE 节点的操作权限使用 [permissionValue](#permissionvalue-位运算权限值) 位运算存储。
 
-**相关术语**: [pcAction](#pcaction-页面操作权限)、[PermissionType](#permissiontype-权限类型)、[NodeType](#nodetype-节点类型)
+**相关术语**: [permissionValue](#permissionvalue-位运算权限值)、[PermissionType](#permissiontype-权限类型)、[NodeType](#nodetype-节点类型)
 
 ---
 
@@ -191,13 +228,13 @@
 |------|------|
 | **类型** | Enum |
 | **取值** | `PC` / `NORMAL` |
-| **使用场景** | 区分权限是否包含 pcAction 操作控制 |
+| **使用场景** | 区分权限是否包含 permissionValue 操作控制 |
 
 **说明**:
-- `PC`: 包含 pcAction 操作控制的权限类型，通常用于需要细粒度控制的菜单和页面
+- `PC`: 包含 permissionValue 操作控制的权限类型，通常用于需要细粒度控制的菜单和页面
 - `NORMAL`: 普通权限类型，只有有无的区别，不包含操作控制
 
-**相关术语**: [NodeType](#nodetype-节点类型)、[pcAction](#pcaction-页面操作权限)
+**相关术语**: [NodeType](#nodetype-节点类型)、[permissionValue](#permissionvalue-位运算权限值)
 
 ---
 
@@ -211,7 +248,7 @@
 
 **说明**:
 - `MENU`: 菜单目录节点，可包含子节点
-- `PAGE`: 页面节点，可包含 pcAction 操作权限
+- `PAGE`: 页面节点，可包含 permissionValue 操作权限
 - `TAG`: 标签节点，用于普通权限分类
 
 **组合规则**:
@@ -233,22 +270,22 @@
 | **英文** | Permission Tree |
 | **使用场景** | 权限的树形组织结构 |
 
-**说明**: 权限以树形结构组织，从根节点开始，MENU 节点可包含子 MENU 或 PAGE 节点，PAGE 节点可包含 pcAction 操作权限。
+**说明**: 权限以树形结构组织，从根节点开始，MENU 节点可包含子 MENU 或 PAGE 节点，PAGE 节点包含 [permissionValue](#permissionvalue-位运算权限值) 位运算权限值。
 
 **示例**:
 ```
 ROOT (MENU)
 ├── system (MENU)
 │   ├── user-list (PAGE)
-│   │   └── pcAction: [add, edit, delete]
+│   │   └── permissionValue: 7n (ADD|EDIT|DELETE)
 │   └── role-list (PAGE)
-│       └── pcAction: [add, delete]
+│       └── permissionValue: 5n (ADD|DELETE)
 └── business (MENU)
     └── order-list (PAGE)
-        └── pcAction: [create, approve]
+        └── permissionValue: 192n (APPROVE|REJECT)
 ```
 
-**相关术语**: [权限](#permission-权限)、[pcAction](#pcaction-页面操作权限)
+**相关术语**: [权限](#permission-权限)、[permissionValue](#permissionvalue-位运算权限值)
 
 ---
 
@@ -354,18 +391,18 @@ ROOT (MENU)
 | **英文** | Permission Union |
 | **使用场景** | 计算用户最终权限的方式 |
 
-**说明**: 用户最终权限 = 所有关联角色权限的并集。相同 `permissionId` 的 `pcAction` 取并集。
+**说明**: 用户最终权限 = 所有关联角色权限的并集。使用位运算 OR 操作合并相同 `permissionId` 的 `permissionValue`。
 
 **示例**:
 ```
-角色 R1: {P1: [add, edit], P2: [add]}
-角色 R2: {P2: [edit, delete], P3: [view]}
+角色 R1: {P1: 3n (ADD|EDIT), P2: 1n (ADD)}
+角色 R2: {P2: 6n (EDIT|DELETE), P3: 32n (VIEW)}
 
 用户最终权限:
-{P1: [add, edit], P2: [add, edit, delete], P3: [view]}
+{P1: 3n (ADD|EDIT), P2: 7n (ADD|EDIT|DELETE), P3: 32n (VIEW)}
 ```
 
-**相关术语**: [角色](#role-角色)、[pcAction](#pcaction-页面操作权限)
+**相关术语**: [角色](#role-角色)、[permissionValue](#permissionvalue-位运算权限值)
 
 ---
 
@@ -383,7 +420,8 @@ ROOT (MENU)
 | 成员 | Member | [M](#m) |
 | 拥有者 | Owner | [O](#o) |
 | 拥有者角色 | Owner Role | [O](#o) |
-| 页面操作权限 | pcAction | [P](#p) |
+| 全局权限位枚举 | Perm | [P](#p) |
+| 位运算权限值 | permissionValue | [P](#p) |
 | 权限 | Permission | [P](#p) |
 | 权限池 | Permission Pool | [P](#p) |
 | 权限类型 | PermissionType | [P](#p) |

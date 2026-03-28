@@ -95,7 +95,7 @@ erDiagram
         int isCache
         enum showMode
         int permStatus
-        JSON pcAction
+        bigint permissionValue
         datetime createAt
     }
 
@@ -117,7 +117,7 @@ erDiagram
         string id PK
         string roleId FK
         string permissionId FK
-        JSON pcAction
+        bigint permissionValue
         datetime createAt
     }
 
@@ -125,7 +125,7 @@ erDiagram
         string id PK
         string appTypeId FK
         string permissionId FK
-        JSON pcAction
+        bigint permissionValue
         datetime createAt
     }
 
@@ -243,7 +243,7 @@ erDiagram
 1. 内置角色：不绑定 appId，仅绑定 appTypeId，为应用类型全局角色
 2. 应用级角色：必须绑定 appId，属于具体应用实例
 3. 所有角色的权限配置数据源均为应用类型权限池
-4. pcAction 数据流：Permission → AppTypePermission → RolePermission
+4. permissionValue 数据流：Permission → AppTypePermission → RolePermission
 5. 权限 P1,P2,P3 仅在应用类型 A 中可用
 6. 权限 P4,P5,P6 仅在应用类型 B 中可用
 7. 拥有者角色 (isOwner=1)：每个应用类型必须有一个特殊的拥有者角色，不允许删除，拥有者自动绑定该角色
@@ -258,16 +258,16 @@ erDiagram
 
 用户 U
 ├── 直接绑定的角色 R1
-│   └── 权限集合 {P1: [pcA1], P2: [pcA1, pcA2]}
+│   └── 权限集合 {P1: 3n, P2: 3n}
 ├── 通过应用 A 绑定的角色 R2
-│   └── 权限集合 {P3: [pcA1]}
+│   └── 权限集合 {P3: 1n}
 └── 通过应用类型 T 绑定的角色 R3
-    └── 权限集合 {P1: [pcA1, pcA2]}
+    └── 权限集合 {P1: 3n}
 
 用户 U 的最终权限 =
-  P1: [pcA1, pcA2]  ← 并集（相同 permissionId 的 pcAction 合并）
-  P2: [pcA1, pcA2]
-  P3: [pcA1]
+  P1: 3n  ← 位运算 OR（相同 permissionId 的 permissionValue 取 OR）
+  P2: 3n
+  P3: 1n
 ```
 
 ---
@@ -282,14 +282,14 @@ Permission 树形示例 (PC 权限):
 ROOT (MENU)
 ├── system (MENU)
 │   ├── user-list (PAGE)
-│   │   └── pcAction: [user:add, user:edit, user:delete]
+│   │   └── permissionValue: 7n (ADD|EDIT|DELETE)
 │   ├── role-list (PAGE)
-│   │   └── pcAction: [role:add, role:edit]
+│   │   └── permissionValue: 3n (ADD|EDIT)
 │   └── config-page (PAGE)
-│       └── pcAction: [config:save]
+│       └── permissionValue: 4n (DELETE)
 └── business (MENU)
     └── order-list (PAGE)
-        └── pcAction: [order:create, order:approve]
+        └── permissionValue: 96n (APPROVE|REJECT)
 ```
 
 ### PermissionType 与 NodeType 对应关系
@@ -322,6 +322,7 @@ ROOT (MENU)
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
 | 2.0.0 | 2026-03-24 | 重构：更新 ER 图，添加 pcAction 字段，更新权限树结构 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 

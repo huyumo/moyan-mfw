@@ -151,19 +151,16 @@
 - **解决建议**: 在 `docs/api/permission-api.md` 中新增章节，包含：
   - `POST /api/v1/permissions/sync` - 同步路由权限（请求参数：dryRun；响应：差异列表 + 执行结果）
   - `GET /api/v1/permissions/compare` - 比对路由与权限树差异（响应：差异列表）
-  - `POST /api/v1/permissions/:id/pc-actions` - 添加 PC 操作权限
-  - `PUT /api/v1/permissions/:id/pc-actions/:permCode` - 更新 PC 操作权限
-  - `DELETE /api/v1/permissions/:id/pc-actions/:permCode` - 删除 PC 操作权限
-- **影响文件**: `docs/api/permission-api.md`, `docs/api/api-index.md`
-- **状态**: ⏳ 待解决
+- **解决日期**: 2026-03-28
+- **状态**: ✅ 已解决（已在 permission-api.md 中添加同步和比对接口）
 
 ### P0-05: pcAction 管理 API 未在 api-index.md 中定义
 
 - **问题**: PC 权限管理页面的 pcAction 管理 API 未在 API 索引中定义
 - **影响**: API 文档分散，开发者查找困难
-- **解决建议**: 在 `docs/api/api-index.md` 的权限接口部分添加 pcAction 管理接口索引
-- **影响文件**: `docs/api/api-index.md`
-- **状态**: ⏳ 待解决
+- **解决建议**: v4.0 位运算权限设计中已移除 pcAction 管理 API，改用 permissionValue 位运算字段
+- **解决日期**: 2026-03-28
+- **状态**: ✅ 已解决（v4.0 已移除 pcAction 管理 API，改用 permissionValue）
 
 ### P0-01: 缺少审计日志设计
 

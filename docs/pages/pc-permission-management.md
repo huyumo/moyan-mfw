@@ -22,7 +22,7 @@
 | 权限类型 | PC | NORMAL |
 | 节点类型 | MENU + PAGE | MENU + TAG |
 | 同步功能 | ✅ 支持路由同步 | ❌ 不支持 |
-| pcAction 配置 | ✅ 支持 | ❌ 不支持 |
+| permissionValue 配置 | ✅ 支持 | ❌ 不支持 |
 | 使用场景 | PC 后台管理系统 | 移动端、非后台系统 |
 
 > 💡 **提示**: 普通权限（NORMAL）管理请使用 [权限管理页面](./permission-management.md)。
@@ -47,10 +47,10 @@
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                 │
 │  ┌─────────────────────┐   ┌─────────────────────────────────┐ │
-│  │   权限树 (只读)      │   │   pcAction 配置面板              │ │
+│  │   权限树 (只读)      │   │   permissionValue 配置面板        │ │
 │  │                     │   │                                 │ │
 │  │ 📁 系统管理 (同步)   │   │  选中节点：应用类型列表          │ │
-│  │   📄 应用类型列表    │   │  (PAGE 节点，可配置 pcAction)     │ │
+│  │   📄 应用类型列表    │   │  (PAGE 节点，可配置 permissionValue)│ │
 │  │   📄 角色管理        │   │                                 │ │
 │  │                     │   │  操作权限列表：                 │ │
 │  │ 📁 业务管理 (同步)   │   │  ┌────────────────────────────┐ │ │
@@ -78,7 +78,7 @@
 - 展示 PC 权限树形结构
 - 同步生成的节点 (`isAutoSync=1`) 显示"同步"标签
 - 节点结构不可编辑（不可拖动、不可删除、不可重命名）
-- 点击节点选中，右侧显示 pcAction 配置
+- 点击节点选中，右侧显示 permissionValue 配置
 
 **数据结构**:
 ```typescript
@@ -89,7 +89,7 @@ interface PermissionTreeNode {
   nodeType: 'MENU' | 'PAGE';
   isAutoSync: number;  // 1=同步生成，0=手动添加
   routePath?: string;
-  pcAction?: Array<{name: string, permCode: string}>;
+  permissionValue?: bigint;        // v4.0 新增 - 位运算权限值
   children?: PermissionTreeNode[];
 }
 ```
@@ -98,7 +98,7 @@ interface PermissionTreeNode {
 | 状态 | 说明 |
 |------|------|
 | 正常 | 显示节点信息 |
-| 选中 | 高亮显示，右侧显示 pcAction |
+| 选中 | 高亮显示，右侧显示 permissionValue |
 | 同步节点 | 显示"同步"标签 |
 | 手动节点 | 显示"手动"标签，可编辑结构 |
 
@@ -158,27 +158,25 @@ interface DiffItem {
 
 ---
 
-### 4. pcAction 配置面板
+### 4. permissionValue 配置面板
 
-**组件名**: `PcActionPanel.vue`
+**组件名**: `PermissionValuePanel.vue`
 
 **功能说明**:
-- 选中 PAGE 节点后，显示 pcAction 配置面板
-- 支持添加、编辑、删除 pcAction
+- 选中 PAGE 节点后，显示 permissionValue 配置面板
+- 支持勾选位运算权限位（ADD, EDIT, DELETE 等）
 - 实时保存
 
 **数据结构**:
 ```typescript
-interface PcAction {
-  name: string;        // 操作名称
-  permCode: string;    // 操作编码
-}
+// permissionValue 位运算权限值
+// ADD(1n) | EDIT(2n) | DELETE(4n) | EXPORT(8n) | IMPORT(16n) | VIEW(32n) ...
 ```
 
 **约束**:
-- 仅 PAGE 节点可配置 pcAction
-- MENU 节点显示提示："仅 PAGE 节点可配置 pcAction"
-- 已用于角色权限配置的 pcAction 不允许删除
+- 仅 PAGE 节点可配置 permissionValue
+- MENU 节点显示提示："仅 PAGE 节点可配置 permissionValue"
+- permissionValue 必须是权限池中对应权限 permissionValue 的子集
 
 ---
 
@@ -215,7 +213,7 @@ interface PcAction {
       ↓
 仅更新 sys_permission 表
 ├── 新增权限：插入新记录
-├── 更新权限：更新 permName、parentId、pcAction
+├── 更新权限：更新 permName、parentId、permissionValue
 └── 删除权限：不处理（留在数据库中）
       ↓
 刷新权限树
@@ -238,21 +236,21 @@ interface PcAction {
 
 1. **读取权限池**：连表查询 `sys_permission`，过滤掉不存在的 `permCode`
 2. **读取角色权限**：连表查询 `sys_permission`，过滤掉不存在的 `permCode`
-3. **配置权限池**：保存时自动过滤掉无效的 `permCode` 和 `pcAction`
-4. **配置角色权限**：保存时自动过滤掉无效的 `permCode` 和 `pcAction`
+3. **配置权限池**：保存时自动过滤掉无效的 `permCode` 和 `permissionValue`
+4. **配置角色权限**：保存时自动过滤掉无效的 `permCode` 和 `permissionValue`
 
 **可选清理**：定时任务清理孤立的权限池和角色权限配置
 
-### 配置 pcAction 流程
+### 配置 permissionValue 流程
 
-**注意**：根据优化方案，pcAction 建议从路由表同步，而非手动配置
+**注意**：permissionValue 使用位运算存储，如 7n = ADD(1n) | EDIT(2n) | DELETE(4n)
 
 ```
-路由表定义 pcAction (代码)
+用户在 PAGE 节点勾选权限位
       ↓
-应用启动时自动同步
+调用更新接口 PUT /api/v1/permissions/:id
       ↓
-写入 sys_permission.pcAction
+写入 sys_permission.permissionValue
       ↓
 权限池配置时勾选子集
       ↓
@@ -314,34 +312,15 @@ interface CompareResult {
 }
 ```
 
-### pcAction 管理接口
-
-**注意**：推荐使用路由表同步方式，而非手动配置 pcAction
+### permissionValue 更新接口
 
 ```typescript
-// POST /api/v1/permissions/:id/pc-actions
-async function addPcAction(permissionId: string, action: PcAction) {
+// PUT /api/v1/permissions/:id
+async function updatePermission(permissionId: string, permissionValue: bigint) {
   return request({
-    url: `/api/v1/permissions/${permissionId}/pc-actions`,
-    method: 'post',
-    data: action
-  })
-}
-
-// PUT /api/v1/permissions/:id/pc-actions/:permCode
-async function updatePcAction(permissionId: string, permCode: string, name: string) {
-  return request({
-    url: `/api/v1/permissions/${permissionId}/pc-actions/${permCode}`,
+    url: `/api/v1/permissions/${permissionId}`,
     method: 'put',
-    data: { name }
-  })
-}
-
-// DELETE /api/v1/permissions/:id/pc-actions/:permCode
-async function deletePcAction(permissionId: string, permCode: string) {
-  return request({
-    url: `/api/v1/permissions/${permissionId}/pc-actions/${permCode}`,
-    method: 'delete'
+    data: { permissionValue }
   })
 }
 ```
@@ -363,7 +342,7 @@ async function deletePcAction(permissionId: string, permCode: string) {
    ↓
 仅更新 sys_permission 表
 ├── 新增：插入新记录
-├── 更新：更新 permName、parentId、pcAction
+├── 更新：更新 permName、parentId、permissionValue
 ├── 删除：不处理（或标记 permStatus=0）
 └── 移动：更新 parentId
 
@@ -382,24 +361,22 @@ async function getPermissionPool(appTypeId: string) {
   const pools = await db.query(`
     SELECT
       atp.permissionId,
-      atp.pcAction,
+      atp.permissionValue,
       p.permCode,
       p.permName,
-      p.pcAction AS pcActionDefinition,
+      p.permissionValue,
       p.permStatus
     FROM sys_app_type_permission atp
     JOIN sys_permission p ON atp.permissionId = p.id
     WHERE atp.appTypeId = ? AND p.permStatus = 1
   `, [appTypeId])
 
-  // 过滤掉 pcAction 中已删除的操作
+  // 过滤掉 permissionValue 中已删除的操作
   return pools.map(pool => ({
     permissionId: pool.permissionId,
     permCode: pool.permCode,
     permName: pool.permName,
-    pcAction: (pool.pcAction || []).filter((action: any) =>
-      (pool.pcActionDefinition || []).some((def: any) => def.permCode === action.permCode)
-    )
+    permissionValue: pool.permissionValue
   }))
 }
 ```
@@ -412,24 +389,21 @@ async function getRolePermissions(roleId: string) {
   const rolePerms = await db.query(`
     SELECT
       rp.permissionId,
-      rp.pcAction,
+      rp.permissionValue,
       p.permCode,
       p.permName,
-      p.pcAction AS pcActionDefinition,
       p.permStatus
     FROM sys_role_permission rp
     JOIN sys_permission p ON rp.permissionId = p.id
     WHERE rp.roleId = ? AND p.permStatus = 1
   `, [roleId])
 
-  // 过滤掉 pcAction 中已删除的操作
+  // 过滤掉无效的 permissionValue
   return rolePerms.map(rp => ({
     permissionId: rp.permissionId,
     permCode: rp.permCode,
     permName: rp.permName,
-    pcAction: (rp.pcAction || []).filter((action: any) =>
-      (rp.pcActionDefinition || []).some((def: any) => def.permCode === action.permCode)
-    )
+    permissionValue: rp.permissionValue
   }))
 }
 ```
@@ -443,18 +417,18 @@ async function getRolePermissions(roleId: string) {
 async function savePermissionPool(appTypeId: string, permissions: PermissionConfig[]) {
   // 获取有效的权限定义
   const validPermissions = await db.query(
-    'SELECT id, permCode, pcAction FROM sys_permission WHERE permStatus = 1'
+    'SELECT id, permCode, permissionValue FROM sys_permission WHERE permStatus = 1'
   )
   const validMap = new Map(validPermissions.map(p => [p.permCode, p]))
 
-  // 过滤并保存
+  // 过滤并保存 - permissionValue 必须是 Permission.permissionValue 的子集
   const filtered = permissions
     .filter(p => validMap.has(p.permCode))  // 过滤掉不存在的权限
     .map(p => ({
       permissionId: validMap.get(p.permCode)!.id,
-      pcAction: (p.pcAction || []).filter(a =>
-        validMap.get(p.permCode)!.pcAction?.some(def => def.permCode === a.permCode)
-      )
+      permissionValue: p.permissionValue && ((p.permissionValue & validMap.get(p.permCode)!.permissionValue) === p.permissionValue)
+        ? p.permissionValue
+        : 0n
     }))
 
   // 保存过滤后的数据
@@ -523,8 +497,8 @@ interface SyncState {
 |----------|----------|
 | 同步失败 | "同步失败，请稍后重试" |
 | 无差异 | "当前路由与权限树一致" |
-| pcAction 已被使用 | "该操作权限已被角色使用，无法删除" |
-| 非 PAGE 节点 | "仅 PAGE 节点可配置 pcAction" |
+| permissionValue 超出范围 | "permissionValue 必须是权限池的子集" |
+| 非 PAGE 节点 | "仅 PAGE 节点可配置 permissionValue" |
 
 ---
 
@@ -532,7 +506,8 @@ interface SyncState {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| v3.0 | 2026-03-28 | 新增同步功能、pcAction 管理 |
+| v4.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
+| v3.0 | 2026-03-28 | 新增同步功能、permissionValue 配置 |
 | v1.0 | - | 初始版本 |
 
 ---

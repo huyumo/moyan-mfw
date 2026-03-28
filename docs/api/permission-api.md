@@ -79,7 +79,7 @@ Authorization: Bearer <token>
 | isCache | number | 否 | 是否缓存：1-是 0-否 |
 | showMode | string | 否 | 显示模式：NORMAL / DEV |
 | permStatus | number | 否 | 状态：1-启用 0-禁用 |
-| pcAction | array | 否 | 操作权限列表（仅 PAGE 节点有效） |
+| permissionValue | bigint | 否 | 位运算权限值（仅 PC 权限且 PAGE 节点有效），如 7n = ADD\|EDIT\|DELETE |
 
 ```typescript
 {
@@ -97,17 +97,14 @@ Authorization: Bearer <token>
   isCache?: number;
   showMode?: 'NORMAL' | 'DEV';
   permStatus?: number;
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-  }>;
+  permissionValue?: bigint;      // v4.0 新增 - 位运算权限值，如 7n = ADD|EDIT|DELETE
 }
 ```
 
 **约束**:
 - `nodeType = PAGE` 时，`parentId` 必须指向 `nodeType = MENU` 的节点
 - 创建根节点时，不传 `parentId`
-- `pcAction` 仅在 `permissionType = PC` 且 `nodeType = PAGE` 时有效
+- `permissionValue` 仅在 `permissionType = PC` 且 `nodeType = PAGE` 时有效
 
 **返回数据**:
 
@@ -149,7 +146,7 @@ Authorization: Bearer <token>
 
 **接口**: `PUT /api/v1/permissions/:id`
 
-**使用场景**: 编辑权限节点基本信息或 pcAction。
+**使用场景**: 编辑权限节点基本信息或 permissionValue。
 
 **路径参数**:
 
@@ -171,10 +168,7 @@ Authorization: Bearer <token>
   isCache?: number;
   showMode?: 'NORMAL' | 'DEV';
   permStatus?: number;
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-  }>;
+  permissionValue?: bigint;      // v4.0 新增 - 位运算权限值
 }
 ```
 
@@ -268,7 +262,7 @@ Authorization: Bearer <token>
 
 **业务规则**:
 - 仅同步 PC 权限，不影响 NORMAL 权限
-- 同步生成权限树结构，pcAction 为空
+- 同步生成权限树结构，permissionValue 为 0n
 - 路由新增 → 添加权限节点
 - 路由删除 → 标记 `permStatus=0`（不物理删除）
 - 路由名称变更 → 更新 `permName`
@@ -312,53 +306,6 @@ Authorization: Bearer <token>
 
 ---
 
-## 8. pcAction 管理接口
-
-### 8.1 添加 pcAction
-
-**接口**: `POST /api/v1/permissions/:id/pc-actions`
-
-**使用场景**: 在 PAGE 权限节点下添加操作权限（按钮权限）。
-
-**路径参数**:
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| id | string | 是 | 权限 ID（必须是 PAGE 节点） |
-
-**请求体**:
-```typescript
-{
-  name: string;
-  permCode: string;
-}
-```
-
-### 8.2 编辑 pcAction
-
-**接口**: `PUT /api/v1/permissions/:id/pc-actions/:permCode`
-
-**路径参数**:
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| id | string | 是 | 权限 ID |
-| permCode | string | 是 | 操作编码 |
-
-**请求体**:
-```typescript
-{
-  name?: string;
-}
-```
-
-### 8.3 删除 pcAction
-
-**接口**: `DELETE /api/v1/permissions/:id/pc-actions/:permCode`
-
-**约束**:
-- 已用于角色权限配置的 pcAction 不允许删除
-
----
-
 ## 数据结构
 
 ### Permission
@@ -380,10 +327,7 @@ interface Permission {
   isCache: number;
   showMode: 'NORMAL' | 'DEV';
   permStatus: number;
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-  }>;
+  permissionValue?: bigint;        // v4.0 新增 - 位运算权限值
   createAt: string;
   updateAt?: string;
 }

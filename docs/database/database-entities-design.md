@@ -211,7 +211,7 @@ enum ShowMode {
 | PermissionType | NodeType | 说明 |
 |----------------|----------|------|
 | PC | MENU | PC 菜单/目录 |
-| PC | PAGE | PC 页面权限（可包含 pcAction） |
+| PC | PAGE | PC 页面权限（可包含 permissionValue） |
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 
@@ -219,7 +219,7 @@ enum ShowMode {
 - `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL) 组合使用，作为目录节点
 - 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
-- `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `permissionValue` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
 **索引**:
@@ -232,11 +232,11 @@ enum ShowMode {
 
 **业务规则**:
 - `PAGE`、`TAG` 类型的 `parentId` 必须指向 `MENU` 类型
-- `pcAction` 字段仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
-- `pcAction` 表示该页面下的所有操作权限（按钮）列表
+- `permissionValue` 字段仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `permissionValue` 表示该页面下的所有操作权限（按钮）列表，使用位运算存储
 - `showMode = DEV` 的权限仅对开发模式用户可见
 - `permCode` 全局唯一，创建后不可修改
-- `isAutoSync = 1` 的节点，前端禁止编辑节点结构（permName、parentId 等），但可配置 pcAction
+- `isAutoSync = 1` 的节点，前端禁止编辑节点结构（permName、parentId 等），但可配置 permissionValue
 - `routePath` 用于同步功能比对路由与权限树的差异
 
 ---
@@ -300,7 +300,7 @@ class RolePermissionEntity {
 **业务规则**:
 - `permissionValue` 存储角色对该权限已勾选的操作权限子集
 - `permissionValue` 必须是对应权限在权限池中 `permissionValue` 的子集（`(roleValue & poolValue) === roleValue`）
-- v4.0 起使用位运算替代 pcAction JSON 存储
+- v4.0 起使用位运算 `permissionValue` 替代 pcAction JSON 存储
 
 ---
 
@@ -384,32 +384,30 @@ class UserRoleEntity {
 
 ---
 
-## pcAction 数据流
+## permissionValue 数据流
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. 权限定义 (PermissionEntity)                                  │
-│    pcAction: [{name: '新增', permCode: 'user:add'},             │
-│              {name: '编辑', permCode: 'user:edit'},             │
-│              {name: '删除', permCode: 'user:delete'}]           │
+│    permissionValue: 7n (ADD|EDIT|DELETE)                        │
 └────────────────────┬────────────────────────────────────────────┘
-                     │ 权限池配置时读取
+                     │ 权限池配置时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 2. 权限池配置 (AppTypePermissionEntity)                         │
-│    pcAction: [{name: '新增', permCode: 'user:add'},             │
-│              {name: '编辑', permCode: 'user:edit'}]  ← 子集     │
+│    permissionValue: 3n (ADD|EDIT)  ← 子集                       │
 └────────────────────┬────────────────────────────────────────────┘
-                     │ 角色分配权限时读取
+                     │ 角色分配权限时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. 角色权限分配 (RolePermissionEntity)                          │
-│    pcAction: [{name: '新增', permCode: 'user:add'}]  ← 子集     │
+│    permissionValue: 1n (ADD)  ← 子集                            │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 运行时权限验证
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. 用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)      │
+│ 4. 用户最终权限 = 所有关联角色的 permissionValue 取 OR           │
+│    userValue = role1Value | role2Value | ...                    │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -429,6 +427,7 @@ class UserRoleEntity {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：移除 pcAction，新增 permissionValue bigint |
 | 2.1.0 | 2026-03-25 | 统一字段命名：createTime → createAt，updateTime → updateAt |
 | 2.0.0 | 2026-03-24 | 重构：简化 PermissionType，新增 NodeType，添加 pcAction 字段 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |

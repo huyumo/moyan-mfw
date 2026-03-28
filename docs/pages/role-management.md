@@ -46,7 +46,7 @@ flowchart TD
     Action -->|新建 | CreateRole[新建角色]
 
     PermissionPanel --> GetAppTypeId[根据角色获取 appTypeId]
-    GetAppTypeId --> GetPool[获取权限池<br>含 pcAction 配置]
+    GetAppTypeId --> GetPool[获取权限池<br>含 permissionValue 配置]
     GetPool --> RolePermissionPanel[角色权限面板<br>复用组件，与应用类型详情页行为一致]
 
     RolePermissionPanel --> SelectPermType[选择权限类型]
@@ -57,14 +57,14 @@ flowchart TD
     PcTreeSelect --> CheckPc[勾选 PC 权限]
     CommonList --> CheckCommon[勾选普通权限]
 
-    CheckPc --> ExpandPcAction[点击 PAGE 节点展开 pcAction]
-    CheckCommon --> CheckPcAction[勾选普通权限]
+    CheckPc --> ExpandPermissionValue[点击 PAGE 节点展开 permissionValue 位选项]
+    CheckCommon --> CheckPermissionValue[勾选普通权限]
 
-    ExpandPcAction --> LoadPoolPcAction[从权限池加载 pcAction 列表]
-    LoadPoolPcAction --> SelectPcAction[勾选 pcAction<br>必须是权限池 pcAction 的子集]
+    ExpandPermissionValue --> LoadPoolPermissionValue[从权限池加载 permissionValue 选项]
+    LoadPoolPermissionValue --> SelectPermissionValue[勾选 permissionValue 位<br>必须是权限池 permissionValue 的子集]
 
-    SelectPcAction --> SavePerm[保存权限]
-    CheckPcAction --> SavePerm
+    SelectPermissionValue --> SavePerm[保存权限]
+    CheckPermissionValue --> SavePerm
     CheckApiAction --> SavePerm
 
     SavePerm --> SavePermConfirm[保存权限分配]
@@ -110,7 +110,7 @@ flowchart TD
 | 权限类型 Tab | 切换 PC 权限、普通权限 |
 | 权限选择器 | 仅展示当前应用类型权限池中的权限节点 |
 | 勾选权限 | 勾选/取消勾选权限节点 |
-| pcAction 选择 | 点击 PAGE 节点展开 pcAction，勾选操作权限 |
+| permissionValue 选择 | 点击 PAGE 节点展开 permissionValue 位选项，勾选操作权限 |
 | 保存权限 | 提交权限分配配置到后端 |
 
 ---
@@ -130,11 +130,11 @@ flowchart TD
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限分配时，前端选择器仅展示该角色所属应用类型权限池中的权限节点
 
-### pcAction 约束
+### permissionValue 约束
 
-- 角色权限中的 `pcAction` 必须是权限池中对应权限 `pcAction` 的子集
-- 保存时自动验证 `pcAction` 的合法性
-- `pcAction` 仅在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上有效
+- 角色权限中的 `permissionValue` 必须是权限池中对应权限 `permissionValue` 的子集
+- 保存时自动验证 `permissionValue` 的合法性（位运算子集检查）
+- `permissionValue` 仅在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上有效
 
 ### 角色编码
 
@@ -156,7 +156,7 @@ flowchart TD
 **组件行为一致性**:
 - 所有场景下都从应用类型权限池获取数据
 - 都展示相同的权限选择器（PC 权限树、普通权限列表）
-- 都支持 pcAction 的勾选和保存
+- 都支持 permissionValue 的勾选和保存
 - 只读模式下禁用勾选和保存功能
 
 ---
@@ -179,7 +179,7 @@ flowchart TD
 │   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── 从当前应用类型的权限池中选择权限（含 pcAction）
+    └── 从当前应用类型的权限池中选择权限（含 permissionValue）
 ```
 
 ---
@@ -203,7 +203,7 @@ flowchart TD
 │   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── 从所属应用类型的权限池中选择权限（含 pcAction）
+    └── 从所属应用类型的权限池中选择权限（含 permissionValue）
 ```
 
 ---
@@ -250,6 +250,7 @@ flowchart TD
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
 | 2.0.0 | 2026-03-24 | 重构：明确内置角色管理位置，添加 pcAction 支持 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 

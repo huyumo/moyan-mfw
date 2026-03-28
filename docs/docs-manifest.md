@@ -28,7 +28,7 @@ infrastructure-detailed-design-index.md (系统整体设计)
 
 | 文档 | 说明 | 阅读时间 |
 |------|------|----------|
-| [权限系统](./core/permissions.md) | pcAction 数据流、权限池、验证逻辑 | 5min |
+| [权限系统](./core/permissions.md) | permissionValue 数据流、权限池、验证逻辑 | 5min |
 | [角色体系](./core/roles.md) | 内置角色、应用级角色、拥有者机制 | 5min |
 | [系统架构](./core/architecture.md) | 应用类型中心模式、五层架构 | 5min |
 | [术语表](./glossary.md) | 专业术语中英文对照与使用场景 | 5min |

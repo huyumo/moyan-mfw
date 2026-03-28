@@ -11,7 +11,7 @@
       "priority": 1,
       "estimatedReadTime": "5min",
       "tokenCount": "~1500",
-      "description": "pcAction 数据流、权限池隔离机制、权限验证逻辑"
+      "description": "permissionValue 数据流、权限池隔离机制、权限验证逻辑"
     },
     {
       "id": "core-roles",

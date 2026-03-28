@@ -2,7 +2,7 @@
 
 ## 概述
 
-本文档描述系统权限计算的详细规则和逻辑，包括用户最终权限的计算方式、pcAction 合并规则等。
+本文档描述系统权限计算的详细规则和逻辑，包括用户最终权限的计算方式、permissionValue 位运算合并规则等。
 
 **版本**: 2.1.0 | **最后更新**: 2026-03-27
 
@@ -12,7 +12,7 @@
 
 1. [权限计算基础](#1-权限计算基础)
 2. [用户最终权限计算](#2-用户最终权限计算)
-3. [pcAction 合并规则](#3-pcAction合并规则)
+3. [permissionValue 位运算合并规则](#3-permissionvalue-位运算合并规则)
 4. [权限验证流程](#4-权限验证流程)
 5. [业务规则](#5-业务规则)
 6. [前后端权限计算泳道图](#6-前后端权限计算泳道图)
@@ -35,7 +35,7 @@
 
 - 所有角色的权限配置都必须从所属应用类型的权限池中选择
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
-- 角色权限中的 `pcAction` 必须是权限池中对应权限 `pcAction` 的子集
+- 角色权限中的 `permissionValue` 必须是权限池中对应权限 `permissionValue` 的子集（使用位运算验证：`(roleValue & poolValue) === roleValue`）
 
 ---
 
@@ -57,10 +57,8 @@ flowchart TD
     GetPermissions --> MergePermIds[合并所有 permissionId]
     MergePermIds --> GroupByPermId[按 permissionId 分组]
 
-    GroupByPermId --> MergePcAction[合并相同 permissionId 的 pcAction]
-    MergePcAction --> Dedup[去重]
-
-    Dedup --> ReturnResult[返回最终权限集合]
+    GroupByPermId --> MergePermissionValues[合并相同 permissionId 的 permissionValue（位运算 OR）]
+    MergePermissionValues --> ReturnResult[返回最终权限集合]
     ReturnResult --> End[结束]
 ```
 
@@ -72,68 +70,65 @@ flowchart TD
 - 角色 R2: 普通员工角色
 - 角色 R3: 审计员角色
 
-各角色的权限：
+各角色的权限（permissionValue 位运算值）：
 R1 权限 = {
-  P1: [pcA1, pcA2, pcA3],  // 用户管理页面
-  P2: [pcA1, pcA2],        // 角色管理页面
-  P3: [pcA1, pcA2, pcA3]   // 配置管理页面
+  P1: 7n,  // ADD|EDIT|DELETE
+  P2: 3n,  // ADD|EDIT
+  P3: 7n   // ADD|EDIT|DELETE
 }
 
 R2 权限 = {
-  P1: [pcA1],              // 用户管理页面（只查看）
-  P4: [pcA1, pcA2]         // 订单管理页面
+  P1: 1n,  // ADD
+  P4: 3n   // ADD|EDIT
 }
 
 R3 权限 = {
-  P1: [pcA1, pcA2],        // 用户管理页面（查看 + 编辑）
-  P5: [pcA1]               // 日志查看页面
+  P1: 3n,  // ADD|EDIT
+  P5: 32n  // VIEW
 }
 
 用户 U 的最终权限 = {
-  P1: [pcA1, pcA2, pcA3],  // 取并集
-  P2: [pcA1, pcA2],
-  P3: [pcA1, pcA2, pcA3],
-  P4: [pcA1, pcA2],
-  P5: [pcA1]
+  P1: 7n,  // R1|R2|R3 = 7n|1n|3n = 7n
+  P2: 3n,  // R1 = 3n
+  P3: 7n,  // R1 = 7n
+  P4: 3n,  // R2 = 3n
+  P5: 32n  // R3 = 32n
 }
 ```
 
 ---
 
-## 3. pcAction合并规则
+## 3. permissionValue合并规则
 
 ### 3.1 合并原则
 
-- 相同 `permissionId` 的 `pcAction` 取并集
-- 不同 `permissionId` 的 `pcAction` 不合并
-- `pcAction` 的合并基于 `permCode` 去重
+- 相同 `permissionId` 的 `permissionValue` 取位运算 OR
+- 不同 `permissionId` 的 `permissionValue` 不合并
+- 位运算 OR（`|`）用于合并权限
 
 ### 3.2 合并算法
 
 ```typescript
 function mergePermissions(rolePermissions: RolePermission[]): UserPermission[] {
-  const permissionMap = new Map<string, Set<string>>();
+  const permissionMap = new Map<string, bigint>()
 
   for (const rolePerm of rolePermissions) {
-    const { permissionId, pcAction } = rolePerm;
+    const { permissionId, permissionValue } = rolePerm
 
     if (!permissionMap.has(permissionId)) {
-      permissionMap.set(permissionId, new Set());
+      permissionMap.set(permissionId, 0n)
     }
 
-    // 合并 pcAction 的 permCode
-    if (pcAction) {
-      for (const action of pcAction) {
-        permissionMap.get(permissionId)!.add(action.permCode);
-      }
-    }
+    // 位运算 OR 合并 permissionValue
+    const currentValue = permissionMap.get(permissionId)!
+    permissionMap.set(permissionId, currentValue | permissionValue)
   }
 
   // 转换为最终结果
-  return Array.from(permissionMap.entries()).map(([permissionId, permCodes]) => ({
+  return Array.from(permissionMap.entries()).map(([permissionId, permissionValue]) => ({
     permissionId,
-    pcAction: Array.from(permCodes).map(code => ({ permCode: code }))
-  }));
+    permissionValue
+  }))
 }
 ```
 
@@ -141,13 +136,13 @@ function mergePermissions(rolePermissions: RolePermission[]): UserPermission[] {
 
 ```
 输入（角色权限）：
-RolePermission 1: { permissionId: 'P1', pcAction: [{name: '新增', permCode: 'add'}, {name: '编辑', permCode: 'edit'}] }
-RolePermission 2: { permissionId: 'P1', pcAction: [{name: '编辑', permCode: 'edit'}, {name: '删除', permCode: 'delete'}] }
-RolePermission 3: { permissionId: 'P2', pcAction: [{name: '查看', permCode: 'view'}] }
+RolePermission 1: { permissionId: 'P1', permissionValue: 3n }  // ADD|EDIT
+RolePermission 2: { permissionId: 'P1', permissionValue: 6n }  // EDIT|DELETE
+RolePermission 3: { permissionId: 'P2', permissionValue: 32n } // VIEW
 
 输出（用户最终权限）：
-UserPermission 1: { permissionId: 'P1', pcAction: [{permCode: 'add'}, {permCode: 'edit'}, {permCode: 'delete'}] }
-UserPermission 2: { permissionId: 'P2', pcAction: [{permCode: 'view'}] }
+UserPermission 1: { permissionId: 'P1', permissionValue: 7n }  // ADD|EDIT|DELETE (3n|6n=7n)
+UserPermission 2: { permissionId: 'P2', permissionValue: 32n } // VIEW
 ```
 
 ---
@@ -188,7 +183,7 @@ sequenceDiagram
 | 验证项 | 说明 |
 |--------|------|
 | permissionId | 检查用户是否拥有所请求的权限 ID |
-| pcAction | 检查用户是否拥有所请求的操作权限 |
+| permissionValue | 检查用户是否拥有所请求的操作权限 |
 | 权限池 | 检查权限是否在应用类型权限池中（可选） |
 
 ---
@@ -210,8 +205,8 @@ sequenceDiagram
 ### 5.3 多角色权限
 
 - 一个用户可以绑定多个角色
-- 多角色的权限取并集
-- 相同 `permissionId` 的 `pcAction` 合并
+- 多角色的权限取位运算 OR
+- 相同 `permissionId` 的 `permissionValue` 使用位运算 OR 合并
 
 ### 5.4 缓存策略
 
@@ -357,7 +352,8 @@ sequenceDiagram
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| 2.0.0 | 2026-03-27 | 添加前后端权限计算泳道图 (P1-08) |
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
+| 2.1.0 | 2026-03-27 | 添加前后端权限计算泳道图 (P1-08) |
 | 1.0.0 | 2026-03-25 | 初始版本，描述权限计算的详细规则 |
 
 ---

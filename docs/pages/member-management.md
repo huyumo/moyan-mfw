@@ -149,7 +149,7 @@ flowchart TD
     ↓
 成员角色分配（UserRole）
     ↓
-成员最终权限 = ∪(所有角色的 permissionId + pcAction)
+成员最终权限 = 所有角色的 permissionValue 取 OR（位运算并集）
 ```
 
 ### 多角色权限计算
@@ -157,15 +157,15 @@ flowchart TD
 ```
 成员 A 分配了角色 R1, R2, R3:
 
-R1 权限 = {P1: [pcA1], P2: [pcA1, pcA2]}
-R2 权限 = {P2: [pcA1], P3: [pcA1, pcA2, pcA3]}
-R3 权限 = {P1: [pcA1, pcA2], P4: [pcA1]}
+R1 permissionValue = {P1: 1n, P2: 3n}
+R2 permissionValue = {P2: 1n, P3: 7n}
+R3 permissionValue = {P1: 3n, P4: 1n}
 
-成员 A 最终权限 =
-  P1: [pcA1, pcA2]  ← 并集（相同 permissionId 的 pcAction 合并）
-  P2: [pcA1, pcA2]
-  P3: [pcA1, pcA2, pcA3]
-  P4: [pcA1]
+成员 A 最终 permissionValue =
+  P1: 3n  ← R1|R3 = 1n|3n = 3n (位运算 OR)
+  P2: 3n  ← R1|R2 = 3n|1n = 3n
+  P3: 7n  ← R2 独有
+  P4: 1n  ← R3 独有
 ```
 
 ### 角色分配流程

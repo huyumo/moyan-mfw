@@ -66,12 +66,12 @@ sys_user_role 记录:
     │ 2. 通过角色关联获得权限
     ↓
 sys_role_permission 记录 (拥有者角色的权限):
-┌──────────┬──────────────┬───────────────┐
-│ roleId   │ permissionId │ pcAction      │
-├──────────┼──────────────┼───────────────┤
-│ r001     │ perm-001     │ [add,edit]    │
-│ r001     │ perm-002     │ [delete]      │
-└──────────┴──────────────┴───────────────┘
+┌──────────┬──────────────┬───────────────────┐
+│ roleId   │ permissionId │ permissionValue   │
+├──────────┼──────────────┼───────────────────┤
+│ r001     │ perm-001     │ 3n (ADD|EDIT)     │
+│ r001     │ perm-002     │ 4n (DELETE)       │
+└──────────┴──────────────┴───────────────────┘
 ```
 
 ### 2.3 为什么在两处记录拥有者？
@@ -92,7 +92,9 @@ sys_role_permission 记录 (拥有者角色的权限):
 ### 3.1 用户最终权限计算公式
 
 ```
-用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)
+用户最终权限 = 所有关联角色的 permissionValue 取 OR
+
+userValue = role1Value | role2Value | ...
 
 关联角色来源:
 1. 用户直接绑定的角色 (sys_user_role)
@@ -105,16 +107,16 @@ sys_role_permission 记录 (拥有者角色的权限):
 ```
 用户 U 的角色关联:
 ├── 角色 R1 (直接绑定)
-│   └── 权限：{P1: [add, edit], P2: [add]}
+│   └── 权限：{P1: 3n, P2: 1n}
 ├── 角色 R2 (通过应用 A 绑定)
-│   └── 权限：{P2: [edit, delete], P3: [view]}
+│   └── 权限：{P2: 6n, P3: 32n}
 └── 角色 R3 (通过应用类型 T 绑定)
-    └── 权限：{P1: [delete]}
+    └── 权限：{P1: 4n}
 
 用户 U 的最终权限:
-├── P1: [add, edit, delete]  ← R1 和 R3 的并集
-├── P2: [add, edit, delete]  ← R1 和 R2 的并集
-└── P3: [view]               ← R2 独有
+├── P1: 7n  ← R1|R3 = 3n|4n = 7n (ADD|EDIT|DELETE)
+├── P2: 7n  ← R1|R2 = 1n|6n = 7n (ADD|EDIT|DELETE)
+└── P3: 32n ← R2 独有 (VIEW)
 ```
 
 ### 3.3 权限继承流程图
@@ -179,8 +181,8 @@ graph LR
 | 角色分类 | 内置角色 (isBuiltin=1, appTypeId) / 应用级角色 (isBuiltin=0, appId) |
 | 拥有者角色 | 每个应用类型必须有一个 isOwner=1 的角色，不可删除 |
 | 拥有者权限 | 通过绑定拥有者角色获得权限，非直接获得 |
-| 权限继承 | 用户权限 = 所有关联角色权限的并集 |
-| pcAction 合并 | 相同 permissionId 的 pcAction 取并集 |
+| 权限继承 | 用户权限 = 所有关联角色权限的位运算 OR |
+| permissionValue 合并 | 相同 permissionId 的 permissionValue 取位运算 OR |
 
 ---
 

@@ -40,7 +40,6 @@ flowchart TD
 
     ViewPool --> PermissionPoolPanel[权限池配置面板]
     PermissionPoolPanel --> SelectPermissions[勾选权限]
-    PermissionPoolPanel --> SelectPcAction[勾选 pcAction]
     SelectPermissions --> SavePool[保存配置]
     SavePool --> RefreshPool[刷新权限池]
 
@@ -77,7 +76,7 @@ flowchart TD
 | 功能 | 说明 |
 |------|------|
 | 基本信息 | 展示应用类型详细信息 |
-| 权限池配置 | 配置该应用类型可用的权限池（含 pcAction） |
+| 权限池配置 | 配置该应用类型可用的权限池（含 permissionValue） |
 | 内置角色管理 | 管理应用类型全局角色（增删改、分配权限） |
 
 ### 权限池配置面板
@@ -85,7 +84,7 @@ flowchart TD
 | 功能 | 说明 |
 |------|------|
 | PC 权限树 | 勾选 PC 菜单、页面权限加入权限池 |
-| pcAction 配置 | 点击 PAGE 节点展开 pcAction，勾选操作权限加入权限池 |
+| permissionValue 配置 | 点击 PAGE 节点展开 permissionValue 位选项，勾选操作权限加入权限池 |
 | 普通权限 | 勾选普通权限加入权限池 |
 | 保存配置 | 提交权限池配置到后端 |
 
@@ -120,7 +119,7 @@ flowchart TD
 
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限只能从所属应用类型的权限池中选择
-- pcAction 也遵循相同的约束：权限池中的 pcAction 是 Permission.pcAction 的子集
+- permissionValue 也遵循相同的约束：角色/权限池中的 permissionValue 必须是 Permission.permissionValue 的子集
 
 ### 内置角色
 
@@ -157,7 +156,7 @@ flowchart TD
 │   └── 删除角色及其权限关联
 │
 └── 分配权限
-    └── 从当前应用类型的权限池中选择权限（含 pcAction）
+    └── 从当前应用类型的权限池中选择权限（含 permissionValue）
 ```
 
 ### 内置角色查看位置
@@ -182,7 +181,8 @@ flowchart TD
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
-| 2.0.0 | 2026-03-24 | 重构：添加 pcAction 配置，明确内置角色管理位置，添加开发者鉴权说明 |
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
+| 2.0.0 | 2026-03-24 | 重构：添加 permissionValue 配置，明确内置角色管理位置，添加开发者鉴权说明 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 
 ---

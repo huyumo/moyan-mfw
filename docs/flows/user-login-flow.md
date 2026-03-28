@@ -116,13 +116,13 @@ flowchart TD
 ### 权限计算规则
 
 ```
-用户最终权限 = ∪(所有关联角色的权限)
+用户最终权限 = 所有关联角色的 permissionValue 取 OR（位运算并集）
 
 具体计算方式：
 1. 遍历用户绑定的所有角色
-2. 合并相同 permissionId 的权限
-3. pcAction 取并集
-4. 去重后返回最终权限集合
+2. 合并相同 permissionId 的 permissionValue
+3. permissionValue 取位运算 OR
+4. 返回最终权限集合
 ```
 
 ### 权限数据结构
@@ -133,7 +133,7 @@ interface UserPermission {
   permCode: string;
   permissionType: 'PC' | 'NORMAL';
   nodeType?: 'MENU' | 'PAGE' | 'TAG';
-  pcAction?: Array<{name: string, permCode: string}>;
+  permissionValue?: bigint;        // v4.0 新增 - 位运算权限值
 }
 ```
 

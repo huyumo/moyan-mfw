@@ -153,16 +153,15 @@ class RoleEntity {
 
 ### 6.1 PC 权限（系统管理）
 
-| permCode | permName | nodeType | parentId | 说明 |
-|----------|----------|----------|----------|------|
-| menu.system | 系统管理 | MENU | null | 根菜单 |
-| menu.system.app-type | 应用类型管理 | MENU | menu.system | 应用类型管理菜单 |
-| page.system.app-type.list | 应用类型列表 | PAGE | menu.system.app-type | 应用类型列表页面 |
-| page.system.app-type.list | 应用类型列表 | PAGE | menu.system.app-type | pcAction: [add, edit, delete] |
-| menu.system.permission | 权限管理 | MENU | menu.system | 权限管理菜单 |
-| page.system.permission.pc | PC 权限树 | PAGE | menu.system.permission | PC 权限管理页面 |
-| menu.system.member | 成员管理 | MENU | menu.system | 成员管理菜单 |
-| page.system.member.list | 成员列表 | PAGE | menu.system.member | 成员管理页面 |
+| permCode | permName | nodeType | parentId | permissionValue | 说明 |
+|----------|----------|----------|----------|-----------------|------|
+| menu.system | 系统管理 | MENU | null | - | 根菜单 |
+| menu.system.app-type | 应用类型管理 | MENU | menu.system | - | 应用类型管理菜单 |
+| page.system.app-type.list | 应用类型列表 | PAGE | menu.system.app-type | 7n | 应用类型列表页面 (ADD\|EDIT\|DELETE) |
+| menu.system.permission | 权限管理 | MENU | menu.system | - | 权限管理菜单 |
+| page.system.permission.pc | PC 权限树 | PAGE | menu.system.permission | - | PC 权限管理页面 |
+| menu.system.member | 成员管理 | MENU | menu.system | - | 成员管理菜单 |
+| page.system.member.list | 成员列表 | PAGE | menu.system.member | - | 成员管理页面 |
 
 ### 6.2 权限池配置
 

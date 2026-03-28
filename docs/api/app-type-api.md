@@ -112,12 +112,8 @@ interface PermissionTreeNode {
   sortOrder: number;
   // 权限池配置状态
   inPool: boolean;                       // 是否已加入权限池
-  // pcAction 仅在 nodeType=PAGE 时有效
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-    inPool: boolean;                     // 是否已加入权限池
-  }>;
+  // permissionValue 仅在 nodeType=PAGE 且 permissionType=PC 时有效
+  permissionValue?: bigint;              // 位运算权限值
   children?: PermissionTreeNode[];
 }
 ```
@@ -166,7 +162,7 @@ interface PermissionTreeNode {
 
 **接口**: `GET /api/v1/app-types/:appTypeId/permission-pool`
 
-**使用场景**: 权限池配置面板加载，展示已勾选的权限节点和 pcAction。
+**使用场景**: 权限池配置面板加载，展示已勾选的权限节点和 permissionValue。
 
 **路径参数**:
 
@@ -194,7 +190,7 @@ interface PermissionTreeNode {
 
 **接口**: `PUT /api/v1/app-types/:appTypeId/permission-pool`
 
-**使用场景**: 权限池配置面板保存，提交勾选的权限节点和 pcAction。
+**使用场景**: 权限池配置面板保存，提交勾选的权限节点和 permissionValue。
 
 **路径参数**:
 
@@ -215,10 +211,7 @@ interface PermissionTreeNode {
 interface PermissionTreePayload {
   permissionId: string;
   checked: boolean;                      // true=加入权限池，false=移除
-  pcAction?: Array<{
-    permCode: string;
-    checked: boolean;
-  }>;
+  permissionValue?: bigint;              // v4.0 新增 - 位运算权限值
   children?: PermissionTreePayload[];
 }
 ```
@@ -410,10 +403,7 @@ interface PermissionTreePayload {
 interface PermissionTreePayload {
   permissionId: string;
   checked: boolean;                      // true=分配，false=移除
-  pcAction?: Array<{
-    permCode: string;
-    checked: boolean;
-  }>;
+  permissionValue?: bigint;              // v4.0 新增 - 位运算权限值
   children?: PermissionTreePayload[];
 }
 ```

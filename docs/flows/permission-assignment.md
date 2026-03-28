@@ -13,7 +13,7 @@
 1. [完整流程图](#完整流程图)
 2. [权限验证逻辑](#权限验证逻辑)
 3. [权限继承规则](#权限继承规则)
-4. [pcAction 数据流](#pcAction-数据流)
+4. [permissionValue 数据流](#permissionvalue-数据流)
 5. [业务规则](#业务规则)
 
 ---
@@ -48,9 +48,9 @@ sequenceDiagram
         note right of U: 阶段 2: 加载应用类型权限池
         P->>S: 获取应用类型权限池
         S->>D: 查询 sys_app_type_permission 表
-        D-->>S: 返回权限池配置 (含 pcAction)
+        D-->>S: 返回权限池配置 (含 permissionValue)
         S-->>P: 返回 PermissionPoolItem[]
-        note right of P: 后续权限选择器<br/>仅展示权限池中的节点和 pcAction
+        note right of P: 后续权限选择器<br/>仅展示权限池中的节点和 permissionValue
     end
 
     rect rgb(230, 255, 240)
@@ -60,9 +60,9 @@ sequenceDiagram
             P->>P: 过滤权限池中的 PC 权限节点
             P->>U: 渲染 PC 权限树选择器<br/>(仅权限池内节点)
             U->>P: 勾选/取消勾选节点
-            U->>P: 点击 PAGE 节点展开 pcAction
-            P->>P: 从权限池加载 pcAction 列表
-            U->>P: 勾选/取消勾选 pcAction
+            U->>P: 点击 PAGE 节点展开 permissionValue
+            P->>P: 从权限池加载 permissionValue 选项
+            U->>P: 勾选/取消勾选 permissionValue 位
         else 普通权限
             P->>P: 过滤权限池中的普通权限
             P->>U: 渲染复选框列表<br/>(仅权限池内节点)
@@ -73,7 +73,7 @@ sequenceDiagram
     rect rgb(255, 240, 240)
         note right of U: 阶段 4: 保存权限分配
         U->>P: 点击"保存"按钮
-        P->>P: 收集所有勾选的权限编码和 pcAction
+        P->>P: 收集所有勾选的权限编码和 permissionValue
         P->>P: 去重 + 过滤空值
         P->>S: 提交权限分配配置
 
@@ -81,7 +81,7 @@ sequenceDiagram
         S->>D: BEGIN TRANSACTION
         S->>D: DELETE FROM sys_role_permission<br/>WHERE roleId = ?
         D-->>S: 删除成功
-        S->>D: INSERT INTO sys_role_permission<br/>(roleId, permissionId, pcAction) VALUES ...
+        S->>D: INSERT INTO sys_role_permission<br/>(roleId, permissionId, permissionValue) VALUES ...
         D-->>S: 插入成功
         S->>D: COMMIT
         note right of S: 事务处理结束
@@ -120,11 +120,11 @@ flowchart TD
     GetPool --> ValidateInPool{权限在池中？}
 
     ValidateInPool -->|否 | ShowError3[显示"权限不在权限池中"]
-    ValidateInPool -->|是 | ValidatePcAction[验证 pcAction]
+    ValidateInPool -->|是 | ValidatePermissionValue[验证 permissionValue]
 
-    ValidatePcAction --> CheckPcActionInPool{pcAction 在池中？}
-    CheckPcActionInPool -->|否 | ShowError4[显示"pcAction 不在权限池中"]
-    CheckPcActionInPool -->|是 | Proceed
+    ValidatePermissionValue --> CheckPermissionValueInPool{permissionValue 是子集？}
+    CheckPermissionValueInPool -->|否 | ShowError4[显示"permissionValue 超出权限池范围"]
+    CheckPermissionValueInPool -->|是 | Proceed
 
     CheckPool -->|不需要检查 | Proceed
 
@@ -159,7 +159,7 @@ graph LR
     subgraph 用户最终权限计算
         D --> G{用户最终权限 = }
         E --> G
-        G --> H[所有关联角色的权限并集<br/>相同 permissionId 的 pcAction 合并]
+        G --> H[所有关联角色的权限并集<br/>相同 permissionId 的 permissionValue 取 OR]
     end
 
     subgraph 说明
@@ -176,34 +176,34 @@ graph LR
 - 所有角色（内置角色、应用级角色）的权限配置都必须从所属应用类型的权限池中选择
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限分配时，前端选择器仅展示该角色所属应用类型权限池中的权限节点
-- pcAction 也遵循相同的约束：角色中的 pcAction 必须是权限池中 pcAction 的子集
+- permissionValue 也遵循相同的约束：角色中的 permissionValue 必须是权限池中 permissionValue 的子集
 
 ---
 
-## pcAction 数据流
+## permissionValue 数据流
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. 权限定义 (PermissionEntity)                                  │
-│    PAGE 节点：pcAction: [add, edit, delete]                     │
+│    PAGE 节点：permissionValue: 7n (ADD|EDIT|DELETE)             │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 权限池配置时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 2. 权限池 (AppTypePermissionEntity)                             │
-│    pcAction: [add, edit]  ← 子集                                │
+│    permissionValue: 3n (ADD|EDIT)  ← 子集                       │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 角色分配权限时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. 角色权限 (RolePermissionEntity)                              │
-│    pcAction: [add]  ← 子集                                      │
+│    permissionValue: 1n (ADD)  ← 子集                            │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 运行时权限验证
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. 用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)      │
-│    相同 permissionId 的 pcAction 取并集                          │
+│ 4. 用户最终权限 = 所有关联角色的 permissionValue 取 OR           │
+│    相同 permissionId 的 permissionValue = role1Value | role2Value | ... │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -224,11 +224,11 @@ graph LR
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限分配时，前端选择器仅展示该角色所属应用类型权限池中的权限节点
 
-### pcAction 约束
+### permissionValue 约束
 
-- 角色权限中的 `pcAction` 必须是权限池中对应权限 `pcAction` 的子集
-- 保存时自动验证 `pcAction` 的合法性
-- 用户最终权限计算时，相同 `permissionId` 的 `pcAction` 取并集
+- 角色权限中的 `permissionValue` 必须是权限池中对应权限 `permissionValue` 的子集
+- 保存时自动验证 `permissionValue` 的合法性，使用位运算公式：`(roleValue & poolValue) === roleValue`
+- 用户最终权限计算时，相同 `permissionId` 的 `permissionValue` 取 OR：`userValue = role1Value | role2Value | ...`
 
 ### 数据一致性
 
@@ -239,13 +239,14 @@ graph LR
 ### 用户最终权限计算
 
 ```
-用户最终权限 = ∪(用户所有关联角色的 permissionId + pcAction)
+用户最终权限 = 所有关联角色的 permissionValue 取 OR
+userValue = role1Value | role2Value | ...
 ```
 
 - 用户直接绑定的角色权限
 - 通过应用绑定的角色权限
 - 通过应用类型绑定的角色权限
-- 相同 `permissionId` 的 `pcAction` 取并集
+- 相同 `permissionId` 的 `permissionValue` 取 OR（位运算 OR）
 
 ---
 
@@ -262,6 +263,7 @@ graph LR
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
 | 2.0.0 | 2026-03-24 | 重构：添加 pcAction 分配流程 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 

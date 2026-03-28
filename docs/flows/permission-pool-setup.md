@@ -15,7 +15,7 @@
 3. [权限池与角色权限关系](#权限池与角色权限关系)
 4. [并发处理机制](#并发处理机制)
 5. [业务规则](#业务规则)
-6. [pcAction 数据流](#pcAction-数据流)
+6. [permissionValue 数据流](#permissionvalue-数据流)
 
 ---
 
@@ -62,12 +62,12 @@ sequenceDiagram
     rect rgb(255, 240, 240)
         note right of U: 阶段 3: 保存权限池配置
         U->>P: 勾选/取消勾选权限
-        U->>P: 点击 PAGE 节点展开 pcAction
-        U->>P: 勾选/取消勾选 pcAction
+        U->>P: 点击 PAGE 节点展开 permissionValue
+        U->>P: 勾选/取消勾选 permissionValue 位
         U->>P: 点击"保存"按钮
 
         P->>P: 合并两类权限编码
-        P->>P: 收集勾选的 pcAction
+        P->>P: 收集勾选的 permissionValue
         P->>P: 去重 + 过滤
         P->>S: 提交权限池配置
 
@@ -79,7 +79,7 @@ sequenceDiagram
         loop 遍历权限配置
             S->>D: 查询 permissionId by permCode
             D-->>S: 返回 permissionId
-            S->>D: INSERT INTO sys_app_type_permission (appTypeId, permissionId, pcAction)
+            S->>D: INSERT INTO sys_app_type_permission (appTypeId, permissionId, permissionValue)
             D-->>S: 插入成功
         end
 
@@ -120,12 +120,12 @@ flowchart TD
     CheckAppType -->|否 | ShowError3[显示"应用类型不存在"]
     ShowError3 --> End3([结束])
 
-    CheckAppType -->|是 | ValidatePcAction[验证 pcAction 有效性]
-    ValidatePcAction --> QueryPermission[查询权限的 pcAction 定义]
-    QueryPermission --> CheckPcAction{pcAction 在定义内？}
+    CheckAppType -->|是 | ValidatePermissionValue[验证 permissionValue 有效性]
+    ValidatePermissionValue --> QueryPermission[查询权限的 permissionValue 定义]
+    QueryPermission --> CheckPermissionValue{permissionValue 在定义内？}
 
-    CheckPcAction -->|否 | ShowError4[显示"存在无效的 pcAction"]
-    CheckPcAction -->|是 | StartTransaction[开启事务]
+    CheckPermissionValue -->|否 | ShowError4[显示"存在无效的 permissionValue"]
+    CheckPermissionValue -->|是 | StartTransaction[开启事务]
 
     StartTransaction --> DeleteOld[删除旧关联记录]
     DeleteOld --> BatchInsert[批量插入新关联]
@@ -147,7 +147,7 @@ flowchart TD
 ```mermaid
 graph TB
     subgraph 权限池配置
-        P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
+        P1[PC 权限树选择] --> P4[权限编码集合 + permissionValue]
         P2[普通权限选择] --> P4
         P4 --> P5[保存到 sys_app_type_permission]
     end
@@ -194,18 +194,18 @@ sequenceDiagram
 |------|------|----------|
 | 非空验证 | 权限列表不能为空（除非允许空池） | "至少选择一个权限" |
 | 有效性验证 | 所有权限编码必须存在于权限表中 | "存在无效权限编码" |
-| pcAction 验证 | pcAction 必须在权限定义的范围内 | "存在无效的 pcAction" |
+| permissionValue 验证 | permissionValue 必须是 Permission.permissionValue 的子集 | "permissionValue 超出权限范围" |
 | 事务一致性 | 删除旧关联和插入新关联在同一事务中 | "数据库写入失败" |
 
-### pcAction 说明
+### permissionValue 说明
 
-pcAction 是权限的细分操作标识，用于更细粒度的权限控制。
+permissionValue 是权限的位运算操作权限值，使用 bigint 类型存储。
 
 ---
 
 ## 相关文档
 
-- [权限系统核心概念](../core/permissions.md) - pcAction 数据流说明
+- [权限系统核心概念](../core/permissions.md) - permissionValue 数据流说明
 - [权限分配流程](./permission-assignment.md) - 角色权限分配
 - [数据库实体设计](../database/database-entities-design.md) - sys_app_type_permission 表结构
 
@@ -217,13 +217,13 @@ pcAction 是权限的细分操作标识，用于更细粒度的权限控制。
 ```mermaid
 graph TB
     subgraph 权限池配置
-        P1[PC 权限树选择] --> P4[权限编码集合 + pcAction]
+        P1[PC 权限树选择] --> P4[权限编码集合 + permissionValue]
         P2[普通权限树选择] --> P4
         P4 --> P5[保存到 sys_app_type_permission]
     end
 
     subgraph 角色权限分配
-        R1[从权限池选择] --> R4[角色权限集合 + pcAction 子集]
+        R1[从权限池选择] --> R4[角色权限集合 + permissionValue 子集]
         R4 --> R5[保存到 sys_role_permission]
     end
 
@@ -240,7 +240,7 @@ graph TB
 
 **说明**:
 - 权限池配置是角色权限分配的前提
-- 角色权限必须是权限池的子集（包括 pcAction）
+- 角色权限必须是权限池的子集（包括 permissionValue）
 - 运行时权限验证先检查角色权限，再检查权限池包含
 
 ---
@@ -293,17 +293,17 @@ sequenceDiagram
 - 角色权限只能从所属应用类型的权限池中选择
 - 权限池为空时，该应用类型下的角色无法分配任何权限
 
-### pcAction 约束
+### permissionValue 约束
 
-- `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
-- 权限池中的 `pcAction` 必须是对应权限 `pcAction` 定义的子集
-- 角色分配权限时，`pcAction` 必须是权限池中 `pcAction` 的子集
+- `permissionValue` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- 权限池中的 `permissionValue` 必须是对应权限 `permissionValue` 定义的子集
+- 角色分配权限时，`permissionValue` 必须是权限池中 `permissionValue` 的子集
 
 ### 数据一致性
 
 - 权限池配置使用事务保证数据一致性
 - 删除权限池记录时，先删除所有旧记录，再插入新记录
-- 插入前验证所有权限编码的有效性和 pcAction 的合法性
+- 插入前验证所有权限编码的有效性和 permissionValue 的合法性
 
 ### 并发控制
 
@@ -313,29 +313,29 @@ sequenceDiagram
 
 ---
 
-## pcAction 数据流
+## permissionValue 数据流
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. 权限定义 (PermissionEntity)                                  │
-│    PAGE 节点：pcAction: [add, edit, delete]                     │
+│    PAGE 节点：permissionValue: 7n (ADD|EDIT|DELETE)             │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 权限池配置时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 2. 权限池 (AppTypePermissionEntity)                             │
-│    pcAction: [add, edit]  ← 子集                                │
+│    permissionValue: 3n (ADD|EDIT)  ← 子集                       │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 角色分配权限时读取并选择子集
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │ 3. 角色权限 (RolePermissionEntity)                              │
-│    pcAction: [add]  ← 子集                                      │
+│    permissionValue: 1n (ADD)  ← 子集                            │
 └────────────────────┬────────────────────────────────────────────┘
                      │ 运行时权限验证
                      ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. 用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)      │
+│ 4. 用户最终权限 = 所有关联角色的 permissionValue 取 OR           │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -354,6 +354,7 @@ sequenceDiagram
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
 | 2.0.0 | 2026-03-24 | 重构：添加 pcAction 配置流程 |
 | 1.0.0 | 2026-03-23 | 初始版本，从基础设施详细设计文档拆分 |
 

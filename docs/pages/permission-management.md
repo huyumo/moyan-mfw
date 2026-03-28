@@ -101,7 +101,7 @@ ROOT (MENU)
 - `NodeType.TAG` 的 `parentId` 必须指向 `NodeType.MENU` 类型
 - 根节点只能创建 `NodeType.MENU` 类型
 - 删除节点时级联删除所有子节点
-- **注意**: 本文档不涉及 `pcAction` 配置，PC 权限的 pcAction 配置请参考 [PC 权限管理页面](./pc-permission-management.md)
+- **注意**: 本文档不涉及 `permissionValue` 配置，PC 权限的 permissionValue 配置请参考 [PC 权限管理页面](./pc-permission-management.md)
 
 ---
 
@@ -132,7 +132,7 @@ enum ShowMode {
 | PermissionType | NodeType | 说明 |
 |----------------|----------|------|
 | PC | MENU | PC 菜单/目录 |
-| PC | PAGE | PC 页面权限（可包含 pcAction） |
+| PC | PAGE | PC 页面权限（可包含 permissionValue） |
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 

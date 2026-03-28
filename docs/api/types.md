@@ -65,11 +65,8 @@ interface PermissionTreeNode {
   permStatus: number;
   isAutoSync?: number;           // v3.0 新增 - 1=同步生成 0=手动添加
 
-  // PC 操作权限（仅 nodeType=PAGE 时有效）
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-  }>;
+  // PC 操作权限（仅 nodeType=PAGE 时有效）- v4.0 改为位运算
+  permissionValue?: bigint;      // 位运算权限值，如 7n = ADD|EDIT|DELETE
 
   // 配置状态（由后端根据上下文填充）
   inPool?: boolean;              // 是否在权限池中
@@ -82,10 +79,7 @@ interface PermissionTreeNode {
 interface PermissionTreePayload {
   permissionId: string;
   checked: boolean;              // true=选中，false=取消
-  pcAction?: Array<{
-    permCode: string;
-    checked: boolean;
-  }>;
+  permissionValue?: bigint;      // v4.0 新增 - 位运算权限值
   children?: PermissionTreePayload[];
 }
 ```

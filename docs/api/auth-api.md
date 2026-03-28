@@ -234,11 +234,8 @@ interface PermissionTreeNode {
   isCache: number;
   showMode: 'NORMAL' | 'DEV';
   permStatus: number;             // 状态：1-启用 0-禁用
-  // pcAction 仅在 nodeType=PAGE 时有效
-  pcAction?: Array<{
-    name: string;
-    permCode: string;
-  }>;
+  // permissionValue 仅在 nodeType=PAGE 且 permissionType=PC 时有效
+  permissionValue?: bigint;       // v4.0 新增 - 位运算权限值
   children?: PermissionTreeNode[];
 }
 ```

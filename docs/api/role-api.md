@@ -216,7 +216,7 @@ Authorization: Bearer <token>
 
 **接口**: `PUT /api/v1/roles/:id/permissions`
 
-**使用场景**: 权限分配面板保存，提交分配的权限和 pcAction。
+**使用场景**: 权限分配面板保存，提交分配的权限和 permissionValue。
 
 **路径参数**:
 
@@ -237,10 +237,7 @@ Authorization: Bearer <token>
 interface PermissionTreePayload {
   permissionId: string;
   assigned: boolean;                       // true=分配，false=移除
-  pcAction?: Array<{
-    permCode: string;
-    assigned: boolean;
-  }>;
+  permissionValue?: bigint;                // v4.0 新增 - 位运算权限值
   children?: PermissionTreePayload[];
 }
 ```

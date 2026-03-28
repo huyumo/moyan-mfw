@@ -70,8 +70,8 @@
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                          权限计算层 (Permission Layer)                       │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │   用户最终权限 = ∪(所有关联角色的 permissionId + pcAction)           │    │
-│  │   相同 permissionId 的 pcAction 取并集                                │    │
+│  │   用户最终权限 = 所有关联角色的 permissionValue 取 OR            │    │
+│  │   相同 permissionId 的 permissionValue = role1Value | role2Value | ... │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 │                                    │                                          │
 │              ┌─────────────────────┼─────────────────────┐                   │
@@ -114,7 +114,7 @@
 │  │  │  PermissionType=PC         │  PermissionType=NORMAL          │    │    │
 │  │  │  - NodeType=MENU (目录)    │  - NodeType=MENU (目录)         │    │    │
 │  │  │  - NodeType=PAGE (页面)    │  - NodeType=TAG (标签)          │    │    │
-│  │  │  - pcAction (操作权限)     │                                 │    │    │
+│  │  │  - permissionValue (位运算权限值) │                                 │    │    │
 │  │  └─────────────────────────────────────────────────────────────┘    │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -164,7 +164,7 @@
 | PermissionType | NodeType | 说明 |
 |----------------|----------|------|
 | PC | MENU | PC 菜单/目录 |
-| PC | PAGE | PC 页面权限（可包含 pcAction） |
+| PC | PAGE | PC 页面权限（可包含 permissionValue） |
 | NORMAL | MENU | 普通权限目录 |
 | NORMAL | TAG | 普通权限（标签） |
 
@@ -172,19 +172,19 @@
 - `NodeType.MENU` 可以与所有 `PermissionType` (PC/NORMAL) 组合使用，作为目录节点
 - 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
-- `pcAction` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
+- `permissionValue` 仅存储在 `PermissionType=PC` 且 `NodeType=PAGE` 的节点上
 - `NORMAL` 权限类型通常用于移动端、非后台管理的程序
 
-### pcAction 数据流
+### permissionValue 数据流
 
 ```
-Permission.pcAction (定义)
+Permission.permissionValue (定义)
     ↓
-AppTypePermission.pcAction (权限池配置，子集)
+AppTypePermission.permissionValue (权限池配置，子集)
     ↓
-RolePermission.pcAction (角色分配，子集)
+RolePermission.permissionValue (角色分配，子集)
     ↓
-用户最终权限 (并集)
+用户最终权限 (位运算 OR)
 ```
 
 ### 权限池约束
@@ -197,10 +197,11 @@ RolePermission.pcAction (角色分配，子集)
 ### 用户最终权限计算
 
 ```
-用户最终权限 = ∪(用户所有关联角色的 permissionId + pcAction)
+用户最终权限 = 所有关联角色的 permissionValue 取 OR
+userValue = role1Value | role2Value | ...
 ```
 
-- 相同 `permissionId` 的 `pcAction` 取并集
+- 相同 `permissionId` 的 `permissionValue` 取位运算 OR
 
 ---
 
@@ -246,6 +247,7 @@ enum ShowMode {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.7.0 | 2026-03-28 | 位运算权限设计：pcAction → permissionValue bigint |
 | 2.2.0 | 2026-03-25 | 重构：按 database/flows/pages 目录组织文档；新增用户登录流程、权限计算规则、开发者模式、系统初始化文档；添加拥有者角色说明 |
 | 2.1.0 | 2026-03-24 | 新增：成员管理页面文档，调整应用实例管理（拥有者权限） |
 | 2.0.0 | 2026-03-24 | 重构：添加 PermissionType/NodeType 说明，pcAction 数据流，更新角色分类 |
