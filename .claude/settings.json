@@ -51,7 +51,8 @@
       "Bash(taskkill /PID 15064 /F)",
       "Bash(kill -9 15064)",
       "Bash(curl -s http://localhost:5173/)",
-      "Bash(curl -s http://localhost:5173/src/main.ts)"
+      "Bash(curl -s http://localhost:5173/src/main.ts)",
+      "Bash(find backend:*)"
     ],
     "additionalDirectories": [
       "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",
