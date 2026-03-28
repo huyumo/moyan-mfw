@@ -17,6 +17,7 @@ import type {
   LayoutStyleConfig,
   ThemeRegistry,
 } from './types/layout-types';
+import type { BusinessMenuItem } from './router';
 import BaseAdminRoot from './layouts/components/base/BaseAdminRoot.vue';
 import { createBaseAdminRouter, type CreateBaseAdminRouterOptions } from './router';
 import { createMenuTreeFromRoutes, dedupeMenuTree } from './router/menu-tree';
@@ -90,7 +91,7 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
     layoutStore.patchStyleConfig(options.layout);
   }
 
-  const businessMenuTree = createMenuTreeFromRoutes(options.businessRoutes || [], { parentPath: '/' });
+  const businessMenuTree = createMenuTreeFromRoutes(options.menus || [], { parentPath: '/' });
   const resolvedNavigation: Partial<AdminNavigationConfig> = {
     ...options.navigation,
   };

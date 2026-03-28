@@ -1,5 +1,5 @@
 /**
- * @fileoverview 路由配置。
+ * @fileoverview 路由配置工具。
  *
  * 路由页面加载规则：
  * 1. 页面组件必须存放在 src/views/ 目录下
@@ -26,11 +26,38 @@ const viewModules = import.meta.glob(
 const NOT_FOUND_PATH = '../views/not-found/Index.vue';
 
 /**
+ * 动态导入布局组件
+ */
+const AdminLayout = () => import('../layouts/AdminLayout.vue');
+
+/**
+ * 403 和 404 页面（直接静态导入）
+ */
+const ForbiddenPage = () => import('../views/forbidden/Index.vue');
+const NotFoundPage = () => import(NOT_FOUND_PATH);
+
+/**
+ * 业务菜单项接口 - 业务方只需要定义这个简单结构
+ */
+export interface BusinessMenuItem {
+  /** 路由名称/标识 */
+  name: string;
+  /** 页面标题 */
+  title: string;
+  /** 菜单图标 */
+  icon?: string;
+  /** 子菜单 */
+  children?: BusinessMenuItem[];
+  /** 路由路径（可选，不传则用 name 生成） */
+  path?: string;
+}
+
+/**
  * 获取页面组件的加载函数
- * @param dirName - views 下的目录名（如 '/dashboard', '/system/user-list'）
+ * @param dirName - views 下的目录路径（如 '/dashboard', '/system/authority/node'）
  * @returns 组件加载函数，找不到则返回 404 页面
  */
-export function getViewComponent(dirName: string) {
+function getViewComponent(dirName: string) {
   const basePath = `../views${dirName}/`;
 
   // 按优先级查找：Index.vue > index.ts > index.tsx
@@ -53,60 +80,87 @@ export function getViewComponent(dirName: string) {
 }
 
 /**
- * 动态导入布局组件
+ * 将路径转换为驼峰命名
+ * @param path - 路径字符串
+ * @returns 驼峰命名字符串
  */
-const AdminLayout = () => import('../layouts/AdminLayout.vue');
+function pathToCamelCase(path: string): string {
+  return path
+    .replace(/^\//, '')
+    .split('/')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('');
+}
 
 /**
- * 403 和 404 页面（直接静态导入）
+ * 将业务菜单树转换为路由配置
+ * @param menuTree - 业务菜单树
+ * @param parentPath - 父级路径前缀
+ * @returns 路由配置数组
  */
-const ForbiddenPage = () => import('../views/forbidden/Index.vue');
-const NotFoundPage = () => import(NOT_FOUND_PATH);
+export function menuTreeToRoutes(
+  menuTree: BusinessMenuItem[],
+  parentPath: string = ''
+): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [];
+
+  for (const item of menuTree) {
+    // 生成路径：如果有 path 则使用，否则用 name 生成
+    const path = item.path || `/${item.name}`;
+    const fullPath = parentPath + path;
+
+    // 判断是否有子菜单
+    const hasChildren = item.children && item.children.length > 0;
+
+    if (hasChildren) {
+      // 有子菜单：递归处理子节点
+      const children = menuTreeToRoutes(
+        item.children as BusinessMenuItem[],
+        `${fullPath}/`
+      );
+
+      // 获取第一个子节点的路径用于 redirect
+      const firstChildPath = children[0]?.path || '';
+
+      const route: RouteRecordRaw = {
+        path: item.name,
+        name: `Route${pathToCamelCase(fullPath)}`,
+        redirect: `${item.name}/${firstChildPath}`,
+        children,
+        meta: {
+          title: item.title,
+          menuLabel: item.title,
+          menuIcon: item.icon,
+          requiresAuth: true,
+        },
+      };
+      routes.push(route);
+    } else {
+      // 叶子节点：加载对应页面组件
+      const route: RouteRecordRaw = {
+        path: fullPath.replace(/^\//, ''),
+        name: `Route${pathToCamelCase(fullPath)}`,
+        component: getViewComponent(fullPath),
+        meta: {
+          title: item.title,
+          menuLabel: item.title,
+          menuIcon: item.icon,
+          requiresAuth: true,
+        },
+      };
+      routes.push(route);
+    }
+  }
+
+  return routes;
+}
 
 /**
  * 创建基础管理后台路由的选项接口。
  */
 export interface CreateBaseAdminRoutesOptions {
-  /** 业务路由配置 */
-  businessRoutes?: RouteRecordRaw[];
-}
-
-/**
- * 规范化业务路由。
- * 移除路径前的斜杠并设置默认需要认证。
- */
-function normalizeBusinessRoute(route: RouteRecordRaw): RouteRecordRaw {
-  const normalizedPath = route.path.replace(/^\/+/, '');
-  return {
-    ...route,
-    path: normalizedPath,
-    meta: {
-      ...route.meta,
-      requiresAuth: route.meta?.requiresAuth ?? true,
-    },
-  };
-}
-
-/**
- * 合并业务路由到基础子路由。
- */
-function mergeBusinessChildren(
-  children: RouteRecordRaw[],
-  businessRoutes: RouteRecordRaw[] = []
-): RouteRecordRaw[] {
-  const merged = [...children];
-  const existed = new Set(children.map((item) => item.path));
-
-  for (const route of businessRoutes) {
-    if (!route.path || existed.has(route.path.replace(/^\/+/, ''))) {
-      continue;
-    }
-    const normalized = normalizeBusinessRoute(route);
-    merged.push(normalized);
-    existed.add(normalized.path);
-  }
-
-  return merged;
+  /** 业务菜单树配置 */
+  menus?: BusinessMenuItem[];
 }
 
 /**
@@ -115,6 +169,11 @@ function mergeBusinessChildren(
  * @returns 路由配置数组。
  */
 export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}): RouteRecordRaw[] {
+  // 将业务菜单树转换为路由
+  const businessRoutes = options.menus
+    ? menuTreeToRoutes(options.menus)
+    : [];
+
   const baseChildren: RouteRecordRaw[] = [
     {
       path: '',
@@ -126,13 +185,14 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
       component: getViewComponent('/dashboard'),
       meta: {
         title: '首页',
-        requiresAuth: true,
         menuLabel: '首页',
         menuIcon: 'DataBoard',
         menuOrder: 1,
         affix: true,
       },
     },
+    // 注入业务路由
+    ...businessRoutes,
   ];
 
   return [
@@ -152,7 +212,7 @@ export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}
         requiresAuth: true,
         menu: false,
       },
-      children: mergeBusinessChildren(baseChildren, options.businessRoutes),
+      children: baseChildren,
     },
     {
       path: '/403',
