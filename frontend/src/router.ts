@@ -45,7 +45,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
 
   // 1. 收集所有配置
   for (const [path, config] of Object.entries(pageConfigs)) {
-    // 从路径提取相对路径
+    // 从路径提取相对路径（不带前导/）
     const relativePath = path
       .replace('../views/', '')
       .replace('/index.ts', '')
@@ -59,11 +59,12 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
 
   for (const [relativePath, config] of configMap.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
-    const fullPath = '/' + segments.join('/');
+    // 子路由路径不带前导/
+    const path = segments.join('/');
 
-    // 使用完整路径作为路由 path
+    // 创建路由
     const route: RouteRecordRaw = {
-      path: fullPath,
+      path: path,
       name: `Route_${segments.join('_')}` || 'Root',
       component: config.page as RouteRecordRaw['component'],
       meta: {
@@ -76,7 +77,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
       },
     } as RouteRecordRaw;
 
-    routeMap.set(fullPath, route);
+    routeMap.set('/' + path, route);
   }
 
   // 3. 构建树形结构

@@ -56,9 +56,6 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
  */
 export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
   // 如果传入了 routes，直接使用；否则使用自动扫描生成的路由
-  const baseRoutes = options.routes ?? createBaseAdminRoutes();
-
-  // 如果传入了 routes，需要将它们包装在主布局下
   const finalRoutes = options.routes
     ? [
         {
@@ -80,9 +77,23 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
           children: [
             {
               path: '',
-              redirect: '/dashboard',
+              // 优先跳转到 /dashboard，如果没有则跳转到第一个业务路由
+              redirect: () => {
+                if (options.routes?.some(r => r.path === 'dashboard' || r.path === '/dashboard')) {
+                  return '/dashboard';
+                }
+                if (options.routes && options.routes.length > 0) {
+                  const firstRoute = options.routes[0];
+                  return '/' + firstRoute.path.replace(/^\//, '');
+                }
+                return '/404';
+              },
             },
-            ...options.routes,
+            // 传入的业务路由，需要去除路径前导/以适配子路由
+            ...options.routes.map((route) => ({
+              ...route,
+              path: route.path.replace(/^\//, ''),
+            })),
           ],
         },
         {
@@ -109,7 +120,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
           redirect: '/404',
         },
       ]
-    : baseRoutes;
+    : createBaseAdminRoutes();
 
   const router = createRouter({
     history: options.history ?? createWebHistory(options.base),
@@ -134,9 +145,16 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
     }
 
     if (to.path === '/login' && token) {
-      return {
-        path: '/dashboard',
-      };
+      // 登录后跳转到首页或第一个业务路由
+      // 优先跳转到 /dashboard，如果没有则跳转到第一个业务路由
+      if (options.routes?.some(r => r.path === 'dashboard' || r.path === '/dashboard')) {
+        return { path: '/dashboard' };
+      }
+      if (options.routes && options.routes.length > 0) {
+        const firstRoute = options.routes[0];
+        return { path: '/' + firstRoute.path.replace(/^\//, '') };
+      }
+      return { path: '/dashboard' };
     }
 
     return true;
