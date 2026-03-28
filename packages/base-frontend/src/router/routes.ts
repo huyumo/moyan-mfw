@@ -1,29 +1,42 @@
 /**
- * @fileoverview 路由配置工具。
+ * @fileoverview 路由配置 - 自动扫描模式。
  *
  * 路由页面加载规则：
  * 1. 页面组件必须存放在 src/views/ 目录下
- * 2. 每个页面是一个独立目录，目录内必须包含以下文件之一：
- *    - Index.vue (优先)
- *    - index.ts
- *    - index.tsx
- * 3. 如果路由配置了某个页面，但对应目录下没有找到上述文件，则自动显示 404 页面
+ * 2. 每个页面是一个独立目录，目录内必须包含 index.ts 或 index.tsx 配置文件
+ * 3. 配置文件必须导出：page 组件、path 路径、name 名称
+ * 4. 如果找不到配置文件，则自动显示 404 页面
+ *
+ * 配置文件示例 (index.ts):
+ * ```typescript
+ * import Dashboard from './dashboard.vue';
+ * export default { page: Dashboard, path: 'dashboard', name: '看板', icon: 'DataBoard', auth: true };
+ * ```
  */
 
 import type { RouteRecordRaw } from 'vue-router';
 
 /**
- * 自动加载 views 目录下所有页面组件
+ * 页面配置接口
  */
-const viewModules = import.meta.glob(
-  '../views/**/Index.{vue,ts,tsx}',
-  { eager: false }
-);
-
-/**
- * 404 页面路径
- */
-const NOT_FOUND_PATH = '../views/not-found/Index.vue';
+export interface PageConfig {
+  /** 页面组件 */
+  page: unknown;
+  /** 路由路径 */
+  path: string;
+  /** 页面/菜单名称 */
+  name: string;
+  /** 菜单图标 */
+  icon?: string;
+  /** 是否需要认证 */
+  auth?: boolean;
+  /** 菜单顺序 */
+  order?: number;
+  /** 菜单隐藏 */
+  hidden?: boolean;
+  /** 子页面配置 */
+  children?: PageConfig[];
+}
 
 /**
  * 动态导入布局组件
@@ -31,175 +44,134 @@ const NOT_FOUND_PATH = '../views/not-found/Index.vue';
 const AdminLayout = () => import('../layouts/AdminLayout.vue');
 
 /**
- * 403 和 404 页面（直接静态导入）
+ * 403 和 404 页面
  */
 const ForbiddenPage = () => import('../views/forbidden/Index.vue');
-const NotFoundPage = () => import(NOT_FOUND_PATH);
+const NotFoundPage = () => import('../views/not-found/Index.vue');
 
 /**
- * 业务菜单项接口 - 业务方只需要定义这个简单结构
+ * 自动扫描 views 目录下所有 index.ts / index.tsx 配置文件
+ * 使用 eager: true 直接读取配置内容
  */
-export interface BusinessMenuItem {
-  /** 路由名称/标识 */
-  name: string;
-  /** 页面标题 */
-  title: string;
-  /** 菜单图标 */
-  icon?: string;
-  /** 子菜单 */
-  children?: BusinessMenuItem[];
-  /** 路由路径（可选，不传则用 name 生成） */
-  path?: string;
-}
+const pageConfigs = import.meta.glob(
+  '../views/**/index.{ts,tsx}',
+  { eager: true, import: 'default' }
+);
 
 /**
- * 获取页面组件的加载函数
- * @param dirName - views 下的目录路径（如 '/dashboard', '/system/authority/node'）
- * @returns 组件加载函数，找不到则返回 404 页面
+ * 将扫描结果转换为路由配置
  */
-function getViewComponent(dirName: string) {
-  const basePath = `../views${dirName}/`;
+function buildRoutesFromConfigs(): RouteRecordRaw[] {
+  const configMap = new Map<string, PageConfig>();
 
-  // 按优先级查找：Index.vue > index.ts > index.tsx
-  const componentPath1 = `${basePath}Index.vue`;
-  const componentPath2 = `${basePath}index.ts`;
-  const componentPath3 = `${basePath}index.tsx`;
+  // 1. 收集所有配置
+  for (const [path, config] of Object.entries(pageConfigs)) {
+    // 跳过 404 和 forbidden 页面（它们有特殊处理）
+    if (path.includes('/not-found/') || path.includes('/forbidden/')) {
+      continue;
+    }
 
-  if (viewModules[componentPath1]) {
-    return viewModules[componentPath1];
-  }
-  if (viewModules[componentPath2]) {
-    return viewModules[componentPath2];
-  }
-  if (viewModules[componentPath3]) {
-    return viewModules[componentPath3];
+    // 从路径提取相对路径
+    const relativePath = path
+      .replace('../views/', '')
+      .replace('/index.ts', '')
+      .replace('/index.tsx', '');
+
+    configMap.set(relativePath, config as PageConfig);
   }
 
-  // 找不到文件，返回 404 页面
-  return () => import(NOT_FOUND_PATH);
-}
+  // 2. 按层级组织路由
+  const routeMap = new Map<string, RouteRecordRaw>();
 
-/**
- * 将路径转换为驼峰命名
- * @param path - 路径字符串
- * @returns 驼峰命名字符串
- */
-function pathToCamelCase(path: string): string {
-  return path
-    .replace(/^\//, '')
-    .split('/')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-}
+  for (const [relativePath, config] of configMap.entries()) {
+    const segments = relativePath.split('/').filter(Boolean);
+    const fullPath = '/' + segments.join('/');
 
-/**
- * 将业务菜单树转换为路由配置
- * @param menuTree - 业务菜单树
- * @param parentPath - 父级路径前缀
- * @returns 路由配置数组
- */
-export function menuTreeToRoutes(
-  menuTree: BusinessMenuItem[],
-  parentPath: string = ''
-): RouteRecordRaw[] {
-  const routes: RouteRecordRaw[] = [];
+    // 创建路由
+    const route: RouteRecordRaw = {
+      path: segments[segments.length - 1] || '',
+      name: `Route_${segments.join('_')}` || 'Root',
+      component: config.page as RouteRecordRaw['component'],
+      meta: {
+        title: config.name,
+        menuLabel: config.name,
+        menuIcon: config.icon,
+        menuOrder: config.order ?? 50,
+        requiresAuth: config.auth ?? true,
+        hidden: config.hidden,
+      },
+    } as RouteRecordRaw;
 
-  for (const item of menuTree) {
-    // 生成路径：如果有 path 则使用，否则用 name 生成
-    const path = item.path || `/${item.name}`;
-    const fullPath = parentPath + path;
+    routeMap.set(fullPath, route);
+  }
 
-    // 判断是否有子菜单
-    const hasChildren = item.children && item.children.length > 0;
+  // 3. 构建树形结构
+  const rootRoutes: RouteRecordRaw[] = [];
 
-    if (hasChildren) {
-      // 有子菜单：递归处理子节点
-      const children = menuTreeToRoutes(
-        item.children as BusinessMenuItem[],
-        `${fullPath}/`
-      );
+  for (const [fullPath, route] of routeMap.entries()) {
+    const parentPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
 
-      // 获取第一个子节点的路径用于 redirect
-      const firstChildPath = children[0]?.path || '';
-
-      const route: RouteRecordRaw = {
-        path: item.name,
-        name: `Route${pathToCamelCase(fullPath)}`,
-        redirect: `${item.name}/${firstChildPath}`,
-        children,
-        meta: {
-          title: item.title,
-          menuLabel: item.title,
-          menuIcon: item.icon,
-          requiresAuth: true,
-        },
-      };
-      routes.push(route);
+    if (!parentPath) {
+      // 根级路由
+      rootRoutes.push(route);
     } else {
-      // 叶子节点：加载对应页面组件
-      const route: RouteRecordRaw = {
-        path: fullPath.replace(/^\//, ''),
-        name: `Route${pathToCamelCase(fullPath)}`,
-        component: getViewComponent(fullPath),
-        meta: {
-          title: item.title,
-          menuLabel: item.title,
-          menuIcon: item.icon,
-          requiresAuth: true,
-        },
-      };
-      routes.push(route);
+      // 子路由，找到父路由并添加
+      const parentRoute = routeMap.get(parentPath);
+      if (parentRoute) {
+        if (!parentRoute.children) {
+          parentRoute.children = [];
+        }
+        parentRoute.children.push(route);
+
+        // 如果父路由没有 component，设置为 redirect
+        if (!parentRoute.component && !parentRoute.redirect) {
+          parentRoute.redirect = fullPath;
+        }
+      } else {
+        rootRoutes.push(route);
+      }
     }
   }
 
-  return routes;
+  return rootRoutes;
 }
 
 /**
  * 创建基础管理后台路由的选项接口。
  */
 export interface CreateBaseAdminRoutesOptions {
-  /** 业务菜单树配置 */
-  menus?: BusinessMenuItem[];
+  /** 额外路由配置（可选） */
+  extraRoutes?: RouteRecordRaw[];
 }
 
 /**
  * 创建基础管理后台路由配置。
- * @param options 路由配置选项。
- * @returns 路由配置数组。
  */
-export function createBaseAdminRoutes(options: CreateBaseAdminRoutesOptions = {}): RouteRecordRaw[] {
-  // 将业务菜单树转换为路由
-  const businessRoutes = options.menus
-    ? menuTreeToRoutes(options.menus)
-    : [];
+export function createBaseAdminRoutes(
+  options: CreateBaseAdminRoutesOptions = {}
+): RouteRecordRaw[] {
+  // 自动扫描生成的路由
+  const autoRoutes = buildRoutesFromConfigs();
+
+  // 合并额外路由
+  const allRoutes = options.extraRoutes
+    ? [...autoRoutes, ...options.extraRoutes]
+    : autoRoutes;
 
   const baseChildren: RouteRecordRaw[] = [
     {
       path: '',
       redirect: '/dashboard',
     },
-    {
-      path: 'dashboard',
-      name: 'AdminDashboard',
-      component: getViewComponent('/dashboard'),
-      meta: {
-        title: '首页',
-        menuLabel: '首页',
-        menuIcon: 'DataBoard',
-        menuOrder: 1,
-        affix: true,
-      },
-    },
-    // 注入业务路由
-    ...businessRoutes,
+    // 注入自动扫描的路由
+    ...allRoutes,
   ];
 
   return [
     {
       path: '/login',
       name: 'AdminLogin',
-      component: getViewComponent('/login'),
+      component: () => import('../views/login/Index.vue'),
       meta: {
         title: '登录',
         menu: false,

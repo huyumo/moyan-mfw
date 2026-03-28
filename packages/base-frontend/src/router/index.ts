@@ -3,7 +3,7 @@
  */
 
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router, type RouterHistory } from 'vue-router';
-import { createBaseAdminRoutes, type BusinessMenuItem } from './routes';
+import { createBaseAdminRoutes } from './routes';
 
 /**
  * 本地存储中的认证令牌键名。
@@ -20,8 +20,6 @@ export interface CreateBaseAdminRouterOptions {
   base?: string;
   /** 完整路由配置 */
   routes?: RouteRecordRaw[];
-  /** 业务菜单树配置 */
-  menus?: BusinessMenuItem[];
   /** 页面标题后缀 */
   title?: string;
 }
@@ -57,7 +55,7 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
  * @returns 可直接挂载到应用的路由实例。
  */
 export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
-  const resolvedRoutes = options.routes ?? createBaseAdminRoutes({ menus: options.menus });
+  const resolvedRoutes = options.routes ?? createBaseAdminRoutes();
 
   const router = createRouter({
     history: options.history ?? createWebHistory(options.base),

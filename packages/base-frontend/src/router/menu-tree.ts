@@ -2,8 +2,8 @@
  * @fileoverview 业务路由菜单树构建工具。
  */
 
+import type { RouteRecordRaw } from 'vue-router';
 import type { SideMenuItem } from '../types/layout-types';
-import type { BusinessMenuItem } from './routes';
 
 /**
  * 菜单构建上下文。
@@ -42,34 +42,63 @@ function resolveAbsolutePath(parentPath: string, currentPath: string): string {
 }
 
 /**
- * 从业务菜单树转换为 SideMenuItem 树
+ * 从路由配置构建菜单树。
  */
 export function createMenuTreeFromRoutes(
-  menus: BusinessMenuItem[],
+  routes: RouteRecordRaw[],
   context: MenuBuildContext
 ): SideMenuItem[] {
   const orderedMenus: OrderedMenuItem[] = [];
 
-  for (const item of menus) {
-    const path = item.path || `/${item.name}`;
-    const absolutePath = resolveAbsolutePath(context.parentPath, path);
+  for (const route of routes) {
+    const meta = (route.meta ?? {}) as Record<string, unknown>;
 
-    // 递归处理子菜单
-    const children = item.children && item.children.length > 0
-      ? createMenuTreeFromRoutes(item.children, { parentPath: absolutePath })
-      : [];
+    // 跳过隐藏菜单
+    if (meta.menu === false || meta.hidden === true) {
+      continue;
+    }
+
+    const routePath = typeof route.path === 'string' ? route.path : '';
+    const absolutePath = resolveAbsolutePath(context.parentPath, routePath);
+    const children = route.children ? createMenuTreeFromRoutes(route.children, { parentPath: absolutePath }) : [];
+
+    // 获取菜单标签
+    const menuLabel =
+      typeof meta.menuLabel === 'string'
+        ? meta.menuLabel
+        : typeof meta.title === 'string'
+        ? meta.title
+        : typeof route.name === 'string'
+        ? route.name
+        : '';
+
+    if (!menuLabel) {
+      continue;
+    }
+
+    // 生成菜单项
+    const menuKey =
+      typeof meta.menuKey === 'string'
+        ? meta.menuKey
+        : typeof route.name === 'string'
+        ? route.name
+        : absolutePath;
 
     orderedMenus.push({
-      key: `menu-${item.name}`,
-      label: item.title,
+      key: menuKey,
+      label: String(menuLabel),
       to: absolutePath,
-      icon: item.icon,
-      order: 50,
+      icon: typeof meta.menuIcon === 'string' ? meta.menuIcon : undefined,
+      badge: typeof meta.menuBadge === 'string' ? meta.menuBadge : undefined,
+      order: typeof meta.menuOrder === 'number' ? meta.menuOrder : 50,
       children: children.length > 0 ? children : undefined,
     });
   }
 
-  return orderedMenus.map(({ order: _order, ...menu }) => menu);
+  // 按 order 排序
+  return orderedMenus
+    .sort((a, b) => (a.order ?? 50) - (b.order ?? 50))
+    .map(({ order: _order, ...menu }) => menu);
 }
 
 /**
