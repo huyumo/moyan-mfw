@@ -9,7 +9,7 @@ import { businessThemes } from './business/themes';
 
 // 创建并启动管理后台应用
 const admin = createBaseAdminApp({
-  title: '墨研前端演示',
+  title: '墨焱前端演示',
   businessRoutes,
   themes: businessThemes,
   defaultTheme: 'sunset',
@@ -19,7 +19,7 @@ const admin = createBaseAdminApp({
     isDark: false,
   },
   navigation: {
-    brandName: '墨研管理后台',
+    brandName: '墨焱管理后台',
     brandTagline: '业务演示应用',
     homePath: '/dashboard',
   },
