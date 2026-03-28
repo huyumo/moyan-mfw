@@ -1,41 +1,57 @@
 # 基础设施文档变更日志
 
-> 版本：2.6.0 | 最后更新：2026-03-28
+> 版本：2.7.0 | 最后更新：2026-03-28
 
 ---
 
-## [2.6.0] - 2026-03-28
+## [2.7.0] - 2026-03-28
 
 ### 新增
 
-- **PC 权限同步策略优化**
-  - 采用懒清理策略：同步时不级联清理关联数据
-  - 读取时过滤：连表查询 `sys_permission`，过滤掉不存在的 `permCode`
-  - 配置时清理：保存时自动过滤掉无效的 `permCode` 和 `pcAction`
-  - 可选定时任务：定期清理孤立的权限池和角色权限配置
+- **位运算权限设计 (v4.0)**
+  - 移除 `pcAction` JSON 字段，改用 `permissionValue: bigint` 位运算存储
+  - 定义全局权限位枚举 `Perm`：ADD(1)、EDIT(2)、DELETE(4)、EXPORT(8)、IMPORT(16)、VIEW(32)、APPROVE(64)、REJECT(128)、PUBLISH(256)、ARCHIVE(512)
+  - 不存储 `permissionDesc`，通过 `PermDescMap` 映射表动态生成描述
+  - 支持 PC 和 NORMAL 权限统一使用位运算存储
 
 ### 更新
 
-- **PC 权限管理页面文档** (`pages/pc-permission-management.md`)
-  - 更新"同步流程"章节，说明懒清理策略
-  - 更新"API 调用"章节，添加同步逻辑说明和差异类型表
-  - 新增"同步策略详解"章节，包含：
-    - 懒清理策略核心思想
-    - 读取时过滤的代码示例
-    - 配置时清理的代码示例
-    - 定时清理孤立配置的定时任务示例
+- **核心概念文档** (`core/permissions.md`)
+  - 新增 5.1 节"权限位定义（全局）"，包含 `Perm` 枚举和 `PermDescMap` 映射表
+  - 更新 5.2 节"前端按钮/菜单显示"，添加位运算权限检查函数
+  - 更新 5.3 节"后端接口权限验证"，使用 `perm` 参数替代 `pcAction`
+  - 更新 5.4 节"验证流程"，添加位运算验证流程图
+  - 更新第 6 节"关键业务规则"，添加位运算公式和说明
+
+- **数据库实体设计** (`database/database-entities-design.md`)
+  - `PermissionEntity`: 移除 `pcAction` 字段，新增 `permissionValue: bigint`
+  - `RolePermissionEntity`: 移除 `pcAction` 字段，新增 `permissionValue: bigint`
+  - `AppTypePermissionEntity`: 移除 `pcAction` 字段，新增 `permissionValue: bigint`
+
+### 位运算公式
+
+| 操作 | 公式 | 说明 |
+|------|------|------|
+| 合并权限 | `a \| b` | 取并集 |
+| 验证单个权限 | `(value & Perm.ADD) !== 0n` | 是否有 ADD 权限 |
+| 验证多个权限 (OR) | `(value & (a \| b)) !== 0n` | 是否有 a 或 b 权限 |
+| 验证多个权限 (AND) | `(value & (a \| b)) === (a \| b)` | 是否同时有 a 和 b 权限 |
+| 移除权限 | `value & ~Perm.DELETE` | 移除 DELETE 权限 |
+| 添加权限 | `value \| Perm.ADD` | 添加 ADD 权限 |
 
 ### 验收结果
 
 | 验收项 | 状态 |
 |--------|------|
-| PC 权限同步策略文档完整 | ✅ |
-| 懒清理策略说明清晰 | ✅ |
-| 代码示例完整可参考 | ✅ |
+| 位运算权限设计文档完整 | ✅ |
+| 全局权限位枚举定义清晰 | ✅ |
+| 前端权限检查函数示例完整 | ✅ |
+| 后端权限验证示例完整 | ✅ |
+| 数据库实体设计更新 | ✅ |
 
 ---
 
-## [2.5.0] - 2026-03-28
+## [2.6.0] - 2026-03-28
 
 ### 修复
 

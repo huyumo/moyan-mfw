@@ -172,7 +172,7 @@ class PermissionEntity {
   isCache!: number;                                         // 是否缓存：1-是 0-否 (tinyint(1), default 1)
   showMode!: ShowMode;                                      // 显示模式 (enum: NORMAL/DEV)
   permStatus!: number;                                      // 状态：1-启用 0-禁用 (tinyint(1), default 1)
-  pcAction?: Array<{name: string, permCode: string}>;       // PC 页面下的操作权限（按钮）(JSON)
+  permissionValue!: bigint;                                 // 位运算权限值 (bigint, v4.0 新增)
   createAt!: Date;                                          // 创建时间 (datetime(3))
   updateAt?: Date;                                          // 更新时间 (datetime(3))
 }
@@ -181,6 +181,10 @@ class PermissionEntity {
 **字段变更说明 (v3.0)**:
 - `routePath`: 新增字段，用于标记权限节点来源的路由路径，同步功能使用
 - `isAutoSync`: 新增字段，为 1 时表示该节点由路由同步生成，节点结构不可编辑
+
+**字段变更说明 (v4.0)**:
+- `permissionValue`: 新增字段，位运算存储权限值，替代 `pcAction` 字段
+- `pcAction`: 已移除，改用 `permissionValue` 使用位运算存储
 
 **枚举类型**:
 
@@ -280,11 +284,11 @@ class UserEntity {
 
 ```typescript
 class RolePermissionEntity {
-  id!: string;                                            // 主键 ID (UUID)
-  roleId!: string;                                        // 角色 ID (char(36), 外键)
-  permissionId!: string;                                  // 权限 ID (char(36), 外键)
-  pcAction?: Array<{name: string, permCode: string}>;     // 已勾选的操作权限（按钮）(JSON)
-  createAt!: Date;                                        // 创建时间 (datetime(3))
+  id!: string;                    // 主键 ID (UUID)
+  roleId!: string;                // 角色 ID (char(36), 外键)
+  permissionId!: string;          // 权限 ID (char(36), 外键)
+  permissionValue!: bigint;       // 位运算权限值 (bigint, v4.0 新增)
+  createAt!: Date;                // 创建时间 (datetime(3))
 }
 ```
 
@@ -294,8 +298,9 @@ class RolePermissionEntity {
 - `uk_role_permission` (roleId + permissionId, 唯一)
 
 **业务规则**:
-- `pcAction` 存储角色对该权限已勾选的操作权限子集
-- `pcAction` 的数据来源必须是对应权限在权限池中的 `pcAction` 配置
+- `permissionValue` 存储角色对该权限已勾选的操作权限子集
+- `permissionValue` 必须是对应权限在权限池中 `permissionValue` 的子集（`(roleValue & poolValue) === roleValue`）
+- v4.0 起使用位运算替代 pcAction JSON 存储
 
 ---
 
@@ -307,11 +312,11 @@ class RolePermissionEntity {
 
 ```typescript
 class AppTypePermissionEntity {
-  id!: string;                                            // 主键 ID (UUID)
-  appTypeId!: string;                                     // 应用类型 ID (char(36), 外键)
-  permissionId!: string;                                  // 权限 ID (char(36), 外键)
-  pcAction?: Array<{name: string, permCode: string}>;     // 选中的 PC 操作权限（按钮）(JSON)
-  createAt!: Date;                                        // 创建时间 (datetime(3))
+  id!: string;                    // 主键 ID (UUID)
+  appTypeId!: string;             // 应用类型 ID (char(36), 外键)
+  permissionId!: string;          // 权限 ID (char(36), 外键)
+  permissionValue!: bigint;       // 位运算权限值 (bigint, v4.0 新增)
+  createAt!: Date;                // 创建时间 (datetime(3))
 }
 ```
 
@@ -320,16 +325,10 @@ class AppTypePermissionEntity {
 - `idx_permission_id` (permissionId)
 - `uk_app_type_permission` (appTypeId + permissionId, 唯一)
 
-**JSON 字段结构**:
-
-```typescript
-// pcAction: {name, permCode}[] - PC 操作权限配置（子集）
-```
-
 **业务规则**:
 - 权限池通过 `appTypeId` 进行隔离，不同应用类型的权限池相互独立
 - 角色权限只能从所属应用类型的权限池中选择
-- `pcAction` 是 `Permission.pcAction` 的子集
+- `permissionValue` 是对应权限在 `Permission.permissionValue` 的子集（`(poolValue & permValue) === poolValue`）
 
 ---
 
