@@ -76,7 +76,7 @@ ROOT (MENU)
 
 | 表名 | 字段 | 类型 | 说明 |
 |------|------|------|------|
-| `sys_permission` | `permissionValue` | bigint | 权限定义的操作集合（位运算值） |
+| `sys_permission` | `permissionValue` | bigint | 权限定义的操作集合（位运算值），适用于 PC 和普通权限 |
 | `sys_app_type_permission` | `permissionValue` | bigint | 权限池中的操作子集（位运算值） |
 | `sys_role_permission` | `permissionValue` | bigint | 角色分配的操作子集（位运算值） |
 
@@ -88,6 +88,10 @@ ROOT (MENU)
 | ADD \| EDIT | 3n | 00011 | 新增 + 编辑 |
 | ADD \| EDIT \| DELETE | 7n | 00111 | 新增 + 编辑 + 删除 |
 | ADD \| EXPORT | 9n | 01001 | 新增 + 导出 |
+
+**适用范围**:
+- PC 权限（`PermissionType=PC`）：页面级操作权限，如新增、编辑、删除
+- 普通权限（`PermissionType=NORMAL`）：标签级操作权限，同样使用位运算存储
 
 ### 3.2 API 请求体结构
 

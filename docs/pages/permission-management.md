@@ -101,7 +101,9 @@ ROOT (MENU)
 - `NodeType.TAG` 的 `parentId` 必须指向 `NodeType.MENU` 类型
 - 根节点只能创建 `NodeType.MENU` 类型
 - 删除节点时级联删除所有子节点
-- **注意**: 本文档不涉及 `permissionValue` 配置，PC 权限的 permissionValue 配置请参考 [PC 权限管理页面](./pc-permission-management.md)
+- **注意**: PC 权限和普通权限都支持 `permissionValue` 位运算权限值
+  - PC 权限的 `permissionValue` 配置参考 [PC 权限管理页面](./pc-permission-management.md)
+  - 普通权限的 `permissionValue` 可在此页面配置
 
 ---
 
@@ -132,16 +134,16 @@ enum ShowMode {
 | PermissionType | NodeType | 说明 |
 |----------------|----------|------|
 | PC | MENU | PC 菜单/目录 |
-| PC | PAGE | PC 页面权限（可包含 permissionValue） |
+| PC | PAGE | PC 页面权限（支持 permissionValue） |
 | NORMAL | MENU | 普通权限目录 |
-| NORMAL | TAG | 普通权限（标签） |
+| NORMAL | TAG | 普通权限标签（支持 permissionValue） |
 
 **说明**:
 - `NodeType.MENU` 可以与所有 `PermissionType` 组合使用，作为目录节点
 - 2 种 `PermissionType` 类型的权限都可以渲染为树形结构的数据
 - 树形结构中，`MENU` 节点作为目录/分组，`PAGE/TAG` 节点作为叶子节点
-- `PC` 权限类型用于 PC 后台管理系统的菜单和页面权限
-- `NORMAL` 权限类型通常用于移动端、非后台管理的程序
+- `permissionValue` 字段同时适用于 PC 权限和普通权限
+- PC 权限和普通权限的区别在于来源方式：PC 权限通过路由同步生成，普通权限通过手动添加
 
 ### 权限编码
 
