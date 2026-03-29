@@ -1,0 +1,78 @@
+/**
+ * @fileoverview MfwUserPicker 用户选择器组件样式
+ */
+
+.mfw-user-picker {
+  width: 100%;
+
+  &__dropdown {
+    padding: 8px;
+    min-width: 250px;
+  }
+
+  &__department-filter {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--el-border-color-lighter);
+    margin-bottom: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  &__list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  &__item {
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color var(--el-transition-duration-fast);
+
+    &:hover {
+      background-color: var(--el-fill-color-light);
+    }
+
+    &.is-disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  &__avatar {
+    flex-shrink: 0;
+  }
+
+  &__name {
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  &__info {
+    color: var(--el-text-color-secondary);
+    font-size: 12px;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tag {
+    margin-right: 6px;
+  }
+}
+
+.mfw-tree-node {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 4px 0;
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

@@ -13,3 +13,6 @@ export * from './router';
 export * from './layouts';
 export * from './config/layout-defaults';
 export * from './types/layout-types';
+
+// 组件库导出
+export * from './components';

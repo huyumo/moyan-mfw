@@ -75,9 +75,10 @@ async function login(page: Page) {
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
 
-  await page.locator('input[type="text"]').fill('admin');
-  await page.locator('input[type="password"]').fill('admin');
-  await page.locator('button.mfw-login-submit').click();
+  // 使用更具体的选择器 - 通过 placeholder 或 label 定位
+  await page.getByPlaceholder('请输入用户名').first().fill('admin');
+  await page.getByPlaceholder('请输入密码').first().fill('admin');
+  await page.locator('button.mfw-login-submit').first().click();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(2000);
 }

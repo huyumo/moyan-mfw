@@ -4,7 +4,7 @@
   "description": "Moyan 后台管理 - 业务前端应用",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "pnpm run typecheck:vue && vite",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck:vue": "vue-tsc --noEmit -p tsconfig.json"

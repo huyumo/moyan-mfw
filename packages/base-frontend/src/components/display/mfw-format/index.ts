@@ -28,6 +28,8 @@
  * ```
  */
 
+import './style.scss';
+
 import type { Plugin } from 'vue';
 import MfwDateFormat from './date-format';
 import MfwImageFormat from './image-format';

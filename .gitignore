@@ -1,3 +1,11 @@
 node_modules
 dist
 docs/.vitepress/
+
+# Test artifacts
+test-results/
+playwright-report/
+packages/*/test-results/
+
+# Claude worktrees
+.claude/worktrees/

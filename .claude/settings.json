@@ -1,82 +1,22 @@
 {
   "permissions": {
     "allow": [
-      "Bash(powershell -Command \"Stop-Process -Name ''python'' -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Remove-Item -Path ''e:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/_book'' -Recurse -Force\")",
-      "Read(//c/Users/16898/AppData/Local/Temp/claude/e--Moyan-moyan-mfw-workspace-workspace04-moyan-mfw/e19d4ec8-b57a-431e-b4af-8c1d7201f93a/tasks/**)",
-      "Bash(npm install:*)",
-      "Bash(npm run:*)",
-      "Bash(grep -l Mermaid docs/.vitepress/dist/assets/*.js)",
-      "Bash(grep -o vitepress-plugin-mermaid docs/.vitepress/dist/assets/chunks/*.js)",
-      "Bash(grep 'mermaid' docs/.vitepress/dist/assets/chunks/framework*.js)",
-      "Bash(grep -o Mermaid docs/.vitepress/dist/assets/chunks/*.js)",
-      "Bash(grep -r Mermaid docs/.vitepress/dist/assets/*.js)",
-      "Bash(git reset:*)",
-      "Bash(git commit:*)",
-      "Bash(git rm:*)",
-      "Bash(grep -o 'mermaid' docs/.vitepress/dist/assets/*.js)",
-      "Bash(grep -o 'import.*mermaid' docs/.vitepress/dist/assets/*.js)",
-      "Bash(grep -l 'from.*mermaid' docs/.vitepress/dist/assets/chunks/*.js)",
-      "Bash(grep mermaid:*)",
-      "Bash(ls docs/.vitepress/dist/assets/*.js)",
-      "Bash(grep -l \"Mermaid\\\\|mermaid\" docs/.vitepress/dist/assets/*.js)",
-      "Bash(find docs/.vitepress/dist -name *.js -exec grep -l \"initialize.*mermaid\\\\|mermaid\\\\.run\" {})",
-      "Bash(2)",
-      "Bash(xargs grep:*)",
-      "Bash(grep -o \"mermaid\\\\.run\\\\|mermaid\\\\.initialize\" docs/.vitepress/dist/assets/chunks/theme*.js)",
-      "Bash(cat docs/.vitepress/dist/assets/chunks/theme*.js)",
-      "Bash(grep -o from.*theme docs/.vitepress/dist/assets/chunks/framework*.js)",
-      "Bash(findstr :5177)",
-      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/database/**)",
-      "Skill(update-config)",
-      "Skill(update-config:*)",
-      "Bash(git:*)",
-      "Bash(echo:*)",
-      "Bash(tr:*)",
-      "Bash(head:*)",
-      "Edit(.claude/**)",
-      "Write(.claude/**)",
-      "Bash(mv docs/tracking/COMPREHENSIVE-REVIEW-REPORT.md .claude/team/archive/)",
-      "Bash(mv docs/tracking/IMPROVEMENT-ACTION-PLAN.md .claude/team/archive/)",
-      "Bash(mv docs/tracking/PM-RECOMMENDATIONS.md .claude/team/archive/)",
-      "Bash(mv docs/tracking/REVIEW-REPORT.md .claude/team/archive/)",
-      "Bash(mv docs/tracking/PROJECT-DELIVERY-REPORT.md .claude/team/archive/)",
-      "Read(//c/Users/16898/AppData/Local/Temp/claude/e--Moyan-moyan-mfw-workspace-workspace04-moyan-mfw/6f7081fd-9154-4c11-8a6e-a19e37b4f53a/tasks/**)",
       "Bash(pnpm run:*)",
-      "Bash(npm --version)",
-      "Read(//e/Moyan/moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/packages/base-frontend/**)",
-      "Bash(pnpm install:*)",
-      "Bash(netstat -ano)",
-      "Bash(findstr :5173)",
-      "Bash(taskkill /F /PID 15064)",
-      "Bash(taskkill /PID 15064 /F)",
-      "Bash(kill -9 15064)",
-      "Bash(curl -s http://localhost:5173/)",
-      "Bash(curl -s http://localhost:5173/src/main.ts)",
-      "Bash(find backend:*)",
-      "Bash(curl -s -L \"http://localhost:5173/login\")",
-      "Bash(curl -s http://localhost:5173)",
-      "Bash(curl -s \"http://localhost:5173/src/router.ts\")",
-      "Bash(dir /b *.md)",
       "Read(//e/YunYi/网约车自选小程序/代码/admin/**)",
-      "Bash(pnpm --filter moyan-mfw-base-frontend build)"
+      "Bash(pnpm install:*)",
+      "Bash(npx playwright:*)",
+      "Bash(curl -s http://127.0.0.1:5176/components-demo/page-scene)",
+      "Bash(curl -s \"http://127.0.0.1:5178/components-demo/page-scene\")",
+      "Bash(pnpm exec:*)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npx vite:*)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(pnpm test:e2e --project=chromium tests/e2e/examples/popup.spec.ts --grep \"should display popup demo page\")",
+      "Bash(pnpm --filter moyan-mfw-examples playwright test --project=chromium tests/e2e/examples/popup.spec.ts --grep \"should display Popup demo page\")"
     ],
     "additionalDirectories": [
-      "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",
-      "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team\\meetings"
-    ]
-  },
-  "hooks": {
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'if git diff --quiet && git diff --cached --quiet; then exit 0; fi; git add -A; if git diff --cached --quiet; then exit 0; fi; CHANGES=$(git diff --cached --name-only 2>/dev/null | head -5 | tr \"\\n\" \", \"); if [ -n \"$CHANGES\" ]; then git commit -m \"chore: auto-commit [$CHANGES]\" --no-verify 2>/dev/null && echo \"[auto-commit] changes committed\" || echo \"[auto-commit] commit skipped\"; fi' 2>/dev/null || true",
-            "timeout": 30,
-            "statusMessage": "自动提交变更..."
-          }
-        ]
-      }
+      "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude"
     ]
   }
 }

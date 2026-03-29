@@ -1,3 +1,5 @@
 ﻿packages:
   - 'packages/base-frontend'
+  - 'packages/component-demo'
   - 'frontend'
+  - 'examples'

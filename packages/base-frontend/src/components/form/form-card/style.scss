@@ -1,0 +1,9 @@
+/**
+ * @fileoverview MfwFormCard 样式
+ */
+
+.mfw-form-card {
+  padding: var(--el-card-padding, 20px);
+  background-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+}

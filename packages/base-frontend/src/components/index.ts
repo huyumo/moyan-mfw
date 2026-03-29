@@ -20,22 +20,25 @@
  */
 
 // 展示类组件
-export * from './display';
+export * from './display/mod';
 
-// 表单类组件（待开发）
-// export * from './form';
+// 反馈类组件
+export * from './feedback/mod';
 
-// 表格类组件（待开发）
-// export * from './table';
+// 上传类组件
+export * from './upload/mod';
 
-// 页面类组件（待开发）
-// export * from './page';
+// 表单类组件
+export * from './form/form-card/mod';
 
-// 弹窗类组件（待开发）
-// export * from './popup';
+// 表格类组件
+export * from './table/table-list/mod';
 
-// 上传类组件（待开发）
-// export * from './upload';
+// JSON 编辑器组件
+export * from './editor/mod';
 
-// 业务类组件（待开发）
-// export * from './business';
+// 页面类组件
+export * from './page/page-scene/mod';
+
+// 选择器类组件
+export * from './picker/mod';

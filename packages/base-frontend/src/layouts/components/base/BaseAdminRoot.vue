@@ -20,4 +20,9 @@
 -->
 <template>
   <router-view />
+  <mfw-popup-manager />
 </template>
+
+<script setup lang="ts">
+import { MfwPopupManager } from '../../../components';
+</script>

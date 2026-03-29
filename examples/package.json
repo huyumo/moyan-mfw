@@ -1,0 +1,25 @@
+{
+  "name": "moyan-mfw-examples",
+  "version": "1.0.0",
+  "description": "Moyan 后台管理 - 业务前端应用示例",
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm run typecheck:vue && vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck:vue": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "moyan-mfw-base-frontend": "workspace:*",
+    "element-plus": "^2.5.3",
+    "vue-router": "^4.2.5",
+    "@element-plus/icons-vue": "^2.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11",
+    "vue": "^3.4.15",
+    "@vitejs/plugin-vue": "^5.0.3",
+    "vue-tsc": "^2.1.10"
+  }
+}

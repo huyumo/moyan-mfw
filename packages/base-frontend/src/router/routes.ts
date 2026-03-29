@@ -265,6 +265,7 @@ export function createBaseAdminRoutes(
     ...allRoutes,
   ];
 
+  console.log(baseChildren);
   return [
     {
       path: '/login',

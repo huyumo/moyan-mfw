@@ -1,0 +1,30 @@
+/**
+ * @fileoverview MfwJsonEditor JSON 编辑器组件样式
+ */
+
+.mfw-json-editor {
+  position: relative;
+
+  &-toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  &-input {
+    &.is-error {
+      :deep(textarea) {
+        border-color: var(--el-color-danger);
+      }
+    }
+  }
+
+  &-error {
+    margin-top: 4px;
+    padding: 8px;
+    background-color: var(--el-color-danger-light-9);
+    color: var(--el-color-danger);
+    font-size: 12px;
+    border-radius: 4px;
+  }
+}

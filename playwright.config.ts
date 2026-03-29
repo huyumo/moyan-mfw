@@ -6,8 +6,8 @@
 
 import { defineConfig, devices } from '@playwright/test';
 
-const frontendPort = Number(process.env.E2E_FRONTEND_PORT || 5173);
-const frontendBaseURL = `http://127.0.0.1:${frontendPort}`;
+const examplesPort = Number(process.env.E2E_FRONTEND_PORT || 5174);
+const examplesBaseURL = `http://127.0.0.1:${examplesPort}`;
 
 /**
  * Playwright 测试配置。
@@ -20,14 +20,14 @@ export default defineConfig({
   },
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
-    baseURL: frontendBaseURL,
+    baseURL: examplesBaseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   webServer: {
-    command: `pnpm --filter moyan-frontend dev --host 127.0.0.1 --port ${frontendPort}`,
-    port: frontendPort,
+    command: `pnpm --filter moyan-mfw-examples dev --host 127.0.0.1 --port ${examplesPort}`,
+    port: examplesPort,
     reuseExistingServer: true,
     timeout: 60_000,
   },
