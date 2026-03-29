@@ -57,7 +57,8 @@
       "Bash(curl -s http://localhost:5173)",
       "Bash(curl -s \"http://localhost:5173/src/router.ts\")",
       "Bash(dir /b *.md)",
-      "Read(//e/YunYi/网约车自选小程序/代码/admin/**)"
+      "Read(//e/YunYi/网约车自选小程序/代码/admin/**)",
+      "Bash(pnpm --filter moyan-mfw-base-frontend build)"
     ],
     "additionalDirectories": [
       "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",

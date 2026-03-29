@@ -19,7 +19,23 @@
  * ```
  */
 
-// 通用组件导出
-// export { default as MfwButton } from './button/MfwButton.vue';
-// export { default as MfwDialog } from './dialog/MfwDialog.vue';
-// export { default as MfwTable } from './table/MfwTable.vue';
+// 展示类组件
+export * from './display';
+
+// 表单类组件（待开发）
+// export * from './form';
+
+// 表格类组件（待开发）
+// export * from './table';
+
+// 页面类组件（待开发）
+// export * from './page';
+
+// 弹窗类组件（待开发）
+// export * from './popup';
+
+// 上传类组件（待开发）
+// export * from './upload';
+
+// 业务类组件（待开发）
+// export * from './business';

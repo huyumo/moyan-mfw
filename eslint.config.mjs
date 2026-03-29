@@ -29,7 +29,10 @@ export default [
         parser: tseslint.parser,
         ecmaVersion: 'latest',
         sourceType: 'module',
-        extraFileExtensions: ['.vue'],
+        extraFileExtensions: ['.vue', '.tsx'],
+        ecmaFeatures: {
+          jsx: true,
+        },
       },
     },
     plugins: {
@@ -53,6 +56,16 @@ export default [
     files: ['**/*.ts', '**/*.tsx'],
     rules: {
       'max-lines': ['error', { max: 1000, skipBlankLines: true, skipComments: true }],
+    },
+  },
+  // TSX 组件规范
+  {
+    files: ['packages/base-frontend/src/components/**/*.tsx', 'packages/base-frontend/src/components/**/index.ts'],
+    rules: {
+      // 组件名必须使用 Mfw 前缀
+      'vue/multi-word-component-names': ['error', {
+        registeredComponents: ['MfwDateFormat', 'MfwImageFormat', 'MfwDictFormat', 'MfwTagFormat', 'MfwFormat']
+      }],
     },
   },
   {
