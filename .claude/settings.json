@@ -52,7 +52,10 @@
       "Bash(kill -9 15064)",
       "Bash(curl -s http://localhost:5173/)",
       "Bash(curl -s http://localhost:5173/src/main.ts)",
-      "Bash(find backend:*)"
+      "Bash(find backend:*)",
+      "Bash(curl -s -L \"http://localhost:5173/login\")",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(curl -s \"http://localhost:5173/src/router.ts\")"
     ],
     "additionalDirectories": [
       "e:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw\\.claude\\team",
