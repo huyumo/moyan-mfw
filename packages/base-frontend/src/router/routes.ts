@@ -17,6 +17,20 @@
 import type { RouteRecordRaw } from 'vue-router';
 
 /**
+ * 模块配置接口（用于菜单分组）
+ */
+export interface ModuleConfig {
+  /** 类型：module 表示模块分组 */
+  type?: 'module';
+  /** 模块/菜单名称 */
+  name: string;
+  /** 菜单图标 */
+  icon?: string;
+  /** 菜单顺序 */
+  order?: number;
+}
+
+/**
  * 页面配置接口
  */
 export interface PageConfig {
@@ -50,26 +64,38 @@ const ForbiddenPage = () => import('../views/forbidden/Index.vue');
 const NotFoundPage = () => import('../views/not-found/Index.vue');
 
 /**
- * 自动扫描 views 目录下所有 index.ts / index.tsx 配置文件
+ * 自动扫描 views 目录下所有 index.ts / index.tsx 配置文件（包括模块配置和页面配置）
  * 使用 eager: true 直接读取配置内容
  */
-const pageConfigs = import.meta.glob(
-  '../views/**/index.{ts,tsx}',
-  { eager: true, import: 'default' }
-);
+const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
+  eager: true,
+  import: 'default',
+});
 
 /**
- * 将扫描结果转换为路由配置
+ * 判断是否为模块配置
+ */
+function isModuleConfig(config: unknown): config is ModuleConfig {
+  return typeof config === 'object' && config !== null && (config as ModuleConfig).type === 'module';
+}
+
+/**
+ * 判断是否为页面配置
+ */
+function isPageConfig(config: unknown): config is PageConfig {
+  return typeof config === 'object' && config !== null && 'page' in config && 'path' in config && 'name' in config;
+}
+
+/**
+ * 从扫描结果构建路由配置
  */
 function buildRoutesFromConfigs(): RouteRecordRaw[] {
-  const configMap = new Map<string, PageConfig>();
+  // 1. 分离模块配置和页面配置
+  const moduleMap = new Map<string, ModuleConfig>();
+  const pageConfigs = new Map<string, PageConfig>();
 
-  // 1. 收集所有配置
-  for (const [path, config] of Object.entries(pageConfigs)) {
+  for (const [path, config] of Object.entries(allConfigs)) {
     // 跳过 404 和 forbidden 页面（它们有特殊处理）
-
-    // console.log('path:', path,config);
-
     if (path.includes('/not-found/') || path.includes('/forbidden/')) {
       continue;
     }
@@ -80,20 +106,31 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
       .replace('/index.ts', '')
       .replace('/index.tsx', '');
 
-    configMap.set(relativePath, config as PageConfig);
+    if (isModuleConfig(config)) {
+      // 模块配置存储在模块目录（如 business/index.ts）
+      moduleMap.set(relativePath, config);
+    } else if (isPageConfig(config)) {
+      // 页面配置存储在页面目录（如 business/orders/index.ts）
+      // 跳过只有 1 层的路径（如 business/index.ts 不是页面配置）
+      const segments = relativePath.split('/');
+      if (segments.length >= 2) {
+        pageConfigs.set(relativePath, config);
+      }
+    }
   }
-  console.log('configMap:', configMap);
 
   // 2. 按层级组织路由
   const routeMap = new Map<string, RouteRecordRaw>();
 
-  for (const [relativePath, config] of configMap.entries()) {
+  for (const [relativePath, config] of pageConfigs.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
-    const fullPath = '/' + segments.join('/');
+    // 子路由路径使用相对路径（只取最后一段）
+    // 例如：'business/orders' -> 'orders'
+    const path = segments[segments.length - 1] || '';
 
     // 创建路由
     const route: RouteRecordRaw = {
-      path: segments[segments.length - 1] || '',
+      path: path,
       name: `Route_${segments.join('_')}` || 'Root',
       component: config.page as RouteRecordRaw['component'],
       meta: {
@@ -106,16 +143,56 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
       },
     } as RouteRecordRaw;
 
-    routeMap.set(fullPath, route);
+    routeMap.set('/' + relativePath, route);
   }
 
-  // 3. 构建树形结构
-  const rootRoutes: RouteRecordRaw[] = [];
+  // 3. 为有页面配置的模块创建模块路由（作为菜单分组）
+  for (const [modulePath, moduleConfig] of moduleMap.entries()) {
+    // 检查该模块下是否有页面
+    const hasChildRoutes = Array.from(routeMap.keys()).some(key =>
+      key.startsWith('/' + modulePath + '/')
+    );
 
-  for (const [fullPath, route] of routeMap.entries()) {
+    if (hasChildRoutes) {
+      // 创建模块分组路由（使用空布局组件，用于渲染子路由）
+      const route: RouteRecordRaw = {
+        path: modulePath,
+        name: `Module_${modulePath}`,
+        component: () => import('../layouts/EmptyLayout.vue'),
+        redirect: () => {
+          // 找到该模块下的第一个子路由并跳转
+          const firstChildRoute = Array.from(routeMap.entries())
+            .find(([key]) => key.startsWith('/' + modulePath + '/'));
+          if (firstChildRoute) {
+            // 返回命名路由对象
+            const childRoute = firstChildRoute[1];
+            return {
+              name: childRoute.name,
+            };
+          }
+          return { path: '/404' };
+        },
+        meta: {
+          title: moduleConfig.name,
+          menuLabel: moduleConfig.name,
+          menuIcon: moduleConfig.icon,
+          menuOrder: moduleConfig.order ?? 50,
+          menu: true,
+        },
+      } as unknown as RouteRecordRaw;
+      routeMap.set('/' + modulePath, route);
+    }
+  }
+
+  // 4. 构建树形结构（按路径深度排序，确保先处理父路由）
+  const rootRoutes: RouteRecordRaw[] = [];
+  const sortedRoutes = Array.from(routeMap.entries())
+    .sort(([a], [b]) => a.split('/').length - b.split('/').length);
+
+  for (const [fullPath, route] of sortedRoutes) {
     const parentPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
 
-    if (!parentPath) {
+    if (!parentPath || parentPath === '/') {
       // 根级路由
       rootRoutes.push(route);
     } else {
