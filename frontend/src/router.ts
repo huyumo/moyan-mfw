@@ -135,13 +135,14 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
         path: modulePath,
         name: `Module_${modulePath}`,
         redirect: () => {
-          // 找到该模块下的第一个子路由并跳转
+          // 找到该模块下的第一个子路由并跳转（不带前导/）
           const firstChildRoute = Array.from(routeMap.entries())
             .find(([key]) => key.startsWith('/' + modulePath + '/'));
           if (firstChildRoute) {
-            return firstChildRoute[0];
+            // 返回不带前导/的路径，因为框架会再次处理
+            return firstChildRoute[0].substring(1);
           }
-          return '/404';
+          return '404';
         },
         meta: {
           title: moduleConfig.name,
@@ -183,6 +184,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
     }
   }
 
+  console.log(rootRoutes);
   return rootRoutes;
 }
 
