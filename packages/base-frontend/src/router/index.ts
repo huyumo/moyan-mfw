@@ -90,10 +90,23 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
               },
             },
             // 传入的业务路由，需要去除路径前导/以适配子路由
-            ...options.routes.map((route) => ({
-              ...route,
-              path: route.path.replace(/^\//, ''),
-            })),
+            // 同时处理 redirect 函数，确保返回正确的子路由路径
+            ...options.routes.map((route) => {
+              const newPath = route.path.replace(/^\//, '');
+
+              // 如果 redirect 是字符串且带前导/，需要转换为相对路径
+              if (typeof route.redirect === 'string' && route.redirect.startsWith('/')) {
+                return {
+                  ...route,
+                  path: newPath,
+                  redirect: route.redirect.replace(/^\//, ''),
+                };
+              }
+              return {
+                ...route,
+                path: newPath,
+              };
+            }),
           ],
         },
         {

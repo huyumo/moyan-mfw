@@ -101,8 +101,9 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
 
   for (const [relativePath, config] of pageConfigs.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
-    // 子路由路径不带前导/
-    const path = segments.join('/');
+    // 子路由路径使用相对路径（只取最后一段）
+    // 例如：'business/orders' -> 'orders'
+    const path = segments[segments.length - 1] || '';
 
     // 创建路由
     const route: RouteRecordRaw = {
@@ -119,7 +120,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
       },
     } as RouteRecordRaw;
 
-    routeMap.set('/' + path, route);
+    routeMap.set('/' + relativePath, route);
   }
 
   // 3. 为有页面配置的模块创建模块路由（作为菜单分组）
@@ -130,19 +131,23 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
     );
 
     if (hasChildRoutes) {
-      // 创建模块分组路由（没有 component，仅作为菜单分组）
+      // 创建模块分组路由（使用空布局组件，用于渲染子路由）
       const route: RouteRecordRaw = {
         path: modulePath,
         name: `Module_${modulePath}`,
+        component: () => import('../../packages/base-frontend/src/layouts/EmptyLayout.vue'),
         redirect: () => {
-          // 找到该模块下的第一个子路由并跳转（不带前导/）
+          // 找到该模块下的第一个子路由并跳转
           const firstChildRoute = Array.from(routeMap.entries())
             .find(([key]) => key.startsWith('/' + modulePath + '/'));
           if (firstChildRoute) {
-            // 返回不带前导/的路径，因为框架会再次处理
-            return firstChildRoute[0].substring(1);
+            // 返回命名路由对象
+            const childRoute = firstChildRoute[1];
+            return {
+              name: childRoute.name,
+            };
           }
-          return '404';
+          return { path: '/404' };
         },
         meta: {
           title: moduleConfig.name,
@@ -151,7 +156,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
           menuOrder: moduleConfig.order ?? 50,
           menu: true,
         },
-      } as RouteRecordRaw;
+      } as unknown as RouteRecordRaw;
       routeMap.set('/' + modulePath, route);
     }
   }
