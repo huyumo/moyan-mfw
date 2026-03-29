@@ -1,5 +1,7 @@
 /**
- * @fileoverview 路由配置 - 自动扫描模式。
+ * @fileoverview 路由配置工具模块。
+ *
+ * 提供路由扫描和构建的工具函数，业务项目可结合自身 views 目录结构使用。
  *
  * 路由页面加载规则：
  * 1. 页面组件必须存放在 src/views/ 目录下
@@ -53,56 +55,49 @@ export interface PageConfig {
 }
 
 /**
- * 动态导入布局组件
- */
-const AdminLayout = () => import('../layouts/AdminLayout.vue');
-
-/**
- * 403 和 404 页面
- */
-const ForbiddenPage = () => import('../views/forbidden/Index.vue');
-const NotFoundPage = () => import('../views/not-found/Index.vue');
-
-/**
- * 自动扫描 views 目录下所有 index.ts / index.tsx 配置文件（包括模块配置和页面配置）
- * 使用 eager: true 直接读取配置内容
- */
-const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-});
-
-/**
  * 判断是否为模块配置
  */
-function isModuleConfig(config: unknown): config is ModuleConfig {
+export function isModuleConfig(config: unknown): config is ModuleConfig {
   return typeof config === 'object' && config !== null && (config as ModuleConfig).type === 'module';
 }
 
 /**
  * 判断是否为页面配置
  */
-function isPageConfig(config: unknown): config is PageConfig {
+export function isPageConfig(config: unknown): config is PageConfig {
   return typeof config === 'object' && config !== null && 'page' in config && 'path' in config && 'name' in config;
 }
 
 /**
  * 从扫描结果构建路由配置
+ * @param allConfigs - import.meta.glob 扫描结果
+ * @param options - 选项
+ * @param options.skipPaths - 需要跳过的路径（如 '/not-found/', '/forbidden/'）
+ * @param options.minSegments - 页面配置所需的最小路径段数（默认 2，跳过只有 1 层的路径）
  */
-function buildRoutesFromConfigs(): RouteRecordRaw[] {
+export function buildRoutesFromConfigs(
+  allConfigs: Record<string, unknown>,
+  options: {
+    skipPaths?: string[];
+    minSegments?: number;
+  } = {}
+): RouteRecordRaw[] {
+  const { skipPaths = ['/not-found/', '/forbidden/'], minSegments = 2 } = options;
+
   // 1. 分离模块配置和页面配置
   const moduleMap = new Map<string, ModuleConfig>();
   const pageConfigs = new Map<string, PageConfig>();
 
   for (const [path, config] of Object.entries(allConfigs)) {
-    // 跳过 404 和 forbidden 页面（它们有特殊处理）
-    if (path.includes('/not-found/') || path.includes('/forbidden/')) {
+    // 跳过指定路径
+    if (skipPaths.some(skipPath => path.includes(skipPath))) {
       continue;
     }
 
     // 从路径提取相对路径
     const relativePath = path
       .replace('../views/', '')
+      .replace('./views/', '')
       .replace('/index.ts', '')
       .replace('/index.tsx', '');
 
@@ -113,7 +108,7 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
       // 页面配置存储在页面目录（如 business/orders/index.ts）
       // 跳过只有 1 层的路径（如 business/index.ts 不是页面配置）
       const segments = relativePath.split('/');
-      if (segments.length >= 2) {
+      if (segments.length >= minSegments) {
         pageConfigs.set(relativePath, config);
       }
     }
@@ -226,13 +221,35 @@ export interface CreateBaseAdminRoutesOptions {
 }
 
 /**
+ * 动态导入布局组件
+ */
+const AdminLayout = () => import('../layouts/AdminLayout.vue');
+
+/**
+ * 403 和 404 页面
+ */
+const ForbiddenPage = () => import('../views/forbidden/Index.vue');
+const NotFoundPage = () => import('../views/not-found/Index.vue');
+
+/**
+ * 基包内部使用：扫描基包自己的 views 目录构建路由
+ */
+function buildBasePackageRoutes(): RouteRecordRaw[] {
+  const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
+    eager: true,
+    import: 'default',
+  });
+  return buildRoutesFromConfigs(allConfigs);
+}
+
+/**
  * 创建基础管理后台路由配置。
  */
 export function createBaseAdminRoutes(
   options: CreateBaseAdminRoutesOptions = {}
 ): RouteRecordRaw[] {
-  // 自动扫描生成的路由
-  const autoRoutes = buildRoutesFromConfigs();
+  // 自动扫描生成的路由（基包自己的 views 目录）
+  const autoRoutes = buildBasePackageRoutes();
 
   // 合并额外路由
   const allRoutes = options.extraRoutes
