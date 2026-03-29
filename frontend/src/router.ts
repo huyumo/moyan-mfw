@@ -161,10 +161,12 @@ function buildRoutesFromConfigs(): RouteRecordRaw[] {
     }
   }
 
-  // 4. 构建树形结构
+  // 4. 构建树形结构（按路径深度排序，确保先处理父路由）
   const rootRoutes: RouteRecordRaw[] = [];
+  const sortedRoutes = Array.from(routeMap.entries())
+    .sort(([a], [b]) => a.split('/').length - b.split('/').length);
 
-  for (const [fullPath, route] of routeMap.entries()) {
+  for (const [fullPath, route] of sortedRoutes) {
     const parentPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
 
     if (!parentPath || parentPath === '/') {
