@@ -90,8 +90,8 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
     layoutStore.patchStyleConfig(options.layout);
   }
 
-  // 从路由配置生成菜单树
-  const businessMenuTree = createMenuTreeFromRoutes(router.getRoutes(), { parentPath: '/' });
+  // 从业务路由配置生成菜单树（保留嵌套结构）
+  const businessMenuTree = createMenuTreeFromRoutes(options.routes || [], { parentPath: '/' });
   const resolvedNavigation: Partial<AdminNavigationConfig> = {
     ...options.navigation,
   };
