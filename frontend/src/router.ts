@@ -9,13 +9,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import {
-  buildRoutesFromConfigs,
-  isModuleConfig,
-  isPageConfig,
-  type ModuleConfig,
-  type PageConfig,
-} from 'moyan-mfw-base-frontend';
+import { buildRoutesFromConfigs } from 'moyan-mfw-base-frontend';
 
 /**
  * 扫描所有配置文件（包括模块配置和页面配置）
@@ -36,6 +30,3 @@ export function createBusinessRoutes(): RouteRecordRaw[] {
  * 业务路由配置（默认导出）
  */
 export const businessRoutes: RouteRecordRaw[] = createBusinessRoutes();
-
-// 重新导出类型和工具函数
-export { isModuleConfig, isPageConfig, type ModuleConfig, type PageConfig };
