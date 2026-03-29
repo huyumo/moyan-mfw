@@ -1,6 +1,6 @@
 # API 调用规范
 
-> 状态：**已完成** | 版本：1.1.0
+> 状态：**已完成** | 版本：2.0.0
 
 ---
 
@@ -49,284 +49,515 @@ pnpm outdated moyan-api
 pnpm update moyan-api
 ```
 
-### 6.1.4 使用示例
+---
+
+## 6.2 API 类定义规范
+
+### 2.1 文件组织结构
+
+```
+src/apis/
+├── micro-system/           # 按微服务模块划分
+│   ├── index.ts            # API 类定义
+│   └── schemas.ts          # 类型定义
+├── micro-log/
+│   ├── index.ts
+│   └── schemas.ts
+└── ...
+```
+
+### 2.2 API 类结构
+
+每个 API 类继承自 `ApiCall<RequestType, ResponseType>`：
 
 ```typescript
-import { UserApi, OrderApi } from 'moyan-api';
+// src/apis/micro-system/index.ts
+import { ApiCall, MoMethod } from 'moyan-api'
+import type { User, DtoUserPagerRes } from './schemas'
 
-// 实例化 API 类
-const userApi = new UserApi();
+/**
+ * 用户模块->获取用户列表
+ */
+export class ApiUserList extends ApiCall<
+  {
+    page: number
+    limit: number
+    keyword?: string
+    status?: number
+  },
+  DtoUserPagerRes
+> {
+  path = '/sys/user/list'
+  method: MoMethod = 'GET'
+  auth = true
+}
+```
 
-// 调用 API 方法
-const users = await userApi.list();
-const user = await userApi.get(id);
+**属性说明：**
+
+| 属性 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `path` | `string` | ✅ | API 请求路径 |
+| `method` | `MoMethod` | ✅ | HTTP 方法：`'GET' | 'POST' | 'PUT' | 'DELETE'` |
+| `auth` | `boolean` | ✅ | 是否需要认证 |
+
+### 2.3 类型定义规范
+
+类型定义应放在 `schemas.ts` 文件中：
+
+```typescript
+// src/apis/micro-system/schemas.ts
+
+// 基础类型映射
+export type ObjectId = string
+export type int = number | string
+export type json = { [key: string]: any }
+export type datetime = Date | string
+export type array = Array<any>
+
+// 请求 DTO
+export type CreateUserDto = {
+  name: string       // 姓名
+  mobile?: string    // 手机号
+  password?: string  // 密码
+}
+
+// 响应 DTO
+export type User = {
+  id: number
+  name: string
+  mobile: string
+  avatar?: string
+  status: number     // 0:正常，1:删除，2:禁用
+  created: datetime
+  updated: datetime
+}
+
+// 分页响应
+export type DtoUserPagerRes = {
+  total: number
+  rows: Array<User>
+  page: number
+  limit: number
+}
 ```
 
 ---
 
-## 6.2 API 调用规范
+## 6.3 API 调用方式
 
-### 2.1 调用位置
+### 3.1 基础调用
 
-API 调用应该在 **Composables** 或 **页面组件** 中进行：
+```typescript
+import { ApiUserList } from '@/apis/micro-system'
+
+// GET 请求 - 参数通过 params 传递
+const result = await new ApiUserList({ params: { page: 1, limit: 20 } })
+
+// POST 请求 - 参数通过 data 传递
+const result = await new ApiUserCreate({ data: { name: '张三', mobile: '13800138000' } })
+
+// 带成功提示的调用
+const result = await new ApiUserDelete({
+  params: { id: 1 },
+  option: { hintSuccess: true }  // 成功后自动显示提示
+})
+```
+
+### 3.2 在页面组件中调用
 
 ```vue
-<script setup lang="ts">
-import { ref } from 'vue';
-import { UserApi } from 'moyan-api';
+<template>
+  <page-scene-v2 ref="pageScene">
+    <table-list
+      :tableColumn="tableColumn"
+      :pageRequest="pageRequest"
+      :tableRowHandle="tableRowHandle"
+      @edit="handleEdit"
+      @del="handleDel"
+    />
+  </page-scene-v2>
+</template>
 
-const users = ref([]);
-const loading = ref(false);
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
+import {
+  ApiUserList,
+  ApiUserDelete,
+  ApiUserEdit,
+  type User
+} from '@/apis/micro-system'
 
-const loadUsers = async () => {
-  loading.value = true;
-  try {
-    const api = new UserApi();
-    users.value = await api.list();
-  } finally {
-    loading.value = false;
+export default defineComponent({
+  setup() {
+    const pageScene = ref()
+
+    // 分页请求函数
+    const pageRequest = async (e: any) => {
+      return await new ApiUserList({ params: e })
+    }
+
+    // 编辑
+    const handleEdit = (scope: { row: User }) => {
+      console.log('编辑用户:', scope.row)
+    }
+
+    // 删除
+    const handleDel = async (scope: { row: User }) => {
+      await new ApiUserDelete({ params: { id: scope.row.id } })
+      pageScene.value?.doSearch() // 刷新列表
+    }
+
+    return {
+      pageScene,
+      pageRequest,
+      handleEdit,
+      handleDel
+    }
   }
-};
-
-onMounted(() => {
-  loadUsers();
-});
+})
 </script>
 ```
 
-### 2.2 封装为 Composable
-
-对于复杂的 API 调用，建议封装为 Composable：
+### 3.3 在 Composable 中调用
 
 ```typescript
-// composables/useUserList.ts
-import { ref } from 'vue';
-import { UserApi, type User } from 'moyan-api';
+// composables/useUser.ts
+import { ref } from 'vue'
+import { ApiUserList, ApiUserInfoFindOne, type User } from '@/apis/micro-system'
 
-export function useUserList() {
-  const loading = ref(false);
-  const list = ref<User[]>([]);
-  const total = ref(0);
+export function useUser() {
+  const loading = ref(false)
+  const userList = ref<User[]>([])
+  const currentUser = ref<User | null>(null)
 
-  const loadUsers = async (params?: { page?: number; size?: number }) => {
-    loading.value = true;
+  // 获取用户列表
+  const loadUsers = async (params: { page: number; limit: number }) => {
+    loading.value = true
     try {
-      const api = new UserApi();
-      const result = await api.list(params);
-      list.value = result.items;
-      total.value = result.total;
+      const result = await new ApiUserList({ params })
+      userList.value = result.rows
     } finally {
-      loading.value = false;
+      loading.value = false
     }
-  };
+  }
 
-  return { loading, list, total, loadUsers };
+  // 获取用户详情
+  const loadUserDetail = async (id: number) => {
+    const result = await new ApiUserInfoFindOne({ params: { id } })
+    currentUser.value = result
+    return result
+  }
+
+  return {
+    loading,
+    userList,
+    currentUser,
+    loadUsers,
+    loadUserDetail
+  }
 }
 ```
 
-### 2.3 在 Pinia Store 中使用
+### 3.4 在 Pinia Store 中调用
 
 ```typescript
 // store/user-store.ts
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { UserApi } from 'moyan-api';
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import { ApiUserInfoFindSelf, type User } from '@/apis/micro-system'
 
 export const useUserStore = defineStore('user', () => {
-  const currentUser = ref<User | null>(null);
+  const info = ref<User | null>(null)
 
+  // 获取当前用户信息
   const fetchCurrentUser = async () => {
-    const api = new UserApi();
-    currentUser.value = await api.getCurrent();
-  };
+    const result = await new ApiUserInfoFindSelf()
+    info.value = result
+    return result
+  }
 
-  return { currentUser, fetchCurrentUser };
-});
+  // 退出登录
+  const logout = () => {
+    info.value = null
+    // 清除本地存储
+  }
+
+  return {
+    info,
+    fetchCurrentUser,
+    logout
+  }
+})
 ```
 
 ---
 
-## 6.3 错误处理
+## 6.4 错误处理
 
-### 3.1 try-catch 块
+### 4.1 全局错误处理配置
 
-所有异步 API 调用必须使用 try-catch 处理错误：
+全局错误处理在 `src/plugins/api.ts` 中统一配置：
 
 ```typescript
-const loadData = async () => {
+// src/plugins/api.ts
+import { ElMessage } from 'element-plus'
+import { ApiCall, ApiEntity, ApiEvents } from 'moyan-api'
+import { router } from '@/router'
+import { storeUser } from '@/common/use/store/user'
+
+// 初始化 API 客户端
+ApiCall.use(new MoAxios())
+
+// 成功事件 - 自动下载文件
+ApiCall.emitter.on(ApiEvents.Success, (apiCall: ApiCall<any, any>) => {
+  if (apiCall.option.fileName && apiCall.method === 'GET') {
+    FileSaver.saveAs(window.URL.createObjectURL(apiCall.result), apiCall.option.fileName)
+  }
+})
+
+// 成功提示事件
+ApiCall.emitter.on(ApiEvents.HintSuccess, (apiCall: ApiCall<any, any>) => {
+  ApiCall.hasPrompted = true
+  ElMessage.success({
+    message: apiCall.successMsg,
+    onClose: () => {
+      ApiCall.hasPrompted = false
+    }
+  })
+})
+
+// 失败提示事件
+ApiCall.emitter.on(ApiEvents.HintFail, (apiCall: ApiCall<any, any>) => {
+  // 403 跳转到无权限页面
+  if (apiCall.response.status === 403) {
+    setTimeout(() => {
+      router.push('/disabled')
+    }, 1000)
+    return
+  }
+
+  // 处理未登录
+  const message = apiCall.failMsg === 'Unauthorized'
+    ? '登录已过期，请重新登录'
+    : apiCall.failMsg
+
+  // 忽略首页的错误提示
+  const ignored = ['/']
+  if (!MoAxios.$route || ignored.includes(MoAxios.$route.path)) {
+    return
+  }
+
+  message && ElMessage.error({
+    message,
+    onClose: () => {
+      ApiCall.hasPrompted = false
+    }
+  })
+})
+
+// 未授权事件 - 自动退出登录
+ApiCall.emitter.on(ApiEvents.Unauthorized, () => {
+  storeUser.logout()
+  router.push('/login')
+})
+```
+
+### 4.2 HTTP 状态码处理
+
+```typescript
+// src/plugins/api.ts - 响应拦截器
+this.$axios.interceptors.response.use(
+  (res) => {
+    if (typeof this.options.render === 'function') {
+      return this.options.render(res)
+    }
+    return res
+  },
+  async (error) => {
+    if (error && error.response) {
+      switch (error.response.status) {
+        case 502:
+          error.message = '网关错误'
+          break
+        case 504:
+          error.message = '网关超时'
+          break
+        case 505:
+          error.message = '版本不受支持'
+          break
+        default:
+          error.message = error.response.data.message
+          break
+      }
+    }
+    throw error
+  }
+)
+```
+
+### 4.3 本地错误处理
+
+特殊场景需要本地处理错误：
+
+```typescript
+// 需要特殊处理的场景
+const handleLogin = async () => {
   try {
-    const api = new UserApi();
-    const data = await api.list();
-    return data;
+    const result = await new ApiUserAuthLoginByPwd({
+      params: { account, password }
+    })
+    // 登录成功处理
   } catch (error) {
-    console.error('加载失败:', error);
-    throw error;
-  }
-};
-```
-
-### 3.2 moyan-api 错误类型
-
-```typescript
-import { ApiError } from 'moyan-api';
-
-try {
-  const api = new UserApi();
-  await api.get(id);
-} catch (error) {
-  if (error instanceof ApiError) {
-    // API 错误，包含状态码和错误信息
-    console.error('API Error:', error.status, error.message);
-
-    switch (error.status) {
-      case 401:
-        // 未授权，跳转到登录页
-        router.push('/login');
-        break;
-      case 403:
-        ElMessage.error('权限不足');
-        break;
-      case 404:
-        ElMessage.error('资源不存在');
-        break;
-      default:
-        ElMessage.error(error.message || '操作失败');
-    }
-  } else {
-    // 网络错误或其他错误
-    ElMessage.error('网络错误，请稍后重试');
+    // 自定义错误处理
+    console.error('登录失败:', error)
+    ElMessage.error('账号或密码错误')
   }
 }
-```
 
-### 3.3 统一错误处理
-
-```typescript
-// utils/api-error-handler.ts
-import { ApiError } from 'moyan-api';
-import { ElMessage } from 'element-plus';
-import { router } from '@/router';
-
-export function handleApiError(error: unknown): void {
-  if (error instanceof ApiError) {
-    switch (error.status) {
-      case 401:
-        router.push('/login');
-        break;
-      case 403:
-        ElMessage.error('权限不足');
-        break;
-      case 404:
-        ElMessage.error('资源不存在');
-        break;
-      case 400:
-        ElMessage.error(error.message || '请求参数错误');
-        break;
-      case 500:
-        ElMessage.error('服务器错误');
-        break;
-      default:
-        ElMessage.error(error.message || '操作失败');
+// 忽略某些错误的场景
+const loadData = async () => {
+  const result = await new ApiUserList({
+    params: { page: 1, limit: 20 },
+    option: {
+      ignoreError: true  // 忽略全局错误提示
     }
-  } else {
-    ElMessage.error('网络错误，请稍后重试');
-  }
+  })
+  return result
 }
 ```
 
 ---
 
-## 6.4 请求参数
+## 6.5 请求配置
 
-### 4.1 使用生成的类型
+### 5.1 请求头配置
 
-`moyan-api` 会自动生成请求和响应的 TypeScript 类型：
-
-```typescript
-import { UserApi, type ListUserParams, type User } from 'moyan-api';
-
-const loadUsers = async (params: ListUserParams) => {
-  const api = new UserApi();
-  return await api.list(params);
-};
-```
-
-### 4.2 参数验证
-
-在调用 API 前验证必要的参数：
+请求头由 `MoAxios` 自动配置，无需手动设置：
 
 ```typescript
-const createUser = async (name: string) => {
-  if (!name || name.trim() === '') {
-    ElMessage.warning('用户名不能为空');
-    return;
-  }
-
-  const api = new UserApi();
-  return await api.create({ name });
-};
+// 自动添加的请求头
+headers: {
+  Authorization: `Bearer ${accessToken}`,
+  'x-apptypekey': activeAppEntity?.app_type_key || '',
+  'x-user-id': (storeUser?.info?.value?.id || '') + '',
+}
 ```
+
+### 5.2 文件下载
+
+```typescript
+// 下载 Excel 文件
+const handleExport = async () => {
+  await new ApiUserList({
+    params: {
+      page: 1,
+      limit: 10000,
+      $export: true  // 导出标志
+    },
+    option: {
+      fileName: '用户列表.xlsx'  // 下载文件名
+    }
+  })
+  // 文件会自动下载，无需额外处理
+}
+```
+
+### 5.3 文件上传
+
+```typescript
+// 上传文件
+const handleUpload = async (file: File) => {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const result = await new ApiUploadUploadFile({
+    data: formData
+  })
+  return result
+}
+```
+
+### 5.4 请求选项
+
+| 选项 | 类型 | 说明 |
+|------|------|------|
+| `hintSuccess` | `boolean` | 成功后显示提示 |
+| `hintFail` | `boolean` | 失败后显示提示 |
+| `successMsg` | `string` | 自定义成功提示消息 |
+| `failMsg` | `string` | 自定义失败提示消息 |
+| `fileName` | `string` | 下载文件名 |
+| `ignoreError` | `boolean` | 忽略全局错误处理 |
+| `onprogress` | `function` | 下载进度回调 |
 
 ---
 
-## 6.5 最佳实践
+## 6.6 最佳实践
 
-### 5.1 避免重复实例化
+### 6.1 API 类命名规范
 
 ```typescript
-// ✅ 推荐：在 Composable 中复用实例
-export function useUserApi() {
-  const api = new UserApi();
-  return { api };
-}
+// ✅ 推荐：清晰描述功能的命名
+export class ApiUserList extends ApiCall { }           // 获取列表
+export class ApiUserInfoFindOne extends ApiCall { }    // 获取单个详情
+export class ApiUserInfoAdd extends ApiCall { }        // 添加
+export class ApiUserInfoEdit extends ApiCall { }       // 编辑
+export class ApiUserInfoDelete extends ApiCall { }     // 删除
+export class ApiUserAuthLoginByPwd extends ApiCall { } // 登录
 
-// ❌ 避免：在循环中重复实例化
-list.forEach(() => {
-  const api = new UserApi();
-  // ...
-});
+// ❌ 避免：模糊的命名
+export class ApiGetData extends ApiCall { }
+export class ApiDoSomething extends ApiCall { }
 ```
 
-### 5.2 批量操作
+### 6.2 类型导入规范
 
 ```typescript
-// ✅ 推荐：使用批量 API（如果后端支持）
-const api = new UserApi();
-await api.batchCreate(userList);
+// ✅ 推荐：使用 type 导入类型
+import { ApiUserList } from '@/apis/micro-system'
+import type { User, DtoUserPagerRes } from '@/apis/micro-system'
 
-// ❌ 避免：循环调用单个 API
-for (const user of userList) {
-  await api.create(user);
+// ❌ 避免：混合导入
+import { ApiUserList, User, DtoUserPagerRes } from '@/apis/micro-system'
+```
+
+### 6.3 注释规范
+
+```typescript
+// ✅ 推荐：JSDoc 风格注释
+/**
+ * 用户模块->获取用户列表
+ */
+export class ApiUserList extends ApiCall<...> {
+  path = '/sys/user/list'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * 用户模块->根据手机号获取用户信息
+ */
+export class ApiUserInfoByMobile extends ApiCall<
+  { mobile: string },  // 请求参数
+  User                 // 响应类型
+> {
+  path = '/sys/user/info/byMobile'
+  method: MoMethod = 'GET'
+  auth = true
 }
 ```
 
-### 5.3 请求取消
+### 6.4 避免重复请求
 
 ```typescript
-import { ref, onUnmounted } from 'vue';
-import { UserApi } from 'moyan-api';
+// ✅ 推荐：复用请求结果
+const userStore = useUserStore()
+const userInfo = await userStore.fetchCurrentUser()
+// 其他地方直接使用 store 中的数据
 
-export function useUserList() {
-  const loading = ref(false);
-  const controller = new AbortController();
-
-  const loadUsers = async () => {
-    loading.value = true;
-    try {
-      const api = new UserApi();
-      // 如果 API 支持 AbortSignal
-      return await api.list({ signal: controller.signal });
-    } finally {
-      loading.value = false;
-    }
-  };
-
-  onUnmounted(() => {
-    controller.abort();
-  });
-
-  return { loading, loadUsers };
-}
+// ❌ 避免：重复请求相同数据
+const info1 = await new ApiUserInfoFindSelf()
+const info2 = await new ApiUserInfoFindSelf()
 ```
 
 ---
@@ -335,5 +566,6 @@ export function useUserList() {
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 2.0.0 | 2026-03-29 | 重写文档，基于 moyan-api 生成器模式，新增 API 类定义规范 |
 | 1.1.0 | 2026-03-29 | 更新为 moyan-api 库使用规范 |
 | 1.0.0 | 2026-03-29 | 初始版本，定义 API 调用和错误处理规范 |
