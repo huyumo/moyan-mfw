@@ -8,7 +8,8 @@
       "Bash(powershell -Command \"Remove-Item -Path _book -Recurse -Force -ErrorAction SilentlyContinue\")",
       "Read(//e/Moyan/moyan-mfw-workspace/workspace04/**)",
       "Bash(powershell -Command \"Get-Process | Where-Object { $_MainWindowTitle -like ''*'' -or $_ProcessName -like ''*python*'' } | Select-Object Id,ProcessName,Path\")",
-      "Bash(cmd /c \"rmdir /s /q _book\")"
+      "Bash(cmd /c \"rmdir /s /q _book\")",
+      "Bash(pnpm docs:dev)"
     ]
   }
 }
