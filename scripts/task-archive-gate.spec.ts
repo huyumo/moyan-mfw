@@ -245,6 +245,7 @@ ${recentArchives.map(f => `- [历史归档](../../../docs/04-项目实施/05-任
  */
 function main() {
   const config = parseArgs();
+  const args = process.argv.slice(2);
 
   if (config.help) {
     showHelp();
@@ -266,7 +267,10 @@ function main() {
   console.log(`进行中任务：${taskStatus.inProgressCount} 个`);
   console.log(`待开始任务：${taskStatus.toStartCount} 个`);
 
-  if (taskStatus.hasInProgress || taskStatus.hasToStart) {
+  // 支持 --force 强制归档
+  const forceArchive = process.argv.includes('--force') || process.argv.includes('-f');
+
+  if ((taskStatus.hasInProgress || taskStatus.hasToStart) && !forceArchive) {
     console.log(`\n${colors.green}✓${colors.reset} 有待处理任务，无需归档`);
     process.exit(0);
   }
