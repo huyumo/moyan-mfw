@@ -74,31 +74,6 @@ ${colors.cyan}TASK.md 归档门禁检查脚本${colors.reset}
 }
 
 /**
- * 解析 YAML Front Matter
- */
-function parseFrontMatter(content: string): { data: Record<string, any>; body: string } {
-  const frontMatterRegex = /^---\n([\s\S]*?)\n---\n/;
-  const match = content.match(frontMatterRegex);
-
-  if (!match) {
-    return { data: {}, body: content };
-  }
-
-  const frontMatter = match[1];
-  const body = content.slice(match[0].length);
-  const data: Record<string, any> = {};
-
-  frontMatter.split('\n').forEach(line => {
-    const [key, ...valueParts] = line.split(':');
-    if (key && valueParts.length > 0) {
-      data[key.trim()] = valueParts.join(':').trim();
-    }
-  });
-
-  return { data, body };
-}
-
-/**
  * 检查 TASK.md 是否有待处理任务
  */
 function hasPendingTasks(content: string): { hasInProgress: boolean; hasToStart: boolean; inProgressCount: number; toStartCount: number } {
@@ -231,14 +206,6 @@ ${archiveLinks}
 
 ## 待开始
 - [ ] 无
-
-## 相关文件
-${recentArchives.map(f => `- [历史归档](../../../docs/04-项目实施/05-任务追踪/archived/${f})`).join('\n')}
-
-## 变更记录
-| 时间 | 变更类型 | 变更内容 | 原因 |
-|------|----------|----------|------|
-| ${dateTime} | 归档重置 | TASK.md 归档并重置 | 所有任务已完成 |
 `;
 
     fs.writeFileSync(TASK_FILE, newTaskContent, 'utf-8');
