@@ -138,5 +138,17 @@
     "status-values": ["pending", "in_progress", "blocked", "completed"],
     "priority-values": ["P0", "P1", "P2", "P3"],
     "lock-timeout": 300
+  },
+
+  "ai": {
+    "providers": [
+      {
+        "name": "ppchat",
+        "url": "https://code.ppchat.vip/v1",
+        "key": "sk-agiOHdl90ncs4jbQRo9hi6pZiKf06KKgp9dEMy0ywbSRJutJ",
+        "models": ["gpt-5.4"],
+        "default": true
+      }
+    ]
   }
 }
