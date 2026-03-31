@@ -1,0 +1,23 @@
+{
+  "name": "moyan-mfw-docs",
+  "version": "1.0.0",
+  "description": "Moyan MFW Documentation",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17",
+    "markdown-it": "^14.1.1",
+    "markdown-it-mermaid": "^0.2.5",
+    "mermaid": "^11.13.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

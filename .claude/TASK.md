@@ -1,21 +1,28 @@
 ---
-task: 等待新任务输入
-status: pending
+task: 将 VitePress 命令移至 docs/package.json
+status: completed
 priority: P1
 started: 2026-03-31
-updated: 2026-03-31 10:36
+updated: 2026-03-31 11:15
 session: session-20260331-000000
-lock: 1743416160
-assignee: @pm
+lock: 1743421200
+assignee: @dev
 ---
 
 ## 当前目标
-等待新任务输入
+将 VitePress 相关命令从根目录 package.json 移至 docs/package.json 自主管理
 
 ## 已完成
 > 上期任务周期已完成任务详见历史归档：
 > - [归档文件](../docs/04-项目实施/05-任务追踪/archived/TASK-2026-03-31-1036.md)
 > - [归档文件](../docs/04-项目实施/05-任务追踪/archived/TASK-2026-03-31-0933.md)
+
+- [x] 创建 docs/package.json
+- [x] 迁移 VitePress 相关依赖和脚本
+- [x] 更新根目录 package.json
+- [x] 更新 pnpm-workspace.yaml
+- [x] 配置 vitepress.config.ts 忽略 archived 目录
+- [x] 验证构建命令正常工作（pnpm --filter moyan-mfw-docs build 成功）
 
 ## 进行中
 - [ ] 无
