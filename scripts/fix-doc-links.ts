@@ -258,7 +258,6 @@ const pathMappings: Record<string, string> = {
 
   // 其他路径
   '../infrastructure-detailed-design-index.md': '../基础设施详细设计索引.md',
-  '../docs/core/architecture.md': '../02-核心概念/系统架构.md',
 };
 
 /**

@@ -36,7 +36,7 @@ const colors = {
  */
 function parseArgs() {
   const args = process.argv.slice(2);
-  const config = {
+  const config: { dir: string | null; file: string | null; component: string | null; help: boolean } = {
     dir: null,
     file: null,
     component: null,
@@ -416,9 +416,10 @@ function checkFile(filePath: string) {
     errors.push(...result.errors);
     warnings.push(...result.warnings);
   } catch (err) {
+    const error = err as Error;
     warnings.push({
       line: 0,
-      message: `读取失败：${err.message}`,
+      message: `读取失败：${error.message}`,
     });
   }
 

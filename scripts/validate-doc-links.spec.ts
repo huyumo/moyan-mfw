@@ -35,7 +35,7 @@ const colors = {
  */
 function parseArgs() {
   const args = process.argv.slice(2);
-  const config = {
+  const config: { dir: string | null; file: string | null; help: boolean } = {
     dir: null,
     file: null,
     help: false,
@@ -82,8 +82,8 @@ ${colors.cyan}文档链接检查器${colors.reset}
 /**
  * 获取要检查的文件列表
  */
-function getFilesToCheck(config) {
-  const files = [];
+function getFilesToCheck(config: { dir: string | null; file: string | null; help: boolean }) {
+  const files: string[] = [];
 
   if (config.file) {
     const filePath = path.resolve(ROOT_DIR, config.file);
@@ -110,7 +110,7 @@ function getFilesToCheck(config) {
 /**
  * 递归扫描目录
  */
-function scanDirectory(dir, files) {
+function scanDirectory(dir: string, files: string[]) {
   try {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
@@ -125,14 +125,18 @@ function scanDirectory(dir, files) {
     }
   } catch (err) {
     // 忽略权限错误
+    const error = err as Error;
+    if (error.name !== 'EPERM' && error.name !== 'EACCES') {
+      throw error;
+    }
   }
 }
 
 /**
  * 提取 Markdown 文件中的链接
  */
-function extractLinks(content) {
-  const links = [];
+function extractLinks(content: string) {
+  const links: Array<{ text: string; path: string; line: number }> = [];
 
   // 匹配 [text](path) 格式的链接
   const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -165,12 +169,12 @@ function extractLinks(content) {
 /**
  * 检查链接是否有效
  */
-function checkLink(filePath, linkPath) {
+function checkLink(filePath: string, linkPath: string) {
   // 解析路径
   const fileDir = path.dirname(filePath);
 
   // 处理绝对路径（以 / 开头）和相对路径
-  let resolvedPath;
+  let resolvedPath: string;
   if (linkPath.startsWith('/')) {
     // 绝对路径，从 docs 目录开始
     resolvedPath = path.resolve(ROOT_DIR, 'docs', linkPath.slice(1));
@@ -196,9 +200,9 @@ function checkLink(filePath, linkPath) {
 /**
  * 检查单个文件
  */
-function checkFile(filePath) {
-  const errors = [];
-  const warnings = [];
+function checkFile(filePath: string) {
+  const errors: Array<{ line: number; message: string }> = [];
+  const warnings: Array<{ line: number; message: string }> = [];
 
   try {
     const content = fs.readFileSync(filePath, 'utf-8');
@@ -213,9 +217,10 @@ function checkFile(filePath) {
       }
     }
   } catch (err) {
+    const error = err as Error;
     warnings.push({
       line: 0,
-      message: `读取失败：${err.message}`,
+      message: `读取失败：${error.message}`,
     });
   }
 
