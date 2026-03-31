@@ -169,10 +169,29 @@ function extractLinks(content) {
 function checkLink(filePath, linkPath) {
   // 解析路径
   const fileDir = path.dirname(filePath);
-  const resolvedPath = path.resolve(fileDir, linkPath);
 
-  // 检查文件是否存在
-  return fs.existsSync(resolvedPath);
+  // 处理绝对路径（以 / 开头）和相对路径
+  let resolvedPath;
+  if (linkPath.startsWith('/')) {
+    // 绝对路径，从 docs 目录开始
+    resolvedPath = path.resolve(ROOT_DIR, 'docs', linkPath.slice(1));
+  } else {
+    // 相对路径，从当前文件目录开始
+    resolvedPath = path.resolve(fileDir, linkPath);
+  }
+
+  // 检查文件是否存在（尝试带 .md 和不带 .md）
+  if (fs.existsSync(resolvedPath)) {
+    return true;
+  }
+  if (fs.existsSync(resolvedPath + '.md')) {
+    return true;
+  }
+  if (fs.existsSync(resolvedPath + '.mdx')) {
+    return true;
+  }
+
+  return false;
 }
 
 /**

@@ -19,7 +19,7 @@
     "typecheck:vue": "pnpm --filter moyan-frontend typecheck:vue",
     "typecheck": "pnpm run typecheck:vue",
     "test:comment-rule": "node tools/eslint-plugin-moyan/rules/comment-compliance.test.mjs",
-    "validate:links": "node scripts/validate-doc-links.js",
+    "validate:links": "tsx scripts/validate-doc-links.ts",
     "validate:docs": "tsx scripts/validate-doc-template.ts",
     "validate:types": "tsx scripts/validate-types.ts",
     "validate:all": "npm run validate:links && npm run validate:types"
