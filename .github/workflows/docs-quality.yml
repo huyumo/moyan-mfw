@@ -1,0 +1,41 @@
+name: 文档质量检查
+
+on:
+  push:
+    branches: [main, docs/**]
+    paths:
+      - 'docs/**'
+      - '*.md'
+      - 'scripts/validate-doc-links.ts'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - '*.md'
+
+jobs:
+  validate-doc-links:
+    name: 检查文档链接
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 检查文档链接
+        run: pnpm run validate:links
+
+      - name: 检查文档模板
+        run: pnpm run validate:docs
