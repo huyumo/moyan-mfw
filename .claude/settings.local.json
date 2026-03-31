@@ -9,7 +9,9 @@
       "Read(//e/Moyan/moyan-mfw-workspace/workspace04/**)",
       "Bash(powershell -Command \"Get-Process | Where-Object { $_MainWindowTitle -like ''*'' -or $_ProcessName -like ''*python*'' } | Select-Object Id,ProcessName,Path\")",
       "Bash(cmd /c \"rmdir /s /q _book\")",
-      "Bash(pnpm docs:dev)"
+      "Bash(pnpm docs:dev)",
+      "Bash(git restore:*)",
+      "Bash(wsl python3:*)"
     ]
   }
 }
