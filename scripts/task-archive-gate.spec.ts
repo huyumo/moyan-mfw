@@ -170,8 +170,7 @@ function generateArchiveFileName(): string {
 function executeArchive(): boolean {
   try {
     // 1. 读取当前 TASK.md
-    const taskContent = fs.readFileSync(TASK_FILE, 'utf-8');
-    const { data: frontMatter } = parseFrontMatter(taskContent);
+    let taskContent = fs.readFileSync(TASK_FILE, 'utf-8');
 
     // 2. 生成归档文件名
     const archiveFileName = generateArchiveFileName();
@@ -182,12 +181,25 @@ function executeArchive(): boolean {
       fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
     }
 
-    // 4. 写入归档文件
+    // 4. 转换归档文件中的链接路径
+    // 归档文件在 docs/04-项目实施/05-任务追踪/archived/ 下
+    // 链接到同目录的其他归档文件，使用 ./TASK-xxx.md 格式
+    taskContent = taskContent.replace(
+      /\(\.\.\/\.\.\/\.\.\/docs\/04-项目实施\/05-任务追踪\/archived\//g,
+      '(./'
+    );
+    taskContent = taskContent.replace(
+      /\(\.\.\/docs\/04-项目实施\/05-任务追踪\/archived\//g,
+      '(./'
+    );
+
+    // 写入归档文件（转换后的内容）
     fs.writeFileSync(archiveFilePath, taskContent, 'utf-8');
     console.log(`${colors.green}✓${colors.reset} 已创建归档文件：${archiveFileName}`);
 
     // 5. 生成新的 TASK.md
     const recentArchives = getRecentArchives();
+    // TASK.md 在 .claude/ 目录下，需要使用 ../../../docs/... 链接到归档文件
     const archiveLinks = recentArchives
       .map(f => `> - [归档文件](../../../docs/04-项目实施/05-任务追踪/archived/${f})`)
       .join('\n');

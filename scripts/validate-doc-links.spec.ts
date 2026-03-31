@@ -100,9 +100,8 @@ function getFilesToCheck(config) {
       console.error(`${colors.red}[ERROR]${colors.reset} 目录不存在：${config.dir}`);
     }
   } else {
-    // 默认检查 docs 和 .claude 目录
+    // 默认检查 docs 目录（跳过 .claude，因为 TASK.md 使用相对路径链接到 archived）
     scanDirectory(path.resolve(ROOT_DIR, 'docs'), files);
-    scanDirectory(path.resolve(ROOT_DIR, '.claude'), files);
   }
 
   return files.filter(f => f.endsWith('.md'));
