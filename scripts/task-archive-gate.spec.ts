@@ -214,7 +214,8 @@ ${archiveLinks}
 
     return true;
   } catch (err) {
-    console.error(`${colors.red}[ERROR]${colors.reset} 归档失败：${err.message}`);
+    const error = err as Error;
+    console.error(`${colors.red}[ERROR]${colors.reset} 归档失败：${error.message}`);
     return false;
   }
 }
