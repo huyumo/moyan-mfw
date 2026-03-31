@@ -1,0 +1,484 @@
+---
+meta:
+  id: AUTH-001
+  name: 权限安全规范
+  version: 1.0
+  source: docs/03-框架规范/02-后端规范/05-权限安全规范.md
+  last_updated: 2026-03-31
+  priority: MUST
+
+---
+categories:
+  # 分类 1：JWT 认证
+  - id: JWT_AUTH
+    name: JWT 认证规范
+    description: JWT Token 认证机制
+    rules:
+      - id: JWT-001
+        name: JWT 守卫使用
+        priority: MUST
+        type: content
+        target: controller_class
+        pattern: "@UseGuards\\(AuthGuard\\)"
+        message: "需要认证的接口必须使用 @UseGuards(AuthGuard)"
+        examples:
+          valid:
+            - |
+              @Controller('api/v1/users')
+              @UseGuards(AuthGuard)
+              export class UserController {}
+          invalid:
+            - |
+              @Controller('api/v1/users')
+              export class UserController {}  // 无 AuthGuard
+
+      - id: JWT-002
+        name: Public 装饰器
+        priority: MUST
+        type: content
+        target: public_method
+        pattern: "@Public\\(\\)"
+        message: "公开接口（登录、注册）必须使用 @Public() 装饰器跳过认证"
+        examples:
+          valid:
+            - |
+              @Public()
+              @Post('login')
+              async login(@Body() dto: LoginDto) {}
+          invalid:
+            - |
+              @Post('login')
+              async login(@Body() dto: LoginDto) {}  // 登录接口未标记 @Public
+
+      - id: JWT-003
+        name: Token 结构
+        priority: MUST
+        type: content
+        target: jwt_payload
+        required_claims:
+          - "sub"
+          - "username"
+          - "roles"
+          - "iat"
+          - "exp"
+        message: "JWT Payload 必须包含 sub, username, roles, iat, exp 字段"
+        examples:
+          valid: |
+            const payload = {
+              sub: user.id,
+              username: user.username,
+              roles: user.roles,
+              iat: Math.floor(Date.now() / 1000),
+              exp: Math.floor(Date.now() / 1000) + 7200,
+            };
+
+      - id: JWT-004
+        name: Token 有效期
+        priority: MUST
+        type: content
+        target: jwt_config
+        pattern: "expiresIn:\\s*['\"]?([1-9]|1[0-2])h"
+        message: "Access Token 有效期不得超过 12 小时"
+        examples:
+          valid:
+            - "expiresIn: '2h'"
+            - "expiresIn: '1h'"
+          invalid:
+            - "expiresIn: '24h'"  // 有效期过长
+            - "expiresIn: '7d'"   // 有效期过长
+
+      - id: JWT-005
+        name: 登录限流
+        priority: MUST
+        type: content
+        target: login_method
+        pattern: "@Throttle\\(\\d+,\\s*\\d+\\)"
+        message: "登录接口必须有限流措施"
+        examples:
+          valid:
+            - |
+              @Throttle(5, 60)  // 60 秒内最多 5 次
+              @Public()
+              @Post('login')
+              async login() {}
+
+  # 分类 2：权限控制
+  - id: PERMISSION
+    name: 权限控制规范
+    description: 基于角色的访问控制 (RBAC)
+    rules:
+      - id: PERM-001
+        name: 权限装饰器
+        priority: MUST
+        type: content
+        target: controller_method
+        pattern: "@RequirePermission\\(['\"][^'\"]+['\"]\\)"
+        message: "需要权限控制的接口必须使用 @RequirePermission 装饰器"
+        examples:
+          valid:
+            - |
+              @RequirePermission('user:create')
+              @Post()
+              async create(@Body() dto: CreateUserDto) {}
+          invalid:
+            - |
+              @Post()
+              async create(@Body() dto: CreateUserDto) {}  // 无权限注解
+
+      - id: PERM-002
+        name: 权限位定义
+        priority: MUST
+        type: structure
+        target: permission_constant
+        pattern: "export const \\w+Permissions = \\{"
+        message: "权限位必须定义为常量，格式：模块：操作"
+        examples:
+          valid: |
+            export const UserPermissions = {
+              LIST: 'user:list',
+              CREATE: 'user:create',
+              UPDATE: 'user:update',
+              DELETE: 'user:delete',
+            };
+          invalid:
+            - "const PERMISSION = 'user:create';"  // 未使用常量
+
+      - id: PERM-003
+        name: 角色定义
+        priority: MUST
+        type: structure
+        target: role_constant
+        pattern: "export enum\\s+RoleType"
+        message: "角色必须使用枚举定义"
+        examples:
+          valid: |
+            export enum RoleType {
+              SUPER_ADMIN = 'super_admin',
+              ADMIN = 'admin',
+              USER = 'user',
+            }
+          invalid:
+            - "const ROLE_ADMIN = 'admin';"
+            - "const roles = ['admin', 'user'];"
+
+      - id: PERM-004
+        name: 越权访问防护
+        priority: MUST
+        type: content
+        target: service_method
+        message: "查询/修改用户资源时必须验证资源归属"
+        examples:
+          valid: |
+            async getUserProfile(userId: string, currentUserId: string) {
+              // 验证只能访问自己的资料
+              if (userId !== currentUserId) {
+                throw new ForbiddenException();
+              }
+              return this.userRepository.findById(userId);
+            }
+          invalid: |
+            async getUserProfile(userId: string) {
+              // 未验证归属，任何用户都可访问
+              return this.userRepository.findById(userId);
+            }
+
+  # 分类 3：密码加密
+  - id: PASSWORD
+    name: 密码加密规范
+    description: 密码存储和验证
+    rules:
+      - id: PWD-001
+        name: bcrypt 加密
+        priority: MUST
+        type: content
+        target: password_hash
+        pattern: "bcrypt\\.(hash|compare)"
+        message: "密码必须使用 bcrypt 加密，禁止明文存储"
+        examples:
+          valid:
+            - "const hash = await bcrypt.hash(password, 12);"
+            - "const valid = await bcrypt.compare(password, hash);"
+          invalid:
+            - "const hash = md5(password);"
+            - "const hash = sha256(password);"
+            - "password: password  // 明文存储"
+
+      - id: PWD-002
+        name: bcrypt rounds
+        priority: MUST
+        type: content
+        target: bcrypt_config
+        pattern: "bcrypt\\.hash\\([^,]+,\\s*(1[0-2]|[2-9])\\)"
+        message: "bcrypt rounds 必须在 10-12 之间"
+        examples:
+          valid:
+            - "await bcrypt.hash(password, 10)"
+            - "await bcrypt.hash(password, 12)"
+          invalid:
+            - "await bcrypt.hash(password, 6)"   // rounds 过低
+            - "await bcrypt.hash(password, 15)"  // rounds 过高影响性能
+
+      - id: PWD-003
+        name: 密码强度验证
+        priority: MUST
+        type: content
+        target: dto_validation
+        pattern: "@Matches\\(\\s*['\"][^(]+\\(\\?:"
+        message: "密码 DTO 必须使用 @Matches 装饰器验证强度"
+        examples:
+          valid: |
+            @IsString()
+            @MinLength(8)
+            @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, {
+              message: '密码必须包含大小写字母和数字，至少 8 位',
+            })
+            password: string;
+          invalid:
+            - |
+              @IsString()
+              password: string;  // 无强度验证
+
+  # 分类 4：SQL 注入防护
+  - id: SQL_INJECTION
+    name: SQL 注入防护
+    description: 防止 SQL 注入攻击
+    rules:
+      - id: SQL-001
+        name: 参数化查询
+        priority: MUST
+        type: content
+        target: query_builder
+        pattern: "\\.where\\([^,]+,\\s*\\{"
+        message: "QueryBuilder 必须使用参数化查询"
+        examples:
+          valid:
+            - ".where('user.id = :id', { id })"
+            - ".where('user.status IN (:...statuses)', { statuses })"
+          invalid:
+            - ".where(`user.id = ${id}`)"
+            - ".where('user.id = ' + id)"
+
+      - id: SQL-002
+        name: 禁止原生查询拼接
+        priority: MUST
+        type: regex
+        target: native_query
+        pattern: "query\\(\\s*['\"`][^'\"]*\\$\\{"
+        negative: true
+        message: "原生查询禁止使用模板字符串拼接 SQL"
+        examples:
+          valid:
+            - "await connection.query('SELECT * FROM users WHERE id = ?', [id])"
+          invalid:
+            - "await connection.query(`SELECT * FROM users WHERE id = ${id}`)"
+
+      - id: SQL-003
+        name: 输入验证
+        priority: MUST
+        type: content
+        target: controller_method
+        pattern: "@Body\\([^)]*\\)\\s+\\w+:\\s*\\w+Dto"
+        message: "所有用户输入必须通过 DTO 验证"
+        examples:
+          valid:
+            - "async create(@Body() dto: CreateUserDto)"
+          invalid:
+            - "async create(@Body() body: any)"
+            - "async create(@Body('username') username: string)"  // 无 DTO
+
+  # 分类 5：XSS 防护
+  - id: XSS_PROTECTION
+    name: XSS 防护规范
+    description: 防止跨站脚本攻击
+    rules:
+      - id: XSS-001
+        name: 富文本过滤
+        priority: MUST
+        type: content
+        target: html_sanitization
+        pattern: "sanitizeHtml\\("
+        message: "用户输入的富文本必须使用 sanitize-html 过滤"
+        examples:
+          valid: |
+            import sanitizeHtml from 'sanitize-html';
+
+            const clean = sanitizeHtml(dirty, {
+              allowedTags: ['p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
+              allowedAttributes: {},
+            });
+          invalid:
+            - "const html = userInput;  // 直接使用"
+
+      - id: XSS-002
+        name: HTML 实体转义
+        priority: MUST
+        type: content
+        target: html_escape
+        pattern: "escapeHtml|he\\.escape"
+        message: "输出到页面的用户输入必须进行 HTML 转义"
+        examples:
+          valid:
+            - "const safe = escapeHtml(userInput);"
+          invalid:
+            - "res.send(`<div>${userInput}</div>`);  // 未转义"
+
+  # 分类 6：速率限制
+  - id: RATE_LIMITING
+    name: 速率限制规范
+    description: 防止接口滥用
+    rules:
+      - id: RATE-001
+        name: 登录接口限流
+        priority: MUST
+        type: content
+        target: login_method
+        pattern: "@Throttle\\(\\d+,\\s*\\d+\\)"
+        message: "登录接口必须限流（建议 5 次/分钟）"
+        examples:
+          valid:
+            - "@Throttle(5, 60)"
+          invalid:
+            - "// 无限请求"
+
+      - id: RATE-002
+        name: 短信/邮件限流
+        priority: MUST
+        type: content
+        target: send_method
+        pattern: "@Throttle\\(\\d+,\\s*\\d+\\)"
+        message: "短信/邮件发送接口必须限流（建议 1 次/分钟，10 次/小时）"
+        examples:
+          valid:
+            - "@Throttle(1, 60)"  // 1 次/分钟
+          invalid:
+            - "// 无限发送"
+
+      - id: RATE-003
+        name: 全局限流
+        priority: SHOULD
+        type: content
+        target: app_module
+        pattern: "ThrottlerModule\\.forRoot\\("
+        message: "应用应配置全局限流"
+        examples:
+          valid: |
+            ThrottlerModule.forRoot({
+              ttl: 60,
+              limit: 100,  // 100 次/分钟
+            })
+
+  # 分类 7：安全头
+  - id: SECURITY_HEADERS
+    name: 安全头设置规范
+    description: HTTP 安全响应头
+    rules:
+      - id: HDR-001
+        name: Helmet 中间件
+        priority: MUST
+        type: content
+        target: app_module
+        pattern: "app\\.use\\(helmet\\(\\)\\)"
+        message: "应用必须使用 helmet 中间件设置安全头"
+        examples:
+          valid: |
+            import helmet from 'helmet';
+            app.use(helmet());
+          invalid:
+            - "// 未使用 helmet"
+
+      - id: HDR-002
+        name: CSP 配置
+        priority: MUST
+        type: content
+        target: helmet_config
+        pattern: "contentSecurityPolicy:"
+        message: "必须配置 CSP 内容安全策略"
+        examples:
+          valid: |
+            app.use(helmet({
+              contentSecurityPolicy: {
+                directives: {
+                  defaultSrc: ["'self'"],
+                  scriptSrc: ["'self'"],
+                },
+              },
+            }));
+
+      - id: HDR-003
+        name: HSTS 配置
+        priority: MUST
+        type: content
+        target: helmet_config
+        pattern: "strictTransportSecurity:"
+        message: "生产环境必须启用 HSTS"
+        examples:
+          valid: |
+            app.use(helmet({
+              strictTransportSecurity: {
+                maxAge: 31536000,
+                includeSubDomains: true,
+              },
+            }));
+
+---
+# 任务导向索引
+task_index:
+  - task: add_auth
+    trigger_keywords: ["添加认证", "JWT", "登录", "注册"]
+    required_rules:
+      - "AUTH-001:JWT_AUTH"
+
+  - task: add_permission
+    trigger_keywords: ["添加权限", "RBAC", "角色", "授权"]
+    required_rules:
+      - "AUTH-001:PERMISSION"
+
+  - task: handle_password
+    trigger_keywords: ["密码", "加密", "bcrypt"]
+    required_rules:
+      - "AUTH-001:PASSWORD"
+
+  - task: secure_query
+    trigger_keywords: ["查询", "SQL 注入", "参数化"]
+    required_rules:
+      - "AUTH-001:SQL_INJECTION"
+
+---
+# 快速参考
+quick_reference:
+  guard_template: |
+    @Injectable()
+    export class AuthGuard implements CanActivate {
+      constructor(private jwtService: JwtService) {}
+
+      async canActivate(context: ExecutionContext): Promise<boolean> {
+        const request = context.switchToHttp().getRequest();
+        const token = this.extractTokenFromHeader(request);
+
+        try {
+          const payload = await this.jwtService.verifyAsync(token);
+          request['user'] = payload;
+        } catch {
+          throw new UnauthorizedException();
+        }
+        return true;
+      }
+    }
+
+  permission_decorator_template: |
+    export const RequirePermission = (...permissions: string[]) =>
+      SetMetadata('permissions', permissions);
+
+    // 使用
+    @RequirePermission('user:create')
+    @Post()
+    async create() {}
+
+  password_hash_template: |
+    async hashPassword(password: string): Promise<string> {
+      return bcrypt.hash(password, 12);
+    }
+
+    async comparePassword(password: string, hash: string): Promise<boolean> {
+      return bcrypt.compare(password, hash);
+    }
