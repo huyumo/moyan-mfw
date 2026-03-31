@@ -16,9 +16,10 @@
     "typecheck:vue": "pnpm --filter moyan-frontend typecheck:vue",
     "typecheck": "pnpm run typecheck:vue",
     "test:comment-rule": "node tools/eslint-plugin-moyan/rules/comment-compliance.test.mjs",
-    "validate:links": "tsx scripts/validate-doc-links.ts",
+    "validate:links": "tsx scripts/validate-doc-links.spec.ts",
     "validate:docs": "tsx scripts/validate-doc-template.ts",
-    "validate:types": "tsx scripts/validate-types.ts",
+    "validate:types": "tsx scripts/validate-types.spec.ts",
+    "gate:task-archive": "tsx scripts/task-archive-gate.spec.ts",
     "validate:all": "npm run validate:links && npm run validate:types"
   },
   "devDependencies": {
