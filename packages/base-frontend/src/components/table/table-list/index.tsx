@@ -68,7 +68,10 @@ export default defineComponent({
     }
   },
 
-  emits: ['selection-change', 'sort-change'],
+  emits: {
+    'selection-change': (selection: any[]) => true,
+    'sort-change': (info: { column: any; prop: string; order: string | null }) => true
+  },
 
   setup(props, { emit, expose, slots }) {
     const tableRef = ref<any>();

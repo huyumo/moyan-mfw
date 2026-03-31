@@ -17,7 +17,10 @@ export default defineComponent({
 
   props: {
     /** 字典值 */
-    value: [String, Number] as PropType<DictFormatProps['value']>,
+    value: {
+      type: [String, Number] as PropType<DictFormatProps['value']>,
+      default: null
+    },
     /** 字典数据 */
     dict: {
       type: Array as PropType<DictFormatProps['dict']>,
@@ -25,22 +28,24 @@ export default defineComponent({
     },
     /** 是否显示为标签 */
     asTag: {
-      type: Boolean,
+      type: Boolean as PropType<DictFormatProps['asTag']>,
       default: false
     },
     /** 空值显示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<DictFormatProps['emptyText']>,
       default: '--'
     },
     /** 自定义类名 */
     className: {
-      type: String,
+      type: String as PropType<DictFormatProps['className']>,
       default: ''
     }
   },
 
-  emits: ['click'],
+  emits: {
+    click: (item: DictItem | null) => true
+  },
 
   setup(props, { emit, slots }) {
     const value = toRef(props, 'value');

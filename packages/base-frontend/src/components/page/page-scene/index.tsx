@@ -84,71 +84,78 @@ export default defineComponent({
     },
     /** 数据加载函数 */
     loadData: {
-      type: Function as PropType<(params: Record<string, any>) => Promise<TableData>>
+      type: Function as PropType<MfwPageSceneProps['loadData']>
     },
     /** 是否显示搜索面板 */
     showSearch: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['showSearch']>,
       default: true
     },
     /** 是否显示刷新按钮 */
     showRefresh: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['showRefresh']>,
       default: true
     },
     /** 行键名 */
     rowKey: {
-      type: String,
+      type: String as PropType<MfwPageSceneProps['rowKey']>,
       default: 'id'
     },
     /** 是否支持行选择 */
     rowSelection: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['rowSelection']>,
       default: false
     },
     /** 是否显示分页 */
     showPagination: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['showPagination']>,
       default: true
     },
     /** 每页条数 */
     pageSize: {
-      type: Number,
+      type: Number as PropType<MfwPageSceneProps['pageSize']>,
       default: 20
     },
     /** 每页条数选项 */
     pageSizeOptions: {
-      type: Array as PropType<number[]>,
+      type: Array as PropType<MfwPageSceneProps['pageSizeOptions']>,
       default: () => [10, 20, 50, 100]
     },
     /** 表格高度 */
     tableHeight: {
-      type: [String, Number],
+      type: [String, Number] as PropType<MfwPageSceneProps['tableHeight']>,
       default: 'auto'
     },
     /** 空数据提示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<MfwPageSceneProps['emptyText']>,
       default: '暂无数据'
     },
     /** 是否显示边框 */
     border: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['border']>,
       default: true
     },
     /** 是否斑马纹 */
     stripe: {
-      type: Boolean,
+      type: Boolean as PropType<MfwPageSceneProps['stripe']>,
       default: false
     },
     /** 尺寸 */
     size: {
-      type: String as PropType<'small' | 'default' | 'large'>,
+      type: String as PropType<MfwPageSceneProps['size']>,
       default: 'default'
     }
   },
 
-  emits: ['search', 'reset', 'refresh', 'selection-change', 'page-change', 'sort-change'],
+  emits: {
+    search: (formData: Record<string, any>) => true,
+    reset: () => true,
+    refresh: () => true,
+    'selection-change': (selection: any[]) => true,
+    'page-change': (page: number, pageSize: number) => true,
+    'sort-change': ({ prop, order }: { prop: string; order: 'ascending' | 'descending' | null }) => true
+  },
 
   setup(props, { emit, expose, slots }) {
     const searchFormRef = ref<FormInstance>();

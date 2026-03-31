@@ -70,31 +70,35 @@ export default defineComponent({
     },
     /** 表单模式 */
     mode: {
-      type: String as PropType<'add' | 'edit' | 'view'>
+      type: String as PropType<MfwFormCardProps['mode']>
     },
     /** 是否禁用 */
     disabled: {
-      type: Boolean,
+      type: Boolean as PropType<MfwFormCardProps['disabled']>,
       default: false
     },
     /** 验证规则 */
     rules: {
-      type: Object as PropType<FormRules>,
+      type: Object as PropType<MfwFormCardProps['rules']>,
       default: () => ({})
     },
     /** 表单属性 */
     formProps: {
-      type: Object as PropType<Partial<MfwFormCardProps>>,
+      type: Object as PropType<Partial<MfwFormCardProps['formProps']>>,
       default: () => ({ labelWidth: '120px' })
     },
     /** 外部变化标识 */
     pChange: {
-      type: Boolean,
+      type: Boolean as PropType<boolean>,
       default: false
     }
   },
 
-  emits: ['change', 'loads', 'loadRefs'],
+  emits: {
+    change: (scope: { value: any; key: string; formData: any }) => true,
+    loads: () => true,
+    loadRefs: () => true
+  },
 
   setup(props, { emit, expose, slots }) {
     const formRef = ref<FormInstance>();

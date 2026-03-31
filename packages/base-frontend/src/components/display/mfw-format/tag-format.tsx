@@ -42,7 +42,10 @@ export default defineComponent({
 
   props: {
     /** 标签文本 */
-    value: [String] as PropType<TagFormatProps['value']>,
+    value: {
+      type: String as PropType<TagFormatProps['value']>,
+      default: null
+    },
     /** 标签类型 */
     type: {
       type: String as PropType<TagFormatProps['type']>,
@@ -50,12 +53,12 @@ export default defineComponent({
     },
     /** 是否自动根据文本生成颜色 */
     autoColor: {
-      type: Boolean,
+      type: Boolean as PropType<TagFormatProps['autoColor']>,
       default: false
     },
     /** 是否为圆角 */
     round: {
-      type: Boolean,
+      type: Boolean as PropType<TagFormatProps['round']>,
       default: true
     },
     /** 是否为空心 */
@@ -65,17 +68,19 @@ export default defineComponent({
     },
     /** 空值显示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<TagFormatProps['emptyText']>,
       default: '--'
     },
     /** 自定义类名 */
     className: {
-      type: String,
+      type: String as PropType<TagFormatProps['className']>,
       default: ''
     }
   },
 
-  emits: ['click'],
+  emits: {
+    click: () => true
+  },
 
   setup(props, { emit, slots }) {
     const value = toRef(props, 'value');

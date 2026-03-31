@@ -44,7 +44,10 @@ export default defineComponent({
 
   props: {
     /** 绑定值 */
-    modelValue: [String, Array] as PropType<MfwUploadProps['modelValue']>,
+    modelValue: {
+      type: [String, Array] as PropType<MfwUploadProps['modelValue']>,
+      default: undefined
+    },
     /** 上传类型 */
     uploadType: {
       type: String as PropType<MfwUploadProps['uploadType']>,
@@ -52,32 +55,32 @@ export default defineComponent({
     },
     /** 是否多选 */
     multiple: {
-      type: Boolean,
+      type: Boolean as PropType<MfwUploadProps['multiple']>,
       default: false
     },
     /** 最大上传数量 */
     limit: {
-      type: Number,
+      type: Number as PropType<MfwUploadProps['limit']>,
       default: 1
     },
     /** 是否禁用 */
     disabled: {
-      type: Boolean,
+      type: Boolean as PropType<MfwUploadProps['disabled']>,
       default: false
     },
     /** 文件大小限制（MB） */
     maxSize: {
-      type: Number,
+      type: Number as PropType<MfwUploadProps['maxSize']>,
       default: 10
     },
     /** 允许的文件类型 */
     accept: {
-      type: String,
+      type: String as PropType<MfwUploadProps['accept']>,
       default: ''
     },
     /** 允许的文件扩展名 */
     fileTypes: {
-      type: Array as PropType<string[]>,
+      type: Array as PropType<MfwUploadProps['fileTypes']>,
       default: () => ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     },
     /** 自定义上传方法 */
@@ -90,26 +93,32 @@ export default defineComponent({
     },
     /** Element Plus Upload Props */
     elProps: {
-      type: Object as PropType<Partial<UploadProps>>
+      type: Object as PropType<Partial<MfwUploadProps['elProps']>>
     },
     /** 列表类型 */
     listType: {
-      type: String as PropType<'text' | 'picture' | 'picture-card'>,
+      type: String as PropType<MfwUploadProps['listType']>,
       default: 'picture-card'
     },
     /** 是否显示删除按钮 */
     showDelete: {
-      type: Boolean,
+      type: Boolean as PropType<MfwUploadProps['showDelete']>,
       default: true
     },
     /** 空值提示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<MfwUploadProps['emptyText']>,
       default: '点击上传'
     }
   },
 
-  emits: ['update:modelValue', 'change', 'success', 'error', 'remove'],
+  emits: {
+    'update:modelValue': (value: any) => true,
+    change: (value: any) => true,
+    success: (response: any) => true,
+    error: (error: Error) => true,
+    remove: (file: any) => true
+  },
 
   setup(props, { emit, expose, slots }) {
     const fileList = ref<UploadUserFile[]>([]);

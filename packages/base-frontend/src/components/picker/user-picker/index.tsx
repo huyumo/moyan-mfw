@@ -135,7 +135,13 @@ export default defineComponent({
     }
   },
 
-  emits: ['update:modelValue', 'change', 'clear', 'search', 'department-change'],
+  emits: {
+    'update:modelValue': (value: any) => true,
+    change: (value: any) => true,
+    clear: () => true,
+    search: (keyword: string) => true,
+    'department-change': (departmentIds: string[]) => true
+  },
 
   setup(props, { emit, expose, slots }) {
     const selectRef = ref<any>();

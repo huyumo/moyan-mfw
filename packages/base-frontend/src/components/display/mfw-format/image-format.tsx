@@ -17,7 +17,10 @@ export default defineComponent({
 
   props: {
     /** 图片 URL */
-    value: [String, Array] as PropType<ImageFormatProps['value']>,
+    value: {
+      type: [String, Array] as PropType<ImageFormatProps['value']>,
+      default: null
+    },
     /** 图片宽度 */
     width: {
       type: [Number, String] as PropType<ImageFormatProps['width']>,
@@ -30,7 +33,7 @@ export default defineComponent({
     },
     /** 是否支持预览 */
     preview: {
-      type: Boolean,
+      type: Boolean as PropType<ImageFormatProps['preview']>,
       default: false
     },
     /** fit 模式 */
@@ -40,17 +43,19 @@ export default defineComponent({
     },
     /** 空值显示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<ImageFormatProps['emptyText']>,
       default: '--'
     },
     /** 自定义类名 */
     className: {
-      type: String,
+      type: String as PropType<ImageFormatProps['className']>,
       default: ''
     }
   },
 
-  emits: ['click'],
+  emits: {
+    click: (url: string) => true
+  },
 
   setup(props, { emit, slots }) {
     const value = toRef(props, 'value');

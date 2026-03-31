@@ -46,57 +46,60 @@ export default defineComponent({
   props: {
     /** 绑定值 */
     modelValue: {
-      type: String,
+      type: String as PropType<MfwIconPickerProps['modelValue']>,
       default: ''
     },
     /** 图标列表 */
     icons: {
-      type: Array as PropType<IconItem[]>,
+      type: Array as PropType<MfwIconPickerProps['icons']>,
       default: () => defaultIcons
     },
     /** 是否显示搜索 */
     showSearch: {
-      type: Boolean,
+      type: Boolean as PropType<MfwIconPickerProps['showSearch']>,
       default: true
     },
     /** 搜索占位符 */
     searchPlaceholder: {
-      type: String,
+      type: String as PropType<MfwIconPickerProps['searchPlaceholder']>,
       default: '搜索图标...'
     },
     /** 图标尺寸 */
     iconSize: {
-      type: [Number, String],
+      type: [Number, String] as PropType<MfwIconPickerProps['iconSize']>,
       default: 20
     },
     /** 每行图标数量 */
     columns: {
-      type: Number,
+      type: Number as PropType<MfwIconPickerProps['columns']>,
       default: 10
     },
     /** 弹窗宽度 */
     popupWidth: {
-      type: [Number, String],
+      type: [Number, String] as PropType<MfwIconPickerProps['popupWidth']>,
       default: 400
     },
     /** 是否禁用 */
     disabled: {
-      type: Boolean,
+      type: Boolean as PropType<MfwIconPickerProps['disabled']>,
       default: false
     },
     /** 占位符文本 */
     placeholder: {
-      type: String,
+      type: String as PropType<MfwIconPickerProps['placeholder']>,
       default: '请选择图标'
     },
     /** 清空提示文本 */
     clearText: {
-      type: String,
+      type: String as PropType<MfwIconPickerProps['clearText']>,
       default: '清空'
     }
   },
 
-  emits: ['update:modelValue', 'change'],
+  emits: {
+    'update:modelValue': (value: string) => true,
+    change: (value: string) => true
+  },
 
   setup(props, { emit, expose }) {
     const visible = ref(false);

@@ -24,47 +24,51 @@ export default defineComponent({
   props: {
     /** 绑定值 */
     modelValue: {
-      type: [Object, Array, String] as PropType<any>,
+      type: [Object, Array, String] as PropType<MfwJsonEditorProps['modelValue']>,
       default: null
     },
     /** 是否只读 */
     readonly: {
-      type: Boolean,
+      type: Boolean as PropType<MfwJsonEditorProps['readonly']>,
       default: false
     },
     /** 是否显示行号 */
     lineNumbers: {
-      type: Boolean,
+      type: Boolean as PropType<MfwJsonEditorProps['lineNumbers']>,
       default: true
     },
     /** 缩进空格数 */
     indent: {
-      type: Number,
+      type: Number as PropType<MfwJsonEditorProps['indent']>,
       default: 2
     },
     /** 占位符文本 */
     placeholder: {
-      type: String,
+      type: String as PropType<MfwJsonEditorProps['placeholder']>,
       default: '请输入 JSON'
     },
     /** 是否禁用 */
     disabled: {
-      type: Boolean,
+      type: Boolean as PropType<MfwJsonEditorProps['disabled']>,
       default: false
     },
     /** 最小高度 */
     minHeight: {
-      type: String,
+      type: String as PropType<MfwJsonEditorProps['minHeight']>,
       default: '200px'
     },
     /** 最大高度 */
     maxHeight: {
-      type: String,
+      type: String as PropType<MfwJsonEditorProps['maxHeight']>,
       default: '500px'
     }
   },
 
-  emits: ['update:modelValue', 'change', 'error'],
+  emits: {
+    'update:modelValue': (value: any) => true,
+    change: (value: any) => true,
+    error: (error: Error) => true
+  },
 
   setup(props, { emit, expose }) {
     const editorRef = ref<any>();

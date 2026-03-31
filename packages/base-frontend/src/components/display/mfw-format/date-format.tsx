@@ -104,7 +104,10 @@ export default defineComponent({
 
   props: {
     /** 日期值 */
-    value: [Date, String, Number] as PropType<DateFormatProps['value']>,
+    value: {
+      type: [Date, String, Number] as PropType<DateFormatProps['value']>,
+      default: null
+    },
     /** 格式化模板 */
     fmt: {
       type: String as PropType<DateFormatProps['fmt']>,
@@ -112,12 +115,14 @@ export default defineComponent({
     },
     /** 空值显示文本 */
     emptyText: {
-      type: String,
+      type: String as PropType<DateFormatProps['emptyText']>,
       default: '--'
     }
   },
 
-  emits: ['click'],
+  emits: {
+    click: () => true
+  },
 
   setup(props, { emit, slots }) {
     const value = toRef(props, 'value');
