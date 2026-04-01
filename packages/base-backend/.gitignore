@@ -1,0 +1,46 @@
+# 依赖
+node_modules/
+.pnp
+.pnp.js
+
+# 测试
+coverage/
+*.lcov
+
+# 生产构建
+dist/
+build/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# 日志
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 临时文件
+tmp/
+temp/
+.cache/
+
+# TypeORM
+ormconfig.js
+ormconfig.json
+ormconfig.yml
+
+# 数据库迁移（开发时生成）
+src/database/migrations/*.ts

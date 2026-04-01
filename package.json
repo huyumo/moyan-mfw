@@ -35,7 +35,10 @@
     "eslint-plugin-vue": "^10.5.1",
     "husky": "^9.1.7",
     "lint-staged": "^15.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.21.0",
+    "typeorm": "^0.3.28",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.46.2",
     "vue-eslint-parser": "^10.2.0"

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # MySQL 数据库
+  mysql:
+    image: mysql:8.0
+    container_name: moyan-mfw-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123456
+      MYSQL_DATABASE: moyan_mfw
+      MYSQL_USER: moyan
+      MYSQL_PASSWORD: moyan123456
+      TZ: Asia/Shanghai
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+    networks:
+      - moyan-mfw-network
+
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: moyan-mfw-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - moyan-mfw-network
+
+  # 应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: moyan-mfw-app
+    restart: always
+    environment:
+      NODE_ENV: development
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USERNAME: moyan
+      DB_PASSWORD: moyan123456
+      DB_NAME: moyan_mfw
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ''
+      JWT_SECRET: dev-secret-change-in-production
+    ports:
+      - '3000:3000'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - moyan-mfw-network
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  moyan-mfw-network:
+    driver: bridge

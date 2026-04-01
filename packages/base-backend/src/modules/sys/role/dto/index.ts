@@ -1,0 +1,12 @@
+/**
+ * @fileoverview 角色模块 DTO 统一导出
+ * @description 导出角色模块的所有 DTO
+ */
+
+// Request DTOs
+export { CreateRoleDto } from './req/create-role.dto';
+export { UpdateRoleDto } from './req/update-role.dto';
+export { AssignPermissionsDto } from './req/assign-permissions.dto';
+
+// Response DTOs
+export { RoleResponseDto } from './res/role-response.dto';
