@@ -1,4 +1,5 @@
 ﻿packages:
+  - 'packages/base-backend'
   - 'packages/base-frontend'
   - 'packages/component-demo'
   - 'frontend'
