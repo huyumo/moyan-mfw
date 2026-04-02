@@ -139,9 +139,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(params: LoginParams): Promise<boolean> {
     loading.value = true;
     try {
-      const result = await new ApiAuthLogin({
+      const response = await new ApiAuthLogin({
         params: { username: params.username, password: params.password },
       });
+
+      // API 返回格式: {code, data: {accessToken, refreshToken, user, ...}, message}
+      // moyan-api 可能返回 response.data 或 response.data.data
+      const result = (response as any).data || response;
 
       // 保存 Token (API 返回 accessToken)
       saveToken(result.accessToken, result.refreshToken, result.expiresIn);
@@ -149,9 +153,9 @@ export const useAuthStore = defineStore('auth', () => {
       // 保存用户基本信息
       user.value = {
         id: '', // API 未返回 id
-        username: result.user.username,
-        nickname: result.user.nickname,
-        avatar: result.user.avatar,
+        username: result.user?.username || '',
+        nickname: result.user?.nickname || '',
+        avatar: result.user?.avatar || '',
         gender: 0,
         isDeveloper: false,
         userStatus: 1,
@@ -196,7 +200,10 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 获取用户详细信息 */
   async function fetchUserInfo(): Promise<UserInfo> {
-    const result = await new ApiAuthGetCurrentUser({});
+    const response = await new ApiAuthGetCurrentUser({});
+
+    // 处理可能的响应包装
+    const result = (response as any).data || response;
 
     user.value = {
       id: result.id,
