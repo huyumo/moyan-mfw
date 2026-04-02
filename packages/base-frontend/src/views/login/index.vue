@@ -91,9 +91,9 @@
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { AUTH_TOKEN_STORAGE_KEY } from '../../router';
+import { useAuthStore } from '../../store/auth-store';
 import { useLayoutStore } from '../../store/layout-store';
-import type { AsyncExtensionComponent, ExtensionComponentInput } from '../types/layout-types';
+import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
 /** 登录表单状态。 */
 interface LoginFormState {
@@ -113,6 +113,7 @@ type ValidateFieldsError = Record<string, unknown[]>;
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const layoutStore = useLayoutStore();
 const formRef = ref<FormInstance>();
 const usernameInputRef = ref<InputFocusInstance>();
@@ -123,13 +124,13 @@ const asyncExtensionCache = new WeakMap<AsyncExtensionComponent, Component>();
 let lastSubmitAt = 0;
 
 const form = reactive<LoginFormState>({
-  username: 'demo-account',
-  password: '123456',
+  username: '',
+  password: '',
 });
 
 const rules: FormRules<LoginFormState> = {
-  username: [{ required: true, message: 'Username is required', trigger: 'blur' }],
-  password: [{ required: true, message: 'Password is required', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 };
 
 const asideExtensionComponent = computed(() => normalizeExtensionComponent(layoutStore.loginExtensions.aside));
@@ -226,11 +227,20 @@ async function submit() {
 
   loading.value = true;
   try {
-    window.localStorage.setItem(AUTH_TOKEN_STORAGE_KEY, `${form.username}-token`);
-    ElMessage.success('Login succeeded in demo mode');
+    // 调用真实登录 API
+    await authStore.login({
+      username: form.username,
+      password: form.password,
+    });
 
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard';
+    ElMessage.success('登录成功');
+
+    // 跳转到目标页面
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     await router.replace(redirect);
+  } catch (error: any) {
+    const message = error?.response?.data?.message || error?.message || '登录失败，请检查用户名和密码';
+    ElMessage.error(message);
   } finally {
     loading.value = false;
   }

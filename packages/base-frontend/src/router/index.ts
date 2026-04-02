@@ -3,7 +3,8 @@
  */
 
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router, type RouterHistory } from 'vue-router';
-import { createBaseAdminRoutes } from './routes';
+import { buildBasePackageRoutes } from './routes';
+import { setupRouteGuard } from './guard';
 
 /**
  * 本地存储中的认证令牌键名。
@@ -55,125 +56,89 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
  * @returns 可直接挂载到应用的路由实例。
  */
 export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
-  // 如果传入了 routes，直接使用；否则使用自动扫描生成的路由
-  const finalRoutes = options.routes
-    ? [
-        {
-          path: '/login',
-          name: 'AdminLogin',
-          component: () => import('../views/login/Index.vue'),
-          meta: {
-            title: '登录',
-            menu: false,
-          },
-        },
-        {
-          path: '/',
-          component: () => import('../layouts/AdminLayout.vue'),
-          meta: {
-            requiresAuth: true,
-            menu: false,
-          },
-          children: [
-            {
-              path: '',
-              // 优先跳转到 /dashboard，如果没有则跳转到第一个业务路由
-              redirect: () => {
-                if (options.routes?.some(r => r.path === 'dashboard' || r.path === '/dashboard')) {
-                  return '/dashboard';
-                }
-                if (options.routes && options.routes.length > 0) {
-                  const firstRoute = options.routes[0];
-                  return '/' + firstRoute.path.replace(/^\//, '');
-                }
-                return '/404';
-              },
-            },
-            // 传入的业务路由，需要去除路径前导/以适配子路由
-            // 同时处理 redirect 函数，确保返回正确的子路由路径
-            ...options.routes.map((route) => {
-              const newPath = route.path.replace(/^\//, '');
+  // 始终获取基包自己的路由（sys 模块等）
+  const basePackageRoutes = buildBasePackageRoutes();
 
-              // 如果 redirect 是字符串且带前导/，需要转换为相对路径
-              if (typeof route.redirect === 'string' && route.redirect.startsWith('/')) {
-                return {
-                  ...route,
-                  path: newPath,
-                  redirect: route.redirect.replace(/^\//, ''),
-                };
-              }
-              return {
-                ...route,
-                path: newPath,
-              };
-            }),
-          ],
-        },
+  // 合并基包路由和业务路由
+  const businessRoutes = options.routes || [];
+  const allChildren = [...basePackageRoutes, ...businessRoutes];
+
+  const finalRoutes = [
+    {
+      path: '/login',
+      name: 'AdminLogin',
+      component: () => import('../views/login/Index.vue'),
+      meta: {
+        title: '登录',
+        menu: false,
+      },
+    },
+    {
+      path: '/',
+      component: () => import('../layouts/AdminLayout.vue'),
+      meta: {
+        requiresAuth: true,
+        menu: false,
+      },
+      children: [
         {
-          path: '/403',
-          name: 'AdminForbidden',
-          component: () => import('../views/forbidden/Index.vue'),
-          meta: {
-            title: '权限不足',
-            requiresAuth: true,
-            menu: false,
-          },
+          path: '',
+          redirect: '/dashboard',
         },
-        {
-          path: '/404',
-          name: 'AdminNotFound',
-          component: () => import('../views/not-found/Index.vue'),
-          meta: {
-            title: '页面不存在',
-            menu: false,
-          },
-        },
-        {
-          path: '/:pathMatch(.*)*',
-          redirect: '/404',
-        },
-      ]
-    : createBaseAdminRoutes();
+        // 注入合并后的路由
+        ...allChildren.map((route) => {
+          const newPath = route.path.replace(/^\//, '');
+
+          // 如果 redirect 是字符串且带前导/，需要转换为相对路径
+          if (typeof route.redirect === 'string' && route.redirect.startsWith('/')) {
+            return {
+              ...route,
+              path: newPath,
+              redirect: route.redirect.replace(/^\//, ''),
+            };
+          }
+          return {
+            ...route,
+            path: newPath,
+          };
+        }),
+      ],
+    },
+    {
+      path: '/403',
+      name: 'AdminForbidden',
+      component: () => import('../views/forbidden/Index.vue'),
+      meta: {
+        title: '权限不足',
+        requiresAuth: true,
+        menu: false,
+      },
+    },
+    {
+      path: '/404',
+      name: 'AdminNotFound',
+      component: () => import('../views/not-found/Index.vue'),
+      meta: {
+        title: '页面不存在',
+        menu: false,
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404',
+    },
+  ];
 
   const router = createRouter({
     history: options.history ?? createWebHistory(options.base),
     routes: finalRoutes,
   });
 
-  const appTitle = options.title ?? '墨焱管理后台';
-
-  router.beforeEach((to) => {
-    if (typeof document !== 'undefined') {
-      document.title = resolvePageTitle(to.meta.title, appTitle);
-    }
-
-    const token = readAuthToken();
-    if (to.meta.requiresAuth && !token) {
-      return {
-        path: '/login',
-        query: {
-          redirect: to.fullPath,
-        },
-      };
-    }
-
-    if (to.path === '/login' && token) {
-      // 登录后跳转到首页或第一个业务路由
-      // 优先跳转到 /dashboard，如果没有则跳转到第一个业务路由
-      if (options.routes?.some(r => r.path === 'dashboard' || r.path === '/dashboard')) {
-        return { path: '/dashboard' };
-      }
-      if (options.routes && options.routes.length > 0) {
-        const firstRoute = options.routes[0];
-        return { path: '/' + firstRoute.path.replace(/^\//, '') };
-      }
-      return { path: '/dashboard' };
-    }
-
-    return true;
-  });
+  // 使用新的路由权限守卫
+  setupRouteGuard(router);
 
   return router;
 }
 
 export * from './routes';
+export { setupRouteGuard, resetRouteGuard } from './guard';
