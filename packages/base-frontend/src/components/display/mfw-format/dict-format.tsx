@@ -3,8 +3,8 @@
  * @description 根据字典值显示对应的标签文本
  * @example
  * ```vue
- * <mfw-dict-format value="1" :dict="[{ value: 1, label: '启用' }]" />
- * <mfw-dict-format value="1" :dict="dictData" as-tag />
+ * <MfwDictFormat value="1" :dict="[{ value: 1, label: '启用' }]" />
+ * <MfwDictFormat value="1" :dict="dictData" as-tag />
  * ```
  */
 

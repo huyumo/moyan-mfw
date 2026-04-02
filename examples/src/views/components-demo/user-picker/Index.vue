@@ -117,11 +117,24 @@ const departmentData: DepartmentInfo[] = [
   }
 ]
 
-const handleDepartmentChange = (department: DepartmentInfo | null) => {
-  if (department) {
-    ElMessage.info(`切换到部门：${department.name}`)
+const handleDepartmentChange = (departmentId: string | number) => {
+  const dept = findDepartmentById(departmentId, departmentData);
+  if (dept) {
+    ElMessage.info(`切换到部门：${dept.name}`);
   }
-}
+};
+
+/** 递归查找部门 */
+const findDepartmentById = (id: string | number, data: DepartmentInfo[]): DepartmentInfo | null => {
+  for (const dept of data) {
+    if (dept.id === id) return dept;
+    if (dept.children) {
+      const found = findDepartmentById(id, dept.children);
+      if (found) return found;
+    }
+  }
+  return null;
+};
 
 // ==================== 示例 4: 带默认值 ====================
 const selectedUser4 = ref<UserInfo | undefined>(undefined)

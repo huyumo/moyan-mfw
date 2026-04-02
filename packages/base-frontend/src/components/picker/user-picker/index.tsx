@@ -4,16 +4,16 @@
  * @example
  * ```vue
  * <!-- 单选 -->
- * <mfw-user-picker v-model="userId" />
+ * <MfwUserPicker v-model="userId" />
  *
  * <!-- 多选 -->
- * <mfw-user-picker v-model="userIds" multiple />
+ * <MfwUserPicker v-model="userIds" multiple />
  *
  * <!-- 显示部门筛选 -->
- * <mfw-user-picker v-model="userId" show-department-filter />
+ * <MfwUserPicker v-model="userId" show-department-filter />
  *
  * <!-- 自定义占位符 -->
- * <mfw-user-picker v-model="userId" placeholder="请选择用户" />
+ * <MfwUserPicker v-model="userId" placeholder="请选择用户" />
  * ```
  */
 
@@ -137,10 +137,10 @@ export default defineComponent({
 
   emits: {
     'update:modelValue': (value: any) => true,
-    change: (value: any) => true,
+    change: (value: any, oldValue: any) => true,
     clear: () => true,
     search: (keyword: string) => true,
-    'department-change': (departmentIds: string[]) => true
+    'department-change': (departmentId: string | number) => true
   },
 
   setup(props, { emit, expose, slots }) {

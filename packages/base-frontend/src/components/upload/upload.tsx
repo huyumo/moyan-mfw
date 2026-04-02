@@ -4,18 +4,18 @@
  * @example
  * ```vue
  * <!-- 单图上传 -->
- * <mfw-upload v-model="imageUrl" />
+ * <MfwUpload v-model="imageUrl" />
  *
  * <!-- 多图上传 -->
- * <mfw-upload v-model="imageUrls" :multiple="true" :limit="9" />
+ * <MfwUpload v-model="imageUrls" :multiple="true" :limit="9" />
  *
  * <!-- 自定义上传按钮 -->
- * <mfw-upload v-model="imageUrl">
+ * <MfwUpload v-model="imageUrl">
  *   <el-button type="primary">选择文件</el-button>
  * </mfw-upload>
  *
  * <!-- 图片列表 -->
- * <mfw-upload v-model="imageUrls" list-type="picture-card" />
+ * <MfwUpload v-model="imageUrls" list-type="picture-card" />
  * ```
  */
 
@@ -114,9 +114,9 @@ export default defineComponent({
 
   emits: {
     'update:modelValue': (value: any) => true,
-    change: (value: any) => true,
-    success: (response: any) => true,
-    error: (error: Error) => true,
+    change: (uploadFile: any, uploadFiles: any) => true,
+    success: (response: any, uploadFile: any) => true,
+    error: (error: any, uploadFile: any) => true,
     remove: (file: any) => true
   },
 

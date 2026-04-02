@@ -13,17 +13,17 @@
  * ```vue
  * <template>
  *   <!-- 日期格式化 -->
- *   <mfw-date-format value="2026-03-29" fmt="YYYY-MM-DD" />
- *   <mfw-date-format :value="new Date()" fmt="YYYY-MM-DD HH:mm:ss" />
+ *   <MfwDateFormat value="2026-03-29" fmt="YYYY-MM-DD" />
+ *   <MfwDateFormat :value="new Date()" fmt="YYYY-MM-DD HH:mm:ss" />
  *
  *   <!-- 图片格式化 -->
- *   <mfw-image-format value="https://example.com/image.jpg" :width="100" />
+ *   <MfwImageFormat value="https://example.com/image.jpg" :width="100" />
  *
  *   <!-- 字典格式化 -->
- *   <mfw-dict-format value="1" :dict="[{ value: 1, label: '启用' }]" as-tag />
+ *   <MfwDictFormat value="1" :dict="[{ value: 1, label: '启用' }]" as-tag />
  *
  *   <!-- 标签格式化 -->
- *   <mfw-tag-format value="已完成" type="success" />
+ *   <MfwTagFormat value="已完成" type="success" />
  * </template>
  * ```
  */

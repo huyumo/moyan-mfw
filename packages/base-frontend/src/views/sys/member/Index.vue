@@ -1,0 +1,208 @@
+<!--
+/**
+ * @fileoverview 成员管理列表页面
+ * @description 管理应用实例下的成员及其角色分配
+ */
+-->
+<template>
+  <MfwPageScene
+    ref="pageScene"
+    :show-search="false"
+    :columns="columns"
+    :action-column="actionColumn"
+    :load-data="loadData"
+  >
+    <template #search-actions="{ loading }">
+      <el-button type="primary" :loading="loading" @click="handleAdd">
+        <el-icon><Plus /></el-icon>
+        添加成员
+      </el-button>
+    </template>
+  </MfwPageScene>
+</template>
+
+<script setup lang="ts">
+import { ref, h, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { ElMessage, ElMessageBox, ElTag, ElButton, ElAvatar } from 'element-plus';
+import { Plus, Edit, Delete } from '@element-plus/icons-vue';
+import MfwPageScene from '../../../components/page/page-scene';
+import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPopup } from '../../../components/feedback';
+import {
+  ApiMemberGetMembers,
+  ApiMemberRemoveMember,
+} from '../../../apis/sys';
+import type { MemberResponseDto } from '../../../apis/sys/schemas';
+import AddMemberForm from './AddMemberForm.vue';
+import RoleAssignForm from './RoleAssignForm.vue';
+
+/** 状态常量 */
+const STATUS = {
+  ENABLED: 1,
+  DISABLED: 0,
+} as const;
+
+defineOptions({ name: 'MfwMemberList' });
+
+const route = useRoute();
+const appId = ref<string>(route.query.appId as string || '');
+const pageScene = ref<MfwPageSceneInstance>();
+
+/** 表格列 */
+const columns = [
+  {
+    prop: 'user',
+    label: '头像',
+    width: 80,
+    render: ({ row }: { row: MemberResponseDto }) => h(ElAvatar, {
+      size: 40,
+      src: row.user?.avatar,
+    }, () => row.user?.nickname?.charAt(0) || row.user?.username?.charAt(0) || '?'),
+  },
+  {
+    prop: 'user.nickname',
+    label: '昵称',
+    minWidth: 120,
+    render: ({ row }: { row: MemberResponseDto }) => row.user?.nickname || '-',
+  },
+  {
+    prop: 'user.username',
+    label: '用户名',
+    minWidth: 120,
+    render: ({ row }: { row: MemberResponseDto }) => row.user?.username || '-',
+  },
+  {
+    prop: 'user.phone',
+    label: '手机号',
+    minWidth: 120,
+    render: ({ row }: { row: MemberResponseDto }) => (row.user as any)?.phone || '-',
+  },
+  {
+    prop: 'roles',
+    label: '角色',
+    minWidth: 200,
+    render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'role-tags' },
+      (row.roles || []).map((r) =>
+        h(ElTag, {
+          key: r.roleId,
+          type: r.isBuiltin === STATUS.ENABLED ? 'warning' : 'primary',
+          size: 'small',
+          style: 'margin-right: 4px',
+        }, () => r.roleName)
+      ),
+    ),
+  },
+  {
+    prop: 'createdAt',
+    label: '加入时间',
+    width: 180,
+    render: ({ row }: { row: MemberResponseDto }) => row.createdAt || '-',
+  },
+];
+
+/** 操作列 */
+const actionColumn = {
+  prop: 'action',
+  label: '操作',
+  width: 150,
+  fixed: 'right' as const,
+  render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'action-buttons' }, [
+    h(ElButton, {
+      type: 'primary',
+      link: true,
+      icon: Edit,
+      onClick: () => handleEditRoles(row),
+    }, () => '分配角色'),
+    h(ElButton, {
+      type: 'danger',
+      link: true,
+      icon: Delete,
+      onClick: () => handleRemove(row),
+    }, () => '移除'),
+  ]),
+};
+
+/** 加载数据 */
+const loadData = async () => {
+  if (!appId.value) {
+    return { list: [], total: 0 };
+  }
+  const result = await new ApiMemberGetMembers({
+    params: { appId: appId.value },
+  });
+  return {
+    list: result || [],
+    total: result?.length || 0,
+  };
+};
+
+/** 添加成员 */
+const handleAdd = () => {
+  MfwPopup.open({
+    title: '添加成员',
+    type: 'dialog',
+    component: AddMemberForm,
+    data: { appId: appId.value },
+    popupProps: { width: 500 },
+    on: {
+      confirm: () => {
+        ElMessage.success('添加成功');
+        pageScene.value?.refresh();
+      },
+    },
+  });
+};
+
+/** 分配角色 */
+const handleEditRoles = (row: MemberResponseDto) => {
+  MfwPopup.open({
+    title: '分配角色',
+    type: 'dialog',
+    component: RoleAssignForm,
+    data: { appId: appId.value, member: row },
+    popupProps: { width: 500 },
+    on: {
+      confirm: () => {
+        ElMessage.success('角色分配成功');
+        pageScene.value?.refresh();
+      },
+    },
+  });
+};
+
+/** 移除成员 */
+const handleRemove = async (row: MemberResponseDto) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要将「${row.user?.nickname || row.user?.username}」从应用中移除吗？`,
+      '确认移除',
+      { type: 'warning' }
+    );
+    await new ApiMemberRemoveMember({
+      params: { appId: appId.value, userId: row.userId },
+    });
+    ElMessage.success('移除成功');
+    pageScene.value?.refresh();
+  } catch {
+    // 用户取消
+  }
+};
+
+onMounted(() => {
+  appId.value = route.query.appId as string || '';
+});
+</script>
+
+<style scoped lang="scss">
+.action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.role-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+</style>

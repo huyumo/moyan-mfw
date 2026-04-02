@@ -3,8 +3,8 @@
  * @description 将文本值显示为 Element Plus 标签样式
  * @example
  * ```vue
- * <mfw-tag-format value="已完成" type="success" />
- * <mfw-tag-format value="处理中" auto-color />
+ * <MfwTagFormat value="已完成" type="success" />
+ * <MfwTagFormat value="处理中" auto-color />
  * ```
  */
 

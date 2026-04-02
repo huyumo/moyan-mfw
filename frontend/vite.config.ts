@@ -6,12 +6,17 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 
+// base-frontend 源码路径
+const baseFrontendSrc = resolve(__dirname, '../packages/base-frontend/src');
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
     alias: {
+      // frontend 自身别名
       '@': resolve(__dirname, 'src'),
-      'moyan-mfw-base-frontend': resolve(__dirname, '../packages/base-frontend/src'),
+      // base-frontend 包入口
+      'moyan-mfw-base-frontend': baseFrontendSrc,
     },
   },
   server: {

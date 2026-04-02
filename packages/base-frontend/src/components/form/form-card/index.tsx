@@ -3,7 +3,7 @@
  * @description 配置驱动的表单组件，支持分组、动态显示/禁用等高级功能
  * @example
  * ```vue
- * <mfw-form-card
+ * <MfwFormCard
  *   :form-data="formData"
  *   :template="formTemplate"
  *   @change="handleChange"

@@ -168,13 +168,11 @@ export default defineComponent({
     return () => (
       <div class="mfw-json-editor">
         <div class="mfw-json-editor-toolbar">
-          {!props.readonly && !props.disabled && (
-            <>
-              <el-button size="small" onClick={format}>格式化</el-button>
-              <el-button size="small" onClick={copy}>复制</el-button>
-              <el-button size="small" onClick={clear}>清空</el-button>
-            </>
-          )}
+          {!props.readonly && !props.disabled && [
+              <el-button key="format" size="small" onClick={format}>格式化</el-button>,
+              <el-button key="copy" size="small" onClick={copy}>复制</el-button>,
+              <el-button key="clear" size="small" onClick={clear}>清空</el-button>
+            ]}
         </div>
         <ElInput
           ref={editorRef}
