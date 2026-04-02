@@ -234,12 +234,13 @@ const NotFoundPage = () => import('../views/not-found/Index.vue');
 /**
  * 基包内部使用：扫描基包自己的 views 目录构建路由
  */
-function buildBasePackageRoutes(): RouteRecordRaw[] {
+export function buildBasePackageRoutes(): RouteRecordRaw[] {
   const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
     eager: true,
     import: 'default',
   });
-  return buildRoutesFromConfigs(allConfigs);
+  // minSegments: 1 允许单层路由（如 dashboard）被创建
+  return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
 }
 
 /**
