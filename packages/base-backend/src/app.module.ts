@@ -14,6 +14,17 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 // 配置
 import { databaseConfig, appConfig, redisConfig } from './config';
 
+// 实体 - 直接导入确保打包后可用
+import { User } from './modules/sys/user/entities/user.entity';
+import { Role } from './modules/sys/role/entities/role.entity';
+import { UserRole } from './modules/sys/role/entities/user-role.entity';
+import { Permission } from './modules/sys/permission/entities/permission.entity';
+import { RolePermission } from './modules/sys/permission/entities/role-permission.entity';
+import { AppType } from './modules/sys/app-type/entities/app-type.entity';
+import { App } from './modules/sys/app/entities/app.entity';
+import { AppMember } from './modules/sys/app/entities/app-member.entity';
+import { AuditLog } from './modules/sys/audit-log/entities/audit-log.entity';
+
 // 业务模块
 import { AuthModule } from './modules/sys/auth/auth.module';
 import { UserModule } from './modules/sys/user/user.module';
@@ -28,28 +39,34 @@ import { AuditLogModule } from './modules/sys/audit-log/audit-log.module';
 import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 
+// 所有实体数组
+const entities = [User, Role, UserRole, Permission, RolePermission, AppType, App, AppMember, AuditLog];
+
 /**
  * 数据库配置工厂函数
  */
 function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOptions {
-  const dbConfig = configService.get('database');
-  console.log('Database config loaded:', dbConfig?.database);
+  // 尝试从配置服务获取，如果失败则使用环境变量
+  const dbConfig = configService.get<any>('databaseConfig') || configService.get('database') || {};
+  console.log('Database config loaded from service:', dbConfig?.database);
+  console.log('DB_NAME from env:', process.env.DB_NAME);
 
   return {
     type: 'mysql',
-    host: dbConfig?.host || '47.109.38.249',
-    port: dbConfig?.port || 3306,
-    username: dbConfig?.username || 'moyan_mfw',
-    password: dbConfig?.password || 'moyan_mfw',
-    database: dbConfig?.database || 'moyan_mfw',
+    host: dbConfig?.host || process.env.DB_HOST || '47.109.38.249',
+    port: dbConfig?.port || parseInt(process.env.DB_PORT || '3306', 10),
+    username: dbConfig?.username || process.env.DB_USERNAME || 'moyan_mfw',
+    password: dbConfig?.password || process.env.DB_PASSWORD || 'moyan_mfw',
+    database: dbConfig?.database || process.env.DB_NAME || 'moyan_mfw',
     charset: dbConfig?.charset || 'utf8mb4',
     timezone: dbConfig?.timezone || '+08:00',
     poolSize: dbConfig?.poolSize || 100,
     // 测试环境启用 synchronize 以自动创建表（不 dropSchema，由 global-setup 管理）
-    synchronize: dbConfig?.synchronize || process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development',
+    synchronize: dbConfig?.synchronize ?? (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development'),
     dropSchema: false,
-    logging: dbConfig?.logging || false,
-    entities: [__dirname + '/modules/sys/**/*.entity{.ts,.js}'],
+    logging: dbConfig?.logging ?? (process.env.NODE_ENV === 'development'),
+    // 使用直接导入的实体数组，而不是 glob 模式
+    entities: entities,
     migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
   } as TypeOrmModuleOptions;
 }
