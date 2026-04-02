@@ -17,4 +17,9 @@ interface ImportMeta {
     pattern: string | string[],
     options?: { eager?: boolean; import?: string; query?: string },
   ) => Record<string, unknown>;
+  /** Vite 环境变量 */
+  env: {
+    VITE_API_BASE_URL?: string;
+    [key: string]: string | undefined;
+  };
 }

@@ -20,7 +20,7 @@
 -->
 <template>
   <router-view />
-  <mfw-popup-manager />
+  <MfwPopupManager />
 </template>
 
 <script setup lang="ts">

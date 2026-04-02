@@ -3,8 +3,8 @@
  * @description 将日期值格式化为指定格式的字符串
  * @example
  * ```vue
- * <mfw-date-format value="2026-03-29" fmt="YYYY-MM-DD" />
- * <mfw-date-format :value="new Date()" fmt="YYYY-MM-DD HH:mm:ss" />
+ * <MfwDateFormat value="2026-03-29" fmt="YYYY-MM-DD" />
+ * <MfwDateFormat :value="new Date()" fmt="YYYY-MM-DD HH:mm:ss" />
  * ```
  */
 

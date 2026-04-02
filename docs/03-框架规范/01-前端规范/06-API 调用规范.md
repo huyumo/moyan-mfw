@@ -495,20 +495,7 @@ const handleUpload = async (file: File) => {
 ## 6.6 最佳实践
 
 ### 6.1 API 类命名规范
-
-```typescript
-// ✅ 推荐：清晰描述功能的命名
-export class ApiUserList extends ApiCall { }           // 获取列表
-export class ApiUserInfoFindOne extends ApiCall { }    // 获取单个详情
-export class ApiUserInfoAdd extends ApiCall { }        // 添加
-export class ApiUserInfoEdit extends ApiCall { }       // 编辑
-export class ApiUserInfoDelete extends ApiCall { }     // 删除
-export class ApiUserAuthLoginByPwd extends ApiCall { } // 登录
-
-// ❌ 避免：模糊的命名
-export class ApiGetData extends ApiCall { }
-export class ApiDoSomething extends ApiCall { }
-```
+类命名规范是通过 moyan-api 生成器模式自动生成的，符合 RESTful API 规范。
 
 ### 6.2 类型导入规范
 
@@ -522,30 +509,7 @@ import { ApiUserList, User, DtoUserPagerRes } from '@/apis/micro-system'
 ```
 
 ### 6.3 注释规范
-
-```typescript
-// ✅ 推荐：JSDoc 风格注释
-/**
- * 用户模块->获取用户列表
- */
-export class ApiUserList extends ApiCall<...> {
-  path = '/sys/user/list'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * 用户模块->根据手机号获取用户信息
- */
-export class ApiUserInfoByMobile extends ApiCall<
-  { mobile: string },  // 请求参数
-  User                 // 响应类型
-> {
-  path = '/sys/user/info/byMobile'
-  method: MoMethod = 'GET'
-  auth = true
-}
-```
+api注释规范是通过 moyan-api 生成器模式自动生成的，符合 JSDoc 风格。
 
 ### 6.4 避免重复请求
 

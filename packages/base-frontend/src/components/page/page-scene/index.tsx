@@ -3,7 +3,7 @@
  * @description 搜索面板 + 表格一体化组件，支持动态列、自定义渲染、分页等
  * @example
  * ```vue
- * <mfw-page-scene
+ * <MfwPageScene
  *   :search-template="searchTemplate"
  *   :columns="columns"
  *   :load-data="loadData"

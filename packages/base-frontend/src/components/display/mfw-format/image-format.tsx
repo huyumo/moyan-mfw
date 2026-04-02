@@ -3,8 +3,8 @@
  * @description 将图片 URL 格式化为缩略图展示，支持预览
  * @example
  * ```vue
- * <mfw-image-format value="https://example.com/image.jpg" :width="100" :height="100" />
- * <mfw-image-format :value="['url1', 'url2']" :preview="true" />
+ * <MfwImageFormat value="https://example.com/image.jpg" :width="100" :height="100" />
+ * <MfwImageFormat :value="['url1', 'url2']" :preview="true" />
  * ```
  */
 

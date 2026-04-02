@@ -77,7 +77,16 @@ async function bootstrap() {
     .addTag('app-type', '应用类型相关接口')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const document = SwaggerModule.createDocument(app, config, {
+    operationIdFactory: (controllerKey: string, methodKey: string) => {
+      // AuthController_login -> AuthLogin
+      // moyan-api 会自动添加 Api 前缀，所以这里不需要 Api 前缀
+      // 最终生成的类名：ApiAuthLogin
+      const controllerName = controllerKey.replace(/Controller$/, '');
+      const methodName = methodKey.charAt(0).toUpperCase() + methodKey.slice(1);
+      return `${controllerName}${methodName}`;
+    },
+  });
   SwaggerModule.setup('api-docs', app, document, {
     swaggerOptions: {
       persistAuthorization: true,

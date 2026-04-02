@@ -5,10 +5,9 @@
 import 'element-plus/dist/index.css';
 import './styles/base-admin.scss';
 
-import ElementPlus from 'element-plus';
 import { createPinia, type Pinia } from 'pinia';
 import { createApp, type App, type ComponentPublicInstance } from 'vue';
-import type { RouteRecordRaw, Router } from 'vue-router';
+import type { Router } from 'vue-router';
 import { defaultThemeKey } from './config/layout-defaults';
 import type {
   AdminNavigationConfig,
@@ -18,9 +17,10 @@ import type {
   ThemeRegistry,
 } from './types/layout-types';
 import BaseAdminRoot from './layouts/components/base/BaseAdminRoot.vue';
-import { createBaseAdminRouter, type CreateBaseAdminRouterOptions } from './router';
+import { createBaseAdminRouter, type CreateBaseAdminRouterOptions, buildBasePackageRoutes } from './router';
 import { createMenuTreeFromRoutes, dedupeMenuTree } from './router/menu-tree';
 import { useLayoutStore } from './store/layout-store';
+import { setupPlugins } from './plugins';
 
 /**
  * 管理后台启动选项。
@@ -71,9 +71,11 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
   const pinia = options.pinia ?? createPinia();
   const router = createBaseAdminRouter(options);
 
+  // 安装插件（Element Plus + moyan-api 适配器）
+  setupPlugins(app);
+
   app.use(pinia);
   app.use(router);
-  app.use(ElementPlus);
 
   const layoutStore = useLayoutStore(pinia);
 
@@ -90,8 +92,10 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
     layoutStore.patchStyleConfig(options.layout);
   }
 
-  // 从业务路由配置生成菜单树（保留嵌套结构）
-  const businessMenuTree = createMenuTreeFromRoutes(options.routes || [], { parentPath: '/' });
+  // 合并基包路由和业务路由生成菜单树
+  const basePackageRoutes = buildBasePackageRoutes();
+  const allRoutes = [...basePackageRoutes, ...(options.routes || [])];
+  const businessMenuTree = createMenuTreeFromRoutes(allRoutes, { parentPath: '/' });
   const resolvedNavigation: Partial<AdminNavigationConfig> = {
     ...options.navigation,
   };

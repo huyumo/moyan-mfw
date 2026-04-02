@@ -11,7 +11,18 @@
       "Bash(cmd /c \"rmdir /s /q _book\")",
       "Bash(pnpm docs:dev)",
       "Bash(git restore:*)",
-      "Bash(wsl python3:*)"
+      "Bash(wsl python3:*)",
+      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/**)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(pnpm start:dev)",
+      "Bash(curl -s http://localhost:3000/api-docs-json)",
+      "Bash(pnpm update:*)",
+      "Bash(npx vue-tsc:*)",
+      "Bash(cat e:Moyanmoyanmoyan-mfw-workspaceworkspace04moyan-mfwnode_modules.pnpmmoyan-api@*node_modulesmoyan-apipackage.json)",
+      "Bash(pnpm dev:*)",
+      "Bash(curl -s \"http://localhost:5175/src/main.ts\")",
+      "Bash(curl -s \"http://localhost:5175/@fs/E:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/packages/base-frontend/src/views/sys/app-type/Index.vue\")",
+      "Bash(grep -r \"from ''''@/\" packages/base-frontend/src --include=\"*.vue\" --include=\"*.ts\" --include=\"*.tsx\")"
     ]
   }
 }

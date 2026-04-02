@@ -376,17 +376,13 @@ export const MfwPopupManager = defineComponent({
   name: 'MfwPopupManager',
   setup() {
     provide('MfwPopupList', popupList);
-    return () => (
-      <>
-        {popupList.map((item) => (
+    return () => popupList.map((item) => (
           item.type === 'dialog' ? (
             <MfwPopupDialog key={item.uuid} item={item} />
           ) : (
             <MfwPopupDrawer key={item.uuid} item={item} />
           )
-        ))}
-      </>
-    );
+        ));
   }
 });
 
