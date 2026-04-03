@@ -7,6 +7,21 @@
 <template>
   <div class="permission-page">
     <div class="permission-toolbar">
+      <!-- 应用类型选择器 -->
+      <el-select
+        v-model="selectedAppTypeId"
+        placeholder="选择应用类型"
+        style="width: 200px"
+        clearable
+        @change="handleAppTypeChange"
+      >
+        <el-option
+          v-for="item in appTypeList"
+          :key="item.id"
+          :label="item.typeName"
+          :value="item.id"
+        />
+      </el-select>
       <el-input
         v-model="keyword"
         placeholder="搜索权限名称/编码"
@@ -78,8 +93,9 @@ import { MfwPopup } from '../../../components/feedback';
 import {
   ApiPermissionFindAll,
   ApiPermissionDelete,
+  ApiAppTypeFindAllList,
 } from '../../../apis/sys';
-import type { PermissionResponseDto } from '../../../apis/sys/schemas';
+import type { PermissionResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import PermissionForm from './PermissionForm.vue';
 
 /** 状态常量 */
@@ -92,15 +108,36 @@ defineOptions({ name: 'MfwPermissionList' });
 
 const keyword = ref('');
 const selectedNode = ref<PermissionResponseDto | null>(null);
+const selectedAppTypeId = ref<string>('');
+const appTypeList = ref<AppTypeResponseDto[]>([]);
 
 /** 权限树数据 */
 const permissionTree = ref<PermissionResponseDto[]>([]);
+
+/** 加载应用类型列表 */
+const loadAppTypeList = async () => {
+  const result = await new ApiAppTypeFindAllList({});
+  appTypeList.value = result || [];
+  // 默认选择第一个启用的应用类型
+  const enabled = result.find((item: AppTypeResponseDto) => item.typeStatus === 1);
+  if (enabled) {
+    selectedAppTypeId.value = enabled.id;
+    loadPermissionTree();
+  }
+};
+
+/** 应用类型变化 */
+const handleAppTypeChange = (appTypeId: string) => {
+  selectedAppTypeId.value = appTypeId;
+  loadPermissionTree();
+};
 
 /** 加载权限树 */
 const loadPermissionTree = async () => {
   const result = await new ApiPermissionFindAll({
     params: {
       permissionType: 'NORMAL' as any,
+      appTypeId: selectedAppTypeId.value || undefined,
       pageSize: 1000,
     },
   });
@@ -215,7 +252,7 @@ const handleDelete = async (row: PermissionResponseDto) => {
 };
 
 onMounted(() => {
-  loadPermissionTree();
+  loadAppTypeList();
 });
 </script>
 

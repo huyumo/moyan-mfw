@@ -7,6 +7,21 @@
 <template>
   <div class="pc-permission-page">
     <div class="permission-toolbar">
+      <!-- 应用类型选择器 -->
+      <el-select
+        v-model="selectedAppTypeId"
+        placeholder="选择应用类型"
+        style="width: 200px"
+        clearable
+        @change="handleAppTypeChange"
+      >
+        <el-option
+          v-for="item in appTypeList"
+          :key="item.id"
+          :label="item.typeName"
+          :value="item.id"
+        />
+      </el-select>
       <el-button type="primary" @click="handleSync">
         <el-icon>
           <Refresh />
@@ -77,8 +92,9 @@ import {
   ApiPermissionUpdate,
   ApiPermissionSyncPermissions,
   ApiPermissionComparePermissions,
+  ApiAppTypeFindAllList,
 } from '../../../apis/sys';
-import type { PermissionResponseDto, RouteNodeDto } from '../../../apis/sys/schemas';
+import type { PermissionResponseDto, RouteNodeDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import PermissionPcForm from './PermissionPcForm.vue';
 import SyncPreview from './SyncPreview.vue';
 
@@ -94,6 +110,8 @@ const router = useRouter();
 const treeRef = ref();
 const selectedNode = ref<PermissionResponseDto | null>(null);
 const permissionTree = ref<PermissionResponseDto[]>([]);
+const selectedAppTypeId = ref<string>('');
+const appTypeList = ref<AppTypeResponseDto[]>([]);
 
 // 选中的操作权限
 const selectedActions = ref<number[]>([]);
@@ -110,6 +128,24 @@ const permissionActions = [
 
 // 同步结果（用于预览）
 const syncResult = ref<any>(null);
+
+// 加载应用类型列表
+const loadAppTypeList = async () => {
+  const result = await new ApiAppTypeFindAllList({});
+  appTypeList.value = result || [];
+  // 默认选择第一个启用的应用类型
+  const enabled = result.find((item: AppTypeResponseDto) => item.typeStatus === 1);
+  if (enabled) {
+    selectedAppTypeId.value = enabled.id;
+    loadPermissionTree();
+  }
+};
+
+// 应用类型变化
+const handleAppTypeChange = (appTypeId: string) => {
+  selectedAppTypeId.value = appTypeId;
+  loadPermissionTree();
+};
 
 // 转换路由配置为 API 格式
 const convertRoutesToApiFormat = (routes: RouteRecordRaw[]): RouteNodeDto[] => {
@@ -143,13 +179,11 @@ const convertRoutesToApiFormat = (routes: RouteRecordRaw[]): RouteNodeDto[] => {
 const loadPermissionTree = async () => {
   const result = await new ApiPermissionFindAll({
     params: {
-      permissionType: 'PC' as any, // API 类型定义有误，实际应为 string 枚举
+      permissionType: 'PC' as any,
+      appTypeId: selectedAppTypeId.value || undefined,
       pageSize: 1000,
     },
   });
-  // TODO-TASK-2026-04-03-004: 将列表转换为树形结构
-  // 预计完成：2026-04-05
-  // 说明：当前显示扁平列表，需要按 parentId 构建树形结构
   permissionTree.value = result.list || [];
 };
 
@@ -186,13 +220,17 @@ const handlePermissionValueChange = async () => {
 
 // 同步路由
 const handleSync = async () => {
+  if (!selectedAppTypeId.value) {
+    ElMessage.warning('请先选择应用类型');
+    return;
+  }
   // 从路由实例提取实际路由数据
   const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
     const result = await new ApiPermissionSyncPermissions({
       params: {
-        appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
+        appTypeId: selectedAppTypeId.value,
         dryRun: true,
         routes,
       },
@@ -210,7 +248,7 @@ const handleSync = async () => {
           // 执行实际同步
           await new ApiPermissionSyncPermissions({
             params: {
-              appTypeId: 'default',
+              appTypeId: selectedAppTypeId.value,
               dryRun: false,
               routes,
             },
@@ -227,13 +265,17 @@ const handleSync = async () => {
 
 // 检查差异
 const handleCompare = async () => {
+  if (!selectedAppTypeId.value) {
+    ElMessage.warning('请先选择应用类型');
+    return;
+  }
   // 从路由实例提取实际路由数据
   const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
     const result = await new ApiPermissionComparePermissions({
       params: {
-        appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
+        appTypeId: selectedAppTypeId.value,
         routes,
       },
     });
@@ -267,7 +309,7 @@ const handleAddManual = () => {
 };
 
 onMounted(() => {
-  loadPermissionTree();
+  loadAppTypeList();
 });
 </script>
 
