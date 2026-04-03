@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, TreeRepository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './dto';
-import { RouteNodeDto, SyncPermissionResponseDto, ComparePermissionResponseDto, DiffItemDto, SyncDetailDto } from './dto';
+import { RouteNodeDto, SyncPermissionResponseDto, ComparePermissionResponseDto, DiffItemDto, SyncDetailDto, PermissionTreeNodeDto } from './dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
 
@@ -120,6 +120,104 @@ export class PermissionService {
       pageSize,
       totalPages: Math.ceil(total / pageSize),
     };
+  }
+
+  /**
+   * 查询所有权限（树形结构，带 children）
+   * @returns 树形权限列表
+   */
+  async findAllTreeWithChildren(): Promise<PermissionTreeNodeDto[]> {
+    const permissions = await this.permissionRepository.find({
+      order: {
+        sortOrder: 'ASC',
+        createdAt: 'DESC',
+      },
+    });
+    return this.buildTree(permissions);
+  }
+
+  /**
+   * 获取权限树（带 children）
+   * @param parentId - 父权限 ID（可选）
+   * @returns 权限树
+   */
+  async getPermissionTreeWithChildren(parentId?: string): Promise<PermissionTreeNodeDto[]> {
+    const permissions = await this.permissionRepository.find({
+      where: parentId ? { parentId } : undefined,
+      order: {
+        sortOrder: 'ASC',
+      },
+    });
+    return this.buildTree(permissions, parentId);
+  }
+
+  /**
+   * 将扁平列表转换为树形结构
+   * @param permissions - 权限列表
+   * @param rootParentId - 根节点父 ID
+   * @returns 树形结构
+   */
+  private buildTree(
+    permissions: Permission[],
+    rootParentId?: string,
+  ): PermissionTreeNodeDto[] {
+    const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
+    const roots: PermissionTreeNodeDto[] = [];
+
+    // 先创建所有节点的映射
+    permissions.forEach(item => {
+      const node: PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] } = {
+        id: item.id,
+        permName: item.permName,
+        permCode: item.permCode,
+        permDesc: item.permDesc,
+        permissionType: item.permissionType,
+        nodeType: item.nodeType,
+        parentId: item.parentId || undefined,
+        routePath: item.routePath || undefined,
+        externalUrl: item.externalUrl || undefined,
+        iconName: item.iconName || undefined,
+        sortOrder: item.sortOrder,
+        isVisible: item.isVisible,
+        isCache: item.isCache,
+        showMode: item.showMode,
+        permStatus: item.permStatus,
+        isAutoSync: item.isAutoSync,
+        permissionValue: item.permissionValue,
+        createdAt: item.createdAt,
+        updateAt: item.updateAt,
+        children: [],
+      };
+      map.set(item.id, node);
+    });
+
+    // 构建树形结构
+    permissions.forEach(item => {
+      const node = map.get(item.id)!;
+      if (item.parentId && map.has(item.parentId)) {
+        const parent = map.get(item.parentId)!;
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(node);
+      } else if (!item.parentId || item.parentId === rootParentId) {
+        roots.push(node);
+      }
+    });
+
+    // 清理空的 children 数组
+    const cleanEmptyChildren = (nodes: PermissionTreeNodeDto[]) => {
+      nodes.forEach(node => {
+        if (node.children && node.children.length === 0) {
+          delete node.children;
+        } else if (node.children) {
+          cleanEmptyChildren(node.children);
+        }
+      });
+    };
+    cleanEmptyChildren(roots);
+
+    return roots;
   }
 
   /**
@@ -484,5 +582,25 @@ export class PermissionService {
     // 移除开头的斜杠，将路径转换为权限编码
     const cleanPath = path.replace(/^\//, '').replace(/\//g, ':');
     return `pc:${cleanPath || 'root'}`;
+  }
+
+  /**
+   * 从数据库比对权限差异（用于 GET /compare 接口）
+   * @param appTypeId - 应用类型 ID
+   * @returns 比对结果
+   */
+  async comparePermissionsFromDB(
+    appTypeId: string,
+  ): Promise<ComparePermissionResponseDto> {
+    // TODO-TASK-2026-04-03-006: 实现真正的差异比对逻辑
+    // 预计完成：2026-04-05
+    // 当前返回空差异结果，符合文档格式
+    return {
+      added: [],
+      updated: [],
+      removed: [],
+      moved: [],
+      totalDiffs: 0,
+    };
   }
 }
