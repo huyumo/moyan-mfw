@@ -281,6 +281,9 @@ importers:
       element-plus:
         specifier: ^2.5.3
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      moyan-api:
+        specifier: ^1.3.4
+        version: 1.3.4
       pinia:
         specifier: ^2.1.7
         version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
@@ -303,9 +306,6 @@ importers:
       jsdom:
         specifier: ^24.1.0
         version: 24.1.3
-      moyan-api:
-        specifier: ^1.1.1
-        version: 1.1.1
       sass:
         specifier: ^1.70.0
         version: 1.98.0
@@ -4839,8 +4839,8 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
-  moyan-api@1.1.1:
-    resolution: {integrity: sha512-fMMCj7VGBOp0TygvZy0ObOoW9b0N/VJsQTqo4tltj/jDM8GM6E9VYD0adf5lcLosPnRHD6mpnUNsB3fTmLVlzg==}
+  moyan-api@1.3.4:
+    resolution: {integrity: sha512-gas8DrJH/asUz6hqJlAgMSdsR82OiQBP/6mRArZeCThdrCY4IYJEj25jmkDaNx+8maktSbCldU9CxaR7lQVU4Q==}
     hasBin: true
 
   moyan-file-model@1.0.18:
@@ -11721,7 +11721,7 @@ snapshots:
 
   moment@2.30.1: {}
 
-  moyan-api@1.1.1:
+  moyan-api@1.3.4:
     dependencies:
       axios: 1.13.6
       colors: 1.4.0
