@@ -119,13 +119,14 @@ export function buildRoutesFromConfigs(
 
   for (const [relativePath, config] of pageConfigs.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
-    // 子路由路径使用相对路径（只取最后一段）
-    // 例如：'business/orders' -> 'orders'
-    const path = segments[segments.length - 1] || '';
+    // 子路由路径优先使用配置文件中的 path，否则使用目录名
+    // 例如：config.path = 'detail/:id' -> 'detail/:id'
+    // 例如：无 config.path，目录名 'orders' -> 'orders'
+    const routePath = config.path || segments[segments.length - 1] || '';
 
     // 创建路由
     const route: RouteRecordRaw = {
-      path: path,
+      path: routePath,
       name: `Route_${segments.join('_')}` || 'Root',
       component: config.page as RouteRecordRaw['component'],
       meta: {

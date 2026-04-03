@@ -31,11 +31,10 @@ import { MfwPopup } from '../../../components/feedback';
 import {
   ApiRoleFindAll,
   ApiRoleDelete,
-  ApiRoleGetRolePermissions,
-  ApiPermissionFindAllTree,
 } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import RoleForm from './RoleForm.vue';
+import { RolePermissionPanel } from '../../../components/business/role-permission-panel';
 
 /** 状态常量 */
 const STATUS = {
@@ -194,16 +193,22 @@ const handleEdit = (row: RoleResponseDto) => {
   });
 };
 
-/** 分配权限 - TODO: 待实现权限选择组件 */
-const handlePermission = async (row: RoleResponseDto) => {
-  // 加载权限树
-  await new ApiPermissionFindAllTree({ params: {} });
-
-  // 加载当前角色权限
-  await new ApiRoleGetRolePermissions({ params: { id: row.id } });
-
-  // TODO: 打开权限选择弹窗
-  ElMessage.info('权限分配功能开发中');
+/** 分配权限 */
+const handlePermission = (row: RoleResponseDto) => {
+  MfwPopup.open({
+    title: `分配权限 - ${row.roleName}`,
+    type: 'drawer',
+    position: 'rtl',
+    component: RolePermissionPanel,
+    data: { roleId: row.id, appTypeId: row.appTypeId },
+    popupProps: { size: 500 },
+    on: {
+      confirm: () => {
+        ElMessage.success('权限分配成功');
+        pageScene.value?.refresh();
+      },
+    },
+  });
 };
 
 /** 删除 */

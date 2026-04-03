@@ -10,8 +10,10 @@ import {
   ApiAuthLogout,
   ApiAuthRefreshToken,
   ApiAuthGetCurrentUser,
+  ApiAuthGetUserApps,
+  ApiAuthGetUserPermissions,
 } from '../apis/sys';
-import type { LoginResponseDto, UserInfoDto } from '../apis/sys/schemas';
+import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionMenuNodeDto } from '../apis/sys/schemas';
 
 /** Token 存储键名 */
 export const TOKEN_KEY = 'mfw:admin:token';
@@ -39,6 +41,12 @@ export interface AppInstance {
   appCode: string;
   appLogo?: string;
   isOwner: boolean;
+  /** 应用类型 ID */
+  appTypeId?: string;
+  /** 应用类型编码 */
+  appTypeCode?: string;
+  /** 应用类型名称 */
+  appTypeName?: string;
 }
 
 /** 登录请求参数 */
@@ -216,11 +224,35 @@ export const useAuthStore = defineStore('auth', () => {
       roles: result.roles || [],
     };
 
-    // TODO: 获取应用列表需要后端提供新接口
-    // 暂时设置空数组
-    apps.value = [];
-
     return user.value;
+  }
+
+  // ============== 应用实例列表 ==============
+
+  /** 获取用户可访问的应用列表 */
+  async function fetchUserApps(): Promise<AppInstance[]> {
+    try {
+      const response = await new ApiAuthGetUserApps({});
+      const appsData = response.apps || [];
+
+      // 转换为 AppInstance 格式
+      apps.value = appsData.map((app: AppInstanceItemDto) => ({
+        appId: app.appId,
+        appName: app.appName,
+        appCode: app.appCode,
+        appLogo: app.icon,
+        isOwner: app.role === 'owner',
+        appTypeId: app.appTypeId,
+        appTypeCode: app.appTypeCode,
+        appTypeName: app.appTypeName,
+      }));
+
+      return apps.value;
+    } catch (error) {
+      console.error('获取应用列表失败:', error);
+      apps.value = [];
+      return [];
+    }
   }
 
   // ============== 应用实例选择 ==============
@@ -230,8 +262,40 @@ export const useAuthStore = defineStore('auth', () => {
     currentApp.value = app;
     localStorage.setItem(CURRENT_APP_KEY, JSON.stringify(app));
 
-    // TODO: 加载该应用下的权限菜单
-    // await loadPermissions(app.appCode);
+    // 加载该应用下的权限菜单
+    await loadPermissions(app.appId);
+  }
+
+  /** 加载用户在指定应用下的权限菜单 */
+  async function loadPermissions(appId: string): Promise<PermissionMenuItem[]> {
+    try {
+      const response = await new ApiAuthGetUserPermissions({
+        params: { appId },
+      });
+
+      const menuNodes = response.menu || [];
+      permissionMenu.value = transformPermissionMenu(menuNodes);
+
+      return permissionMenu.value;
+    } catch (error) {
+      console.error('加载权限菜单失败:', error);
+      permissionMenu.value = [];
+      return [];
+    }
+  }
+
+  /** 将后端权限菜单节点转换为前端格式 */
+  function transformPermissionMenu(nodes: PermissionMenuNodeDto[]): PermissionMenuItem[] {
+    return nodes
+      .filter(node => node.isVisible !== 0) // 过滤不可见节点
+      .map(node => ({
+        id: node.id,
+        permName: node.permName,
+        permCode: node.permCode,
+        routePath: node.routePath,
+        iconName: node.iconName,
+        children: node.children ? transformPermissionMenu(node.children) : undefined,
+      }));
   }
 
   /** 自动选择应用 */
@@ -278,9 +342,15 @@ export const useAuthStore = defineStore('auth', () => {
       // 2. 获取用户信息
       await fetchUserInfo();
 
-      // 3. 自动选择应用
+      // 3. 获取用户应用列表
+      await fetchUserApps();
+
+      // 4. 自动选择应用（如果只有一个应用或已保存选择）
       if (apps.value.length > 0) {
-        await autoSelectApp();
+        const autoSelected = await autoSelectApp();
+        // 如果有多个应用需要选择，返回 true 但 needSelectApp 为 true
+        // 前端可以根据 needSelectApp 显示应用选择器弹窗
+        return true;
       }
 
       return true;
@@ -316,8 +386,10 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     refreshAccessToken,
     fetchUserInfo,
+    fetchUserApps,
     selectApp,
     autoSelectApp,
+    loadPermissions,
     setPermissionMenu,
     initializeAuth,
   };

@@ -42,3 +42,7 @@ export * from './page/page-scene/mod';
 
 // 选择器类组件
 export * from './picker/mod';
+
+// 业务类组件
+export * from './business/role-permission-panel';
+export * from './business/app-selector-dialog';
