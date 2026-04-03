@@ -70,13 +70,15 @@ import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { Refresh, Search, Plus } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../../components/feedback';
+import { useRouter } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router';
 import {
   ApiPermissionFindAll,
   ApiPermissionUpdate,
-  ApiPermissionSync,
-  ApiPermissionCompare,
+  ApiPermissionSyncPermissions,
+  ApiPermissionComparePermissions,
 } from '../../../apis/sys';
-import type { PermissionResponseDto } from '../../../apis/sys/schemas';
+import type { PermissionResponseDto, RouteNodeDto } from '../../../apis/sys/schemas';
 import PermissionPcForm from './PermissionPcForm.vue';
 import SyncPreview from './SyncPreview.vue';
 
@@ -88,6 +90,7 @@ const STATUS = {
 
 defineOptions({ name: 'MfwPcPermissionList' });
 
+const router = useRouter();
 const treeRef = ref();
 const selectedNode = ref<PermissionResponseDto | null>(null);
 const permissionTree = ref<PermissionResponseDto[]>([]);
@@ -107,6 +110,34 @@ const permissionActions = [
 
 // 同步结果（用于预览）
 const syncResult = ref<any>(null);
+
+// 转换路由配置为 API 格式
+const convertRoutesToApiFormat = (routes: RouteRecordRaw[]): RouteNodeDto[] => {
+  const result: RouteNodeDto[] = [];
+
+  for (const route of routes) {
+    // 跳过特殊路由（如重定向、空布局等）
+    if (route.path === '' || route.path === '/' || !route.meta?.title) {
+      if (route.children && route.children.length > 0) {
+        result.push(...convertRoutesToApiFormat(route.children));
+      }
+      continue;
+    }
+
+    const node: RouteNodeDto = {
+      path: route.path,
+      name: route.meta.title as string,
+    };
+
+    if (route.children && route.children.length > 0) {
+      node.children = convertRoutesToApiFormat(route.children);
+    }
+
+    result.push(node);
+  }
+
+  return result;
+};
 
 // 加载权限树
 const loadPermissionTree = async () => {
@@ -155,16 +186,11 @@ const handlePermissionValueChange = async () => {
 
 // 同步路由
 const handleSync = async () => {
-  // TODO-TASK-2026-04-03-001: 需要从路由实例提取实际路由数据
-  // 预计完成：2026-04-05
-  // 阻塞原因：需要获取当前应用类型的路由配置
-  const routes = [
-    { path: '/sys/user', name: '用户管理' },
-    { path: '/sys/role', name: '角色管理' },
-  ];
+  // 从路由实例提取实际路由数据
+  const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
-    const result = await new ApiPermissionSync({
+    const result = await new ApiPermissionSyncPermissions({
       params: {
         appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
         dryRun: true,
@@ -182,7 +208,7 @@ const handleSync = async () => {
       on: {
         confirm: async () => {
           // 执行实际同步
-          await new ApiPermissionSync({
+          await new ApiPermissionSyncPermissions({
             params: {
               appTypeId: 'default',
               dryRun: false,
@@ -201,13 +227,11 @@ const handleSync = async () => {
 
 // 检查差异
 const handleCompare = async () => {
-  const routes = [
-    { path: '/sys/user', name: '用户管理' },
-    { path: '/sys/role', name: '角色管理' },
-  ];
+  // 从路由实例提取实际路由数据
+  const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
-    const result = await new ApiPermissionCompare({
+    const result = await new ApiPermissionComparePermissions({
       params: {
         appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
         routes,
