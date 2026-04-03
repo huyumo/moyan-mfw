@@ -7,6 +7,13 @@
 export { CreateAppTypeDto } from './req/create-app-type.dto';
 export { UpdateAppTypeDto } from './req/update-app-type.dto';
 export { QueryAppTypeDto } from './req/query-app-type.dto';
+export { UpdatePermissionPoolDto } from './req/update-permission-pool.dto';
 
 // Response DTOs
 export { AppTypeResponseDto } from './res/app-type-response.dto';
+export {
+  PermissionPoolResponseDto,
+  UpdatePermissionPoolResponseDto,
+  PermissionTreeNodeDto,
+  PermissionTreesResponseDto,
+} from './res/permission-pool-response.dto';

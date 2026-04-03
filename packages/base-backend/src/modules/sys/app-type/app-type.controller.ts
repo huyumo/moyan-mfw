@@ -27,6 +27,11 @@ import {
 } from '@nestjs/swagger';
 import { AppTypeService } from './app-type.service';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto, AppTypeResponseDto } from './dto';
+import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
+import {
+  PermissionPoolResponseDto,
+  UpdatePermissionPoolResponseDto,
+} from './dto/res/permission-pool-response.dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -108,6 +113,47 @@ export class AppTypeController {
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appTypeService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
+  }
+
+  /**
+   * 获取权限池配置
+   */
+  @Get(':appTypeId/permission-pool')
+  @ApiOperation({ summary: '获取权限池配置', description: '获取应用类型的权限池配置，包含权限树和勾选状态' })
+  @ApiParam({ name: 'appTypeId', description: '应用类型 ID' })
+  @ApiResponse({
+    status: 200,
+    description: '查询成功',
+    type: PermissionPoolResponseDto,
+  })
+  @ApiResponse({ status: 404, description: '应用类型不存在' })
+  @RequirePermission({ permCode: 'system:app-type', permissionValue: 32n }) // VIEW
+  async getPermissionPool(@Param('appTypeId', ParseUUIDPipe) appTypeId: string) {
+    const result = await this.appTypeService.getPermissionPool(appTypeId);
+    return ApiResponseUtil.success(result, '查询成功');
+  }
+
+  /**
+   * 更新权限池配置
+   */
+  @Put(':appTypeId/permission-pool')
+  @ApiOperation({ summary: '更新权限池配置', description: '更新应用类型的权限池配置，批量更新权限节点' })
+  @ApiParam({ name: 'appTypeId', description: '应用类型 ID' })
+  @ApiResponse({
+    status: 200,
+    description: '更新成功',
+    type: UpdatePermissionPoolResponseDto,
+  })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  @ApiResponse({ status: 404, description: '应用类型不存在' })
+  @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_PERMISSION_POOL', description: '更新权限池配置' })
+  @RequirePermission({ permCode: 'system:app-type', permissionValue: 2n }) // EDIT
+  async updatePermissionPool(
+    @Param('appTypeId', ParseUUIDPipe) appTypeId: string,
+    @Body() updateDto: UpdatePermissionPoolDto,
+  ) {
+    const result = await this.appTypeService.updatePermissionPool(appTypeId, updateDto);
+    return ApiResponseUtil.success(result, '更新成功');
   }
 
   /**

@@ -97,3 +97,68 @@ export class UserInfoDto {
   @ApiProperty({ description: '角色列表', type: [String] })
   roles: string[];
 }
+
+/**
+ * 应用实例项 DTO
+ * @description 用户可访问的应用实例信息
+ */
+export class AppInstanceItemDto {
+  /**
+   * 应用实例 ID
+   */
+  @ApiProperty({ description: '应用实例 ID' })
+  appId: string;
+
+  /**
+   * 应用实例名称
+   */
+  @ApiProperty({ description: '应用实例名称' })
+  appName: string;
+
+  /**
+   * 应用实例编码
+   */
+  @ApiProperty({ description: '应用实例编码' })
+  appCode: string;
+
+  /**
+   * 应用类型 ID
+   */
+  @ApiProperty({ description: '应用类型 ID' })
+  appTypeId: string;
+
+  /**
+   * 应用类型编码
+   */
+  @ApiProperty({ description: '应用类型编码' })
+  appTypeCode: string;
+
+  /**
+   * 应用类型名称
+   */
+  @ApiProperty({ description: '应用类型名称' })
+  appTypeName: string;
+
+  /**
+   * 用户身份
+   */
+  @ApiProperty({ description: '用户身份', enum: ['owner', 'member'] })
+  role: 'owner' | 'member';
+
+  /**
+   * 应用图标
+   */
+  @ApiProperty({ description: '应用图标', required: false })
+  icon?: string;
+}
+
+/**
+ * 用户应用列表响应 DTO
+ */
+export class UserAppsResponseDto {
+  /**
+   * 应用实例列表
+   */
+  @ApiProperty({ description: '用户可访问的应用实例列表', type: [AppInstanceItemDto] })
+  apps: AppInstanceItemDto[];
+}

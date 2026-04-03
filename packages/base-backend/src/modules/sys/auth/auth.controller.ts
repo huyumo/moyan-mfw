@@ -6,7 +6,9 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
+  Query,
   HttpCode,
   HttpStatus,
   Request,
@@ -19,7 +21,17 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto, LoginResponseDto, UserInfoDto } from './dto';
+import {
+  LoginDto,
+  LoginResponseDto,
+  UserInfoDto,
+  AppInstanceItemDto,
+  UserPermissionsDto,
+  UserPermissionsResponseDto,
+  RegisterDto,
+  CheckAvailabilityDto,
+  CheckAvailabilityResponseDto,
+} from './dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 
@@ -111,5 +123,154 @@ export class AuthController {
     const token = req.headers.authorization?.replace('Bearer ', '');
     await this.authService.logout(token);
     return ApiResponseUtil.success(null, '退出成功');
+  }
+
+  /**
+   * 获取用户可访问的应用实例列表
+   * @param req - 请求对象（user 从 JWT 中解析）
+   * @returns 用户可访问的应用实例列表
+   */
+  @Get('apps')
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({
+    summary: '获取用户应用列表',
+    description: '获取当前用户可访问的应用实例列表，包括作为拥有者和成员的应用',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    type: [AppInstanceItemDto],
+  })
+  async getUserApps(@Request() req: any) {
+    const userId = req.user.sub || req.user.id;
+    const apps = await this.authService.getUserApps(userId);
+    return ApiResponseUtil.success({ apps }, '获取成功');
+  }
+
+  /**
+   * 获取用户权限菜单
+   * @param req - 请求对象（user 从 JWT 中解析）
+   * @param query - 查询参数（appId）
+   * @returns 用户权限菜单树
+   */
+  @Get('permissions')
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({
+    summary: '获取用户权限菜单',
+    description: '获取用户在指定应用实例下的权限菜单树，用于前端导航渲染',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    type: UserPermissionsResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
+  async getUserPermissions(
+    @Request() req: any,
+    @Query() query: UserPermissionsDto,
+  ) {
+    const userId = req.user.sub || req.user.id;
+    if (!query.appId) {
+      throw new BadRequestException('appId 参数不能为空');
+    }
+    const result = await this.authService.getUserPermissions(userId, query.appId);
+    return ApiResponseUtil.success(result, '获取成功');
+  }
+
+  /**
+   * 用户自注册
+   * @param registerDto - 注册请求参数
+   * @returns 登录响应（包含 Token）
+   */
+  @Public()
+  @Post('register')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '用户注册', description: '用户自注册，注册成功后自动登录' })
+  @ApiResponse({
+    status: 200,
+    description: '注册成功',
+    type: LoginResponseDto,
+  })
+  @ApiResponse({ status: 400, description: '用户名/邮箱/手机号已存在' })
+  async register(@Body() registerDto: RegisterDto) {
+    const result = await this.authService.register(registerDto);
+    return ApiResponseUtil.success(result, '注册成功');
+  }
+
+  /**
+   * 检查用户名/邮箱/手机号可用性
+   * @param query - 检查参数
+   * @returns 可用性检查结果
+   */
+  @Public()
+  @Get('check-availability')
+  @ApiOperation({
+    summary: '检查可用性',
+    description: '检查用户名、邮箱、手机号是否可注册',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '检查成功',
+    type: CheckAvailabilityResponseDto,
+  })
+  async checkAvailability(@Query() query: CheckAvailabilityDto) {
+    const result = await this.authService.checkAvailability(query);
+    return ApiResponseUtil.success(result, '检查成功');
+  }
+
+  /**
+   * 修改密码
+   * @param req - 请求对象
+   * @param body - 请求体
+   * @returns 修改结果
+   */
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({ summary: '修改密码', description: '用户修改自己的密码' })
+  @ApiResponse({ status: 200, description: '修改成功' })
+  @ApiResponse({ status: 400, description: '原密码错误' })
+  @ApiResponse({ status: 401, description: '未登录' })
+  async changePassword(
+    @Request() req: any,
+    @Body() body: { oldPassword: string; newPassword: string },
+  ) {
+    if (!body.oldPassword || !body.newPassword) {
+      throw new BadRequestException('原密码和新密码不能为空');
+    }
+    const userId = req.user.sub || req.user.id;
+    await this.authService.changePassword(userId, body.oldPassword, body.newPassword);
+    return ApiResponseUtil.success(null, '密码修改成功');
+  }
+
+  /**
+   * 同步用户权限
+   * @param req - 请求对象
+   * @param query - 查询参数
+   * @returns 用户权限菜单树
+   */
+  @Post('sync-permissions')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({
+    summary: '同步权限',
+    description: '重新加载用户在指定应用实例下的权限',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '同步成功',
+    type: UserPermissionsResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
+  async syncPermissions(
+    @Request() req: any,
+    @Body() body: { appId: string },
+  ) {
+    const userId = req.user.sub || req.user.id;
+    if (!body.appId) {
+      throw new BadRequestException('appId 参数不能为空');
+    }
+    const result = await this.authService.syncPermissions(userId, body.appId);
+    return ApiResponseUtil.success(result, '权限同步成功');
   }
 }
