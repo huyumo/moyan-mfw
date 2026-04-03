@@ -18,6 +18,7 @@ function formatDate(date: Date, fmt: string): string {
   const o: Record<string, number> = {
     'M+': date.getMonth() + 1,
     'd+': date.getDate(),
+    'D+': date.getDate(),  // 支持大写 DD
     'h+': date.getHours() % 12 === 0 ? 12 : date.getHours() % 12,
     'H+': date.getHours(),
     'm+': date.getMinutes(),

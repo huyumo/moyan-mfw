@@ -25,7 +25,7 @@ import {
   type MfwPermissionPoolPanelInstance,
   type PermissionTreeNodeState,
 } from './types'
-import { ApiAppTypeGetPermissionPoolPanel, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
+import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
 
 // ========== Props & Emits ==========
 
@@ -168,7 +168,7 @@ async function loadPermissionPool() {
 
   loading.value = true
   try {
-    const response = await new ApiAppTypeGetPermissionPoolPanel({
+    const response = await new ApiAppTypeGetPermissionPool({
       params: { appTypeId: props.appTypeId },
     })
 
