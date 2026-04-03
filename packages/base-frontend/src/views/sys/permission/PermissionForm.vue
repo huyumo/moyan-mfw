@@ -19,7 +19,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
-import { ApiPermissionCreate, ApiPermissionUpdate, ApiPermissionFindAll } from '../../../apis/sys';
+import { ApiPermissionCreate, ApiPermissionUpdate, ApiPermissionFindById } from '../../../apis/sys';
 import type { PermissionResponseDto } from '../../../apis/sys/schemas';
 
 /** 状态常量 */
@@ -167,11 +167,8 @@ const onConfirm = async () => {
     }
 
     // 获取父节点信息验证类型
-    const parentResult = await new ApiPermissionFindAll({
-      params: {
-        id: form.parentId,
-        pageSize: 1,
-      },
+    const parentResult = await new ApiPermissionFindById({
+      query: { id: form.parentId },
     });
 
     const parent = parentResult.list?.[0];
