@@ -103,7 +103,7 @@ export class Permission extends Base {
    */
   @Column({ type: 'char', length: 36, nullable: true, comment: '父权限 ID - 构建树形结构' })
   @Index()
-  parentId: string;
+  parentId: string | null;
 
   /**
    * 父权限

@@ -73,6 +73,8 @@ import { MfwPopup } from '../../../components/feedback';
 import {
   ApiPermissionFindAll,
   ApiPermissionUpdate,
+  ApiPermissionSync,
+  ApiPermissionCompare,
 } from '../../../apis/sys';
 import type { PermissionResponseDto } from '../../../apis/sys/schemas';
 import PermissionPcForm from './PermissionPcForm.vue';
@@ -114,7 +116,9 @@ const loadPermissionTree = async () => {
       pageSize: 1000,
     },
   });
-  // TODO: 将列表转换为树形结构
+  // TODO-TASK-2026-04-03-004: 将列表转换为树形结构
+  // 预计完成：2026-04-05
+  // 说明：当前显示扁平列表，需要按 parentId 构建树形结构
   permissionTree.value = result.list || [];
 };
 
@@ -150,34 +154,75 @@ const handlePermissionValueChange = async () => {
 };
 
 // 同步路由
-const handleSync = () => {
-  // TODO: 实现同步预览逻辑，获取差异列表
-  // 模拟数据
-  syncResult.value = {
-    details: [
-      { type: 'add', permName: '用户管理', permCode: 'menu.user', message: '新增路由' },
-    ],
-  };
+const handleSync = async () => {
+  // TODO-TASK-2026-04-03-001: 需要从路由实例提取实际路由数据
+  // 预计完成：2026-04-05
+  // 阻塞原因：需要获取当前应用类型的路由配置
+  const routes = [
+    { path: '/sys/user', name: '用户管理' },
+    { path: '/sys/role', name: '角色管理' },
+  ];
 
-  MfwPopup.open({
-    title: '同步预览',
-    type: 'dialog',
-    component: SyncPreview,
-    data: { details: syncResult.value?.details || [] },
-    popupProps: { width: 600 },
-    on: {
-      confirm: () => {
-        ElMessage.success('同步成功');
-        loadPermissionTree();
+  try {
+    const result = await new ApiPermissionSync({
+      params: {
+        appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
+        dryRun: true,
+        routes,
       },
-    },
-  });
+      option: { hintSuccess: false },
+    });
+
+    MfwPopup.open({
+      title: '同步预览',
+      type: 'dialog',
+      component: SyncPreview,
+      data: { details: result.details || [] },
+      popupProps: { width: 600 },
+      on: {
+        confirm: async () => {
+          // 执行实际同步
+          await new ApiPermissionSync({
+            params: {
+              appTypeId: 'default',
+              dryRun: false,
+              routes,
+            },
+          });
+          ElMessage.success('同步成功');
+          loadPermissionTree();
+        },
+      },
+    });
+  } catch (error) {
+    // API 错误由底层处理
+  }
 };
 
 // 检查差异
 const handleCompare = async () => {
-  // TODO: 实现差异检查逻辑
-  ElMessage.info('差异检查功能开发中');
+  const routes = [
+    { path: '/sys/user', name: '用户管理' },
+    { path: '/sys/role', name: '角色管理' },
+  ];
+
+  try {
+    const result = await new ApiPermissionCompare({
+      params: {
+        appTypeId: 'default', // TODO-TASK-2026-04-03-002: 从应用类型选择器获取实际值
+        routes,
+      },
+    });
+
+    const diffCount = result.totalDiffs || 0;
+    if (diffCount === 0) {
+      ElMessage.success('当前路由与权限树一致，无差异');
+    } else {
+      ElMessage.warning(`发现 ${diffCount} 处差异，请使用"同步路由"功能查看详情`);
+    }
+  } catch (error) {
+    // API 错误由底层处理
+  }
 };
 
 // 手动添加权限
