@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, IsEnum, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PermissionType, NodeType } from '../../entities/permission.entity';
 
@@ -12,6 +12,14 @@ import { PermissionType, NodeType } from '../../entities/permission.entity';
  * 权限查询参数 DTO
  */
 export class QueryPermissionDto {
+  /**
+   * 应用类型 ID
+   */
+  @ApiProperty({ description: '应用类型 ID', required: false })
+  @IsOptional()
+  @IsString()
+  appTypeId?: string;
+
   /**
    * 权限名称（模糊查询）
    */
