@@ -21,6 +21,19 @@ export function setupRouteGuard(router: Router): void {
   router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next) => {
     const authStore = useAuthStore();
 
+    // 0. 处理根路径 /
+    if (to.path === '/' || (to.name === 'RootRedirect' && to.path === '/')) {
+      const hasToken = localStorage.getItem(TOKEN_KEY);
+      if (!hasToken) {
+        // 未认证，重定向到登录页
+        next({ path: '/login' });
+        return;
+      }
+      // 已认证，重定向到仪表盘
+      next({ path: '/dashboard' });
+      return;
+    }
+
     // 1. 检查是否在白名单中
     if (WHITE_LIST.includes(to.path)) {
       // 已登录用户访问登录页，重定向到首页

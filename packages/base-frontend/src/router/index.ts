@@ -83,7 +83,9 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
       children: [
         {
           path: '',
-          redirect: '/dashboard',
+          name: 'RootRedirect',
+          // 不在这里设置重定向，由守卫处理
+          meta: { requiresAuth: true },
         },
         // 注入合并后的路由
         ...allChildren.map((route) => {
