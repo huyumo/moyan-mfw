@@ -129,23 +129,4 @@ export class MemberController {
     await this.memberService.removeMember(appId, userId);
     return ApiResponseUtil.success(null, '移除成功');
   }
-
-  /**
-   * 获取可选角色列表
-   */
-  @Get('/available-roles')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '获取可选角色列表', description: '获取应用可分配的角色列表' })
-  @ApiParam({ name: 'appId', description: '应用 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-    type: [AvailableRoleDto],
-  })
-  @ApiResponse({ status: 404, description: '应用不存在' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 32n }) // VIEW
-  async getAvailableRoles(@Param('appId', ParseUUIDPipe) appId: string) {
-    const result = await this.memberService.getAvailableRoles(appId);
-    return ApiResponseUtil.success(result, '查询成功');
-  }
 }
