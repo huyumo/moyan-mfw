@@ -75,6 +75,7 @@ export class PermissionController {
   })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'pageSize', required: false, type: Number })
+  @ApiQuery({ name: 'appTypeId', required: false, type: String })
   @ApiQuery({ name: 'permName', required: false, type: String })
   @ApiQuery({ name: 'permCode', required: false, type: String })
   @ApiQuery({ name: 'permissionType', required: false, enum: [1, 2, 3] })
