@@ -8,6 +8,7 @@ export { CreatePermissionDto } from './req/create-permission.dto';
 export { UpdatePermissionDto } from './req/update-permission.dto';
 export { QueryPermissionDto } from './req/query-permission.dto';
 export { SyncPermissionDto, RouteNodeDto } from './req/sync-permission.dto';
+export { ComparePermissionDto } from './req/compare-permission.dto';
 
 // Response DTOs
 export { PermissionResponseDto, PermissionTreeNodeDto } from './res/permission-response.dto';

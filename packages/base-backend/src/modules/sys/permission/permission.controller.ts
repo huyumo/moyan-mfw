@@ -26,7 +26,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
-import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto } from './dto';
+import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto, ComparePermissionDto } from './dto';
 import { SyncPermissionDto, SyncPermissionResponseDto, ComparePermissionResponseDto, PermissionTreeNodeDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
@@ -224,10 +224,9 @@ export class PermissionController {
   /**
    * 比对路由与权限差异
    */
-  @Get('compare')
+  @Post('compare')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '比对路由与权限差异', description: '检测前端路由与权限表的差异' })
-  @ApiQuery({ name: 'appTypeId', required: true, description: '应用类型 ID' })
   @ApiResponse({
     status: 200,
     description: '比对成功',
@@ -236,12 +235,12 @@ export class PermissionController {
   @AuditLog({ module: AuditModule.PERMISSION, event: 'COMPARE_PERMISSIONS', description: '比对权限差异' })
   @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
   async comparePermissions(
-    @Query('appTypeId') appTypeId: string,
+    @Body() compareDto: ComparePermissionDto,
   ) {
-    // TODO-TASK-2026-04-03-005: 实现从数据库获取路由进行比对
-    // 预计完成：2026-04-05
-    // 当前返回空差异结果
-    const result = await this.permissionService.comparePermissionsFromDB(appTypeId);
+    const result = await this.permissionService.comparePermissions(
+      compareDto.appTypeId,
+      compareDto.routes,
+    );
     return ApiResponseUtil.success(result, '差异比对完成');
   }
 }
