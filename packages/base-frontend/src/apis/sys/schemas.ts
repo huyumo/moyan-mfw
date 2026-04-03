@@ -39,6 +39,60 @@ export type UserInfoDto = {
   roles: Array<string> // 角色列表
 }
 
+export type AppInstanceItemDto = {
+  appId: string // 应用实例 ID
+  appName: string // 应用实例名称
+  appCode: string // 应用实例编码
+  appTypeId: string // 应用类型 ID
+  appTypeCode: string // 应用类型编码
+  appTypeName: string // 应用类型名称
+  role: string // 用户身份
+  icon?: string // 应用图标
+}
+
+export type PermissionTreeNodeDto = {
+  id: string // 权限 ID
+  permName: string // 权限名称
+  permCode: string // 权限编码
+  permDesc?: string // 权限描述
+  permissionType: string // 权限类型
+  nodeType: string // 节点类型
+  parentId?: string // 父权限 ID
+  routePath?: string // 路由路径
+  externalUrl?: string // 外部链接
+  iconName?: string // 图标名称
+  sortOrder: number // 排序号
+  isVisible: number // 是否可见
+  isCache: number // 是否缓存
+  showMode: string // 显示模式
+  permStatus: number // 权限状态
+  isAutoSync?: number // 是否自动同步：1=同步生成 0=手动添加
+  permissionValue?: integer // 权限值（位运算）
+  children?: Array<PermissionTreeNodeDto> // 子权限列表
+  createdAt: string // 创建时间
+  updateAt: string // 更新时间
+}
+
+export type UserPermissionsResponseDto = {
+  menuTree: Array<PermissionTreeNodeDto> // 用户权限菜单树
+  permissions: Array<string> // 用户权限列表（扁平化）
+  appTypeId: string // 应用类型 ID
+}
+
+export type RegisterDto = {
+  username: string // 用户名
+  password: string // 密码
+  nickname?: string // 昵称
+  email?: string // 邮箱
+  phone?: string // 手机号
+}
+
+export type CheckAvailabilityResponseDto = {
+  usernameAvailable: boolean // 用户名是否可用
+  emailAvailable: boolean // 邮箱是否可用
+  phoneAvailable: boolean // 手机号是否可用
+}
+
 export type CreateUserDto = {
   username: string // 用户名
   password: string // 密码
@@ -118,8 +172,8 @@ export type CreatePermissionDto = {
   permName: string // 权限名称
   permCode: string // 权限编码
   permDesc?: string // 权限描述
-  permissionType: 'PC' | 'NORMAL' // 权限类型
-  nodeType?: 'MENU' | 'PAGE' | 'TAG' // 节点类型
+  permissionType: string // 权限类型
+  nodeType?: string // 节点类型
   parentId?: string // 父权限 ID
   routePath?: string // 路由路径
   externalUrl?: string // 外部链接
@@ -127,7 +181,7 @@ export type CreatePermissionDto = {
   sortOrder?: number // 排序号
   isVisible?: number // 是否可见
   isCache?: number // 是否缓存
-  showMode: 'NORMAL' | 'DEV' // 显示模式
+  showMode: string // 显示模式
   permStatus?: number // 权限状态
   permissionValue?: integer // 权限值（位运算）
 }
@@ -137,8 +191,8 @@ export type PermissionResponseDto = {
   permName: string // 权限名称
   permCode: string // 权限编码
   permDesc: string // 权限描述
-  permissionType: 'PC' | 'NORMAL' // 权限类型
-  nodeType: 'MENU' | 'PAGE' | 'TAG' // 节点类型
+  permissionType: string // 权限类型
+  nodeType: string // 节点类型
   parentId: string // 父权限 ID
   routePath: string // 路由路径
   externalUrl: string // 外部链接
@@ -146,7 +200,7 @@ export type PermissionResponseDto = {
   sortOrder: number // 排序号
   isVisible: number // 是否可见
   isCache: number // 是否缓存
-  showMode: 'NORMAL' | 'DEV' // 显示模式
+  showMode: string // 显示模式
   permStatus: number // 权限状态
   permissionValue: integer // 权限值（位运算）
   createdAt: string // 创建时间
@@ -157,16 +211,60 @@ export type UpdatePermissionDto = {
   permName?: string // 权限名称
   permCode?: string // 权限编码
   permDesc?: string // 权限描述
-  nodeType?: 'MENU' | 'PAGE' | 'TAG' // 节点类型
+  nodeType?: string // 节点类型
   routePath?: string // 路由路径
   externalUrl?: string // 外部链接
   iconName?: string // 图标名称
   sortOrder?: number // 排序号
   isVisible?: number // 是否可见
   isCache?: number // 是否缓存
-  showMode?: 'NORMAL' | 'DEV' // 显示模式
+  showMode?: string // 显示模式
   permStatus?: number // 权限状态
   permissionValue?: integer // 权限值（位运算）
+}
+
+export type RouteNodeDto = {
+  path: string // 路由路径
+  name: string // 路由名称
+  children?: Array<RouteNodeDto> // 子路由
+}
+
+export type SyncPermissionDto = {
+  appTypeId: string // 应用类型 ID
+  dryRun?: boolean // 是否仅预览，默认 false
+  routes: Array<RouteNodeDto> // 路由树结构
+}
+
+export type SyncDetailDto = {
+  type: string // 操作类型
+  permName: string // 权限名称
+  permCode: string // 权限编码
+  nodeType: string // 节点类型
+  parentCode?: string // 父权限编码
+}
+
+export type SyncPermissionResponseDto = {
+  dryRun: boolean // 是否预览模式
+  added: number // 新增数量
+  updated: number // 更新数量
+  skipped: number // 跳过数量
+  details: Array<SyncDetailDto> // 同步详情
+}
+
+export type DiffItemDto = {
+  type: string // 差异类型
+  permCode?: string // 权限编码
+  permName?: string // 权限名称
+  routePath?: string // 路由路径
+  suggestion: string // 建议操作
+}
+
+export type ComparePermissionResponseDto = {
+  added: Array<DiffItemDto> // 新增的权限
+  updated: Array<DiffItemDto> // 更新的权限
+  removed: Array<DiffItemDto> // 删除的权限
+  moved: Array<DiffItemDto> // 移动的权限
+  totalDiffs: number // 总差异数量
 }
 
 export type CreateAppTypeDto = {
@@ -190,6 +288,37 @@ export type AppTypeResponseDto = {
   sortOrder: number // 排序号
   createdAt: string // 创建时间
   updateAt: string // 更新时间
+}
+
+export type PermissionTreesResponseDto = {
+  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
+  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
+}
+
+export type PermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  permissionTrees: PermissionTreesResponseDto // 权限树配置
+}
+
+export type PermissionTreePayloadDto = {
+  permissionId: string // 权限 ID
+  checked: boolean // 是否选中（true=加入权限池，false=移除）
+  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
+  children?: Array<PermissionTreePayloadDto> // 子节点列表
+}
+
+export type PermissionTreesDto = {
+  pcTree: Array<PermissionTreePayloadDto> // PC 权限树
+  normalTree: Array<PermissionTreePayloadDto> // 普通权限树
+}
+
+export type UpdatePermissionPoolDto = {
+  permissionTrees: PermissionTreesDto // 权限树配置
+}
+
+export type UpdatePermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  updatedCount: number // 更新的权限节点数量
 }
 
 export type UpdateAppTypeDto = {
@@ -283,127 +412,4 @@ export type AuditLogResponseDto = {
   ip: string // IP 地址
   userAgent?: string // User-Agent
   createAt: string // 创建时间
-}
-
-/** 权限池项 */
-export type PermissionPoolItemDto = {
-  permissionId: string // 权限 ID
-  permName: string // 权限名称
-  permCode: string // 权限编码
-  permissionType: string // 权限类型 (PC / NORMAL)
-  nodeType: string // 节点类型 (MENU / PAGE / TAG)
-  parentId?: string // 父权限 ID
-  permissionValue?: integer // 权限值（位运算，bigint 序列化为字符串）
-}
-
-/** 权限池响应 */
-export type PermissionPoolResponseDto = {
-  appTypeId: string // 应用类型 ID
-  permissions: Array<PermissionPoolItemDto> // 权限池列表
-}
-
-// ========== 权限池配置面板类型 ==========
-
-/** 权限树节点（用于权限池配置面板） */
-export type PermissionTreeNodeDto = {
-  id: string // 权限 ID
-  permName: string // 权限名称
-  permCode: string // 权限编码
-  permissionType: 'PC' | 'NORMAL' // 权限类型
-  nodeType: 'MENU' | 'PAGE' | 'TAG' // 节点类型
-  parentId?: string // 父权限 ID
-  iconName?: string // 图标名称
-  sortOrder: number // 排序号
-  inPool: boolean // 是否已加入权限池
-  permissionValue?: integer // 位运算权限值（bigint 序列化为字符串）
-  children?: Array<PermissionTreeNodeDto> // 子节点
-}
-
-/** 权限树提交数据 */
-export type PermissionTreePayloadDto = {
-  permissionId: string // 权限 ID
-  checked: boolean // true=加入权限池，false=移除
-  permissionValue?: integer // 位运算权限值（bigint 序列化为字符串）
-  children?: Array<PermissionTreePayloadDto> // 子节点
-}
-
-/** 权限池配置请求体 */
-export type UpdatePermissionPoolDto = {
-  permissionTrees: {
-    pcTree: Array<PermissionTreePayloadDto>
-    normalTree: Array<PermissionTreePayloadDto>
-  }
-}
-
-/** 权限池配置面板响应 */
-export type PermissionPoolPanelResponseDto = {
-  appTypeId: string // 应用类型 ID
-  permissionTrees: {
-    pcTree: Array<PermissionTreeNodeDto>
-    normalTree: Array<PermissionTreeNodeDto>
-  }
-}
-
-/** 权限池更新响应 */
-export type PermissionPoolUpdateResponseDto = {
-  appTypeId: string // 应用类型 ID
-  updatedCount: number // 更新数量
-}
-
-// ========== 用户应用列表和权限菜单类型 ==========
-
-/** 应用实例项 */
-export type AppInstanceItemDto = {
-  appId: string // 应用实例 ID
-  appName: string // 应用实例名称
-  appCode: string // 应用实例编码
-  appTypeId: string // 应用类型 ID
-  appTypeCode: string // 应用类型编码
-  appTypeName: string // 应用类型名称
-  role: 'owner' | 'member' // 用户身份
-  icon?: string // 应用图标
-  appStatus?: number // 应用状态 (1:启用 0:禁用)
-}
-
-/** 用户应用列表响应 */
-export type UserAppsResponseDto = {
-  apps: Array<AppInstanceItemDto> // 应用实例列表
-}
-
-/** 权限菜单节点 */
-export type PermissionMenuNodeDto = {
-  id: string // 权限 ID
-  permName: string // 权限名称
-  permCode: string // 权限编码
-  permissionType: 'PC' | 'NORMAL' // 权限类型
-  nodeType?: 'MENU' | 'PAGE' | 'TAG' // 节点类型
-  routePath?: string // 路由路径
-  iconName?: string // 图标名称
-  isVisible?: number // 是否可见
-  permissionValue?: integer // 位运算权限值
-  children?: Array<PermissionMenuNodeDto> // 子节点
-}
-
-/** 用户权限菜单响应 */
-export type UserPermissionsResponseDto = {
-  appId: string // 应用实例 ID
-  menu: Array<PermissionMenuNodeDto> // 权限菜单树
-}
-
-// ========== 用户注册与可用性检查类型 ==========
-
-/** 用户注册请求 */
-export type RegisterDto = {
-  username: string // 用户名
-  password: string // 密码
-  nickname?: string // 昵称
-  email?: string // 邮箱
-  phone?: string // 手机号
-}
-
-/** 检查可用性响应 */
-export type CheckAvailabilityResponseDto = {
-  usernameAvailable?: boolean // 用户名是否可用
-  emailAvailable?: boolean // 邮箱是否可用
-  phoneAvailable?: boolean // 手机号是否可用
 }
