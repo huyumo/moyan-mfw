@@ -72,8 +72,7 @@ const onConfirm = async () => {
   await formRef.value?.validate();
 
   await new ApiMemberAddMember({
-    query: { appId: props.data!.appId },
-    params: { userId: form.userId },
+    params: { appId: props.data!.appId, userId: form.userId },
   });
 };
 
