@@ -10,5 +10,5 @@ export { QueryPermissionDto } from './req/query-permission.dto';
 export { SyncPermissionDto, RouteNodeDto } from './req/sync-permission.dto';
 
 // Response DTOs
-export { PermissionResponseDto } from './res/permission-response.dto';
+export { PermissionResponseDto, PermissionTreeNodeDto } from './res/permission-response.dto';
 export { SyncPermissionResponseDto, ComparePermissionResponseDto, DiffItemDto, SyncDetailDto } from './res/sync-permission-response.dto';
