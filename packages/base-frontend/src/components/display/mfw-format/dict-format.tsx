@@ -79,7 +79,10 @@ export default defineComponent({
 
     return () => {
       if (!matchedItem.value) {
-        return h('span', { class: 'mfw-dict-format' }, emptyText.value);
+        return h('span', {
+          class: 'mfw-dict-format',
+          onClick: () => emit('click', null)
+        }, emptyText.value);
       }
 
       if (props.asTag) {

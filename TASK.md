@@ -1,12 +1,12 @@
 ---
 task: 修复虚假完成的功能 + 组件库文档
 description: 优先修复需求不对齐的虚假功能，然后补充组件库文档
-status: in_progress
+status: completed
 priority: P0
 started: 2026-04-03
-updated: 2026-04-03 17:30
-session: session-20260403-173000
-lock: 1743697800
+updated: 2026-04-03 16:40
+session: session-20260403-164000
+lock: 1743700800
 assignee: @pm
 ---
 
@@ -80,9 +80,17 @@ assignee: @pm
 
 ## 当前任务（P2 - 单元测试）
 
-### 单元测试补充
-- [ ] MfwFormat 单元测试
-- [ ] MfwPopup 单元测试
+### 单元测试补充（已完成）✅
+- [x] MfwFormat 单元测试（91 个测试全部通过）
+  - [x] MfwDateFormat: 15 个测试
+  - [x] MfwDictFormat: 15 个测试
+  - [x] MfwImageFormat: 18 个测试
+  - [x] MfwTagFormat: 20 个测试
+- [x] MfwPopup 单元测试: 19 个测试
+- [x] 修复 dict-format 点击事件（空值时返回 null）
+- [x] 修复 date-format 大写 DD 格式支持
+- [x] 修复 image-format 导入错误（ApiAppTypeGetPermissionPoolPanel → ApiAppTypeGetPermissionPool）
+- [x] 项目启动验证（后端 http://localhost:3000，前端 http://localhost:5174）
 
 ---
 
