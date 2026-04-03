@@ -6,6 +6,18 @@
 // Request DTOs
 export { LoginDto } from './req/login.dto';
 export { RefreshTokenDto } from './req/refresh-token.dto';
+export { UserPermissionsDto } from './req/user-permissions.dto';
+export { RegisterDto } from './req/register.dto';
+export { CheckAvailabilityDto, CheckAvailabilityResponseDto } from './req/check-availability.dto';
 
 // Response DTOs
-export { LoginResponseDto, UserInfoDto } from './res/auth-response.dto';
+export {
+  LoginResponseDto,
+  UserInfoDto,
+  AppInstanceItemDto,
+  UserAppsResponseDto,
+} from './res/auth-response.dto';
+export {
+  PermissionTreeNodeDto,
+  UserPermissionsResponseDto,
+} from './res/user-permissions-response.dto';

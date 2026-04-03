@@ -5,6 +5,7 @@
 
 // Entities
 export { AppType } from './entities/app-type.entity';
+export { AppTypePermissionEntity } from './entities/app-type-permission.entity';
 
 // Services
 export { AppTypeService } from './app-type.service';

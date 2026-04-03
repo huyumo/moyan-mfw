@@ -3,11 +3,19 @@
  * @description 处理应用类型相关业务逻辑
  */
 
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
+import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
+import { Permission, PermissionType } from '../permission/entities/permission.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
+import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
+import {
+  PermissionPoolResponseDto,
+  UpdatePermissionPoolResponseDto,
+  PermissionTreeNodeDto,
+} from './dto/res/permission-pool-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
 
@@ -19,6 +27,10 @@ export class AppTypeService {
   constructor(
     @InjectRepository(AppType)
     private appTypeRepository: Repository<AppType>,
+    @InjectRepository(AppTypePermissionEntity)
+    private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
+    @InjectRepository(Permission)
+    private permissionRepository: Repository<Permission>,
     private dataSource: DataSource,
   ) {}
 
@@ -162,5 +174,213 @@ export class AppTypeService {
 
     appType.typeStatus = status;
     return this.appTypeRepository.save(appType);
+  }
+
+  /**
+   * 获取权限池配置
+   * @param appTypeId - 应用类型 ID
+   * @returns 权限池配置
+   */
+  async getPermissionPool(appTypeId: string): Promise<PermissionPoolResponseDto> {
+    // 验证应用类型存在
+    const appType = await this.appTypeRepository.findOne({
+      where: { id: appTypeId },
+    });
+
+    if (!appType) {
+      throw new NotFoundError('应用类型');
+    }
+
+    // 获取所有权限
+    const allPermissions = await this.permissionRepository.find({
+      order: { sortOrder: 'ASC' },
+    });
+
+    // 获取权限池中已配置的权限
+    const poolPermissions = await this.appTypePermissionRepository.find({
+      where: { appTypeId },
+    });
+
+    // 构建权限池 Map（permissionId -> permissionValue）
+    const poolMap = new Map<string, bigint>();
+    for (const pool of poolPermissions) {
+      poolMap.set(pool.permissionId, pool.permissionValue);
+    }
+
+    // 构建权限树
+    const pcTree = this.buildPermissionTree(
+      allPermissions.filter((p) => p.permissionType === PermissionType.PC),
+      poolMap,
+    );
+    const normalTree = this.buildPermissionTree(
+      allPermissions.filter((p) => p.permissionType === PermissionType.NORMAL),
+      poolMap,
+    );
+
+    return {
+      appTypeId,
+      permissionTrees: {
+        pcTree,
+        normalTree,
+      },
+    };
+  }
+
+  /**
+   * 更新权限池配置
+   * @param appTypeId - 应用类型 ID
+   * @param updateDto - 更新权限池请求
+   * @returns 更新结果
+   */
+  async updatePermissionPool(
+    appTypeId: string,
+    updateDto: UpdatePermissionPoolDto,
+  ): Promise<UpdatePermissionPoolResponseDto> {
+    // 验证应用类型存在
+    const appType = await this.appTypeRepository.findOne({
+      where: { id: appTypeId },
+    });
+
+    if (!appType) {
+      throw new NotFoundError('应用类型');
+    }
+
+    // 收集所有待处理的权限节点
+    const allNodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string }> =
+      [];
+
+    // 遍历 PC 权限树
+    this.collectPermissionNodes(updateDto.permissionTrees.pcTree, allNodes);
+
+    // 遍历普通权限树
+    this.collectPermissionNodes(updateDto.permissionTrees.normalTree, allNodes);
+
+    // 使用事务批量更新
+    let updatedCount = 0;
+
+    await this.dataSource.transaction(async (manager) => {
+      // 先删除所有旧的权限池配置
+      await manager.delete(AppTypePermissionEntity, { appTypeId });
+
+      // 插入新的权限池配置（仅处理 checked=true 的节点）
+      const entitiesToInsert: AppTypePermissionEntity[] = [];
+
+      for (const node of allNodes) {
+        if (node.checked) {
+          const entity = manager.create(AppTypePermissionEntity, {
+            appTypeId,
+            permissionId: node.permissionId,
+            permissionValue: node.permissionValue ? BigInt(node.permissionValue) : 0n,
+          });
+          entitiesToInsert.push(entity);
+        }
+      }
+
+      if (entitiesToInsert.length > 0) {
+        await manager.save(entitiesToInsert);
+        updatedCount = entitiesToInsert.length;
+      }
+    });
+
+    return {
+      appTypeId,
+      updatedCount,
+    };
+  }
+
+  /**
+   * 构建权限树
+   * @param permissions - 权限列表
+   * @param poolMap - 权限池 Map
+   * @returns 权限树
+   */
+  private buildPermissionTree(
+    permissions: Permission[],
+    poolMap: Map<string, bigint>,
+  ): PermissionTreeNodeDto[] {
+    // 构建 ID -> Permission Map
+    const permMap = new Map<string, Permission>();
+    for (const perm of permissions) {
+      permMap.set(perm.id, perm);
+    }
+
+    // 找出根节点（parentId 为空或 null）
+    const roots = permissions.filter((p) => !p.parentId);
+
+    // 递归构建树
+    return roots.map((root) => this.buildTreeNode(root, permMap, poolMap));
+  }
+
+  /**
+   * 构建单个树节点
+   * @param permission - 权限实体
+   * @param permMap - 权限 Map
+   * @param poolMap - 权限池 Map
+   * @returns 树节点
+   */
+  private buildTreeNode(
+    permission: Permission,
+    permMap: Map<string, Permission>,
+    poolMap: Map<string, bigint>,
+  ): PermissionTreeNodeDto {
+    // 检查是否在权限池中
+    const inPool = poolMap.has(permission.id);
+    const poolValue = poolMap.get(permission.id);
+
+    // 构建节点
+    const node: PermissionTreeNodeDto = {
+      id: permission.id,
+      permName: permission.permName,
+      permCode: permission.permCode,
+      permDesc: permission.permDesc,
+      permissionType: permission.permissionType as 'PC' | 'NORMAL',
+      nodeType: permission.nodeType as 'MENU' | 'PAGE' | 'TAG',
+      parentId: permission.parentId,
+      routePath: permission.routePath,
+      externalUrl: permission.externalUrl,
+      iconName: permission.iconName,
+      sortOrder: permission.sortOrder,
+      isVisible: permission.isVisible,
+      isCache: permission.isCache,
+      showMode: permission.showMode as 'NORMAL' | 'DEV',
+      permStatus: permission.permStatus,
+      isAutoSync: permission.isAutoSync,
+      inPool,
+      // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效
+      permissionValue: inPool && poolValue !== undefined ? poolValue.toString() : undefined,
+    };
+
+    // 找出子节点
+    const children = Array.from(permMap.values()).filter((p) => p.parentId === permission.id);
+
+    if (children.length > 0) {
+      node.children = children
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((child) => this.buildTreeNode(child, permMap, poolMap));
+    }
+
+    return node;
+  }
+
+  /**
+   * 收集权限节点（递归）
+   * @param nodes - 权限树节点列表
+   * @param result - 收集结果
+   */
+  private collectPermissionNodes(
+    nodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string; children?: any[] }>,
+    result: Array<{ permissionId: string; checked: boolean; permissionValue?: string }>,
+  ): void {
+    for (const node of nodes) {
+      result.push({
+        permissionId: node.permissionId,
+        checked: node.checked,
+        permissionValue: node.permissionValue,
+      });
+
+      if (node.children && node.children.length > 0) {
+        this.collectPermissionNodes(node.children, result);
+      }
+    }
   }
 }

@@ -34,6 +34,7 @@ import { AppTypeModule } from './modules/sys/app-type/app-type.module';
 import { AppModule as SysAppModule } from './modules/sys/app/app.module';
 import { MemberModule } from './modules/sys/member/member.module';
 import { AuditLogModule } from './modules/sys/audit-log/audit-log.module';
+import { HealthModule } from './modules/health/health.module';
 
 // 守卫
 import { AuthGuard } from './common/guards/auth.guard';
@@ -68,6 +69,22 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     // 使用直接导入的实体数组，而不是 glob 模式
     entities: entities,
     migrations: [__dirname + '/database/migrations/*{.ts,.js}'],
+    // 数据库连接重试机制
+    connectTimeout: 60000, // 连接超时 60 秒
+    acquireTimeout: 60000, // 获取连接超时 60 秒
+    extra: {
+      connectionLimit: dbConfig?.poolSize || 100,
+      waitForConnections: true,
+      queueLimit: 0,
+      // 重试配置
+      retry: {
+        maxRetries: 5,
+        delay: 3000, // 3 秒重试间隔
+      },
+    },
+    // 自动重连
+    autoLoadEntities: false,
+    keepConnectionAlive: true,
   } as TypeOrmModuleOptions;
 }
 
@@ -109,6 +126,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     SysAppModule,
     MemberModule,
     AuditLogModule,
+    HealthModule,
   ],
   providers: [
     {

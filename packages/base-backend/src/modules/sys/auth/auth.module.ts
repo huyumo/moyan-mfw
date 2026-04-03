@@ -8,6 +8,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
+import { Role } from '../role/entities/role.entity';
+import { App } from '../app/entities/app.entity';
+import { AppMember } from '../app/entities/app-member.entity';
+import { AppType } from '../app-type/entities/app-type.entity';
+import { Permission } from '../permission/entities/permission.entity';
+import { RolePermission } from '../permission/entities/role-permission.entity';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 
@@ -17,7 +23,16 @@ import { AuthController } from './auth.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserRole]),
+    TypeOrmModule.forFeature([
+      User,
+      UserRole,
+      Role,
+      App,
+      AppMember,
+      AppType,
+      Permission,
+      RolePermission,
+    ]),
     JwtModule.register({
       secret: 'test_jwt_secret_key_for_integration_testing_only',
       signOptions: {

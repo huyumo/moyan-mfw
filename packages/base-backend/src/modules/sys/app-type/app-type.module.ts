@@ -6,6 +6,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppType } from './entities/app-type.entity';
+import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
+import { Permission } from '../permission/entities/permission.entity';
 import { AppTypeService } from './app-type.service';
 import { AppTypeController } from './app-type.controller';
 
@@ -15,7 +17,7 @@ import { AppTypeController } from './app-type.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AppType]),
+    TypeOrmModule.forFeature([AppType, AppTypePermissionEntity, Permission]),
   ],
   providers: [AppTypeService],
   controllers: [AppTypeController],
