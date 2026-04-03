@@ -15,7 +15,7 @@ scope: all-projects
 
 ### 步骤 1：读取任务文件
 
-**动作**：读取 `.claude/TASK.md`
+**动作**：读取 `TASK.md`
 
 **检查项**：
 - [ ] 文件是否存在
@@ -68,7 +68,7 @@ scope: all-projects
 ```
 1. 确认用户已同意方案
        ↓
-2. 立即更新 .claude/TASK.md
+2. 立即更新 TASK.md
    - 标记任务状态变更（如：待开始 → 进行中）
    - 记录当前子任务/步骤
    - 更新 updated 和 lock 字段
@@ -120,7 +120,7 @@ scope: all-projects
    - 填写验收记录
    - 记录关键决策和交付物
        ↓
-4. 更新 .claude/TASK.md
+4. 更新 TASK.md
    - 将任务从"进行中"移至"已完成"
    - 记录下一步行动
    - 更新 updated 和 lock 字段
@@ -156,7 +156,7 @@ scope: all-projects
 
 ### 步骤 2：更新任务文件
 
-**动作**：更新 `.claude/TASK.md`
+**动作**：更新 `TASK.md`
 
 **必填项**：
 - `updated` 字段：当前日期时间
@@ -235,7 +235,7 @@ lock: 1711785600  # Unix 时间戳（秒）
 ```
 会话开始
     ↓
-读取 .claude/TASK.md
+读取 TASK.md
     ↓
 检查锁状态 → 有冲突 → 警告用户
     ↓

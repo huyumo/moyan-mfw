@@ -40,7 +40,7 @@
   },
 
   "paths": {
-    "task-file": ".claude/TASK.md",
+    "task-file": "TASK.md",
     "task-directory": "docs/04-项目实施/05-任务追踪",
     "memory-directory": ".claude/memory",
     "team-directory": ".claude/team",
@@ -52,17 +52,17 @@
     "session-start-check": {
       "enabled": true,
       "action": "block",
-      "message": "【会话开始检查未完成】请先读取 .claude/TASK.md 并确认任务状态，然后才能开始工作。"
+      "message": "【会话开始检查未完成】请先读取 TASK.md 并确认任务状态，然后才能开始工作。"
     },
     "session-end-update": {
       "enabled": true,
       "action": "remind",
-      "message": "【会话结束前请更新】请先更新 .claude/TASK.md 记录本次工作成果和下一步行动。"
+      "message": "【会话结束前请更新】请先更新 TASK.md 记录本次工作成果和下一步行动。"
     },
     "task-file-exists": {
       "enabled": true,
       "action": "block",
-      "message": "【TASK.md 不存在】请先创建任务文件 .claude/TASK.md，记录当前任务状态。"
+      "message": "【TASK.md 不存在】请先创建任务文件 TASK.md，记录当前任务状态。"
     },
     "constitution-check": {
       "enabled": true,

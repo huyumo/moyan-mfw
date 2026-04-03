@@ -243,7 +243,7 @@ pending → in_progress → blocked → in_progress → completed
 
 ### 活跃任务（双层设计）
 
-**第一层：`.claude/TASK.md`**
+**第一层：`TASK.md`（根目录）**
 
 - **用途**：记录当前活跃任务状态，供会话开始快速读取
 - **特点**：轻量级，快速更新，只关注当前任务
@@ -276,7 +276,7 @@ pending → in_progress → blocked → in_progress → completed
 ### TASK.md 历史归档
 
 - 位置：`[project]/docs/04-项目实施/05-任务追踪/archived/TASK-YYYY-MM-DD-HHMM.md`
-- 触发条件：当 `.claude/TASK.md` 中所有任务均已完成时
+- 触发条件：当 `TASK.md` 中所有任务均已完成时
 - 用途：保存 TASK.md 完整快照，便于追溯
 
 ---
@@ -305,7 +305,7 @@ pending → in_progress → blocked → in_progress → completed
 2. 创建 TASK.md 完整快照
    → 复制到 docs/04-项目实施/05-任务追踪/archived/TASK-YYYY-MM-DD-HHMM.md
        ↓
-3. 重置 .claude/TASK.md
+3. 重置 TASK.md
    - 清空"已完成"列表，仅保留归档引用
    - 保留遗留任务到"待开始"列表，标注"← 遗留"
    - 更新 YAML Front Matter（新任务等待输入）
