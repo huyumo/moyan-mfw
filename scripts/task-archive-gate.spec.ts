@@ -2,7 +2,7 @@
 
 /**
  * @fileoverview TASK.md 归档门禁检查脚本
- * @description 检查 .claude/TASK.md 是否还有待处理任务，如无则执行归档
+ * @description 检查 TASK.md 是否还有待处理任务，如无则执行归档
  *
  * @example
  * ```bash
@@ -18,7 +18,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
-const TASK_FILE = path.resolve(ROOT_DIR, '.claude/TASK.md');
+const TASK_FILE = path.resolve(ROOT_DIR, 'TASK.md');
 const ARCHIVE_DIR = path.resolve(ROOT_DIR, 'docs/04-项目实施/05-任务追踪/archived');
 
 // ANSI 颜色代码
@@ -58,7 +58,7 @@ function parseArgs() {
 function showHelp() {
   console.log(`
 ${colors.cyan}TASK.md 归档门禁检查脚本${colors.reset}
-检查 .claude/TASK.md 是否还有待处理任务，如无则执行归档
+检查 TASK.md 是否还有待处理任务，如无则执行归档
 
 用法:
   npm run gate:task-archive [选项]
@@ -209,7 +209,7 @@ ${archiveLinks}
 `;
 
     fs.writeFileSync(TASK_FILE, newTaskContent, 'utf-8');
-    console.log(`${colors.green}✓${colors.reset} 已重置 .claude/TASK.md`);
+    console.log(`${colors.green}✓${colors.reset} 已重置 TASK.md`);
     console.log(`${colors.green}✓${colors.reset} 保留最近 ${recentArchives.length} 条归档链接`);
 
     return true;
@@ -237,7 +237,7 @@ function main() {
 
   // 检查 TASK.md 是否存在
   if (!fs.existsSync(TASK_FILE)) {
-    console.log(`${colors.yellow}[WARNING]${colors.reset} .claude/TASK.md 不存在`);
+    console.log(`${colors.yellow}[WARNING]${colors.reset} TASK.md 不存在`);
     process.exit(0);
   }
 
