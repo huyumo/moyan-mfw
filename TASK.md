@@ -4,9 +4,9 @@ description: 完善成员管理模块的前端表单和后端 API 联调
 status: in_progress
 priority: P1
 started: 2026-04-03
-updated: 2026-04-03 17:20
-session: session-20260403-172000
-lock: 1743685200
+updated: 2026-04-03 18:00
+session: session-20260403-180000
+lock: 1743688800
 assignee: @pm
 ---
 
@@ -25,11 +25,13 @@ assignee: @pm
 
 ## 进行中（成员管理模块）
 
-### Task 1: API 问题修复
+### Task 1: API 问题修复 ✅
 - [x] 检查 Member Controller 接口完整性
-- [ ] 修复 AddMemberForm.vue 参数传递（query → params）
-- [ ] 修复 RoleAssignForm.vue 参数传递（query → params）
-- [ ] 后端调整可选角色接口路径
+- [x] 修复 AddMemberForm.vue 参数传递（query → params）
+- [x] 修复 RoleAssignForm.vue 参数传递（query → params）
+- [x] 后端调整可选角色接口路径
+- [x] 修复后端类型错误（parentId、PermissionTreeNodeDto 重复导出）
+- [x] 使用 moyan-api 重新生成 APIs
 
 ### Task 2: 前后端联调
 - [ ] 联调成员列表查询
