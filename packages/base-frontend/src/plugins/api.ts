@@ -63,7 +63,7 @@ export class MoAxios {
   initInterceptors() {
     // 响应拦截器
     this.$axios.interceptors.response.use(
-      (res) => res,
+      (res) => res.data,
       async (error) => {
         if (error?.response) {
           switch (error.response.status) {

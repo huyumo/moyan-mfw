@@ -4,8 +4,10 @@
 import { ElMessage } from 'element-plus';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
-import { AUTH_TOKEN_STORAGE_KEY } from '../../router';
+import { ApiAuthLogout } from '../../apis/sys';
 import { useLayoutStore } from '../../store/layout-store';
+import { useAuthStore } from '../../store/auth-store';
+import { resetRouteGuard } from '../../router/guard';
 import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
 import { createSystemColorSchemeBridge } from './system-color-scheme-bridge';
 /**
@@ -169,13 +171,20 @@ export function useAdminLayout(): any {
       router.push(nextPath);
     }
   }
-  function handleUserCommand(command: string | number | object) {
+  async function handleUserCommand(command: string | number | object) {
     const action = String(command);
     if (action === 'logout') {
-      if (typeof window !== 'undefined') {
-        window.localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY);
-      }
+      // 先清除本地状态
+      const authStore = useAuthStore();
+      authStore.clearToken();
+      // 重置路由守卫状态
+      resetRouteGuard();
+      // 跳转到登录页
       router.push('/login');
+      // 异步调用后端登出 API（不阻塞跳转）
+      new ApiAuthLogout({}).catch(() => {
+        // 忽略登出 API 错误
+      });
       return;
     }
     if (action === 'settings') {

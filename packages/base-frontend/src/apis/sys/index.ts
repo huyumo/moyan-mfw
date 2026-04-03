@@ -29,6 +29,19 @@ import type {
   UpdateMemberRolesDto,
   AvailableRoleDto,
   AuditLogResponseDto,
+  PermissionPoolItemDto,
+  PermissionPoolResponseDto,
+  PermissionTreeNodeDto,
+  PermissionTreePayloadDto,
+  UpdatePermissionPoolDto,
+  PermissionPoolPanelResponseDto,
+  PermissionPoolUpdateResponseDto,
+  AppInstanceItemDto,
+  UserAppsResponseDto,
+  PermissionMenuNodeDto,
+  UserPermissionsResponseDto,
+  RegisterDto,
+  CheckAvailabilityResponseDto,
   ObjectId,
   int,
   char,
@@ -83,7 +96,7 @@ export class ApiAuthLogout extends ApiCall<{}, any> {
 /**
  * user|用户相关接口->创建用户
  */
-export class ApiUserCreate extends ApiCall<CreateUserDto, any> {
+export class ApiUserCreate extends ApiCall<CreateUserDto, UserResponseDto> {
   path = '/api/users'
   method: MoMethod = 'POST'
   auth = true
@@ -177,7 +190,7 @@ export class ApiUserResetPassword extends ApiCall<
 /**
  * role|角色相关接口->创建角色
  */
-export class ApiRoleCreate extends ApiCall<CreateRoleDto, any> {
+export class ApiRoleCreate extends ApiCall<CreateRoleDto, RoleResponseDto> {
   path = '/api/roles'
   method: MoMethod = 'POST'
   auth = true
@@ -267,7 +280,10 @@ export class ApiRoleGetRolePermissions extends ApiCall<
 /**
  * permission|权限相关接口->创建权限
  */
-export class ApiPermissionCreate extends ApiCall<CreatePermissionDto, any> {
+export class ApiPermissionCreate extends ApiCall<
+  CreatePermissionDto,
+  PermissionResponseDto
+> {
   path = '/api/permissions'
   method: MoMethod = 'POST'
   auth = true
@@ -362,7 +378,10 @@ export class ApiPermissionDelete extends ApiCall<
 /**
  * permission|权限相关接口->批量创建权限
  */
-export class ApiPermissionBatchCreate extends ApiCall<{}, any> {
+export class ApiPermissionBatchCreate extends ApiCall<
+  {},
+  Array<PermissionResponseDto>
+> {
   path = '/api/permissions/batch'
   method: MoMethod = 'POST'
   auth = true
@@ -371,7 +390,10 @@ export class ApiPermissionBatchCreate extends ApiCall<{}, any> {
 /**
  * app-type|应用类型相关接口->创建应用类型
  */
-export class ApiAppTypeCreate extends ApiCall<CreateAppTypeDto, any> {
+export class ApiAppTypeCreate extends ApiCall<
+  CreateAppTypeDto,
+  AppTypeResponseDto
+> {
   path = '/api/app-types'
   method: MoMethod = 'POST'
   auth = true
@@ -390,7 +412,15 @@ export class ApiAppTypeFindAll extends ApiCall<
     typeCode?: string //类型编码（模糊查询）
     typeStatus?: number //类型状态
   },
-  any
+  {
+    list?: Array<AppTypeResponseDto>
+    total?: number // 总数量
+    page?: number // 当前页码
+    pageSize?: number // 每页数量
+    totalPages?: number // 总页数
+    hasNext?: boolean // 是否有下一页
+    hasPrev?: boolean // 是否有上一页
+  }
 > {
   path = '/api/app-types'
   method: MoMethod = 'GET'
@@ -467,7 +497,7 @@ export class ApiAppTypeUpdateStatus extends ApiCall<
 /**
  * app|应用实例相关接口->创建应用实例
  */
-export class ApiAppCreate extends ApiCall<CreateAppDto, any> {
+export class ApiAppCreate extends ApiCall<CreateAppDto, AppDetailResponseDto> {
   path = '/api/apps'
   method: MoMethod = 'POST'
   auth = true
@@ -488,7 +518,15 @@ export class ApiAppFindAll extends ApiCall<
     ownerId?: string //拥有者 ID
     appStatus?: number //应用状态
   },
-  any
+  {
+    list?: Array<AppDetailResponseDto>
+    total?: number // 总数量
+    page?: number // 当前页码
+    pageSize?: number // 每页数量
+    totalPages?: number // 总页数
+    hasNext?: boolean // 是否有下一页
+    hasPrev?: boolean // 是否有上一页
+  }
 > {
   path = '/api/apps'
   method: MoMethod = 'GET'
@@ -697,5 +735,124 @@ export class ApiAuditLogDeleteBeforeDate extends ApiCall<
 > {
   path = '/api/audit-logs/before/{beforeDate}'
   method: MoMethod = 'DELETE'
+  auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->获取权限池
+ */
+export class ApiAppTypeGetPermissionPool extends ApiCall<
+  {
+    id: string //应用类型 ID
+  },
+  PermissionPoolResponseDto
+> {
+  path = '/api/app-types/{id}/permission-pool'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->获取权限池配置面板数据（树形结构）
+ */
+export class ApiAppTypeGetPermissionPoolPanel extends ApiCall<
+  {
+    appTypeId: string //应用类型 ID
+  },
+  PermissionPoolPanelResponseDto
+> {
+  path = '/api/app-types/{appTypeId}/permission-pool'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->更新权限池配置
+ */
+export class ApiAppTypeUpdatePermissionPool extends ApiCall<
+  {
+    appTypeId: string //应用类型 ID
+  } & UpdatePermissionPoolDto,
+  PermissionPoolUpdateResponseDto
+> {
+  path = '/api/app-types/{appTypeId}/permission-pool'
+  method: MoMethod = 'PUT'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->获取用户应用列表
+ */
+export class ApiAuthGetUserApps extends ApiCall<{}, UserAppsResponseDto> {
+  path = '/api/auth/apps'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->获取用户权限菜单
+ */
+export class ApiAuthGetUserPermissions extends ApiCall<
+  {
+    appId: string //应用实例 ID
+  },
+  UserPermissionsResponseDto
+> {
+  path = '/api/auth/permissions'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->用户自注册
+ */
+export class ApiAuthRegister extends ApiCall<RegisterDto, LoginResponseDto> {
+  path = '/api/auth/register'
+  method: MoMethod = 'POST'
+  auth = false
+}
+
+/**
+ * auth|认证相关接口->检查可用性
+ */
+export class ApiAuthCheckAvailability extends ApiCall<
+  {
+    username?: string //用户名
+    email?: string //邮箱
+    phone?: string //手机号
+  },
+  CheckAvailabilityResponseDto
+> {
+  path = '/api/auth/check-availability'
+  method: MoMethod = 'GET'
+  auth = false
+}
+
+/**
+ * auth|认证相关接口->修改密码
+ */
+export class ApiAuthChangePassword extends ApiCall<
+  {
+    oldPassword: string //原密码
+    newPassword: string //新密码
+  },
+  any
+> {
+  path = '/api/auth/change-password'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->同步权限
+ */
+export class ApiAuthSyncPermissions extends ApiCall<
+  {
+    appId: string //应用实例 ID
+  },
+  UserPermissionsResponseDto
+> {
+  path = '/api/auth/sync-permissions'
+  method: MoMethod = 'POST'
   auth = true
 }

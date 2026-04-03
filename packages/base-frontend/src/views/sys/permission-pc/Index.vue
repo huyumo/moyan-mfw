@@ -8,15 +8,21 @@
   <div class="pc-permission-page">
     <div class="permission-toolbar">
       <el-button type="primary" @click="handleSync">
-        <el-icon><Refresh /></el-icon>
+        <el-icon>
+          <Refresh />
+        </el-icon>
         同步路由
       </el-button>
       <el-button @click="handleCompare">
-        <el-icon><Search /></el-icon>
+        <el-icon>
+          <Search />
+        </el-icon>
         检查差异
       </el-button>
       <el-button @click="handleAddManual">
-        <el-icon><Plus /></el-icon>
+        <el-icon>
+          <Plus />
+        </el-icon>
         手动添加权限
       </el-button>
     </div>
@@ -25,15 +31,8 @@
       <!-- 权限树 -->
       <div class="permission-tree-panel">
         <h4>PC 权限树</h4>
-        <el-tree
-          ref="treeRef"
-          :data="permissionTree"
-          :props="{ label: 'permName', children: 'children' }"
-          node-key="id"
-          default-expand-all
-          highlight-current
-          @current-change="handleNodeSelect"
-        >
+        <el-tree ref="treeRef" :data="permissionTree" :props="{ label: 'permName', children: 'children' }" node-key="id"
+          default-expand-all highlight-current @current-change="handleNodeSelect">
           <template #default="{ node, data }">
             <span class="tree-node">
               <span>{{ data.permName }}</span>
@@ -141,17 +140,13 @@ const handlePermissionValueChange = async () => {
   // 计算新的 permissionValue
   const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
 
-  try {
-    await new ApiPermissionUpdate({
-      query: { id: selectedNode.value.id },
-      params: { permissionValue: newValue as any }, // API 类型定义有误
-    });
-    ElMessage.success('权限值已更新');
-    // 更新本地数据
-    selectedNode.value.permissionValue = newValue;
-  } catch (error) {
-    ElMessage.error('更新失败');
-  }
+  await new ApiPermissionUpdate({
+    query: { id: selectedNode.value.id },
+    params: { permissionValue: newValue as any }, // API 类型定义有误
+    option: { hintSuccess: true }
+  });
+  // 更新本地数据
+  selectedNode.value.permissionValue = newValue;
 };
 
 // 同步路由

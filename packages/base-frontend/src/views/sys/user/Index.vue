@@ -13,7 +13,7 @@
     :load-data="loadData"
   >
     <template #search-actions="{ loading }">
-      <el-button type="primary" :loading="loading" @click="handleAdd">
+      <el-button type="primary" :loading="loading" data-testid="user-create-btn" @click="handleAdd">
         <el-icon><Plus /></el-icon>
         新建用户
       </el-button>
@@ -114,7 +114,7 @@ const columns = [
     render: ({ row }: { row: UserResponseDto }) => h(ElSwitch, {
       modelValue: row.userStatus === STATUS.ENABLED,
       size: 'small',
-      onChange: (val: boolean) => handleStatusChange(row, val),
+      onChange: (val: string | number | boolean) => handleStatusChange(row, Boolean(val)),
     }),
   },
   { prop: 'createdAt', label: '创建时间', width: 180 },
