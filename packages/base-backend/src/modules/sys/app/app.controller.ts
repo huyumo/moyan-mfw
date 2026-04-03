@@ -27,8 +27,6 @@ import {
 } from '@nestjs/swagger';
 import { AppService } from './app.service';
 import { CreateAppDto, UpdateAppDto, QueryAppDto, AppDetailResponseDto } from './dto';
-import { MemberService } from '../member/member.service';
-import { AvailableRoleDto } from '../member/dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -44,10 +42,7 @@ import { ApiPaginatedResponse } from '../../../common';
 @UseGuards(AuthGuard)
 @Controller('apps')
 export class AppController {
-  constructor(
-    private appService: AppService,
-    private memberService: MemberService,
-  ) {}
+  constructor(private appService: AppService) {}
 
   /**
    * 创建应用实例
@@ -180,24 +175,5 @@ export class AppController {
   ) {
     const result = await this.appService.updateStatus(id, status);
     return ApiResponseUtil.success(result, '更新成功');
-  }
-
-  /**
-   * 获取可选角色列表
-   */
-  @Get(':appId/available-roles')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '获取可选角色列表', description: '获取应用可分配的角色列表（内置角色 + 应用级角色）' })
-  @ApiParam({ name: 'appId', description: '应用实例 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-    type: [AvailableRoleDto],
-  })
-  @ApiResponse({ status: 404, description: '应用不存在' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 32n }) // VIEW
-  async getAvailableRoles(@Param('appId', ParseUUIDPipe) appId: string) {
-    const result = await this.memberService.getAvailableRoles(appId);
-    return ApiResponseUtil.success(result, '查询成功');
   }
 }
