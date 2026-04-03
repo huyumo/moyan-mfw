@@ -16,9 +16,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
-import { ApiPermissionCreate, ApiPermissionUpdate } from '../../../apis/sys';
+import { ApiPermissionCreate, ApiPermissionUpdate, ApiPermissionFindAll } from '../../../apis/sys';
 import type { PermissionResponseDto } from '../../../apis/sys/schemas';
 
 /** 状态常量 */
@@ -157,6 +158,32 @@ onMounted(() => {
 /** 确认提交 */
 const onConfirm = async () => {
   await formRef.value?.validate();
+
+  // 父节点类型校验：TAG 父节点必须是 MENU
+  if (form.nodeType === 'TAG') {
+    if (!form.parentId) {
+      ElMessage.error('TAG 类型权限必须选择父节点');
+      throw new Error('TAG 类型权限必须选择父节点');
+    }
+
+    // 获取父节点信息验证类型
+    const parentResult = await new ApiPermissionFindAll({
+      params: {
+        id: form.parentId,
+        pageSize: 1,
+      },
+    });
+
+    const parent = parentResult.list?.[0];
+    if (!parent) {
+      ElMessage.error('父节点不存在');
+      throw new Error('父节点不存在');
+    }
+    if (parent.nodeType !== 'MENU') {
+      ElMessage.error(`TAG 类型权限的父节点必须是 MENU 类型，当前父节点类型为 ${parent.nodeType}`);
+      throw new Error('父节点类型错误');
+    }
+  }
 
   if (isEdit.value) {
     await new ApiPermissionUpdate({

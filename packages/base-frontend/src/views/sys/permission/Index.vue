@@ -100,12 +100,42 @@ const permissionTree = ref<PermissionResponseDto[]>([]);
 const loadPermissionTree = async () => {
   const result = await new ApiPermissionFindAll({
     params: {
-      permissionType: 'NORMAL' as any, // API 类型定义有误，实际应为 string 枚举
+      permissionType: 'NORMAL' as any,
       pageSize: 1000,
     },
   });
-  // TODO: 将列表转换为树形结构
-  permissionTree.value = result.list || [];
+  // 将列表转换为树形结构
+  permissionTree.value = buildTree(result.list || []);
+};
+
+/** 将扁平列表转换为树形结构
+ * @param list - 权限列表
+ * @returns 树形结构
+ */
+const buildTree = (list: PermissionResponseDto[]): PermissionResponseDto[] => {
+  const map = new Map<string, PermissionResponseDto & { children?: PermissionResponseDto[] }>();
+  const roots: PermissionResponseDto[] = [];
+
+  // 先创建所有节点的映射
+  list.forEach(item => {
+    map.set(item.id, { ...item, children: [] });
+  });
+
+  // 构建树形结构
+  list.forEach(item => {
+    const node = map.get(item.id)!;
+    if (item.parentId && map.has(item.parentId)) {
+      const parent = map.get(item.parentId)!;
+      if (!parent.children) {
+        parent.children = [];
+      }
+      parent.children.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  return roots;
 };
 
 /** 选中行变化 */
