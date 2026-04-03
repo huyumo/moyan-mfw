@@ -368,6 +368,7 @@ export class ApiPermissionCreate extends ApiCall<
  */
 export class ApiPermissionFindAll extends ApiCall<
   {
+    appTypeId?: string //应用类型 ID
     permName?: string //权限名称（模糊查询）
     permCode?: string //权限编码（模糊查询）
     permissionType?: number //权限类型
