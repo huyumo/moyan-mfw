@@ -6,6 +6,11 @@ import type {
   UserSummaryDto,
   LoginResponseDto,
   UserInfoDto,
+  AppInstanceItemDto,
+  PermissionTreeNodeDto,
+  UserPermissionsResponseDto,
+  RegisterDto,
+  CheckAvailabilityResponseDto,
   CreateUserDto,
   UserResponseDto,
   UpdateUserDto,
@@ -17,8 +22,20 @@ import type {
   CreatePermissionDto,
   PermissionResponseDto,
   UpdatePermissionDto,
+  RouteNodeDto,
+  SyncPermissionDto,
+  SyncDetailDto,
+  SyncPermissionResponseDto,
+  DiffItemDto,
+  ComparePermissionResponseDto,
   CreateAppTypeDto,
   AppTypeResponseDto,
+  PermissionTreesResponseDto,
+  PermissionPoolResponseDto,
+  PermissionTreePayloadDto,
+  PermissionTreesDto,
+  UpdatePermissionPoolDto,
+  UpdatePermissionPoolResponseDto,
   UpdateAppTypeDto,
   CreateAppDto,
   AppDetailResponseDto,
@@ -29,19 +46,6 @@ import type {
   UpdateMemberRolesDto,
   AvailableRoleDto,
   AuditLogResponseDto,
-  PermissionPoolItemDto,
-  PermissionPoolResponseDto,
-  PermissionTreeNodeDto,
-  PermissionTreePayloadDto,
-  UpdatePermissionPoolDto,
-  PermissionPoolPanelResponseDto,
-  PermissionPoolUpdateResponseDto,
-  AppInstanceItemDto,
-  UserAppsResponseDto,
-  PermissionMenuNodeDto,
-  UserPermissionsResponseDto,
-  RegisterDto,
-  CheckAvailabilityResponseDto,
   ObjectId,
   int,
   char,
@@ -89,6 +93,75 @@ export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
  */
 export class ApiAuthLogout extends ApiCall<{}, any> {
   path = '/api/auth/logout'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->获取用户应用列表
+ */
+export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
+  path = '/api/auth/apps'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->获取用户权限菜单
+ */
+export class ApiAuthGetUserPermissions extends ApiCall<
+  {
+    appId: string //应用实例 ID
+  },
+  UserPermissionsResponseDto
+> {
+  path = '/api/auth/permissions'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->用户注册
+ */
+export class ApiAuthRegister extends ApiCall<RegisterDto, LoginResponseDto> {
+  path = '/api/auth/register'
+  method: MoMethod = 'POST'
+  auth = false
+}
+
+/**
+ * auth|认证相关接口->检查可用性
+ */
+export class ApiAuthCheckAvailability extends ApiCall<
+  {
+    username?: string //用户名
+    email?: string //邮箱
+    phone?: string //手机号
+  },
+  CheckAvailabilityResponseDto
+> {
+  path = '/api/auth/check-availability'
+  method: MoMethod = 'GET'
+  auth = false
+}
+
+/**
+ * auth|认证相关接口->修改密码
+ */
+export class ApiAuthChangePassword extends ApiCall<{}, any> {
+  path = '/api/auth/change-password'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * auth|认证相关接口->同步权限
+ */
+export class ApiAuthSyncPermissions extends ApiCall<
+  {},
+  UserPermissionsResponseDto
+> {
+  path = '/api/auth/sync-permissions'
   method: MoMethod = 'POST'
   auth = true
 }
@@ -314,7 +387,7 @@ export class ApiPermissionFindAll extends ApiCall<
  */
 export class ApiPermissionFindAllTree extends ApiCall<
   {},
-  Array<PermissionResponseDto>
+  Array<PermissionTreeNodeDto>
 > {
   path = '/api/permissions/tree/all'
   method: MoMethod = 'GET'
@@ -328,7 +401,7 @@ export class ApiPermissionGetPermissionTree extends ApiCall<
   {
     parentId?: string //父权限 ID，不传则查询根节点
   },
-  Array<PermissionResponseDto>
+  Array<PermissionTreeNodeDto>
 > {
   path = '/api/permissions/tree'
   method: MoMethod = 'GET'
@@ -390,29 +463,9 @@ export class ApiPermissionBatchCreate extends ApiCall<
 /**
  * permission|权限相关接口->同步路由到权限表
  */
-export class ApiPermissionSync extends ApiCall<
-  {
-    appTypeId: string // 应用类型 ID
-    dryRun?: boolean // 是否仅预览，默认 false
-    routes: Array<{
-      path: string // 路由路径
-      name: string // 路由名称
-      children?: Array<any> // 子路由
-    }>
-  },
-  {
-    dryRun: boolean // 是否预览模式
-    added: number // 新增数量
-    updated: number // 更新数量
-    skipped: number // 跳过数量
-    details: Array<{
-      type: 'add' | 'update' | 'skip'
-      permName: string
-      permCode: string
-      nodeType: 'MENU' | 'PAGE'
-      parentCode?: string
-    }>
-  }
+export class ApiPermissionSyncPermissions extends ApiCall<
+  SyncPermissionDto,
+  SyncPermissionResponseDto
 > {
   path = '/api/permissions/sync'
   method: MoMethod = 'POST'
@@ -422,25 +475,14 @@ export class ApiPermissionSync extends ApiCall<
 /**
  * permission|权限相关接口->比对路由与权限差异
  */
-export class ApiPermissionCompare extends ApiCall<
+export class ApiPermissionComparePermissions extends ApiCall<
   {
-    appTypeId: string // 应用类型 ID
-    routes: Array<{
-      path: string // 路由路径
-      name: string // 路由名称
-      children?: Array<any> // 子路由
-    }>
+    appTypeId: string //应用类型 ID
   },
-  {
-    added: Array<any> // 新增的权限
-    updated: Array<any> // 更新的权限
-    removed: Array<any> // 删除的权限
-    moved: Array<any> // 移动的权限
-    totalDiffs: number // 总差异数量
-  }
+  ComparePermissionResponseDto
 > {
   path = '/api/permissions/compare'
-  method: MoMethod = 'POST'
+  method: MoMethod = 'GET'
   auth = true
 }
 
@@ -533,6 +575,32 @@ export class ApiAppTypeDelete extends ApiCall<
 > {
   path = '/api/app-types/{id}'
   method: MoMethod = 'DELETE'
+  auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->获取权限池配置
+ */
+export class ApiAppTypeGetPermissionPool extends ApiCall<
+  {
+    appTypeId: string //应用类型 ID
+  },
+  PermissionPoolResponseDto
+> {
+  path = '/api/app-types/{appTypeId}/permission-pool'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->更新权限池配置
+ */
+export class ApiAppTypeUpdatePermissionPool extends ApiCall<
+  UpdatePermissionPoolDto,
+  UpdatePermissionPoolResponseDto
+> {
+  path = '/api/app-types/{appTypeId}/permission-pool'
+  method: MoMethod = 'PUT'
   auth = true
 }
 
@@ -796,120 +864,28 @@ export class ApiAuditLogDeleteBeforeDate extends ApiCall<
 }
 
 /**
- * app-type|应用类型相关接口->获取权限池
+ * health|健康检查接口->健康检查
  */
-export class ApiAppTypeGetPermissionPool extends ApiCall<
-  {
-    id: string //应用类型 ID
-  },
-  PermissionPoolResponseDto
-> {
-  path = '/api/app-types/{id}/permission-pool'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * app-type|应用类型相关接口->获取权限池配置面板数据（树形结构）
- */
-export class ApiAppTypeGetPermissionPoolPanel extends ApiCall<
-  {
-    appTypeId: string //应用类型 ID
-  },
-  PermissionPoolPanelResponseDto
-> {
-  path = '/api/app-types/{appTypeId}/permission-pool'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * app-type|应用类型相关接口->更新权限池配置
- */
-export class ApiAppTypeUpdatePermissionPool extends ApiCall<
-  {
-    appTypeId: string //应用类型 ID
-  } & UpdatePermissionPoolDto,
-  PermissionPoolUpdateResponseDto
-> {
-  path = '/api/app-types/{appTypeId}/permission-pool'
-  method: MoMethod = 'PUT'
-  auth = true
-}
-
-/**
- * auth|认证相关接口->获取用户应用列表
- */
-export class ApiAuthGetUserApps extends ApiCall<{}, UserAppsResponseDto> {
-  path = '/api/auth/apps'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * auth|认证相关接口->获取用户权限菜单
- */
-export class ApiAuthGetUserPermissions extends ApiCall<
-  {
-    appId: string //应用实例 ID
-  },
-  UserPermissionsResponseDto
-> {
-  path = '/api/auth/permissions'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * auth|认证相关接口->用户自注册
- */
-export class ApiAuthRegister extends ApiCall<RegisterDto, LoginResponseDto> {
-  path = '/api/auth/register'
-  method: MoMethod = 'POST'
-  auth = false
-}
-
-/**
- * auth|认证相关接口->检查可用性
- */
-export class ApiAuthCheckAvailability extends ApiCall<
-  {
-    username?: string //用户名
-    email?: string //邮箱
-    phone?: string //手机号
-  },
-  CheckAvailabilityResponseDto
-> {
-  path = '/api/auth/check-availability'
+export class ApiHealthHealthCheck extends ApiCall<{}, any> {
+  path = '/api/health'
   method: MoMethod = 'GET'
   auth = false
 }
 
 /**
- * auth|认证相关接口->修改密码
+ * health|健康检查接口->就绪检查
  */
-export class ApiAuthChangePassword extends ApiCall<
-  {
-    oldPassword: string //原密码
-    newPassword: string //新密码
-  },
-  any
-> {
-  path = '/api/auth/change-password'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiHealthReadyCheck extends ApiCall<{}, any> {
+  path = '/api/health/ready'
+  method: MoMethod = 'GET'
+  auth = false
 }
 
 /**
- * auth|认证相关接口->同步权限
+ * health|健康检查接口->存活检查
  */
-export class ApiAuthSyncPermissions extends ApiCall<
-  {
-    appId: string //应用实例 ID
-  },
-  UserPermissionsResponseDto
-> {
-  path = '/api/auth/sync-permissions'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiHealthLiveCheck extends ApiCall<{}, any> {
+  path = '/api/health/live'
+  method: MoMethod = 'GET'
+  auth = false
 }
