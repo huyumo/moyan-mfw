@@ -388,6 +388,63 @@ export class ApiPermissionBatchCreate extends ApiCall<
 }
 
 /**
+ * permission|权限相关接口->同步路由到权限表
+ */
+export class ApiPermissionSync extends ApiCall<
+  {
+    appTypeId: string // 应用类型 ID
+    dryRun?: boolean // 是否仅预览，默认 false
+    routes: Array<{
+      path: string // 路由路径
+      name: string // 路由名称
+      children?: Array<any> // 子路由
+    }>
+  },
+  {
+    dryRun: boolean // 是否预览模式
+    added: number // 新增数量
+    updated: number // 更新数量
+    skipped: number // 跳过数量
+    details: Array<{
+      type: 'add' | 'update' | 'skip'
+      permName: string
+      permCode: string
+      nodeType: 'MENU' | 'PAGE'
+      parentCode?: string
+    }>
+  }
+> {
+  path = '/api/permissions/sync'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->比对路由与权限差异
+ */
+export class ApiPermissionCompare extends ApiCall<
+  {
+    appTypeId: string // 应用类型 ID
+    routes: Array<{
+      path: string // 路由路径
+      name: string // 路由名称
+      children?: Array<any> // 子路由
+    }>
+  },
+  {
+    added: Array<any> // 新增的权限
+    updated: Array<any> // 更新的权限
+    removed: Array<any> // 删除的权限
+    moved: Array<any> // 移动的权限
+    totalDiffs: number // 总差异数量
+  }
+> {
+  path = '/api/permissions/compare'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
  * app-type|应用类型相关接口->创建应用类型
  */
 export class ApiAppTypeCreate extends ApiCall<
