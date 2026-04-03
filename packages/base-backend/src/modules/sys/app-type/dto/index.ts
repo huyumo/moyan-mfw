@@ -14,6 +14,5 @@ export { AppTypeResponseDto } from './res/app-type-response.dto';
 export {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
-  PermissionTreeNodeDto,
   PermissionTreesResponseDto,
 } from './res/permission-pool-response.dto';

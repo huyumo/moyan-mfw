@@ -335,7 +335,7 @@ export class AppTypeService {
       permDesc: permission.permDesc,
       permissionType: permission.permissionType as 'PC' | 'NORMAL',
       nodeType: permission.nodeType as 'MENU' | 'PAGE' | 'TAG',
-      parentId: permission.parentId,
+      parentId: permission.parentId ?? undefined,
       routePath: permission.routePath,
       externalUrl: permission.externalUrl,
       iconName: permission.iconName,
