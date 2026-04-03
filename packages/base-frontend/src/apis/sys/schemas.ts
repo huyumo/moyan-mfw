@@ -251,6 +251,11 @@ export type SyncPermissionResponseDto = {
   details: Array<SyncDetailDto> // 同步详情
 }
 
+export type ComparePermissionDto = {
+  appTypeId: string // 应用类型 ID
+  routes: Array<RouteNodeDto> // 路由树结构
+}
+
 export type DiffItemDto = {
   type: string // 差异类型
   permCode?: string // 权限编码

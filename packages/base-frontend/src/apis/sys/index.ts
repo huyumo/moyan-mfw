@@ -26,6 +26,7 @@ import type {
   SyncPermissionDto,
   SyncDetailDto,
   SyncPermissionResponseDto,
+  ComparePermissionDto,
   DiffItemDto,
   ComparePermissionResponseDto,
   CreateAppTypeDto,
@@ -476,13 +477,11 @@ export class ApiPermissionSyncPermissions extends ApiCall<
  * permission|权限相关接口->比对路由与权限差异
  */
 export class ApiPermissionComparePermissions extends ApiCall<
-  {
-    appTypeId: string //应用类型 ID
-  },
+  ComparePermissionDto,
   ComparePermissionResponseDto
 > {
   path = '/api/permissions/compare'
-  method: MoMethod = 'GET'
+  method: MoMethod = 'POST'
   auth = true
 }
 
