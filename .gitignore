@@ -6,6 +6,7 @@ docs/.vitepress/
 test-results/
 playwright-report/
 packages/*/test-results/
+.auth/
 
 # Claude worktrees
 .claude/worktrees/

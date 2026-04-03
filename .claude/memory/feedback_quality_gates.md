@@ -6,7 +6,7 @@ type: feedback
 
 **规则 1：任务状态管理门禁**
 
-1. **任务开始前**：必须先更新 `.claude/TASK.md`
+1. **任务开始前**：必须先更新 `TASK.md`
    - 标记任务状态为 `in_progress`
    - 记录当前子任务/步骤
    - 更新 `updated` 和 `lock` 字段
@@ -17,7 +17,7 @@ type: feedback
 
 3. **所有任务完成后**：必须执行归档
    - 创建 TASK.md 快照至 `docs/04-项目实施/05-任务追踪/archived/`
-   - 重置 `.claude/TASK.md` 等待新任务
+   - 重置 `TASK.md` 等待新任务
    - 归档后 TASK.md 只保留最近 3 条历史归档链接
 
 4. **归档检查脚本**：`pnpm run gate:task-archive`
