@@ -71,11 +71,11 @@ const onConfirm = async () => {
   if (!props.data) return;
 
   await new ApiMemberUpdateRoles({
-    params: {
+    query: {
       appId: props.data.appId,
       userId: props.data.member.userId,
-      roleIds: selectedRoleIds.value,
     },
+    params: { roleIds: selectedRoleIds.value as any },
   });
 };
 
