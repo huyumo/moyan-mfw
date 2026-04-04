@@ -36,10 +36,6 @@
         <el-icon><Plus /></el-icon>
         新建根节点
       </el-button>
-      <el-button @click="handleAddChild" :disabled="!selectedNode">
-        <el-icon><Plus /></el-icon>
-        新建子节点
-      </el-button>
     </div>
 
     <el-table
@@ -75,9 +71,10 @@
         </template>
       </el-table-column>
       <el-table-column prop="sortOrder" label="排序" width="80" />
-      <el-table-column label="操作" width="150" fixed="right">
+      <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
           <el-button type="primary" link @click="handleEdit(row)">编辑</el-button>
+          <el-button type="success" link @click="handleAddChildForRow(row)">添加子节点</el-button>
           <el-button type="danger" link @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -190,17 +187,13 @@ const handleAddRoot = () => {
   });
 };
 
-/** 新建子节点 */
-const handleAddChild = () => {
-  if (!selectedNode.value) {
-    ElMessage.warning('请先选择父节点');
-    return;
-  }
+/** 添加子节点（在行上操作） */
+const handleAddChildForRow = (row: PermissionTreeNodeDto) => {
   MfwPopup.open({
-    title: '新建权限',
+    title: '新建子权限',
     type: 'dialog',
     component: PermissionForm,
-    data: { parentId: selectedNode.value.id, nodeType: 'TAG' },
+    data: { parentId: row.id, nodeType: 'TAG' },
     popupProps: { width: 500 },
     on: {
       confirm: () => {
