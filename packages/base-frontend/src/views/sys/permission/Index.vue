@@ -27,11 +27,16 @@
         placeholder="搜索权限名称/编码"
         style="width: 300px"
         clearable
+        @keyup.enter="() => {}"
       >
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
+      <el-button @click="keyword = ''">
+        <el-icon><Refresh /></el-icon>
+        重置
+      </el-button>
       <el-button type="primary" @click="handleAddRoot">
         <el-icon><Plus /></el-icon>
         新建根节点
@@ -39,7 +44,7 @@
     </div>
 
     <el-table
-      :data="permissionTree"
+      :data="filteredPermissionTree"
       row-key="id"
       border
       default-expand-all
@@ -83,9 +88,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Search, Plus } from '@element-plus/icons-vue';
+import { Search, Plus, Refresh } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../../components/feedback';
 import {
   ApiPermissionFindAllTree,
@@ -131,38 +136,47 @@ const handleAppTypeChange = (appTypeId: string) => {
 
 /** 加载权限树 */
 const loadPermissionTree = async () => {
-  const result = await new ApiPermissionFindAllTree({});
+  const result = await new ApiPermissionFindAllTree({
+    params: {
+      permissionType: 'NORMAL',
+    },
+  });
   permissionTree.value = result || [];
 };
 
-/** 将扁平列表转换为树形结构
- * @param list - 权限列表
- * @returns 树形结构
+/** 过滤后的权限树 */
+const filteredPermissionTree = computed(() => {
+  if (!keyword.value) return permissionTree.value;
+  return filterTree(permissionTree.value, keyword.value);
+});
+
+/** 递归过滤树节点
+ * @param nodes - 权限树节点
+ * @param keyword - 关键词
+ * @returns 过滤后的树
  */
-const buildTree = (list: PermissionTreeNodeDto[]): PermissionTreeNodeDto[] => {
-  const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
-  const roots: PermissionTreeNodeDto[] = [];
+const filterTree = (nodes: PermissionTreeNodeDto[], keyword: string): PermissionTreeNodeDto[] => {
+  const result: PermissionTreeNodeDto[] = [];
+  const lowerKeyword = keyword.toLowerCase();
 
-  // 先创建所有节点的映射
-  list.forEach(item => {
-    map.set(item.id, { ...item, children: [] });
-  });
+  for (const node of nodes) {
+    const matchName = node.permName.toLowerCase().includes(lowerKeyword);
+    const matchCode = node.permCode.toLowerCase().includes(lowerKeyword);
 
-  // 构建树形结构
-  list.forEach(item => {
-    const node = map.get(item.id)!;
-    if (item.parentId && map.has(item.parentId)) {
-      const parent = map.get(item.parentId)!;
-      if (!parent.children) {
-        parent.children = [];
-      }
-      parent.children.push(node);
-    } else {
-      roots.push(node);
+    let filteredChildren: PermissionTreeNodeDto[] | undefined;
+    if (node.children && node.children.length > 0) {
+      filteredChildren = filterTree(node.children, keyword);
     }
-  });
 
-  return roots;
+    if (matchName || matchCode || (filteredChildren && filteredChildren.length > 0)) {
+      result.push({
+        ...node,
+        children: filteredChildren,
+      });
+    }
+  }
+
+  return result;
 };
 
 /** 选中行变化 */
@@ -173,10 +187,10 @@ const handleCurrentChange = (row: PermissionTreeNodeDto | null) => {
 /** 新建根节点 */
 const handleAddRoot = () => {
   MfwPopup.open({
-    title: '新建权限',
+    title: '新建根权限',
     type: 'dialog',
     component: PermissionForm,
-    data: { parentId: '' },
+    data: { parentId: '', nodeType: 'MENU', permissionType: 'NORMAL' },
     popupProps: { width: 500 },
     on: {
       confirm: () => {

@@ -97,9 +97,10 @@ export class PermissionController {
     description: '查询成功',
     type: [PermissionTreeNodeDto],
   })
+  @ApiQuery({ name: 'permissionType', required: false, description: '权限类型：PC/NORMAL', enum: ['PC', 'NORMAL'] })
   @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
-  async findAllTree() {
-    const result = await this.permissionService.findAllTreeWithChildren();
+  async findAllTree(@Query('permissionType') permissionType?: string) {
+    const result = await this.permissionService.findAllTreeWithChildren(permissionType);
     return ApiResponseUtil.success(result, '查询成功');
   }
 
