@@ -49,6 +49,27 @@ const normalTreeData = ref<PermissionTreeNodeState[]>([])
 // ========== 辅助函数 ==========
 
 /**
+ * 获取节点可用的权限位
+ */
+function getNodeAvailableBits(node: PermissionTreeNodeState): bigint[] {
+  const originalValue = node.permissionValue ? BigInt(String(node.permissionValue)) : 0n
+  return getAvailablePermBits(originalValue)
+}
+
+/**
+ * 处理节点权限位变化
+ */
+function handleNodePermBitChange(
+  nodeId: string,
+  permBit: bigint,
+  checked: boolean,
+  treeType: 'pc' | 'normal'
+) {
+  const treeData = treeType === 'pc' ? pcTreeData.value : normalTreeData.value
+  updateNodePermValue(treeData, nodeId, permBit, checked)
+}
+
+/**
  * 将 PermissionTreeNodeDto 转换为 PermissionTreeNodeState
  */
 function transformTreeNode(node: PermissionTreeNodeDto): PermissionTreeNodeState {
@@ -295,43 +316,6 @@ const treeProps = {
   children: 'children',
   label: 'permName',
 }
-
-// ========== 渲染权限位选择 ==========
-
-function renderPermBits(node: PermissionTreeNodeState) {
-  // 只有 PAGE 类型（PC 权限）或 TAG 类型（普通权限）才显示权限位选择
-  const showPermBits =
-    (node.permissionType === 'PC' && node.nodeType === 'PAGE') ||
-    (node.permissionType === 'NORMAL' && node.nodeType === 'TAG')
-
-  if (!showPermBits || !node.checked) return null
-
-  // 获取原始定义的可用权限位
-  const originalValue = node.permissionValue ? BigInt(String(node.permissionValue)) : 0n
-  const availableBits = getAvailablePermBits(originalValue)
-
-  if (availableBits.length === 0) return null
-
-  const currentValue = node.permissionValueBigInt || 0n
-
-  return (
-    <div class="perm-bits-container">
-      <span class="perm-bits-label">操作权限：</span>
-      {availableBits.map(bit => (
-        <ElCheckbox
-          key={String(bit)}
-          modelValue={(currentValue & bit) !== 0n}
-          disabled={props.readonly}
-          onChange={(checked: CheckboxValueType) => {
-            const treeData = activeTab.value === 'pc' ? pcTreeData.value : normalTreeData.value
-            updateNodePermValue(treeData, node.id, bit, Boolean(checked))
-          }}
-          label={PermBitDesc[String(bit)] || String(bit)}
-        />
-      ))}
-    </div>
-  )
-}
 </script>
 
 <template>
@@ -376,7 +360,18 @@ function renderPermBits(node: PermissionTreeNodeState) {
                   </span>
                   <!-- 显示权限位选择 -->
                   <div v-if="data.checked" class="perm-bits-wrapper">
-                    {{ renderPermBits(data) }}
+                    <div class="perm-bits-container">
+                      <span class="perm-bits-label">操作权限：</span>
+                      <template v-for="bit in getNodeAvailableBits(data)" :key="String(bit)">
+                        <ElCheckbox
+                          :modelValue="(data.permissionValueBigInt || 0n) !== 0n && ((data.permissionValueBigInt || 0n) & bit) !== 0n"
+                          :disabled="readonly"
+                          @change="(checked: CheckboxValueType) => handleNodePermBitChange(data.id, bit, Boolean(checked), 'pc')"
+                        >
+                          {{ PermBitDesc[String(bit)] || String(bit) }}
+                        </ElCheckbox>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </template>
@@ -411,7 +406,18 @@ function renderPermBits(node: PermissionTreeNodeState) {
                   </span>
                   <!-- 显示权限位选择 -->
                   <div v-if="data.checked" class="perm-bits-wrapper">
-                    {{ renderPermBits(data) }}
+                    <div class="perm-bits-container">
+                      <span class="perm-bits-label">操作权限：</span>
+                      <template v-for="bit in getNodeAvailableBits(data)" :key="String(bit)">
+                        <ElCheckbox
+                          :modelValue="(data.permissionValueBigInt || 0n) !== 0n && ((data.permissionValueBigInt || 0n) & bit) !== 0n"
+                          :disabled="readonly"
+                          @change="(checked: CheckboxValueType) => handleNodePermBitChange(data.id, bit, Boolean(checked), 'normal')"
+                        >
+                          {{ PermBitDesc[String(bit)] || String(bit) }}
+                        </ElCheckbox>
+                      </template>
+                    </div>
                   </div>
                 </div>
               </template>

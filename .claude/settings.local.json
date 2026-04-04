@@ -1,6 +1,9 @@
 {
   "permissions": {
+    "bypassPermissions": true,
     "allow": [
+      "Bash(*)",
+      "Skill(*)",
       "Bash(npm uninstall:*)",
       "Bash(pkill -9 -f \"python.*http.server\")",
       "Bash(taskkill /F /IM python.exe)",
@@ -24,5 +27,21 @@
       "Bash(curl -s \"http://localhost:5175/@fs/E:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/packages/base-frontend/src/views/sys/app-type/Index.vue\")",
       "Bash(grep -r \"from ''''@/\" packages/base-frontend/src --include=\"*.vue\" --include=\"*.ts\" --include=\"*.tsx\")"
     ]
+  },
+  "skillHub": {
+    "enabled": true,
+    "priority": "high",
+    "registry": "https://skillhub.cn",
+    "autoUpdate": true
+  },
+  "skills": {
+    "desktop-control": {
+      "enabled": true,
+      "version": "latest"
+    },
+    "ui-ux-pro-max": {
+      "enabled": true,
+      "version": "latest"
+    }
   }
 }

@@ -91,11 +91,11 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Plus } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../../components/feedback';
 import {
-  ApiPermissionFindAll,
+  ApiPermissionFindAllTree,
   ApiPermissionDelete,
   ApiAppTypeFindAllList,
 } from '../../../apis/sys';
-import type { PermissionResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
+import type { PermissionTreeNodeDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import PermissionForm from './PermissionForm.vue';
 
 /** 状态常量 */
@@ -107,12 +107,12 @@ const STATUS = {
 defineOptions({ name: 'MfwPermissionList' });
 
 const keyword = ref('');
-const selectedNode = ref<PermissionResponseDto | null>(null);
+const selectedNode = ref<PermissionTreeNodeDto | null>(null);
 const selectedAppTypeId = ref<string>('');
 const appTypeList = ref<AppTypeResponseDto[]>([]);
 
 /** 权限树数据 */
-const permissionTree = ref<PermissionResponseDto[]>([]);
+const permissionTree = ref<PermissionTreeNodeDto[]>([]);
 
 /** 加载应用类型列表 */
 const loadAppTypeList = async () => {
@@ -134,24 +134,17 @@ const handleAppTypeChange = (appTypeId: string) => {
 
 /** 加载权限树 */
 const loadPermissionTree = async () => {
-  const result = await new ApiPermissionFindAll({
-    params: {
-      permissionType: 'NORMAL' as any,
-      appTypeId: selectedAppTypeId.value || undefined,
-      pageSize: 1000,
-    },
-  });
-  // 将列表转换为树形结构
-  permissionTree.value = buildTree(result.list || []);
+  const result = await new ApiPermissionFindAllTree({});
+  permissionTree.value = result || [];
 };
 
 /** 将扁平列表转换为树形结构
  * @param list - 权限列表
  * @returns 树形结构
  */
-const buildTree = (list: PermissionResponseDto[]): PermissionResponseDto[] => {
-  const map = new Map<string, PermissionResponseDto & { children?: PermissionResponseDto[] }>();
-  const roots: PermissionResponseDto[] = [];
+const buildTree = (list: PermissionTreeNodeDto[]): PermissionTreeNodeDto[] => {
+  const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
+  const roots: PermissionTreeNodeDto[] = [];
 
   // 先创建所有节点的映射
   list.forEach(item => {
@@ -176,7 +169,7 @@ const buildTree = (list: PermissionResponseDto[]): PermissionResponseDto[] => {
 };
 
 /** 选中行变化 */
-const handleCurrentChange = (row: PermissionResponseDto | null) => {
+const handleCurrentChange = (row: PermissionTreeNodeDto | null) => {
   selectedNode.value = row;
 };
 
@@ -219,7 +212,7 @@ const handleAddChild = () => {
 };
 
 /** 编辑 */
-const handleEdit = (row: PermissionResponseDto) => {
+const handleEdit = (row: PermissionTreeNodeDto) => {
   MfwPopup.open({
     title: '编辑权限',
     type: 'dialog',
@@ -236,7 +229,7 @@ const handleEdit = (row: PermissionResponseDto) => {
 };
 
 /** 删除 */
-const handleDelete = async (row: PermissionResponseDto) => {
+const handleDelete = async (row: PermissionTreeNodeDto) => {
   try {
     await ElMessageBox.confirm(
       `确定要删除权限「${row.permName}」吗？将同时删除所有子节点。`,
