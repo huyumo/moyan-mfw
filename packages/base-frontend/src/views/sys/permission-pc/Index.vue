@@ -1,158 +1,97 @@
 <!--
 /**
  * @fileoverview PC 权限管理页面
- * @description PC 权限树展示、路由同步、permissionValue 配置
+ * @description 使用 PermissionManager 组件，API 调用已封装在组件内部
  */
 -->
 <template>
-  <div class="pc-permission-page">
-    <div class="permission-toolbar">
-      <!-- 应用类型选择器 -->
-      <el-select
-        v-model="selectedAppTypeId"
-        placeholder="选择应用类型"
-        style="width: 200px"
-        clearable
-        @change="handleAppTypeChange"
-      >
-        <el-option
-          v-for="item in appTypeList"
-          :key="item.id"
-          :label="item.typeName"
-          :value="item.id"
-        />
-      </el-select>
+  <PermissionManager
+    ref="managerRef"
+    permission-type="PC"
+    title="PC 权限树"
+    @app-type-change="handleAppTypeChange"
+  >
+    <template #toolbar-extra>
       <el-button type="primary" @click="handleSync">
-        <el-icon>
-          <Refresh />
-        </el-icon>
+        <el-icon><Refresh /></el-icon>
         同步路由
       </el-button>
       <el-button @click="handleCompare">
-        <el-icon>
-          <Search />
-        </el-icon>
+        <el-icon><Search /></el-icon>
         检查差异
       </el-button>
-      <el-button @click="handleAddManual">
-        <el-icon>
-          <Plus />
-        </el-icon>
-        手动添加权限
-      </el-button>
-    </div>
+    </template>
+  </PermissionManager>
 
-    <div class="permission-content">
-      <!-- 权限树 -->
-      <div class="permission-tree-panel">
-        <h4>PC 权限树</h4>
-        <el-tree ref="treeRef" :data="permissionTree" :props="{ label: 'permName', children: 'children' }" node-key="id"
-          default-expand-all highlight-current @current-change="handleNodeSelect">
-          <template #default="{ node, data }">
-            <span class="tree-node">
-              <span>{{ data.permName }}</span>
-              <el-tag v-if="data.isAutoSync === STATUS.ENABLED" type="success" size="small">同步</el-tag>
-              <el-tag v-else type="info" size="small">手动</el-tag>
-            </span>
-          </template>
-        </el-tree>
-      </div>
-
-      <!-- permissionValue 配置面板 -->
-      <div class="permission-value-panel">
-        <template v-if="selectedNode && selectedNode.nodeType === 'PAGE'">
-          <h4>操作权限配置</h4>
-          <p class="node-info">
-            当前页面：{{ selectedNode.permName }}<br />
-            权限编码：{{ selectedNode.permCode }}
-          </p>
-          <el-checkbox-group v-model="selectedActions" @change="handlePermissionValueChange">
-            <el-checkbox v-for="action in permissionActions" :key="action.value" :label="action.value">
-              {{ action.label }}
-            </el-checkbox>
-          </el-checkbox-group>
+  <!-- 同步预览弹窗 -->
+  <el-dialog
+    v-model="syncDialog.visible"
+    title="同步预览"
+    width="700px"
+    destroy-on-close
+  >
+    <el-table :data="syncDialog.details" border size="small">
+      <el-table-column prop="type" label="类型" width="80">
+        <template #default="{ row }">
+          <el-tag
+            :type="row.type === 'add' ? 'success' : row.type === 'update' ? 'warning' : 'info'"
+            size="small"
+          >
+            {{ row.type === 'add' ? '新增' : row.type === 'update' ? '更新' : '跳过' }}
+          </el-tag>
         </template>
-        <template v-else>
-          <el-empty description="请选择 PAGE 节点配置操作权限" />
-        </template>
-      </div>
-    </div>
-  </div>
+      </el-table-column>
+      <el-table-column prop="permName" label="权限名称" min-width="150" />
+      <el-table-column prop="permCode" label="权限编码" min-width="150" />
+      <el-table-column prop="nodeType" label="节点类型" width="100" />
+    </el-table>
+    <template #footer>
+      <el-button @click="syncDialog.visible = false">取消</el-button>
+      <el-button type="primary" @click="confirmSync">确认同步</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Refresh, Search, Plus } from '@element-plus/icons-vue';
-import { MfwPopup } from '../../../components/feedback';
+import { Refresh, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import PermissionManager from '../../../components/business/permission-manager/Index.vue';
+import type { RouteNodeDto } from '../../../apis/sys/schemas';
 import {
-  ApiPermissionFindAll,
-  ApiPermissionUpdate,
   ApiPermissionSyncPermissions,
   ApiPermissionComparePermissions,
-  ApiAppTypeFindAllList,
 } from '../../../apis/sys';
-import type { PermissionResponseDto, RouteNodeDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
-import PermissionPcForm from './PermissionPcForm.vue';
-import SyncPreview from './SyncPreview.vue';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
 
 defineOptions({ name: 'MfwPcPermissionList' });
 
 const router = useRouter();
-const treeRef = ref();
-const selectedNode = ref<PermissionResponseDto | null>(null);
-const permissionTree = ref<PermissionResponseDto[]>([]);
-const selectedAppTypeId = ref<string>('');
-const appTypeList = ref<AppTypeResponseDto[]>([]);
+const managerRef = ref<InstanceType<typeof PermissionManager>>();
 
-// 选中的操作权限
-const selectedActions = ref<number[]>([]);
+// 同步弹窗状态
+const syncDialog = ref({
+  visible: false,
+  details: [] as any[],
+});
 
-// 操作权限选项
-const permissionActions = [
-  { label: '新增', value: 1 },
-  { label: '编辑', value: 2 },
-  { label: '删除', value: 4 },
-  { label: '导出', value: 8 },
-  { label: '导入', value: 16 },
-  { label: '查看', value: 32 },
-];
+// 当前选中的应用类型
+let currentAppTypeId = '';
 
-// 同步结果（用于预览）
-const syncResult = ref<any>(null);
+// ========== 应用类型变化 ==========
 
-// 加载应用类型列表
-const loadAppTypeList = async () => {
-  const result = await new ApiAppTypeFindAllList({});
-  appTypeList.value = result || [];
-  // 默认选择第一个启用的应用类型
-  const enabled = result.find((item: AppTypeResponseDto) => item.typeStatus === 1);
-  if (enabled) {
-    selectedAppTypeId.value = enabled.id;
-    loadPermissionTree();
-  }
-};
-
-// 应用类型变化
 const handleAppTypeChange = (appTypeId: string) => {
-  selectedAppTypeId.value = appTypeId;
-  loadPermissionTree();
+  currentAppTypeId = appTypeId;
 };
+
+// ========== PC 特有功能：路由同步 ==========
 
 // 转换路由配置为 API 格式
 const convertRoutesToApiFormat = (routes: RouteRecordRaw[]): RouteNodeDto[] => {
   const result: RouteNodeDto[] = [];
 
   for (const route of routes) {
-    // 跳过特殊路由（如重定向、空布局等）
     if (route.path === '' || route.path === '/' || !route.meta?.title) {
       if (route.children && route.children.length > 0) {
         result.push(...convertRoutesToApiFormat(route.children));
@@ -175,107 +114,67 @@ const convertRoutesToApiFormat = (routes: RouteRecordRaw[]): RouteNodeDto[] => {
   return result;
 };
 
-// 加载权限树
-const loadPermissionTree = async () => {
-  const result = await new ApiPermissionFindAll({
-    params: {
-      permissionType: 'PC' as any,
-      appTypeId: selectedAppTypeId.value || undefined,
-      pageSize: 1000,
-    },
-  });
-  permissionTree.value = result.list || [];
-};
-
-// 选择节点
-const handleNodeSelect = (data: PermissionResponseDto) => {
-  selectedNode.value = data;
-
-  // 解析 permissionValue
-  if (data.permissionValue !== undefined && data.permissionValue !== null) {
-    const value = Number(data.permissionValue);
-    selectedActions.value = permissionActions
-      .filter(action => (value & action.value) !== 0)
-      .map(action => action.value);
-  } else {
-    selectedActions.value = [];
-  }
-};
-
-// 权限值变化
-const handlePermissionValueChange = async () => {
-  if (!selectedNode.value) return;
-
-  // 计算新的 permissionValue
-  const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
-
-  await new ApiPermissionUpdate({
-    query: { id: selectedNode.value.id },
-    params: { permissionValue: newValue as any }, // API 类型定义有误
-    option: { hintSuccess: true }
-  });
-  // 更新本地数据
-  selectedNode.value.permissionValue = newValue;
-};
-
 // 同步路由
 const handleSync = async () => {
-  if (!selectedAppTypeId.value) {
+  if (!currentAppTypeId) {
     ElMessage.warning('请先选择应用类型');
     return;
   }
-  // 从路由实例提取实际路由数据
+
   const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
     const result = await new ApiPermissionSyncPermissions({
       params: {
-        appTypeId: selectedAppTypeId.value,
+        appTypeId: currentAppTypeId,
         dryRun: true,
         routes,
       },
       option: { hintSuccess: false },
     });
 
-    MfwPopup.open({
-      title: '同步预览',
-      type: 'dialog',
-      component: SyncPreview,
-      data: { details: result.details || [] },
-      popupProps: { width: 600 },
-      on: {
-        confirm: async () => {
-          // 执行实际同步
-          await new ApiPermissionSyncPermissions({
-            params: {
-              appTypeId: selectedAppTypeId.value,
-              dryRun: false,
-              routes,
-            },
-          });
-          ElMessage.success('同步成功');
-          loadPermissionTree();
-        },
+    syncDialog.value = {
+      visible: true,
+      details: result.details || [],
+    };
+  } catch (error) {
+    // 错误由底层处理
+  }
+};
+
+// 确认同步
+const confirmSync = async () => {
+  const routes = convertRoutesToApiFormat(router.getRoutes());
+
+  try {
+    await new ApiPermissionSyncPermissions({
+      params: {
+        appTypeId: currentAppTypeId,
+        dryRun: false,
+        routes,
       },
     });
+    ElMessage.success('同步成功');
+    syncDialog.value.visible = false;
+    managerRef.value?.reload();
   } catch (error) {
-    // API 错误由底层处理
+    // 错误由底层处理
   }
 };
 
 // 检查差异
 const handleCompare = async () => {
-  if (!selectedAppTypeId.value) {
+  if (!currentAppTypeId) {
     ElMessage.warning('请先选择应用类型');
     return;
   }
-  // 从路由实例提取实际路由数据
+
   const routes = convertRoutesToApiFormat(router.getRoutes());
 
   try {
     const result = await new ApiPermissionComparePermissions({
       params: {
-        appTypeId: selectedAppTypeId.value,
+        appTypeId: currentAppTypeId,
         routes,
       },
     });
@@ -287,83 +186,7 @@ const handleCompare = async () => {
       ElMessage.warning(`发现 ${diffCount} 处差异，请使用"同步路由"功能查看详情`);
     }
   } catch (error) {
-    // API 错误由底层处理
+    // 错误由底层处理
   }
 };
-
-// 手动添加权限
-const handleAddManual = () => {
-  MfwPopup.open({
-    title: '手动添加权限',
-    type: 'dialog',
-    component: PermissionPcForm,
-    data: {},
-    popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        ElMessage.success('添加成功');
-        loadPermissionTree();
-      },
-    },
-  });
-};
-
-onMounted(() => {
-  loadAppTypeList();
-});
 </script>
-
-<style scoped lang="scss">
-.pc-permission-page {
-  padding: 16px;
-}
-
-.permission-toolbar {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.permission-content {
-  display: flex;
-  gap: 16px;
-  height: calc(100vh - 200px);
-}
-
-.permission-tree-panel {
-  flex: 1;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  padding: 16px;
-  overflow: auto;
-
-  h4 {
-    margin: 0 0 12px 0;
-    font-size: 16px;
-  }
-}
-
-.permission-value-panel {
-  width: 350px;
-  border: 1px solid #e4e7ed;
-  border-radius: 4px;
-  padding: 16px;
-
-  h4 {
-    margin: 0 0 12px 0;
-    font-size: 16px;
-  }
-
-  .node-info {
-    margin-bottom: 16px;
-    color: #606266;
-    font-size: 14px;
-  }
-}
-
-.tree-node {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-</style>

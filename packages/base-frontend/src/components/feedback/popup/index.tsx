@@ -370,7 +370,9 @@ const MfwPopupDrawer = defineComponent({
 });
 
 /**
- * 弹窗管理器组件
+ * 弹窗管理器组件，整改项目只允许定义一个弹窗管理器
+ * 在布局页面，统一定义一个弹窗管理器，其他组件通过弹窗管理器打开弹窗
+ * 弹窗管理器会根据弹窗类型，选择合适的弹窗组件（Dialog 或 Drawer）打开
  */
 export const MfwPopupManager = defineComponent({
   name: 'MfwPopupManager',

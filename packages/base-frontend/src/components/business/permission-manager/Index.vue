@@ -1,0 +1,844 @@
+<!--
+/**
+ * @fileoverview 权限管理通用组件
+ * @description 统一管理 PC 和普通权限，包含拖拽排序、permissionValue 弹窗配置
+ * 内部封装所有 API 调用，页面只需传入 permissionType 和基础配置
+ */
+-->
+<template>
+  <div class="permission-manager">
+    <!-- 工具栏 -->
+    <div class="permission-toolbar">
+      <!-- 应用类型选择器 - PC权限显示 -->
+      <el-select
+        v-if="permissionType === 'PC'"
+        v-model="selectedAppTypeId"
+        placeholder="选择应用类型"
+        style="width: 200px"
+        clearable
+        @change="handleAppTypeChange"
+      >
+        <el-option
+          v-for="item in appTypeList"
+          :key="item.id"
+          :label="item.typeName"
+          :value="item.id"
+        />
+      </el-select>
+
+      <!-- 页面自定义工具栏 -->
+      <slot name="toolbar-extra" />
+
+      <!-- 关键词搜索 -->
+      <el-input
+        v-model="keyword"
+        placeholder="搜索权限名称/编码"
+        style="width: 200px"
+        clearable
+        @input="handleSearch"
+      >
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
+      </el-input>
+
+      <el-button type="primary" @click="handleAddRoot">
+        <el-icon><Plus /></el-icon>
+        新建根节点
+      </el-button>
+    </div>
+
+    <!-- 主体内容 -->
+    <div class="permission-content">
+      <!-- 权限树 -->
+      <div class="permission-tree-panel">
+        <div class="panel-header">
+          <h4>{{ title }}</h4>
+          <el-tag size="small" type="info">拖拽可排序</el-tag>
+        </div>
+
+        <el-tree
+          ref="treeRef"
+          :data="permissionTree"
+          :props="treeProps"
+          node-key="id"
+          default-expand-all
+          highlight-current
+          draggable
+          :allow-drag="allowDrag"
+          :allow-drop="allowDrop"
+          @node-drop="handleNodeDrop"
+          @node-click="handleNodeClick"
+        >
+          <template #default="{ data }">
+            <div class="tree-node" :class="`node-type-${data.nodeType?.toLowerCase()}`">
+              <div class="node-info">
+                <el-icon class="node-icon">
+                  <FolderOpened v-if="data.nodeType === 'MENU'" />
+                  <Document v-else-if="data.nodeType === 'PAGE'" />
+                  <CollectionTag v-else />
+                </el-icon>
+                <span class="node-name">{{ data.permName }}</span>
+                <el-tag
+                  :type="getNodeTypeTagType(data.nodeType)"
+                  size="small"
+                  class="node-type-tag"
+                >
+                  {{ data.nodeType }}
+                </el-tag>
+              </div>
+
+              <div class="node-actions">
+                <!-- permissionValue 配置按钮 - 只有 PAGE/TAG 显示 -->
+                <el-button
+                  v-if="canSetPermissionValue(data.nodeType)"
+                  type="primary"
+                  link
+                  size="small"
+                  title="配置操作权限"
+                  @click.stop="handleConfigPermissionValue(data)"
+                >
+                  <el-icon><Key /></el-icon>
+                </el-button>
+
+                <!-- 添加子节点 - 只有 MENU 显示 -->
+                <el-button
+                  v-if="data.nodeType === 'MENU'"
+                  type="success"
+                  link
+                  size="small"
+                  title="添加子节点"
+                  @click.stop="handleAddChild(data)"
+                >
+                  <el-icon><Plus /></el-icon>
+                </el-button>
+
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  title="编辑"
+                  @click.stop="handleEdit(data)"
+                >
+                  <el-icon><Edit /></el-icon>
+                </el-button>
+
+                <el-button
+                  type="danger"
+                  link
+                  size="small"
+                  title="删除"
+                  @click.stop="handleDelete(data)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </div>
+            </div>
+          </template>
+        </el-tree>
+      </div>
+
+      <!-- 说明面板 -->
+      <div class="permission-help-panel">
+        <h4>操作说明</h4>
+        <div class="help-content">
+          <div class="help-item">
+            <el-icon><FolderOpened /></el-icon>
+            <span><strong>MENU</strong>：目录节点，可包含子节点</span>
+          </div>
+          <div class="help-item">
+            <el-icon><Document /></el-icon>
+            <span><strong>PAGE</strong>：页面节点，可配置操作权限</span>
+          </div>
+          <div class="help-item">
+            <el-icon><CollectionTag /></el-icon>
+            <span><strong>TAG</strong>：标签节点，可配置操作权限</span>
+          </div>
+          <el-divider />
+          <div class="help-tips">
+            <p>💡 <strong>拖拽排序</strong>：拖拽节点可调整顺序</p>
+            <p>💡 <strong>权限配置</strong>：点击 🔑 配置操作权限</p>
+            <p>⚠️ <strong>限制</strong>：只能拖拽同级节点，不可跨层级</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import {
+  Plus,
+  Edit,
+  Delete,
+  Key,
+  FolderOpened,
+  Document,
+  CollectionTag,
+  View,
+  CircleCheck,
+  CircleClose,
+  Download,
+  Upload,
+  Search,
+} from '@element-plus/icons-vue';
+import { MfwPopup } from '../../feedback';
+import PermissionValueForm from './PermissionValueForm.vue';
+import PermissionNodeForm from './PermissionNodeForm.vue';
+import type { PermissionTreeNodeDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
+import {
+  ApiPermissionFindAll,
+  ApiPermissionFindAllTree,
+  ApiPermissionCreate,
+  ApiPermissionUpdate,
+  ApiPermissionDelete,
+  ApiAppTypeFindAllList,
+} from '../../../apis/sys';
+
+// ========== Props & Emits ==========
+
+export interface PermissionManagerProps {
+  /** 权限类型：PC / NORMAL */
+  permissionType: 'PC' | 'NORMAL';
+  /** 页面标题 */
+  title: string;
+}
+
+const props = defineProps<PermissionManagerProps>();
+
+const emit = defineEmits<{
+  /** 应用类型变化 */
+  (e: 'appTypeChange', appTypeId: string): void;
+}>();
+
+// ========== 状态 ==========
+
+const treeRef = ref();
+const selectedAppTypeId = ref('');
+const appTypeList = ref<AppTypeResponseDto[]>([]);
+const permissionTree = ref<PermissionTreeNodeDto[]>([]);
+const keyword = ref('');
+const originalTree = ref<PermissionTreeNodeDto[]>([]);
+
+// 权限操作选项
+const permissionActions = [
+  { label: '查看', value: 32, icon: View },
+  { label: '新增', value: 1, icon: CircleCheck },
+  { label: '编辑', value: 2, icon: Edit },
+  { label: '删除', value: 4, icon: CircleClose },
+  { label: '导出', value: 8, icon: Download },
+  { label: '导入', value: 16, icon: Upload },
+];
+
+// Tree 配置
+const treeProps = {
+  children: 'children',
+  label: 'permName',
+};
+
+// ========== 计算属性 ==========
+
+/** 节点类型选项 */
+const nodeTypeOptions = computed(() => {
+  if (props.permissionType === 'PC') {
+    return [
+      { label: '目录 (MENU)', value: 'MENU' },
+      { label: '页面 (PAGE)', value: 'PAGE' },
+    ];
+  }
+  return [
+    { label: '目录 (MENU)', value: 'MENU' },
+    { label: '标签 (TAG)', value: 'TAG' },
+  ];
+});
+
+const getNodeTypeTagType = (nodeType?: string) => {
+  switch (nodeType) {
+    case 'MENU':
+      return 'primary';
+    case 'PAGE':
+      return 'success';
+    case 'TAG':
+      return 'warning';
+    default:
+      return 'info';
+  }
+};
+
+const canSetPermissionValue = (nodeType?: string) => {
+  return nodeType === 'PAGE' || nodeType === 'TAG';
+};
+
+// ========== API 方法 ==========
+
+/** 加载应用类型列表 */
+const loadAppTypeList = async () => {
+  const result = await new ApiAppTypeFindAllList({});
+  appTypeList.value = result || [];
+  if (!selectedAppTypeId.value && result.length > 0) {
+    const enabled = result.find((item: AppTypeResponseDto) => item.typeStatus === 1);
+    selectedAppTypeId.value = enabled?.id || result[0].id;
+    await loadPermissionTree();
+  }
+};
+
+/** 将扁平列表转换为树形结构 */
+const buildTree = (permissions: PermissionTreeNodeDto[]): PermissionTreeNodeDto[] => {
+  const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
+  const roots: PermissionTreeNodeDto[] = [];
+
+  // 先创建所有节点的映射
+  permissions.forEach(item => {
+    const node: any = { ...item, children: [] };
+    map.set(item.id, node);
+  });
+
+  // 构建树形结构
+  permissions.forEach(item => {
+    const node = map.get(item.id)!;
+    if (item.parentId && map.has(item.parentId)) {
+      const parent = map.get(item.parentId)!;
+      parent.children!.push(node);
+    } else {
+      roots.push(node);
+    }
+  });
+
+  // 清理空的 children
+  const clean = (nodes: any[]) => {
+    nodes.forEach(node => {
+      if (node.children && node.children.length === 0) {
+        delete node.children;
+      } else if (node.children) {
+        clean(node.children);
+      }
+    });
+  };
+  clean(roots);
+
+  return roots;
+};
+
+// 树形数据过滤函数
+const filterTree = (
+  nodes: PermissionTreeNodeDto[],
+  keyword: string
+): PermissionTreeNodeDto[] => {
+  if (!keyword.trim()) return nodes;
+
+  const lowerKeyword = keyword.toLowerCase();
+  const result: PermissionTreeNodeDto[] = [];
+
+  for (const node of nodes) {
+    const matchName = node.permName.toLowerCase().includes(lowerKeyword);
+    const matchCode = node.permCode.toLowerCase().includes(lowerKeyword);
+
+    let filteredChildren: PermissionTreeNodeDto[] | undefined;
+    if (node.children && node.children.length > 0) {
+      filteredChildren = filterTree(node.children, keyword);
+    }
+
+    if (matchName || matchCode || (filteredChildren && filteredChildren.length > 0)) {
+      result.push({
+        ...node,
+        children: filteredChildren,
+      });
+    }
+  }
+
+  return result;
+};
+
+// 搜索处理
+const handleSearch = () => {
+  if (!keyword.value.trim()) {
+    permissionTree.value = originalTree.value;
+  } else {
+    permissionTree.value = filterTree(originalTree.value, keyword.value);
+  }
+};
+
+/** 加载权限树 - 根据类型自动路由 */
+const loadPermissionTree = async () => {
+  try {
+    if (props.permissionType === 'PC') {
+      // PC 权限使用列表接口，需要转换为树
+      const result = await new ApiPermissionFindAll({
+        params: {
+          permissionType: 'PC' as any,
+          appTypeId: selectedAppTypeId.value || undefined,
+          pageSize: 1000,
+        },
+      });
+      originalTree.value = buildTree(result.list || []);
+      permissionTree.value = keyword.value
+        ? filterTree(originalTree.value, keyword.value)
+        : originalTree.value;
+    } else {
+      // 普通权限使用树接口
+      const result = await new ApiPermissionFindAllTree({
+        params: {
+          permissionType: 'NORMAL',
+        },
+      });
+      originalTree.value = result || [];
+      permissionTree.value = keyword.value
+        ? filterTree(originalTree.value, keyword.value)
+        : originalTree.value;
+    }
+  } catch (error) {
+    permissionTree.value = [];
+  }
+};
+
+/** 应用类型变化 */
+const handleAppTypeChange = (appTypeId: string) => {
+  selectedAppTypeId.value = appTypeId;
+  emit('appTypeChange', appTypeId);
+  loadPermissionTree();
+};
+
+// ========== 拖拽排序 ==========
+
+/** 判断能否拖拽 */
+const allowDrag = (node: any) => {
+  const nodeType = node.data?.nodeType;
+  // 只能拖拽 PAGE 和 TAG 节点
+  return nodeType === 'PAGE' || nodeType === 'TAG';
+};
+
+/** 判断能否放置 */
+const allowDrop = (draggingNode: any, dropNode: any, type: 'inner' | 'prev' | 'next') => {
+  // 不允许跨层级拖拽（不能拖入内部）
+  if (type === 'inner') {
+    return false;
+  }
+
+  // 检查是否同一父节点（同级）
+  const draggingParentId = draggingNode.data?.parentId;
+  const dropParentId = dropNode.data?.parentId;
+
+  // 只能在同一父节点下排序
+  return draggingParentId === dropParentId;
+};
+
+/** 拖拽完成处理 */
+const handleNodeDrop = async (
+  draggingNode: any,
+  dropNode: any,
+  dropType: 'before' | 'after' | 'inner',
+  ev: DragEvent
+) => {
+  if (dropType === 'inner') return;
+
+  // 获取父节点ID
+  const parentId = draggingNode.data?.parentId || null;
+
+  // 收集该父节点下的所有子节点ID（按当前顺序）
+  const findParent = (nodes: any[], targetId: string): any => {
+    for (const node of nodes) {
+      if (node.id === targetId) return node;
+      if (node.children) {
+        const found = findParent(node.children, targetId);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  let siblingIds: string[] = [];
+  if (parentId) {
+    const parent = findParent(permissionTree.value, parentId);
+    siblingIds = parent?.children?.map((c: any) => c.id) || [];
+  } else {
+    // 根节点级别
+    siblingIds = permissionTree.value.map((n) => n.id);
+  }
+
+  try {
+    // 批量更新排序
+    for (let i = 0; i < siblingIds.length; i++) {
+      await new ApiPermissionUpdate({
+        query: { id: siblingIds[i] },
+        params: { sortOrder: i },
+        option: { hintSuccess: false },
+      });
+    }
+    ElMessage.success('排序已保存');
+  } catch (error) {
+    // 失败时重新加载
+    loadPermissionTree();
+  }
+};
+
+/** 节点点击 */
+const handleNodeClick = (data: PermissionTreeNodeDto) => {
+  // 可以在这里处理节点选中逻辑
+};
+
+// ========== permissionValue 配置 ==========
+
+/** 配置 permissionValue */
+const handleConfigPermissionValue = (data: PermissionTreeNodeDto) => {
+  MfwPopup.open({
+    title: `配置操作权限 - ${data.permName}`,
+    type: 'dialog',
+    component: PermissionValueForm,
+    data: {
+      nodeId: data.id,
+      nodeName: data.permName,
+      nodeCode: data.permCode,
+      permissionValue: data.permissionValue,
+    },
+    popupProps: { width: 500 },
+    on: {
+      confirm: async (formRef: any) => {
+        const newValue = await formRef.onConfirm();
+        await new ApiPermissionUpdate({
+          query: { id: data.id },
+          params: { permissionValue: newValue },
+          option: { hintSuccess: true },
+        });
+        // 更新本地数据
+        const updateNode = (nodes: PermissionTreeNodeDto[]): boolean => {
+          for (const node of nodes) {
+            if (node.id === data.id) {
+              node.permissionValue = newValue;
+              return true;
+            }
+            if (node.children && updateNode(node.children)) {
+              return true;
+            }
+          }
+          return false;
+        };
+        updateNode(permissionTree.value);
+        ElMessage.success('操作权限已更新');
+      },
+    },
+  });
+};
+
+// ========== 节点操作 ==========
+
+/** 打开节点表单 */
+const openNodeForm = (options: {
+  isEdit: boolean;
+  title: string;
+  parentId?: string;
+  initialData?: Partial<PermissionTreeNodeDto>;
+}) => {
+  const defaultNodeType = props.permissionType === 'PC' ? 'PAGE' : 'TAG';
+
+  MfwPopup.open({
+    title: options.title,
+    type: 'dialog',
+    component: PermissionNodeForm,
+    data: {
+      isEdit: options.isEdit,
+      nodeTypeOptions: nodeTypeOptions.value,
+      defaultNodeType: options.parentId ? defaultNodeType : 'MENU',
+      initialData: options.initialData,
+    },
+    popupProps: { width: 500 },
+    on: {
+      confirm: async (formRef: any) => {
+        const formData = await formRef.onConfirm();
+
+        if (options.isEdit) {
+          await new ApiPermissionUpdate({
+            query: { id: formData.id },
+            params: {
+              permName: formData.permName,
+              permDesc: formData.permDesc,
+              showMode: formData.showMode,
+              permStatus: formData.permStatus,
+            },
+            option: { hintSuccess: true },
+          });
+          ElMessage.success('更新成功');
+        } else {
+          await new ApiPermissionCreate({
+            params: {
+              permName: formData.permName,
+              permCode: formData.permCode,
+              nodeType: formData.nodeType,
+              permissionType: props.permissionType,
+              parentId: options.parentId,
+              permDesc: formData.permDesc,
+              showMode: formData.showMode,
+              permStatus: formData.permStatus,
+            },
+          });
+          ElMessage.success('创建成功');
+        }
+        loadPermissionTree();
+      },
+    },
+  });
+};
+
+/** 新建根节点 */
+const handleAddRoot = () => {
+  openNodeForm({
+    isEdit: false,
+    title: '新建根节点',
+  });
+};
+
+/** 添加子节点 */
+const handleAddChild = (data: PermissionTreeNodeDto) => {
+  openNodeForm({
+    isEdit: false,
+    title: '新建子节点',
+    parentId: data.id,
+  });
+};
+
+/** 编辑节点 */
+const handleEdit = (data: PermissionTreeNodeDto) => {
+  openNodeForm({
+    isEdit: true,
+    title: '编辑节点',
+    initialData: data,
+  });
+};
+
+/** 删除节点 */
+const handleDelete = async (data: PermissionTreeNodeDto) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除权限「${data.permName}」吗？将同时删除所有子节点。`,
+      '确认删除',
+      { type: 'warning' }
+    );
+    await new ApiPermissionDelete({ params: { id: data.id } });
+    ElMessage.success('删除成功');
+    loadPermissionTree();
+  } catch {
+    // 用户取消
+  }
+};
+
+// ========== 生命周期 ==========
+
+onMounted(() => {
+  if (props.permissionType === 'PC') {
+    loadAppTypeList();
+  } else {
+    loadPermissionTree();
+  }
+});
+
+// ========== 暴露方法 ==========
+
+defineExpose({
+  reload: loadPermissionTree,
+  selectedAppTypeId,
+});
+</script>
+
+<style scoped lang="scss">
+.permission-manager {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.permission-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.permission-content {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.permission-tree-panel {
+  flex: 1;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
+  padding: 16px;
+  overflow: auto;
+  background: var(--el-bg-color);
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+
+    h4 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--el-text-color-primary);
+    }
+  }
+}
+
+.permission-help-panel {
+  width: 280px;
+  border: 1px solid var(--el-border-color-light);
+  border-radius: 8px;
+  padding: 16px;
+  background: var(--el-bg-color);
+  flex-shrink: 0;
+
+  h4 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .help-content {
+    .help-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      color: var(--el-text-color-regular);
+
+      .el-icon {
+        font-size: 16px;
+        color: var(--el-color-primary);
+      }
+    }
+
+    .help-tips {
+      p {
+        margin: 8px 0;
+        font-size: 13px;
+        color: var(--el-text-color-secondary);
+        line-height: 1.6;
+      }
+    }
+  }
+}
+
+// Tree 节点样式
+.tree-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  padding: 4px 0;
+
+  .node-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .node-icon {
+      font-size: 16px;
+      color: var(--el-text-color-secondary);
+    }
+
+    .node-name {
+      font-size: 14px;
+      color: var(--el-text-color-primary);
+    }
+
+    .node-type-tag {
+      font-size: 11px;
+    }
+  }
+
+  .node-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  &:hover .node-actions {
+    opacity: 1;
+  }
+
+  // 不同类型节点的颜色
+  &.node-type-menu {
+    .node-icon {
+      color: var(--el-color-primary);
+    }
+  }
+
+  &.node-type-page {
+    .node-icon {
+      color: var(--el-color-success);
+    }
+  }
+
+  &.node-type-tag {
+    .node-icon {
+      color: var(--el-color-warning);
+    }
+  }
+}
+
+// PermissionValue 弹窗样式
+.permission-value-dialog-content {
+  .node-code {
+    color: var(--el-text-color-secondary);
+    font-size: 13px;
+    margin: 0 0 16px;
+  }
+
+  .permission-actions {
+    .el-checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .permission-checkbox {
+      margin-right: 0;
+
+      .checkbox-content {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .el-icon {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+// Tree 全局样式覆盖
+:deep(.el-tree) {
+  background: transparent;
+
+  .el-tree-node__content {
+    height: 40px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--el-fill-color-light);
+    }
+  }
+
+  .el-tree-node.is-current > .el-tree-node__content {
+    background-color: var(--el-color-primary-light-9);
+  }
+}
+
+// 拖拽时的样式
+:deep(.el-tree-node.is-drop-inner > .el-tree-node__content) {
+  background-color: var(--el-color-success-light-9);
+  border: 1px dashed var(--el-color-success);
+}
+</style>
