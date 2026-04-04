@@ -16,6 +16,10 @@
     "desktop-control": {
       "enabled": true,
       "version": "latest"
+    },
+    "ui-ux-pro-max": {
+      "enabled": true,
+      "version": "latest"
     }
   }
 }
