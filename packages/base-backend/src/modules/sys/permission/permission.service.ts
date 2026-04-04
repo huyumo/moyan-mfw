@@ -29,7 +29,7 @@ export class PermissionService {
    * @returns 创建的权限
    */
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
-    const { permCode } = createPermissionDto;
+    const { permCode, nodeType, parentId } = createPermissionDto;
 
     // 检查权限编码是否存在
     const existingPermission = await this.permissionRepository.findOne({
@@ -38,6 +38,26 @@ export class PermissionService {
 
     if (existingPermission) {
       throw new ConflictException('权限编码已存在');
+    }
+
+    // 根节点只能创建 MENU 类型
+    if (!parentId && nodeType !== NodeType.MENU) {
+      throw new BadRequestException('根节点只能创建 MENU 类型');
+    }
+
+    // TAG 类型的父节点必须是 MENU 类型
+    if (nodeType === NodeType.TAG && parentId) {
+      const parentPermission = await this.permissionRepository.findOne({
+        where: { id: parentId },
+      });
+
+      if (!parentPermission) {
+        throw new NotFoundError('父权限');
+      }
+
+      if (parentPermission.nodeType !== NodeType.MENU) {
+        throw new BadRequestException(`TAG 类型权限的父节点必须是 MENU 类型，当前父节点类型为 ${parentPermission.nodeType}`);
+      }
     }
 
     // 创建权限
@@ -124,15 +144,19 @@ export class PermissionService {
 
   /**
    * 查询所有权限（树形结构，带 children）
+   * @param permissionType - 权限类型筛选（可选）
    * @returns 树形权限列表
    */
-  async findAllTreeWithChildren(): Promise<PermissionTreeNodeDto[]> {
-    const permissions = await this.permissionRepository.find({
-      order: {
-        sortOrder: 'ASC',
-        createdAt: 'DESC',
-      },
-    });
+  async findAllTreeWithChildren(permissionType?: string): Promise<PermissionTreeNodeDto[]> {
+    const queryBuilder = this.permissionRepository.createQueryBuilder('permission');
+
+    if (permissionType) {
+      queryBuilder.where('permission.permissionType = :permissionType', { permissionType });
+    }
+
+    queryBuilder.orderBy('permission.sortOrder', 'ASC');
+
+    const permissions = await queryBuilder.getMany();
     return this.buildTree(permissions);
   }
 
@@ -266,7 +290,7 @@ export class PermissionService {
   }
 
   /**
-   * 删除权限
+   * 删除权限（级联删除子节点）
    * @param id - 权限 ID
    */
   async delete(id: string): Promise<void> {
@@ -278,17 +302,28 @@ export class PermissionService {
       throw new NotFoundError('权限');
     }
 
-    // 检查是否有子权限
+    // 递归删除子权限
+    await this.deleteChildren(id);
+
+    // 删除当前权限
+    await this.permissionRepository.softDelete(id);
+  }
+
+  /**
+   * 递归删除子权限
+   * @param parentId - 父权限 ID
+   */
+  private async deleteChildren(parentId: string): Promise<void> {
     const children = await this.permissionRepository.find({
-      where: { parentId: id },
+      where: { parentId },
     });
 
-    if (children.length > 0) {
-      throw new ConflictException('存在子权限，无法删除');
+    for (const child of children) {
+      // 递归删除子权限的子权限
+      await this.deleteChildren(child.id);
+      // 删除子权限
+      await this.permissionRepository.softDelete(child.id);
     }
-
-    // 使用软删除
-    await this.permissionRepository.softDelete(id);
   }
 
   /**

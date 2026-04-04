@@ -388,7 +388,9 @@ export class ApiPermissionFindAll extends ApiCall<
  * permission|权限相关接口->查询所有权限树
  */
 export class ApiPermissionFindAllTree extends ApiCall<
-  {},
+  {
+    permissionType?: string //权限类型：PC/NORMAL
+  },
   Array<PermissionTreeNodeDto>
 > {
   path = '/api/permissions/tree/all'
