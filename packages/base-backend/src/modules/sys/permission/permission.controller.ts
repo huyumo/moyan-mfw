@@ -26,8 +26,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
-import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto, ComparePermissionDto } from './dto';
-import { SyncPermissionDto, SyncPermissionResponseDto, ComparePermissionResponseDto, PermissionTreeNodeDto } from './dto';
+import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto } from './dto';
+import { SyncPermissionDto, PermissionTreeNodeDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -204,45 +204,17 @@ export class PermissionController {
    */
   @Post('sync')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '同步路由到权限表', description: '将前端路由同步到权限定义表（懒清理策略）' })
+  @ApiOperation({ summary: '同步路由到权限表', description: '将前端路由同步到权限定义表（全局权限），返回最新权限树' })
   @ApiResponse({
     status: 200,
     description: '同步成功',
-    type: SyncPermissionResponseDto,
+    type: [PermissionTreeNodeDto],
   })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'SYNC_PERMISSIONS', description: '同步权限路由' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 1n }) // ADD
+  // @RequirePermission({ permCode: 'system:permission', permissionValue: 1n }) // ADD
   async syncPermissions(@Body() syncDto: SyncPermissionDto) {
-    const result = await this.permissionService.syncPermissions(
-      syncDto.appTypeId,
-      syncDto.routes,
-      syncDto.dryRun,
-    );
-    const message = syncDto.dryRun ? '差异预览完成' : '权限同步成功';
-    return ApiResponseUtil.success(result, message);
-  }
-
-  /**
-   * 比对路由与权限差异
-   */
-  @Post('compare')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '比对路由与权限差异', description: '检测前端路由与权限表的差异' })
-  @ApiResponse({
-    status: 200,
-    description: '比对成功',
-    type: ComparePermissionResponseDto,
-  })
-  @AuditLog({ module: AuditModule.PERMISSION, event: 'COMPARE_PERMISSIONS', description: '比对权限差异' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
-  async comparePermissions(
-    @Body() compareDto: ComparePermissionDto,
-  ) {
-    const result = await this.permissionService.comparePermissions(
-      compareDto.appTypeId,
-      compareDto.routes,
-    );
-    return ApiResponseUtil.success(result, '差异比对完成');
+    const result = await this.permissionService.syncPermissions(syncDto.routes);
+    return ApiResponseUtil.success(result, '权限同步成功');
   }
 }

@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, TreeRepository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './dto';
-import { RouteNodeDto, SyncPermissionResponseDto, ComparePermissionResponseDto, DiffItemDto, SyncDetailDto, PermissionTreeNodeDto } from './dto';
+import { RouteNodeDto, PermissionTreeNodeDto } from './dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
 
@@ -389,223 +389,197 @@ export class PermissionService {
 
   /**
    * 同步路由到权限表
-   * @param appTypeId - 应用类型 ID
-   * @param routes - 路由树
-   * @param dryRun - 是否仅预览
-   * @returns 同步结果
+   * @description 将前端路由同步为 PC 权限节点，存储到 Permission 表（全局）
+   * 简化流程：清理旧同步数据 → 同步新数据 → 返回最新权限树
+   * @param routes - 路由列表（树形结构）
+   * @returns 最新权限树
    */
-  async syncPermissions(
-    appTypeId: string,
-    routes: RouteNodeDto[],
-    dryRun: boolean = false,
-  ): Promise<SyncPermissionResponseDto> {
-    const details: SyncDetailDto[] = [];
-    let added = 0;
-    let updated = 0;
-    let skipped = 0;
+  async syncPermissions(routes: RouteNodeDto[]): Promise<PermissionTreeNodeDto[]> {
+    // 确保 PC 根节点存在
+    await this.ensurePcRoot();
 
-    // TODO-TASK-2026-04-03-003: 添加 appTypeId 字段到 Permission entity
-    // 预计完成：2026-04-05
-    // 阻塞原因：需要数据库迁移添加 appTypeId 字段
+    // 清理旧的同步数据（isAutoSync=1 的 PC 权限）
+    await this.clearAutoSyncPermissions();
 
-    // 获取现有 PC 权限
-    const existingPermissions = await this.permissionRepository.find({
-      where: {
-        permissionType: PermissionType.PC,
-      },
-    });
-    const existingMap = new Map(existingPermissions.map(p => [p.permCode, p]));
+    // 扁平化路由并按深度排序
+    const flatRoutes = this.flattenRoutes(routes);
 
-    // 递归处理路由节点
-    const processRoutes = async (
-      routeNodes: RouteNodeDto[],
-      parentCode: string | null = null,
-    ): Promise<void> => {
-      for (let i = 0; i < routeNodes.length; i++) {
-        const route = routeNodes[i];
-        const permCode = this.generatePermCode(route.path);
-        const nodeType = route.children && route.children.length > 0 ? NodeType.MENU : NodeType.PAGE;
-        const existing = existingMap.get(permCode);
+    // 构建路径集合，用于判断 nodeType（基于路由数据，而非数据库）
+    const allRoutePaths = new Set(flatRoutes.map(r => r.path));
 
-        if (existing) {
-          // 检查是否需要更新
-          const needsUpdate =
-            existing.permName !== route.name ||
-            existing.parentId !== (parentCode ? existingMap.get(parentCode)?.id || null : null) ||
-            existing.sortOrder !== i;
+    // 同步每个路由节点
+    for (const route of flatRoutes) {
+      await this.syncRouteNode(route, allRoutePaths);
+    }
 
-          if (needsUpdate) {
-            if (!dryRun) {
-              existing.permName = route.name;
-              existing.sortOrder = i;
-              if (parentCode) {
-                const parent = existingMap.get(parentCode);
-                existing.parentId = parent?.id || null;
-              } else {
-                existing.parentId = null;
-              }
-              await this.permissionRepository.save(existing);
-            }
-            updated++;
-            details.push({
-              type: 'update',
-              permName: route.name,
-              permCode,
-              nodeType,
-              parentCode: parentCode || undefined,
-            });
-          } else {
-            skipped++;
-            details.push({
-              type: 'skip',
-              permName: route.name,
-              permCode,
-              nodeType,
-              parentCode: parentCode || undefined,
-            });
-          }
-        } else {
-          // 新增权限
-          if (!dryRun) {
-            const parent = parentCode ? existingMap.get(parentCode) : null;
-            const newPermission = this.permissionRepository.create({
-              permName: route.name,
-              permCode,
-              permDesc: `同步生成：${route.name}`,
-              permissionType: PermissionType.PC,
-              nodeType,
-              parentId: parent?.id || undefined,
-              routePath: route.path,
-              sortOrder: i,
-              isAutoSync: 1,
-              permStatus: 1,
-              permissionValue: nodeType === NodeType.PAGE ? 63n : 0n, // PAGE 默认有所有操作权限
-            });
-            const saved = await this.permissionRepository.save(newPermission);
-            existingMap.set(permCode, saved);
-          }
-          added++;
-          details.push({
-            type: 'add',
-            permName: route.name,
-            permCode,
-            nodeType,
-            parentCode: parentCode || undefined,
-          });
-        }
-
-        // 递归处理子路由
-        if (route.children && route.children.length > 0) {
-          await processRoutes(route.children, permCode);
-        }
-      }
-    };
-
-    await processRoutes(routes);
-
-    return {
-      dryRun,
-      added,
-      updated,
-      skipped,
-      details,
-    };
+    // 返回最新权限树
+    return this.findAllTreeWithChildren('PC');
   }
 
   /**
-   * 比对路由与权限差异
-   * @param appTypeId - 应用类型 ID
-   * @param routes - 路由树
-   * @returns 比对结果
+   * 清理旧的自动同步数据
+   * 删除所有 PC 权限（保留 pc_root），确保数据干净
    */
-  async comparePermissions(
-    appTypeId: string,
-    routes: RouteNodeDto[],
-  ): Promise<ComparePermissionResponseDto> {
-    const added: DiffItemDto[] = [];
-    const updated: DiffItemDto[] = [];
-    const removed: DiffItemDto[] = [];
-    const moved: DiffItemDto[] = [];
+  private async clearAutoSyncPermissions(): Promise<void> {
+    // 使用事务删除，避免外键约束问题
+    await this.dataSource.transaction(async (manager) => {
+      // 1. 获取所有 PC 权限 ID（排除 pc_root）
+      const pcPerms = await manager.find(Permission, {
+        where: {
+          permissionType: PermissionType.PC,
+        },
+        select: ['id', 'permCode'],
+      });
 
-    // 获取现有 PC 权限
-    const existingPermissions = await this.permissionRepository.find({
-      where: {
-        permissionType: PermissionType.PC,
-      },
+      const idsToDelete = pcPerms
+        .filter(p => p.permCode !== 'pc_root')
+        .map(p => p.id);
+
+      if (idsToDelete.length === 0) return;
+
+      // 2. 删除 sys_role_permission 关联
+      await manager.query(
+        `DELETE FROM sys_role_permission WHERE permissionId IN (?)`,
+        [idsToDelete]
+      );
+
+      // 3. 删除权限（按深度从深到浅）
+      const sortedPerms = pcPerms
+        .filter(p => p.permCode !== 'pc_root')
+        .sort((a, b) => {
+          const depthA = a.permCode.split(':').length;
+          const depthB = b.permCode.split(':').length;
+          return depthB - depthA;
+        });
+
+      for (const perm of sortedPerms) {
+        await manager.delete(Permission, perm.id);
+      }
     });
-    const existingMap = new Map(existingPermissions.map(p => [p.permCode, p]));
-    const processedCodes = new Set<string>();
+  }
 
-    // 递归比对路由
-    const compareRoutes = async (
-      routeNodes: RouteNodeDto[],
-      parentCode: string | null = null,
-    ): Promise<void> => {
-      for (const route of routeNodes) {
-        const permCode = this.generatePermCode(route.path);
-        processedCodes.add(permCode);
-        const existing = existingMap.get(permCode);
+  /**
+   * 确保 PC 根节点存在
+   */
+  private async ensurePcRoot(): Promise<void> {
+    const pcRoot = await this.permissionRepository.findOne({
+      where: { permCode: 'pc_root' },
+    });
 
-        if (!existing) {
-          // 新增
-          added.push({
-            type: 'added',
-            permCode,
-            permName: route.name,
-            routePath: route.path,
-            suggestion: `新增${route.children && route.children.length > 0 ? '目录' : '页面'}权限`,
-          });
-        } else {
-          // 检查更新
-          const expectedParentId = parentCode ? existingMap.get(parentCode)?.id || null : null;
-          if (existing.parentId !== expectedParentId) {
-            moved.push({
-              type: 'moved',
-              permCode,
-              permName: route.name,
-              routePath: route.path,
-              suggestion: '移动权限节点位置',
-            });
-          } else if (existing.permName !== route.name) {
-            updated.push({
-              type: 'updated',
-              permCode,
-              permName: route.name,
-              routePath: route.path,
-              suggestion: '更新权限名称',
-            });
-          }
-        }
+    if (!pcRoot) {
+      const root = this.permissionRepository.create({
+        permName: 'PC权限根节点',
+        permCode: 'pc_root',
+        permDesc: 'PC权限系统的根节点',
+        permissionType: PermissionType.PC,
+        nodeType: NodeType.MENU,
+        parentId: null,
+        sortOrder: 0,
+        isVisible: 0,
+        isAutoSync: 0,
+        permStatus: 1,
+        permissionValue: 0n,
+      });
+      await this.permissionRepository.save(root);
+    }
+  }
 
-        // 递归处理子路由
+  /**
+   * 扁平化路由（树形 → 数组）
+   * 按路径深度排序，确保父节点先处理
+   */
+  private flattenRoutes(routes: RouteNodeDto[]): RouteNodeDto[] {
+    const result: RouteNodeDto[] = [];
+
+    const flatten = (routeList: RouteNodeDto[]) => {
+      for (const route of routeList) {
+        result.push(route);
         if (route.children && route.children.length > 0) {
-          await compareRoutes(route.children, permCode);
+          flatten(route.children);
         }
       }
     };
 
-    await compareRoutes(routes);
+    flatten(routes);
 
-    // 检查已删除的权限
-    for (const [permCode, perm] of existingMap) {
-      if (!processedCodes.has(permCode) && perm.isAutoSync === 1) {
-        removed.push({
-          type: 'removed',
-          permCode,
-          permName: perm.permName,
-          routePath: perm.routePath || '',
-          suggestion: '路由已删除，权限保留（懒清理策略）',
-        });
-      }
+    // 按路径深度排序
+    result.sort((a, b) => {
+      const depthA = a.path.split('/').filter(Boolean).length;
+      const depthB = b.path.split('/').filter(Boolean).length;
+      return depthA - depthB;
+    });
+
+    return result;
+  }
+
+  /**
+   * 同步单个路由节点
+   * @param route - 路由节点
+   * @param allRoutePaths - 所有路由路径集合（用于判断 nodeType）
+   */
+  private async syncRouteNode(route: RouteNodeDto, allRoutePaths: Set<string>): Promise<void> {
+    const permCode = this.generatePermCode(route.path);
+    const pathSegments = route.path.split('/').filter(Boolean);
+    const depth = pathSegments.length;
+
+    // 确定父节点
+    let parentId: string | null = null;
+    if (depth === 1) {
+      // 顶级路由挂载到 pc_root
+      const pcRoot = await this.permissionRepository.findOne({
+        where: { permCode: 'pc_root' },
+      });
+      parentId = pcRoot?.id || null;
+    } else {
+      // 查找父节点
+      const parentPath = '/' + pathSegments.slice(0, -1).join('/');
+      const parentCode = this.generatePermCode(parentPath);
+      const parent = await this.permissionRepository.findOne({
+        where: { permCode: parentCode },
+      });
+      parentId = parent?.id || null;
     }
 
-    return {
-      added,
-      updated,
-      removed,
-      moved,
-      totalDiffs: added.length + updated.length + removed.length + moved.length,
-    };
+    // 判断 nodeType：基于路由数据（有 children 或有子路由路径）
+    const hasChildrenInRoute = route.children && route.children.length > 0;
+    const hasChildRoutes = Array.from(allRoutePaths).some(p =>
+      p.startsWith(route.path + '/') && p !== route.path
+    );
+    const nodeType = (hasChildrenInRoute || hasChildRoutes) ? NodeType.MENU : NodeType.PAGE;
+
+    // 检查是否已存在
+    const existing = await this.permissionRepository.findOne({
+      where: { permCode },
+    });
+
+    if (existing) {
+      // 更新名称、路径、nodeType
+      existing.permName = route.name;
+      existing.routePath = route.path;
+      existing.nodeType = nodeType;
+      if (parentId) existing.parentId = parentId;
+      // 同步生成的 PAGE 节点设置默认权限值
+      if (nodeType === NodeType.PAGE) {
+        existing.permissionValue = 63n;
+      }
+      await this.permissionRepository.save(existing);
+    } else {
+      // 新增
+      const newPerm = this.permissionRepository.create({
+        permName: route.name,
+        permCode,
+        permDesc: `同步生成：${route.name}`,
+        permissionType: PermissionType.PC,
+        nodeType,
+        parentId: parentId || undefined,
+        routePath: route.path,
+        sortOrder: depth * 10,
+        isAutoSync: 1,
+        permStatus: 1,
+        permissionValue: nodeType === NodeType.PAGE ? 63n : 0n,
+      });
+      await this.permissionRepository.save(newPerm);
+    }
   }
 
   /**
@@ -614,28 +588,7 @@ export class PermissionService {
    * @returns 权限编码
    */
   private generatePermCode(path: string): string {
-    // 移除开头的斜杠，将路径转换为权限编码
     const cleanPath = path.replace(/^\//, '').replace(/\//g, ':');
     return `pc:${cleanPath || 'root'}`;
-  }
-
-  /**
-   * 从数据库比对权限差异（用于 GET /compare 接口）
-   * @param appTypeId - 应用类型 ID
-   * @returns 比对结果
-   */
-  async comparePermissionsFromDB(
-    appTypeId: string,
-  ): Promise<ComparePermissionResponseDto> {
-    // TODO-TASK-2026-04-03-006: 实现真正的差异比对逻辑
-    // 预计完成：2026-04-05
-    // 当前返回空差异结果，符合文档格式
-    return {
-      added: [],
-      updated: [],
-      removed: [],
-      moved: [],
-      totalDiffs: 0,
-    };
   }
 }
