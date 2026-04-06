@@ -16,7 +16,7 @@ import { hashPassword } from '../../common/utils/encrypt';
  * 种子数据执行函数
  */
 export async function runSeeds(dataSource: DataSource): Promise<void> {
-  console.log('🌱 开始执行种子数据...');
+  process.stdout.write('🌱 开始执行种子数据...');
 
   // 1. 初始化应用类型
   await seedAppTypes(dataSource);
@@ -36,33 +36,24 @@ export async function runSeeds(dataSource: DataSource): Promise<void> {
   // 6. 绑定用户角色
   await seedUserRoles(dataSource);
 
-  console.log('✅ 种子数据执行完成！');
+  process.stdout.write('✅ 种子数据执行完成！');
 }
 
 /**
- * 1. 初始化应用类型
+ * 1. 初始化应用类型（严格按照文档要求）
  */
 async function seedAppTypes(dataSource: DataSource): Promise<void> {
-  console.log('  📦 初始化应用类型...');
+  process.stdout.write('  📦 初始化应用类型...');
 
   const appTypes = [
     {
-      typeName: '管理后台',
-      typeCode: 'admin',
-      typeDesc: '企业内部管理后台系统',
+      typeName: '系统管理',
+      typeCode: 'system', // 系统内置类型，不可删除
+      typeDesc: '系统内置应用类型，用于系统管理功能',
       icon: 'SettingOutlined',
       multiAppEnabled: 0,
       typeStatus: 1,
       sortOrder: 0,
-    },
-    {
-      typeName: '用户端',
-      typeCode: 'user',
-      typeDesc: '面向用户的 C 端系统',
-      icon: 'UserOutlined',
-      multiAppEnabled: 1,
-      typeStatus: 1,
-      sortOrder: 1,
     },
   ];
 
@@ -70,530 +61,210 @@ async function seedAppTypes(dataSource: DataSource): Promise<void> {
     const exists = await dataSource.manager.findOne(AppType, { where: { typeCode: appType.typeCode } });
     if (!exists) {
       await dataSource.manager.save(AppType, { ...appType, createdAt: new Date() });
-      console.log(`    ✓ 创建应用类型：${appType.typeName}`);
+      process.stdout.write(`    ✓ 创建应用类型：${appType.typeName} (typeCode: ${appType.typeCode})`);
+    } else {
+      process.stdout.write(`    √ 应用类型已存在：${appType.typeName} (typeCode: ${appType.typeCode})`);
     }
   }
 }
 
 /**
- * 2. 初始化权限（系统管理模块）
+ * 2. 初始化权限（严格按文档要求创建2个根节点）
+ * - PC权限根节点
+ * - 普通权限根节点
  */
 async function seedPermissions(dataSource: DataSource): Promise<void> {
-  console.log('  🔐 初始化权限...');
+  process.stdout.write('  🔐 初始化权限...');
 
-  const permissions = [
-    // 系统管理根节点 (permCode: system, permissionValue: 0)
+  // 1. 创建PC权限根节点
+  const pcRootPerm = await dataSource.manager.findOne(Permission, {
+    where: { permCode: 'pc_root', permissionType: PermissionType.PC }
+  });
+  let pcRootId: string;
+
+  if (!pcRootPerm) {
+    const pcRoot = dataSource.manager.create(Permission);
+    pcRoot.permName = 'PC权限根节点';
+    pcRoot.permCode = 'pc_root';
+    pcRoot.permDesc = 'PC权限系统的根节点，所有PC权限的父节点';
+    pcRoot.permissionType = PermissionType.PC;
+    pcRoot.nodeType = NodeType.MENU;
+    pcRoot.parentId = null as any;
+    pcRoot.routePath = '';
+    pcRoot.iconName = '';
+    pcRoot.sortOrder = 0;
+    pcRoot.isVisible = 0; // 根节点不在菜单中显示
+    pcRoot.isCache = 0;
+    pcRoot.showMode = ShowMode.NORMAL;
+    pcRoot.permStatus = 1;
+    pcRoot.permissionValue = 0n;
+    pcRoot.isAutoSync = 0;
+
+    const saved = await dataSource.manager.save(pcRoot);
+    pcRootId = saved.id;
+    process.stdout.write(`    ✓ 创建PC权限根节点：${pcRoot.permName} (ID: ${pcRootId})`);
+  } else {
+    pcRootId = pcRootPerm.id;
+    process.stdout.write(`    √ PC权限根节点已存在：${pcRootPerm.permName} (ID: ${pcRootId})`);
+  }
+
+  // 2. 创建普通权限根节点
+  const normalRootPerm = await dataSource.manager.findOne(Permission, {
+    where: { permCode: 'normal_root', permissionType: PermissionType.NORMAL }
+  });
+  let normalRootId: string;
+
+  if (!normalRootPerm) {
+    const normalRoot = dataSource.manager.create(Permission);
+    normalRoot.permName = '普通权限根节点';
+    normalRoot.permCode = 'normal_root';
+    normalRoot.permDesc = '普通权限系统的根节点，所有普通权限的父节点';
+    normalRoot.permissionType = PermissionType.NORMAL;
+    normalRoot.nodeType = NodeType.MENU;
+    normalRoot.parentId = null as any;
+    normalRoot.routePath = '';
+    normalRoot.iconName = '';
+    normalRoot.sortOrder = 0;
+    normalRoot.isVisible = 0; // 根节点不在菜单中显示
+    normalRoot.isCache = 0;
+    normalRoot.showMode = ShowMode.NORMAL;
+    normalRoot.permStatus = 1;
+    normalRoot.permissionValue = 0n;
+    normalRoot.isAutoSync = 0;
+
+    const saved = await dataSource.manager.save(normalRoot);
+    normalRootId = saved.id;
+    process.stdout.write(`    ✓ 创建普通权限根节点：${normalRoot.permName} (ID: ${normalRootId})`);
+  } else {
+    normalRootId = normalRootPerm.id;
+    process.stdout.write(`    √ 普通权限根节点已存在：${normalRootPerm.permName} (ID: ${normalRootId})`);
+  }
+
+  // 3. 创建示例PC权限子节点（可选，用于测试）
+  // 注意：permCode 必须与同步逻辑一致，使用 pc: 前缀
+  const pcPermissions = [
     {
       permName: '系统管理',
-      permCode: 'system',
-      permDesc: '系统管理根节点',
-      permissionType: 1, // MENU
-      nodeType: 1, // CATALOG
-      parentId: null,
+      permCode: 'pc:system',
+      nodeType: NodeType.MENU,
       routePath: '/system',
       iconName: 'SettingOutlined',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1, // NORMAL
-      permStatus: 1,
-      permissionValue: 0n,
     },
-    // 用户管理 (permCode: system:user, permissionValue: 位运算值)
     {
       permName: '用户管理',
-      permCode: 'system:user',
-      permDesc: '用户管理功能',
-      permissionType: 1, // MENU
-      nodeType: 2, // MENU
-      parentId: null, // 将在代码中设置为 system 的 ID
+      permCode: 'pc:system:user',
+      nodeType: NodeType.MENU,
       routePath: '/system/user',
       iconName: 'UserOutlined',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 0n,
     },
-    // 用户管理 - 新增 (permissionValue: 1 = 2^0)
     {
-      permName: '用户新增',
-      permCode: 'system:user:add',
-      permDesc: '新增用户权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
+      permName: '用户列表',
+      permCode: 'pc:system:user:list',
+      nodeType: NodeType.PAGE,
+      routePath: '/system/user/list',
       iconName: '',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 1n, // 2^0 = ADD
-    },
-    // 用户管理 - 编辑 (permissionValue: 2 = 2^1)
-    {
-      permName: '用户编辑',
-      permCode: 'system:user:edit',
-      permDesc: '编辑用户权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 2n, // 2^1 = EDIT
-    },
-    // 用户管理 - 删除 (permissionValue: 4 = 2^2)
-    {
-      permName: '用户删除',
-      permCode: 'system:user:delete',
-      permDesc: '删除用户权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 2,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 4n, // 2^2 = DELETE
-    },
-    // 用户管理 - 查看 (permissionValue: 32 = 2^5)
-    {
-      permName: '用户查看',
-      permCode: 'system:user:view',
-      permDesc: '查看用户权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 3,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 32n, // 2^5 = VIEW
-    },
-    // 角色管理
-    {
-      permName: '角色管理',
-      permCode: 'system:role',
-      permDesc: '角色管理功能',
-      permissionType: 1, // MENU
-      nodeType: 2, // MENU
-      parentId: null,
-      routePath: '/system/role',
-      iconName: 'TeamOutlined',
-      sortOrder: 2,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 0n,
-    },
-    // 角色管理 - 新增
-    {
-      permName: '角色新增',
-      permCode: 'system:role:add',
-      permDesc: '新增角色权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 1n,
-    },
-    // 角色管理 - 编辑
-    {
-      permName: '角色编辑',
-      permCode: 'system:role:edit',
-      permDesc: '编辑角色权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 2n,
-    },
-    // 角色管理 - 删除
-    {
-      permName: '角色删除',
-      permCode: 'system:role:delete',
-      permDesc: '删除角色权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 2,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 4n,
-    },
-    // 角色管理 - 查看
-    {
-      permName: '角色查看',
-      permCode: 'system:role:view',
-      permDesc: '查看角色权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 3,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 32n,
-    },
-    // 角色管理 - 分配权限
-    {
-      permName: '分配权限',
-      permCode: 'system:role:assign',
-      permDesc: '分配角色权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 4,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 16n, // 2^4 = ASSIGN
-    },
-    // 权限管理
-    {
-      permName: '权限管理',
-      permCode: 'system:permission',
-      permDesc: '权限管理功能',
-      permissionType: 1, // MENU
-      nodeType: 2, // MENU
-      parentId: null,
-      routePath: '/system/permission',
-      iconName: 'SafetyCertificateOutlined',
-      sortOrder: 3,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 0n,
-    },
-    // 权限管理 - 新增
-    {
-      permName: '权限新增',
-      permCode: 'system:permission:add',
-      permDesc: '新增权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 1n,
-    },
-    // 权限管理 - 编辑
-    {
-      permName: '权限编辑',
-      permCode: 'system:permission:edit',
-      permDesc: '编辑权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 2n,
-    },
-    // 权限管理 - 删除
-    {
-      permName: '权限删除',
-      permCode: 'system:permission:delete',
-      permDesc: '删除权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 2,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 4n,
-    },
-    // 权限管理 - 查看
-    {
-      permName: '权限查看',
-      permCode: 'system:permission:view',
-      permDesc: '查看权限',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 3,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 32n,
-    },
-    // 应用类型管理
-    {
-      permName: '应用类型管理',
-      permCode: 'system:app-type',
-      permDesc: '应用类型管理功能',
-      permissionType: 1, // MENU
-      nodeType: 2, // MENU
-      parentId: null,
-      routePath: '/system/app-type',
-      iconName: 'AppstoreOutlined',
-      sortOrder: 4,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 0n,
-    },
-    // 应用类型管理 - 新增
-    {
-      permName: '应用类型新增',
-      permCode: 'system:app-type:add',
-      permDesc: '新增应用类型',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 1n,
-    },
-    // 应用类型管理 - 编辑
-    {
-      permName: '应用类型编辑',
-      permCode: 'system:app-type:edit',
-      permDesc: '编辑应用类型',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 2n,
-    },
-    // 应用类型管理 - 删除
-    {
-      permName: '应用类型删除',
-      permCode: 'system:app-type:delete',
-      permDesc: '删除应用类型',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 2,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 4n,
-    },
-    // 应用类型管理 - 查看
-    {
-      permName: '应用类型查看',
-      permCode: 'system:app-type:view',
-      permDesc: '查看应用类型',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 3,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 32n,
-    },
-    // 审计日志管理
-    {
-      permName: '审计日志管理',
-      permCode: 'system:audit-log',
-      permDesc: '审计日志管理功能',
-      permissionType: 1, // MENU
-      nodeType: 2, // MENU
-      parentId: null,
-      routePath: '/system/audit-log',
-      iconName: 'FileTextOutlined',
-      sortOrder: 5,
-      isVisible: 1,
-      isCache: 1,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 0n,
-    },
-    // 审计日志管理 - 查看
-    {
-      permName: '审计日志查看',
-      permCode: 'system:audit-log:view',
-      permDesc: '查看审计日志',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 0,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 32n,
-    },
-    // 审计日志管理 - 删除
-    {
-      permName: '审计日志删除',
-      permCode: 'system:audit-log:delete',
-      permDesc: '删除审计日志',
-      permissionType: 2, // BUTTON
-      nodeType: 3, // BUTTON
-      parentId: null,
-      routePath: '',
-      iconName: '',
-      sortOrder: 1,
-      isVisible: 1,
-      isCache: 0,
-      showMode: 1,
-      permStatus: 1,
-      permissionValue: 4n,
+      permissionValue: 63n, // ADD|EDIT|DELETE|EXPORT|IMPORT|VIEW
     },
   ];
 
-  // 先创建根节点 "系统管理"
-  const rootPerm = await dataSource.manager.findOne(Permission, { where: { permCode: 'system' } });
-  let rootPermId: string | undefined = undefined;
+  for (const permData of pcPermissions) {
+    const exists = await dataSource.manager.findOne(Permission, {
+      where: { permCode: permData.permCode, permissionType: PermissionType.PC }
+    });
 
-  if (!rootPerm) {
-    const rootPermEntity = dataSource.manager.create(Permission);
-    rootPermEntity.permName = permissions[0].permName;
-    rootPermEntity.permCode = permissions[0].permCode;
-    rootPermEntity.permDesc = permissions[0].permDesc;
-    rootPermEntity.permissionType = permissions[0].permissionType as unknown as PermissionType;
-    rootPermEntity.nodeType = permissions[0].nodeType as unknown as NodeType;
-    rootPermEntity.parentId = null as unknown as string;
-    rootPermEntity.routePath = permissions[0].routePath;
-    rootPermEntity.iconName = permissions[0].iconName;
-    rootPermEntity.sortOrder = permissions[0].sortOrder;
-    rootPermEntity.isVisible = permissions[0].isVisible;
-    rootPermEntity.isCache = permissions[0].isCache;
-    rootPermEntity.showMode = permissions[0].showMode as unknown as ShowMode;
-    rootPermEntity.permStatus = permissions[0].permStatus;
-    rootPermEntity.permissionValue = permissions[0].permissionValue;
+    if (!exists) {
+      // 确定父节点
+      let parentId: string | null = null;
+      const pathSegments = permData.permCode.replace('pc:', '').split(':');
+      if (pathSegments.length > 1) {
+        const parentCode = 'pc:' + pathSegments.slice(0, -1).join(':');
+        const parent = await dataSource.manager.findOne(Permission, {
+          where: { permCode: parentCode, permissionType: PermissionType.PC }
+        });
+        parentId = parent?.id || null;
+      } else {
+        parentId = pcRootId;
+      }
 
-    const saved = await dataSource.manager.save(rootPermEntity) as Permission;
-    rootPermId = saved.id;
-    console.log(`    ✓ 创建根权限：${permissions[0].permName}`);
-  } else {
-    rootPermId = (rootPerm as Permission).id;
-    console.log(`    √ 根权限已存在：${permissions[0].permName}`);
+      const perm = dataSource.manager.create(Permission);
+      perm.permName = permData.permName;
+      perm.permCode = permData.permCode;
+      perm.permDesc = `${permData.permName}权限节点`;
+      perm.permissionType = PermissionType.PC;
+      perm.nodeType = permData.nodeType;
+      perm.parentId = parentId;
+      perm.routePath = permData.routePath || '';
+      perm.iconName = permData.iconName || '';
+      perm.sortOrder = 0;
+      perm.isVisible = 1;
+      perm.isCache = 1;
+      perm.showMode = ShowMode.NORMAL;
+      perm.permStatus = 1;
+      perm.permissionValue = permData.permissionValue || 0n;
+      perm.isAutoSync = 0;
+
+      await dataSource.manager.save(perm);
+      process.stdout.write(`    ✓ 创建PC权限子节点：${permData.permName}`);
+    } else {
+      process.stdout.write(`    √ PC权限子节点已存在：${permData.permName}`);
+    }
   }
 
-  // 创建其他权限
-  for (let i = 1; i < permissions.length; i++) {
-    const permData = permissions[i];
+  // 4. 创建示例普通权限子节点（可选，用于测试）
+  const normalPermissions = [
+    {
+      permName: '业务权限',
+      permCode: 'business',
+      nodeType: NodeType.MENU,
+    },
+    {
+      permName: '数据查看',
+      permCode: 'business:view',
+      nodeType: NodeType.TAG,
+      permissionValue: 32n, // VIEW
+    },
+  ];
 
-    // 检查是否已存在
-    const exists = await dataSource.manager.findOne(Permission, { where: { permCode: permData.permCode } });
-    if (exists) {
-      console.log(`    √ 权限已存在：${permData.permName}`);
-      continue;
+  for (const permData of normalPermissions) {
+    const exists = await dataSource.manager.findOne(Permission, {
+      where: { permCode: permData.permCode, permissionType: PermissionType.NORMAL }
+    });
+
+    if (!exists) {
+      const perm = dataSource.manager.create(Permission);
+      perm.permName = permData.permName;
+      perm.permCode = permData.permCode;
+      perm.permDesc = `${permData.permName}权限节点`;
+      perm.permissionType = PermissionType.NORMAL;
+      perm.nodeType = permData.nodeType;
+      perm.parentId = normalRootId;
+      perm.routePath = '';
+      perm.iconName = '';
+      perm.sortOrder = 0;
+      perm.isVisible = 1;
+      perm.isCache = 0;
+      perm.showMode = ShowMode.NORMAL;
+      perm.permStatus = 1;
+      perm.permissionValue = permData.permissionValue || 0n;
+      perm.isAutoSync = 0;
+
+      await dataSource.manager.save(perm);
+      process.stdout.write(`    ✓ 创建普通权限子节点：${permData.permName}`);
+    } else {
+      process.stdout.write(`    √ 普通权限子节点已存在：${permData.permName}`);
     }
-
-    // 设置父权限 ID
-    let parentId: string | undefined = undefined;
-    if (permData.permCode.startsWith('system:user')) {
-      parentId = rootPermId;
-    } else if (permData.permCode.startsWith('system:role')) {
-      // 需要先找到角色管理节点的 ID
-      const parentPerm = await dataSource.manager.findOne(Permission, { where: { permCode: 'system:role' } });
-      parentId = parentPerm?.id || rootPermId;
-    } else if (permData.permCode.startsWith('system:permission')) {
-      const parentPerm = await dataSource.manager.findOne(Permission, { where: { permCode: 'system:permission' } });
-      parentId = parentPerm?.id || rootPermId;
-    } else if (permData.permCode.startsWith('system:app-type')) {
-      const parentPerm = await dataSource.manager.findOne(Permission, { where: { permCode: 'system:app-type' } });
-      parentId = parentPerm?.id || rootPermId;
-    } else if (permData.permCode.startsWith('system:audit-log')) {
-      const parentPerm = await dataSource.manager.findOne(Permission, { where: { permCode: 'system:audit-log' } });
-      parentId = parentPerm?.id || rootPermId;
-    }
-
-    const permEntity = dataSource.manager.create(Permission);
-    permEntity.permName = permData.permName;
-    permEntity.permCode = permData.permCode;
-    permEntity.permDesc = permData.permDesc;
-    permEntity.permissionType = permData.permissionType as unknown as PermissionType;
-    permEntity.nodeType = permData.nodeType as unknown as NodeType;
-    permEntity.parentId = parentId as unknown as string;
-    permEntity.routePath = permData.routePath;
-    permEntity.iconName = permData.iconName;
-    permEntity.sortOrder = permData.sortOrder;
-    permEntity.isVisible = permData.isVisible;
-    permEntity.isCache = permData.isCache;
-    permEntity.showMode = permData.showMode as unknown as ShowMode;
-    permEntity.permStatus = permData.permStatus;
-    permEntity.permissionValue = permData.permissionValue;
-
-    await dataSource.manager.save(permEntity);
-    console.log(`    ✓ 创建权限：${permData.permName}`);
   }
+
+  process.stdout.write(`\n  📊 权限初始化完成：`);
+  process.stdout.write(`    - PC权限根节点 ID: ${pcRootId}`);
+  process.stdout.write(`    - 普通权限根节点 ID: ${normalRootId}`);
 }
 
 /**
  * 3. 初始化角色
  */
 async function seedRoles(dataSource: DataSource): Promise<void> {
-  console.log('  👥 初始化角色...');
+  process.stdout.write('  👥 初始化角色...');
 
   const roles = [
     {
@@ -645,9 +316,9 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
         roleStatus: role.roleStatus,
         sortOrder: role.sortOrder,
       });
-      console.log(`    ✓ 创建角色：${role.roleName}`);
+      process.stdout.write(`    ✓ 创建角色：${role.roleName}`);
     } else {
-      console.log(`    √ 角色已存在：${role.roleName}`);
+      process.stdout.write(`    √ 角色已存在：${role.roleName}`);
     }
   }
 }
@@ -656,7 +327,7 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
  * 4. 初始化管理员账号
  */
 async function seedAdminUser(dataSource: DataSource): Promise<void> {
-  console.log('  👤 初始化管理员账号...');
+  process.stdout.write('  👤 初始化管理员账号...');
 
   const users = [
     {
@@ -698,18 +369,18 @@ async function seedAdminUser(dataSource: DataSource): Promise<void> {
         isDeveloper: user.isDeveloper,
         password: hashedPassword,
       });
-      console.log(`    ✓ 创建用户：${user.username} (密码：${user.password})`);
+      process.stdout.write(`    ✓ 创建用户：${user.username} (密码：${user.password})`);
     } else {
-      console.log(`    √ 用户已存在：${user.username}`);
+      process.stdout.write(`    √ 用户已存在：${user.username}`);
     }
   }
 }
 
 /**
- * 5. 绑定角色权限
+ * 5. 绑定角色权限（简化版本）
  */
 async function seedRolePermissions(dataSource: DataSource): Promise<void> {
-  console.log('  🔗 绑定角色权限...');
+  process.stdout.write('  🔗 绑定角色权限...');
 
   // 获取所有角色
   const superAdminRole = await dataSource.manager.findOne(Role, { where: { roleCode: 'super_admin' } });
@@ -720,7 +391,12 @@ async function seedRolePermissions(dataSource: DataSource): Promise<void> {
   const allPermissions = await dataSource.manager.find(Permission);
 
   if (!superAdminRole || !adminRole || !userRole) {
-    console.log('    ⚠️ 角色未完全创建，跳过权限绑定');
+    process.stdout.write('    ⚠️ 角色未完全创建，跳过权限绑定');
+    return;
+  }
+
+  if (allPermissions.length === 0) {
+    process.stdout.write('    ⚠️ 权限未创建，跳过权限绑定');
     return;
   }
 
@@ -739,14 +415,14 @@ async function seedRolePermissions(dataSource: DataSource): Promise<void> {
       await dataSource.manager.save(RolePermission, { ...perm, createdAt: new Date() });
     }
   }
-  console.log(`    ✓ 超级管理员绑定 ${superAdminPerms.length} 个权限`);
+  process.stdout.write(`    ✓ 超级管理员绑定 ${superAdminPerms.length} 个权限`);
 
-  // 管理员绑定大部分权限（排除审计日志删除）
-  const adminPermCodes = allPermissions
-    .filter((p) => p.permCode !== 'system:audit-log:delete')
+  // 管理员绑定大部分权限（排除根节点）
+  const adminPermIds = allPermissions
+    .filter((p) => p.permCode !== 'pc_root' && p.permCode !== 'normal_root')
     .map((p) => p.id);
 
-  for (const permId of adminPermCodes) {
+  for (const permId of adminPermIds) {
     const exists = await dataSource.manager.findOne(RolePermission, {
       where: { roleId: adminRole.id, permissionId: permId },
     });
@@ -760,10 +436,10 @@ async function seedRolePermissions(dataSource: DataSource): Promise<void> {
       });
     }
   }
-  console.log(`    ✓ 管理员绑定 ${adminPermCodes.length} 个权限`);
+  process.stdout.write(`    ✓ 管理员绑定 ${adminPermIds.length} 个权限`);
 
   // 普通用户只绑定查看权限
-  const viewPerms = allPermissions.filter((p) => p.permCode.endsWith(':view'));
+  const viewPerms = allPermissions.filter((p) => p.permCode.endsWith(':view') || p.permCode.endsWith(':list'));
   for (const perm of viewPerms) {
     const exists = await dataSource.manager.findOne(RolePermission, {
       where: { roleId: userRole.id, permissionId: perm.id },
@@ -777,14 +453,14 @@ async function seedRolePermissions(dataSource: DataSource): Promise<void> {
       });
     }
   }
-  console.log(`    ✓ 普通用户绑定 ${viewPerms.length} 个查看权限`);
+  process.stdout.write(`    ✓ 普通用户绑定 ${viewPerms.length} 个查看权限`);
 }
 
 /**
  * 6. 绑定用户角色
  */
 async function seedUserRoles(dataSource: DataSource): Promise<void> {
-  console.log('  🔗 绑定用户角色...');
+  process.stdout.write('  🔗 绑定用户角色...');
 
   const adminUser = await dataSource.manager.findOne(User, { where: { username: 'admin' } });
   const testUser = await dataSource.manager.findOne(User, { where: { username: 'test' } });
@@ -792,7 +468,7 @@ async function seedUserRoles(dataSource: DataSource): Promise<void> {
   const userRole = await dataSource.manager.findOne(Role, { where: { roleCode: 'user' } });
 
   if (!adminUser || !testUser || !superAdminRole || !userRole) {
-    console.log('    ⚠️ 用户或角色未完全创建，跳过角色绑定');
+    process.stdout.write('    ⚠️ 用户或角色未完全创建，跳过角色绑定');
     return;
   }
 
@@ -806,9 +482,9 @@ async function seedUserRoles(dataSource: DataSource): Promise<void> {
       roleId: superAdminRole.id,
       createdAt: new Date(),
     });
-    console.log(`    ✓ 用户 admin 绑定角色：超级管理员`);
+    process.stdout.write(`    ✓ 用户 admin 绑定角色：超级管理员`);
   } else {
-    console.log(`    √ 用户 admin 已绑定角色：超级管理员`);
+    process.stdout.write(`    √ 用户 admin 已绑定角色：超级管理员`);
   }
 
   // 绑定 test 用户为普通用户
@@ -821,8 +497,8 @@ async function seedUserRoles(dataSource: DataSource): Promise<void> {
       roleId: userRole.id,
       createdAt: new Date(),
     });
-    console.log(`    ✓ 用户 test 绑定角色：普通用户`);
+    process.stdout.write(`    ✓ 用户 test 绑定角色：普通用户`);
   } else {
-    console.log(`    √ 用户 test 已绑定角色：普通用户`);
+    process.stdout.write(`    √ 用户 test 已绑定角色：普通用户`);
   }
 }

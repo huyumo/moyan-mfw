@@ -24,7 +24,8 @@
     "migration:run": "pnpm typeorm migration:run -d src/database/data-source.ts",
     "migration:revert": "pnpm typeorm migration:revert -d src/database/data-source.ts",
     "migration:show": "pnpm typeorm migration:show -d src/database/data-source.ts",
-    "seed:run": "ts-node -r tsconfig-paths/register src/database/run-seeds.ts"
+    "seed:run": "ts-node -r tsconfig-paths/register src/database/run-seeds.ts",
+    "db:clear": "ts-node -r tsconfig-paths/register src/database/clear-database.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

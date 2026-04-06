@@ -266,10 +266,15 @@ interface DiffItem {
 
 **同步策略**：懒清理（读取时过滤，配置时清理）
 
+> **注意**：同步路由 API 不需要 appTypeId 参数。
+>
+> Permission 实体是全局定义，不包含 appTypeId 字段。
+> 同步路由只是将路由转换为 Permission 实体数据（全局）。
+> 应用类型绑定是在"应用类型管理页面"的"权限池配置"中完成的。
+
 ```typescript
 // POST /api/v1/permissions/sync
 async function syncPermission(options: {
-  appTypeId: string;
   dryRun?: boolean;
   routes: RouteNode[];  // 从 Vue Router 实例提取的路由数据
 }) {
@@ -285,7 +290,6 @@ async function syncPermission(options: {
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| appTypeId | string | 是 | 应用类型 ID |
 | dryRun | boolean | 否 | 是否仅预览，默认 false |
 | routes | RouteNode[] | 是 | 路由树结构，从前端 Vue Router 实例提取 |
 
