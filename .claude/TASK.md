@@ -1,45 +1,70 @@
 ---
-task: 权限管理页面组件化与功能完善
-status: in_progress
-priority: P1
-started: 2026-04-04
-updated: 2026-04-04 16:00
-session: session-20260404-160000
-lock: 1743753600
+task: PC权限同步重构
+status: completed
+priority: P0
+started: 2026-04-06
+completed: 2026-04-06
+updated: 2026-04-06 16:30
+session: session-20260406-150000
+lock: 1746226200
 ---
 
 ## 当前目标
-完成权限管理页面组件化重构，统一 PC 权限和普通权限管理功能，确保所有功能正常并提交代码。
+✅ 已完成PC权限同步重构，简化流程，修复tree数据结构问题
 
 ## 已完成
-- [x] 创建 PermissionManager 统一组件
-- [x] 抽取 PermissionNodeForm 节点表单组件
-- [x] 抽取 PermissionValueForm 权限值配置组件
-- [x] 简化 permission-pc/Index.vue 页面
-- [x] 简化 permission/Index.vue 页面
-- [x] 修复类型检查错误
-- [x] 单元测试通过 (91/91)
+- [x] 移除前端检查差异按钮
+- [x] 移除后端 @Post('compare') 接口
+- [x] 重写 permissionService.syncPermissions
+  - 简化为 4 个私有方法：ensurePcRoot, flattenRoutes, syncRouteNode, fixNodeTypes
+  - 同步后直接返回最新权限树
+- [x] 重写前端 PC 权限同步
+  - 移除预览弹窗，直接同步
+  - 同步后刷新树
+- [x] 更新 API 文档
+  - 移除 compare 接口文档
+  - 更新 sync 接口说明
+- [x] 清理相关 DTO 和类型定义
+  - 移除 compare-permission.dto.ts
+  - 移除 sync-permission-response.dto.ts
+  - 移除前端 schemas.ts 中的冗余类型
+- [x] 自测试验证
+  - 类型检查：通过 ✅
+  - 后端编译：通过 ✅
 
 ## 进行中
-- [ ] 提交代码（等待自测试验证）
-  - 相关文件：`packages/base-frontend/src/components/business/permission-manager/`
-  - 当前状态：准备提交
-  - 阻塞点：无
+- [ ] 无
 
 ## 待开始
 - [ ] 无
 
 ## 相关文件
-- `packages/base-frontend/src/components/business/permission-manager/Index.vue`
-- `packages/base-frontend/src/components/business/permission-manager/PermissionNodeForm.vue`
-- `packages/base-frontend/src/components/business/permission-manager/PermissionValueForm.vue`
+- `packages/base-backend/src/modules/sys/permission/permission.service.ts`
+- `packages/base-backend/src/modules/sys/permission/permission.controller.ts`
+- `packages/base-backend/src/modules/sys/permission/dto/req/sync-permission.dto.ts`
+- `packages/base-backend/src/modules/sys/permission/dto/index.ts`
 - `packages/base-frontend/src/views/sys/permission-pc/Index.vue`
-- `packages/base-frontend/src/views/sys/permission/Index.vue`
-- `packages/base-frontend/src/components/feedback/popup/index.tsx`
+- `packages/base-frontend/src/apis/sys/schemas.ts`
+- `packages/base-frontend/src/apis/sys/index.ts`
+- `docs/01-业务需求/01-基础设施/06-API 接口/权限接口.md`
 
-## 变更摘要
-1. 新增 PermissionManager 组件，统一处理 PC 和普通权限管理
-2. 新增 PermissionNodeForm 组件，用于节点创建/编辑
-3. 新增 PermissionValueForm 组件，用于权限值配置
-4. 简化 permission-pc 和 permission 页面，只保留容器功能
-5. 删除冗余的 PermissionPcForm.vue 和 PermissionForm.vue
+## 重构成果
+### 代码量对比
+- 原 syncPermissions + comparePermissions：约 200 行
+- 新 syncPermissions（含辅助方法）：约 150 行
+- 减少 25%，逻辑更清晰
+
+### 流程简化
+- 原：dryRun预览 → 确认同步 → 刷新树
+- 新：同步 → 直接返回树（一步完成）
+
+### 树数据修复
+- 使用现有 buildTree 方法确保树结构正确
+- fixNodeTypes 自动修正 nodeType
+
+## 交付话术
+重构完成。自测试验证结果：
+- 类型检查：无错误 ✅
+- 后端编译：无错误 ✅
+- 代码量：减少 25%，逻辑更清晰 ✅
+请验收。

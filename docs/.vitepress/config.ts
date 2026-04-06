@@ -130,7 +130,7 @@ const sidebar: DefaultTheme.Sidebar = [
           { text: '质量检查清单', link: '/02-团队/01-团队规范/06-质量检查清单' },
           { text: '质量自动化验证方案', link: '/02-团队/01-团队规范/07-质量自动化验证方案' },
           { text: '质量保障体系总览', link: '/02-团队/01-团队规范/08-质量保障体系总览' },
-          { text: 'TODO 编写规范', link: '/02-团队/01-团队规范/TODO编写规范' },
+          { text: '任务标记规范', link: '/02-团队/01-团队规范/09-任务标记规范' },
           { text: '归档说明', link: '/02-团队/01-团队规范/归档说明' },
           { text: '改进行动计划', link: '/02-团队/01-团队规范/改进行动计划' },
           { text: '项目交付报告', link: '/02-团队/01-团队规范/项目交付报告' },
@@ -328,6 +328,7 @@ export default withMermaid(defineConfig({
   vite: {
     server: {
       host: '0.0.0.0', // 允许 IP 访问
+      port: 5280,
     },
   },
   mermaid: {
