@@ -9,23 +9,6 @@
   <div class="permission-manager">
     <!-- 工具栏 -->
     <div class="permission-toolbar">
-      <!-- 应用类型选择器 - PC权限显示 -->
-      <el-select
-        v-if="permissionType === 'PC'"
-        v-model="selectedAppTypeId"
-        placeholder="选择应用类型"
-        style="width: 200px"
-        clearable
-        @change="handleAppTypeChange"
-      >
-        <el-option
-          v-for="item in appTypeList"
-          :key="item.id"
-          :label="item.typeName"
-          :value="item.id"
-        />
-      </el-select>
-
       <!-- 页面自定义工具栏 -->
       <slot name="toolbar-extra" />
 
@@ -41,11 +24,6 @@
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
-
-      <el-button type="primary" @click="handleAddRoot">
-        <el-icon><Plus /></el-icon>
-        新建根节点
-      </el-button>
     </div>
 
     <!-- 主体内容 -->
@@ -101,9 +79,9 @@
                   <el-icon><Key /></el-icon>
                 </el-button>
 
-                <!-- 添加子节点 - 只有 MENU 显示 -->
+                <!-- 添加子节点 - 只有 MENU 显示，且仅 NORMAL 类型 -->
                 <el-button
-                  v-if="data.nodeType === 'MENU'"
+                  v-if="data.nodeType === 'MENU' && props.permissionType === 'NORMAL'"
                   type="success"
                   link
                   size="small"
@@ -113,7 +91,9 @@
                   <el-icon><Plus /></el-icon>
                 </el-button>
 
+                <!-- 编辑/删除 - 仅 NORMAL 类型 -->
                 <el-button
+                  v-if="props.permissionType === 'NORMAL'"
                   type="primary"
                   link
                   size="small"
@@ -124,6 +104,7 @@
                 </el-button>
 
                 <el-button
+                  v-if="props.permissionType === 'NORMAL'"
                   type="danger"
                   link
                   size="small"
@@ -177,24 +158,17 @@ import {
   FolderOpened,
   Document,
   CollectionTag,
-  View,
-  CircleCheck,
-  CircleClose,
-  Download,
-  Upload,
   Search,
 } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../feedback';
 import PermissionValueForm from './PermissionValueForm.vue';
 import PermissionNodeForm from './PermissionNodeForm.vue';
-import type { PermissionTreeNodeDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
+import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import {
-  ApiPermissionFindAll,
   ApiPermissionFindAllTree,
   ApiPermissionCreate,
   ApiPermissionUpdate,
   ApiPermissionDelete,
-  ApiAppTypeFindAllList,
 } from '../../../apis/sys';
 
 // ========== Props & Emits ==========
@@ -208,29 +182,11 @@ export interface PermissionManagerProps {
 
 const props = defineProps<PermissionManagerProps>();
 
-const emit = defineEmits<{
-  /** 应用类型变化 */
-  (e: 'appTypeChange', appTypeId: string): void;
-}>();
-
 // ========== 状态 ==========
 
-const treeRef = ref();
-const selectedAppTypeId = ref('');
-const appTypeList = ref<AppTypeResponseDto[]>([]);
 const permissionTree = ref<PermissionTreeNodeDto[]>([]);
 const keyword = ref('');
 const originalTree = ref<PermissionTreeNodeDto[]>([]);
-
-// 权限操作选项
-const permissionActions = [
-  { label: '查看', value: 32, icon: View },
-  { label: '新增', value: 1, icon: CircleCheck },
-  { label: '编辑', value: 2, icon: Edit },
-  { label: '删除', value: 4, icon: CircleClose },
-  { label: '导出', value: 8, icon: Download },
-  { label: '导入', value: 16, icon: Upload },
-];
 
 // Tree 配置
 const treeProps = {
@@ -273,54 +229,6 @@ const canSetPermissionValue = (nodeType?: string) => {
 
 // ========== API 方法 ==========
 
-/** 加载应用类型列表 */
-const loadAppTypeList = async () => {
-  const result = await new ApiAppTypeFindAllList({});
-  appTypeList.value = result || [];
-  if (!selectedAppTypeId.value && result.length > 0) {
-    const enabled = result.find((item: AppTypeResponseDto) => item.typeStatus === 1);
-    selectedAppTypeId.value = enabled?.id || result[0].id;
-    await loadPermissionTree();
-  }
-};
-
-/** 将扁平列表转换为树形结构 */
-const buildTree = (permissions: PermissionTreeNodeDto[]): PermissionTreeNodeDto[] => {
-  const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
-  const roots: PermissionTreeNodeDto[] = [];
-
-  // 先创建所有节点的映射
-  permissions.forEach(item => {
-    const node: any = { ...item, children: [] };
-    map.set(item.id, node);
-  });
-
-  // 构建树形结构
-  permissions.forEach(item => {
-    const node = map.get(item.id)!;
-    if (item.parentId && map.has(item.parentId)) {
-      const parent = map.get(item.parentId)!;
-      parent.children!.push(node);
-    } else {
-      roots.push(node);
-    }
-  });
-
-  // 清理空的 children
-  const clean = (nodes: any[]) => {
-    nodes.forEach(node => {
-      if (node.children && node.children.length === 0) {
-        delete node.children;
-      } else if (node.children) {
-        clean(node.children);
-      }
-    });
-  };
-  clean(roots);
-
-  return roots;
-};
-
 // 树形数据过滤函数
 const filterTree = (
   nodes: PermissionTreeNodeDto[],
@@ -360,44 +268,22 @@ const handleSearch = () => {
   }
 };
 
-/** 加载权限树 - 根据类型自动路由 */
+/** 加载权限树 */
 const loadPermissionTree = async () => {
   try {
-    if (props.permissionType === 'PC') {
-      // PC 权限使用列表接口，需要转换为树
-      const result = await new ApiPermissionFindAll({
-        params: {
-          permissionType: 'PC' as any,
-          appTypeId: selectedAppTypeId.value || undefined,
-          pageSize: 1000,
-        },
-      });
-      originalTree.value = buildTree(result.list || []);
-      permissionTree.value = keyword.value
-        ? filterTree(originalTree.value, keyword.value)
-        : originalTree.value;
-    } else {
-      // 普通权限使用树接口
-      const result = await new ApiPermissionFindAllTree({
-        params: {
-          permissionType: 'NORMAL',
-        },
-      });
-      originalTree.value = result || [];
-      permissionTree.value = keyword.value
-        ? filterTree(originalTree.value, keyword.value)
-        : originalTree.value;
-    }
+    // 统一使用树接口，后端构建树，通过 permissionType 区分
+    const result = await new ApiPermissionFindAllTree({
+      params: {
+        permissionType: props.permissionType,
+      },
+    });
+    originalTree.value = result || [];
+    permissionTree.value = keyword.value
+      ? filterTree(originalTree.value, keyword.value)
+      : originalTree.value;
   } catch (error) {
     permissionTree.value = [];
   }
-};
-
-/** 应用类型变化 */
-const handleAppTypeChange = (appTypeId: string) => {
-  selectedAppTypeId.value = appTypeId;
-  emit('appTypeChange', appTypeId);
-  loadPermissionTree();
 };
 
 // ========== 拖拽排序 ==========
@@ -427,9 +313,9 @@ const allowDrop = (draggingNode: any, dropNode: any, type: 'inner' | 'prev' | 'n
 /** 拖拽完成处理 */
 const handleNodeDrop = async (
   draggingNode: any,
-  dropNode: any,
+  _dropNode: any,
   dropType: 'before' | 'after' | 'inner',
-  ev: DragEvent
+  _ev: DragEvent
 ) => {
   if (dropType === 'inner') return;
 
@@ -474,7 +360,7 @@ const handleNodeDrop = async (
 };
 
 /** 节点点击 */
-const handleNodeClick = (data: PermissionTreeNodeDto) => {
+const handleNodeClick = (_data: PermissionTreeNodeDto) => {
   // 可以在这里处理节点选中逻辑
 };
 
@@ -580,14 +466,6 @@ const openNodeForm = (options: {
   });
 };
 
-/** 新建根节点 */
-const handleAddRoot = () => {
-  openNodeForm({
-    isEdit: false,
-    title: '新建根节点',
-  });
-};
-
 /** 添加子节点 */
 const handleAddChild = (data: PermissionTreeNodeDto) => {
   openNodeForm({
@@ -625,18 +503,13 @@ const handleDelete = async (data: PermissionTreeNodeDto) => {
 // ========== 生命周期 ==========
 
 onMounted(() => {
-  if (props.permissionType === 'PC') {
-    loadAppTypeList();
-  } else {
-    loadPermissionTree();
-  }
+  loadPermissionTree();
 });
 
 // ========== 暴露方法 ==========
 
 defineExpose({
   reload: loadPermissionTree,
-  selectedAppTypeId,
 });
 </script>
 

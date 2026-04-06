@@ -230,46 +230,7 @@ export type RouteNodeDto = {
 }
 
 export type SyncPermissionDto = {
-  appTypeId: string // 应用类型 ID
-  dryRun?: boolean // 是否仅预览，默认 false
   routes: Array<RouteNodeDto> // 路由树结构
-}
-
-export type SyncDetailDto = {
-  type: string // 操作类型
-  permName: string // 权限名称
-  permCode: string // 权限编码
-  nodeType: string // 节点类型
-  parentCode?: string // 父权限编码
-}
-
-export type SyncPermissionResponseDto = {
-  dryRun: boolean // 是否预览模式
-  added: number // 新增数量
-  updated: number // 更新数量
-  skipped: number // 跳过数量
-  details: Array<SyncDetailDto> // 同步详情
-}
-
-export type ComparePermissionDto = {
-  appTypeId: string // 应用类型 ID
-  routes: Array<RouteNodeDto> // 路由树结构
-}
-
-export type DiffItemDto = {
-  type: string // 差异类型
-  permCode?: string // 权限编码
-  permName?: string // 权限名称
-  routePath?: string // 路由路径
-  suggestion: string // 建议操作
-}
-
-export type ComparePermissionResponseDto = {
-  added: Array<DiffItemDto> // 新增的权限
-  updated: Array<DiffItemDto> // 更新的权限
-  removed: Array<DiffItemDto> // 删除的权限
-  moved: Array<DiffItemDto> // 移动的权限
-  totalDiffs: number // 总差异数量
 }
 
 export type CreateAppTypeDto = {

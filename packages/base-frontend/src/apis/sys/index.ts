@@ -24,11 +24,6 @@ import type {
   UpdatePermissionDto,
   RouteNodeDto,
   SyncPermissionDto,
-  SyncDetailDto,
-  SyncPermissionResponseDto,
-  ComparePermissionDto,
-  DiffItemDto,
-  ComparePermissionResponseDto,
   CreateAppTypeDto,
   AppTypeResponseDto,
   PermissionTreesResponseDto,
@@ -469,21 +464,9 @@ export class ApiPermissionBatchCreate extends ApiCall<
  */
 export class ApiPermissionSyncPermissions extends ApiCall<
   SyncPermissionDto,
-  SyncPermissionResponseDto
+  PermissionTreeNodeDto[]
 > {
   path = '/api/permissions/sync'
-  method: MoMethod = 'POST'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->比对路由与权限差异
- */
-export class ApiPermissionComparePermissions extends ApiCall<
-  ComparePermissionDto,
-  ComparePermissionResponseDto
-> {
-  path = '/api/permissions/compare'
   method: MoMethod = 'POST'
   auth = true
 }

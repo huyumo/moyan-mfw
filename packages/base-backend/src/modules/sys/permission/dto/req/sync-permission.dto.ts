@@ -1,10 +1,13 @@
 /**
  * @fileoverview 权限同步请求 DTO
  * @description 同步路由到权限的请求参数
+ *
+ * 注意：同步路由只是将路由转换为 Permission 实体数据，不涉及应用类型绑定。
+ * 应用类型绑定是在"应用类型管理页面"的"权限池配置"中完成的。
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsArray, ValidateNested } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsArray, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -42,22 +45,6 @@ export class RouteNodeDto {
  * 权限同步请求 DTO
  */
 export class SyncPermissionDto {
-  /**
-   * 应用类型 ID
-   */
-  @ApiProperty({ description: '应用类型 ID', example: '550e8400-e29b-41d4-a716-446655440000' })
-  @IsNotEmpty({ message: '应用类型 ID 不能为空' })
-  @IsString()
-  appTypeId: string;
-
-  /**
-   * 是否仅预览（不执行实际同步）
-   */
-  @ApiProperty({ description: '是否仅预览，默认 false', default: false, required: false })
-  @IsOptional()
-  @IsBoolean()
-  dryRun?: boolean = false;
-
   /**
    * 路由树结构
    */
