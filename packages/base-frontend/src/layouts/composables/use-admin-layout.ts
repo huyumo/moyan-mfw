@@ -174,17 +174,20 @@ export function useAdminLayout(): any {
   async function handleUserCommand(command: string | number | object) {
     const action = String(command);
     if (action === 'logout') {
-      // 先清除本地状态
-      const authStore = useAuthStore();
-      authStore.clearToken();
-      // 重置路由守卫状态
+      // 1. 先重置路由守卫状态，防止路由循环
       resetRouteGuard();
-      // 跳转到登录页
-      router.push('/login');
-      // 异步调用后端登出 API（不阻塞跳转）
-      new ApiAuthLogout({}).catch(() => {
-        // 忽略登出 API 错误
-      });
+      // 2. 清除 Token（直接操作 localStorage，避免响应式延迟）
+      localStorage.removeItem('mfw:admin:token');
+      localStorage.removeItem('mfw:admin:refresh_token');
+      localStorage.removeItem('mfw:admin:current_app');
+      // 3. 获取 store 实例
+      const authStore = useAuthStore();
+      // 4. 调用 API（可选，不阻塞）
+      authStore.logout().catch(() => {});
+      // 5. 清除 store 状态
+      authStore.clearToken();
+      // 6. 强制刷新到登录页（使用 location.href 避免路由冲突）
+      window.location.href = '/login';
       return;
     }
     if (action === 'settings') {

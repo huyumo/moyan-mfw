@@ -36,8 +36,10 @@ export function setupRouteGuard(router: Router): void {
 
     // 1. 检查是否在白名单中
     if (WHITE_LIST.includes(to.path)) {
-      // 已登录用户访问登录页，重定向到首页
-      if (to.path === '/login' && authStore.isLoggedIn) {
+      // 已登录用户访问登录页，且 Token 有效时重定向到首页
+      // 注意：使用 localStorage 直接检查，避免响应式延迟问题
+      const hasToken = localStorage.getItem(TOKEN_KEY);
+      if (to.path === '/login' && hasToken && authStore.isLoggedIn) {
         next({ path: '/' });
         return;
       }

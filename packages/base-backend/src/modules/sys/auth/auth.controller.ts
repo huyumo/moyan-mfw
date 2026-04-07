@@ -114,10 +114,11 @@ export class AuthController {
    * @param req - 请求对象
    * @returns 退出结果
    */
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('Authorization')
-  @ApiOperation({ summary: '退出登录', description: '使当前 Token 失效' })
+  @ApiOperation({ summary: '退出登录', description: '使当前 Token 失效（可选认证）' })
   @ApiResponse({ status: 200, description: '退出成功' })
   async logout(@Request() req: any) {
     const token = req.headers.authorization?.replace('Bearer ', '');

@@ -210,7 +210,47 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
     }
   }
 
-  // 4. 创建示例普通权限子节点（可选，用于测试）
+  // 4. 创建系统管理权限（用于权限管理 API 的权限检查）
+  const systemPermissions = [
+    {
+      permName: '权限管理',
+      permCode: 'system:permission',
+      nodeType: NodeType.TAG,
+      permissionValue: 63n, // ADD|EDIT|DELETE|EXPORT|IMPORT|VIEW (全部权限)
+    },
+  ];
+
+  for (const permData of systemPermissions) {
+    const exists = await dataSource.manager.findOne(Permission, {
+      where: { permCode: permData.permCode, permissionType: PermissionType.NORMAL }
+    });
+
+    if (!exists) {
+      const perm = dataSource.manager.create(Permission);
+      perm.permName = permData.permName;
+      perm.permCode = permData.permCode;
+      perm.permDesc = `${permData.permName}权限节点，用于权限管理接口的权限控制`;
+      perm.permissionType = PermissionType.NORMAL;
+      perm.nodeType = permData.nodeType;
+      perm.parentId = normalRootId;
+      perm.routePath = '';
+      perm.iconName = '';
+      perm.sortOrder = 0;
+      perm.isVisible = 1;
+      perm.isCache = 0;
+      perm.showMode = ShowMode.NORMAL;
+      perm.permStatus = 1;
+      perm.permissionValue = permData.permissionValue || 0n;
+      perm.isAutoSync = 0;
+
+      await dataSource.manager.save(perm);
+      process.stdout.write(`    ✓ 创建系统权限节点：${permData.permName} (permCode: ${permData.permCode})`);
+    } else {
+      process.stdout.write(`    √ 系统权限节点已存在：${permData.permName}`);
+    }
+  }
+
+  // 5. 创建示例普通权限子节点（可选，用于测试）
   const normalPermissions = [
     {
       permName: '业务权限',
@@ -268,6 +308,7 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
 
   const roles = [
     {
+      id: 'a2b83a1e-b1b9-4a19-b587-2f110ee56ae9', // 固定 UUID，与权限守卫匹配
       roleName: '超级管理员',
       roleCode: 'super_admin',
       roleDesc: '系统超级管理员，拥有所有权限',
@@ -279,6 +320,7 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
       sortOrder: 0,
     },
     {
+      id: 'c3d4e5f6-a7b8-4c5d-8e9f-0a1b2c3d4e5f', // 固定 UUID，用于 admin 角色
       roleName: '管理员',
       roleCode: 'admin',
       roleDesc: '系统管理员，拥有大部分管理权限',
@@ -290,6 +332,7 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
       sortOrder: 1,
     },
     {
+      id: 'd4e5f6a7-b8c9-4d5e-9f0a-1b2c3d4e5f6a', // 固定 UUID，用于 user 角色
       roleName: '普通用户',
       roleCode: 'user',
       roleDesc: '普通用户，拥有基础查看权限',
@@ -306,6 +349,7 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
     const exists = await dataSource.manager.findOne(Role, { where: { roleCode: role.roleCode } });
     if (!exists) {
       await dataSource.manager.save(Role, {
+        id: role.id,
         roleName: role.roleName,
         roleCode: role.roleCode,
         roleDesc: role.roleDesc,
@@ -316,9 +360,9 @@ async function seedRoles(dataSource: DataSource): Promise<void> {
         roleStatus: role.roleStatus,
         sortOrder: role.sortOrder,
       });
-      process.stdout.write(`    ✓ 创建角色：${role.roleName}`);
+      process.stdout.write(`    ✓ 创建角色：${role.roleName} (ID: ${role.id})`);
     } else {
-      process.stdout.write(`    √ 角色已存在：${role.roleName}`);
+      process.stdout.write(`    √ 角色已存在：${role.roleName} (ID: ${exists.id})`);
     }
   }
 }
