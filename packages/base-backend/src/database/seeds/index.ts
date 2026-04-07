@@ -218,6 +218,30 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       iconName: '',
       permissionValue: buildPerValue(['查看', '添加', '编辑', '删除', '导出', '导入']), // 63n
     },
+    // 权限管理相关权限（用于权限管理接口的权限控制）
+    {
+      permName: '系统管理',
+      permCode: 'pc_root:sys',
+      nodeType: NodeType.MENU,
+      routePath: '/sys',
+      iconName: '',
+    },
+    {
+      permName: '权限管理',
+      permCode: 'pc_root:sys:permission',
+      nodeType: NodeType.PAGE,
+      routePath: '/sys/permission',
+      iconName: '',
+      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除', '导出', '导入']), // 63n
+    },
+    {
+      permName: 'PC 权限管理',
+      permCode: 'pc_root:sys:permission-pc',
+      nodeType: NodeType.PAGE,
+      routePath: '/sys/permission-pc',
+      iconName: '',
+      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除', '导出', '导入']), // 63n
+    },
   ];
 
   for (const permData of pcPermissions) {
