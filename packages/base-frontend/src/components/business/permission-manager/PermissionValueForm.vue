@@ -11,7 +11,7 @@
     <div class="permission-actions">
       <el-checkbox-group v-model="selectedActions">
         <el-checkbox
-          v-for="action in permissionActions"
+          v-for="action in permissionOptions"
           :key="action.value"
           :label="action.value"
           border
@@ -30,9 +30,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { View, CircleCheck, Edit, CircleClose, Download, Upload } from '@element-plus/icons-vue';
 import { ApiPermissionUpdate } from '../../../apis/sys';
-import { PERMISSION_VALUES, getPermValue } from '../../../utils/permissions';
+import { getPermissionOptions } from '../../../utils/permissions';
 
 interface PermissionValueFormProps {
   data?: {
@@ -41,6 +40,8 @@ interface PermissionValueFormProps {
     nodeCode?: string;
     permissionValue?: string | number;
   };
+  // 可选：传入自定义权限选项（支持业务项目覆盖）
+  permissionOptions?: ReturnType<typeof getPermissionOptions>;
 }
 
 const props = defineProps<PermissionValueFormProps>();
@@ -50,24 +51,10 @@ const nodeId = computed(() => props.data?.nodeId || '');
 const nodeCode = computed(() => props.data?.nodeCode || '');
 const permissionValue = computed(() => props.data?.permissionValue);
 
-// 权限操作选项（从 PERMISSION_VALUES 动态生成）
-const permissionActions = computed(() => {
-  // 定义权限名称到图标的映射
-  const iconMap: Record<string, any> = {
-    '查看': View,
-    '添加': CircleCheck,
-    '编辑': Edit,
-    '删除': CircleClose,
-    '导出': Download,
-    '导入': Upload,
-  };
-
-  return PERMISSION_VALUES.map((name) => ({
-    label: name,
-    value: Number(getPermValue(name)),
-    icon: iconMap[name],
-  }));
-});
+// 权限操作选项（使用传入的或默认的）
+const permissionOptions = computed(() =>
+  props.permissionOptions || getPermissionOptions()
+);
 
 const selectedActions = ref<number[]>([]);
 
@@ -77,7 +64,7 @@ onMounted(() => {
     ? parseInt(permissionValue.value, 10)
     : (permissionValue.value || 0);
 
-  selectedActions.value = permissionActions.value
+  selectedActions.value = permissionOptions.value
     .filter((action) => (currentValue & action.value) !== 0)
     .map((action) => action.value);
 });
