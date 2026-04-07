@@ -22,6 +22,7 @@ assignee: @ai
 - [x] 修复 BigInt 序列化错误（PermissionGuard 中 TypeORM 返回字符串）
 - [x] 修复 menuTree 返回 NORMAL 权限类型问题（system 应用类型只应返回 PC 权限）
 - [x] 修复 filterVisibleNodes 过滤逻辑（父节点不可见时子节点提升为根节点）
+- [x] 种子数据添加权限管理 PC 权限（pc_root:sys:permission、pc_root:sys:permission-pc）
 
 ### 修复的问题
 
@@ -34,6 +35,7 @@ assignee: @ai
 | /api/permissions/tree/all BigInt 序列化错误 | TypeORM 返回的 permissionValue 是字符串而非 BigInt | PermissionGuard 添加类型转换：`typeof rp.permissionValue === 'string' ? BigInt(rp.permissionValue) : rp.permissionValue` | ✅ |
 | /api/auth/permissions 返回 NORMAL 权限类型 | getUserPermissions 没有根据应用类型过滤权限类型 | 添加 permissionType 过滤 + 权限池过滤逻辑 | ✅ |
 | menuTree 为空（根节点 isVisible=0） | filterVisibleNodes 直接过滤掉不可见父节点，子节点丢失 | 修改逻辑：父节点不可见时，子节点提升为根节点 | ✅ |
+| 种子数据缺少权限管理 PC 权限 | pc_root:sys:permission 和 pc_root:sys:permission-pc 是同步逻辑创建的，种子数据执行时还不存在 | 在 pcPermissions 数组中添加权限管理相关权限（permissionValue=63n） | ✅ |
 
 ### 验证结果
 
