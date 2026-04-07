@@ -50,22 +50,20 @@ export async function runSeeds(dataSource: DataSource): Promise<void> {
 async function seedAppTypes(dataSource: DataSource): Promise<void> {
   process.stdout.write('  📦 初始化应用类型...');
 
-  const appTypes = [
-    {
-      typeName: '系统管理',
-      typeCode: 'system', // 系统内置类型，不可删除
-      typeDesc: '系统内置应用类型，用于系统管理功能',
-      icon: 'SettingOutlined',
-      multiAppEnabled: 0,
-      typeStatus: 1,
-      sortOrder: 0,
-    },
-  ];
+  const appTypes = [{
+    typeName: '系统管理',
+    typeCode: 'system',
+    typeDesc: '系统内置应用类型，用于系统管理功能',
+    icon: 'SettingOutlined',
+    multiAppEnabled: 0,
+    typeStatus: 1,
+    sortOrder: 0,
+  }];
 
   for (const appType of appTypes) {
     const exists = await dataSource.manager.findOne(AppType, { where: { typeCode: appType.typeCode } });
     if (!exists) {
-      await dataSource.manager.save(AppType, { ...appType, createdAt: new Date() });
+      await dataSource.manager.save(AppType, appType);
       process.stdout.write(`    ✓ 创建应用类型：${appType.typeName} (typeCode: ${appType.typeCode})`);
     } else {
       process.stdout.write(`    √ 应用类型已存在：${appType.typeName} (typeCode: ${appType.typeCode})`);
@@ -74,62 +72,14 @@ async function seedAppTypes(dataSource: DataSource): Promise<void> {
 }
 
 /**
- * 5. 初始化应用实例（为 admin 用户创建默认应用）
- */
-async function seedAppInstances(dataSource: DataSource): Promise<void> {
-  process.stdout.write('  📱 初始化应用实例...');
-
-  // 获取系统管理应用类型
-  const systemAppType = await dataSource.manager.findOne(AppType, { where: { typeCode: 'system' } });
-
-  // 获取 admin 用户
-  const adminUser = await dataSource.manager.findOne(User, { where: { username: 'admin' } });
-
-  if (!systemAppType || !adminUser) {
-    process.stdout.write('    ⚠️ 应用类型或 admin 用户不存在，跳过应用实例初始化');
-    return;
-  }
-
-  const appInstances = [
-    {
-      appName: '系统管理后台',
-      appCode: 'system-admin',
-      appDesc: '系统管理后台应用',
-      appTypeId: systemAppType.id,
-      ownerId: adminUser.id,
-      appStatus: 1,
-      icon: 'SettingOutlined',
-    },
-  ];
-
-  for (const appData of appInstances) {
-    const exists = await dataSource.manager.findOne(App, { where: { appCode: appData.appCode } });
-    if (!exists) {
-      const app = dataSource.manager.create(App);
-      app.appName = appData.appName;
-      app.appCode = appData.appCode;
-      app.appDesc = appData.appDesc;
-      app.appTypeId = appData.appTypeId;
-      app.ownerId = appData.ownerId;
-      app.appStatus = appData.appStatus;
-      app.icon = appData.icon;
-      await dataSource.manager.save(app);
-      process.stdout.write(`    ✓ 创建应用实例：${appData.appName} (ID: ${app.id})`);
-    } else {
-      process.stdout.write(`    √ 应用实例已存在：${appData.appName} (ID: ${exists.id})`);
-    }
-  }
-}
-
-/**
- * 2. 初始化权限（严格按文档要求创建2个根节点）
- * - PC权限根节点
+ * 2. 初始化权限（严格按文档要求创建 2 个根节点）
+ * - PC 权限根节点
  * - 普通权限根节点
  */
 async function seedPermissions(dataSource: DataSource): Promise<void> {
   process.stdout.write('  🔐 初始化权限...');
 
-  // 1. 创建PC权限根节点
+  // 1. 创建 PC 权限根节点
   const pcRootPerm = await dataSource.manager.findOne(Permission, {
     where: { permCode: 'pc_root', permissionType: PermissionType.PC }
   });
@@ -137,9 +87,9 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
 
   if (!pcRootPerm) {
     const pcRoot = dataSource.manager.create(Permission);
-    pcRoot.permName = 'PC权限根节点';
+    pcRoot.permName = 'PC 权限根节点';
     pcRoot.permCode = 'pc_root';
-    pcRoot.permDesc = 'PC权限系统的根节点，所有PC权限的父节点';
+    pcRoot.permDesc = 'PC 权限系统的根节点，所有 PC 权限的父节点';
     pcRoot.permissionType = PermissionType.PC;
     pcRoot.nodeType = NodeType.MENU;
     pcRoot.parentId = null as any;
@@ -155,10 +105,10 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
 
     const saved = await dataSource.manager.save(pcRoot);
     pcRootId = saved.id;
-    process.stdout.write(`    ✓ 创建PC权限根节点：${pcRoot.permName} (ID: ${pcRootId})`);
+    process.stdout.write(`    ✓ 创建 PC 权限根节点：${pcRoot.permName} (ID: ${pcRootId})`);
   } else {
     pcRootId = pcRootPerm.id;
-    process.stdout.write(`    √ PC权限根节点已存在：${pcRootPerm.permName} (ID: ${pcRootId})`);
+    process.stdout.write(`    √ PC 权限根节点已存在：${pcRootPerm.permName} (ID: ${pcRootId})`);
   }
 
   // 2. 创建普通权限根节点
@@ -193,7 +143,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
     process.stdout.write(`    √ 普通权限根节点已存在：${normalRootPerm.permName} (ID: ${normalRootId})`);
   }
 
-  // 3. 创建示例PC权限子节点（可选，用于测试）
+  // 3. 创建示例 PC 权限子节点（可选，用于测试）
   // 注意：permCode 必须与同步逻辑一致，使用 pc: 前缀
   const pcPermissions = [
     {
@@ -281,9 +231,24 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       perm.isAutoSync = 0;
 
       await dataSource.manager.save(perm);
-      process.stdout.write(`    ✓ 创建PC权限子节点：${permData.permName}`);
+      process.stdout.write(`    ✓ 创建 PC 权限子节点：${permData.permName}`);
     } else {
-      process.stdout.write(`    √ PC权限子节点已存在：${permData.permName}`);
+      // 权限已存在，更新为 isAutoSync=0（标记为种子数据权限，同步时不删除）
+      await dataSource.manager.update(Permission, exists.id, {
+        isAutoSync: 0,
+        permName: permData.permName,
+        permDesc: `${permData.permName}权限节点`,
+        permissionType: PermissionType.PC,
+        nodeType: permData.nodeType,
+        routePath: permData.routePath || '',
+        iconName: permData.iconName || '',
+        isVisible: 1,
+        isCache: 1,
+        showMode: ShowMode.NORMAL,
+        permStatus: 1,
+        permissionValue: permData.permissionValue || exists.permissionValue,
+      });
+      process.stdout.write(`    √ PC 权限子节点已存在：${permData.permName} (更新 isAutoSync=0)`);
     }
   }
 
@@ -389,7 +354,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
   }
 
   process.stdout.write(`\n  📊 权限初始化完成：`);
-  process.stdout.write(`    - PC权限根节点 ID: ${pcRootId}`);
+  process.stdout.write(`    - PC 权限根节点 ID: ${pcRootId}`);
   process.stdout.write(`    - 普通权限根节点 ID: ${normalRootId}`);
 }
 
@@ -637,5 +602,45 @@ async function seedUserRoles(dataSource: DataSource): Promise<void> {
     process.stdout.write(`    ✓ 用户 test 绑定角色：普通用户`);
   } else {
     process.stdout.write(`    √ 用户 test 已绑定角色：普通用户`);
+  }
+}
+
+/**
+ * 7. 初始化应用实例
+ */
+async function seedAppInstances(dataSource: DataSource): Promise<void> {
+  process.stdout.write('  📱 初始化应用实例...');
+
+  const systemAppType = await dataSource.manager.findOne(AppType, {
+    where: { typeCode: 'system' },
+  });
+  const adminUser = await dataSource.manager.findOne(User, {
+    where: { username: 'admin' },
+  });
+
+  if (!systemAppType || !adminUser) {
+    process.stdout.write('    ⚠️ 应用类型或用户未完全创建，跳过应用实例初始化');
+    return;
+  }
+
+  const appInstances = [{
+    appName: '系统管理后台',
+    appCode: 'system-admin',
+    appTypeId: systemAppType.id,
+    ownerId: adminUser.id,
+    appStatus: 1,
+    icon: 'SettingOutlined',
+  }];
+
+  for (const app of appInstances) {
+    const existing = await dataSource.manager.findOne(App, {
+      where: { appCode: app.appCode },
+    });
+    if (!existing) {
+      await dataSource.manager.save(App, app);
+      process.stdout.write(`    ✓ 创建应用实例：${app.appName} (ID: ${app.appCode})`);
+    } else {
+      process.stdout.write(`    √ 应用实例已存在：${app.appName} (ID: ${existing.id})`);
+    }
   }
 }

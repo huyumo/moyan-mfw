@@ -447,15 +447,16 @@ export class PermissionService {
 
   /**
    * 清理旧的自动同步数据
-   * 删除所有 PC 权限（保留 pc_root），确保数据干净
+   * 删除所有 isAutoSync=1 的 PC 权限（保留 pc_root 和 isAutoSync=0 的权限）
    */
   private async clearAutoSyncPermissions(): Promise<void> {
     // 使用事务删除，避免外键约束问题
     await this.dataSource.transaction(async (manager) => {
-      // 1. 获取所有 PC 权限 ID（排除 pc_root）
+      // 1. 获取所有 isAutoSync=1 的 PC 权限 ID（排除 pc_root）
       const pcPerms = await manager.find(Permission, {
         where: {
           permissionType: PermissionType.PC,
+          isAutoSync: 1, // 只清理自动同步的权限
         },
         select: ['id', 'permCode'],
       });
@@ -466,10 +467,11 @@ export class PermissionService {
 
       if (idsToDelete.length === 0) return;
 
-      // 2. 删除 sys_role_permission 关联
+      // 2. 删除 sys_role_permission 关联（只删除 isAutoSync=1 的权限关联）
+      // 使用 FIND_IN_SET 避免 IN 语法对数组参数的限制
       await manager.query(
-        `DELETE FROM sys_role_permission WHERE permissionId IN (?)`,
-        [idsToDelete]
+        `DELETE FROM sys_role_permission WHERE FIND_IN_SET(permissionId, ?)`,
+        [idsToDelete.join(',')]
       );
 
       // 3. 删除权限（按深度从深到浅）
