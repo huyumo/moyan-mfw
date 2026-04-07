@@ -49,13 +49,18 @@ export class PermissionGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // 获取所有 @RequirePermission 装饰器（支持多次注解）
-    const requirePermissions = this.reflector.getAllAndOverride<RequirePermissionOptions[]>(
+    const requirePermissions = this.reflector.getAllAndOverride<RequirePermissionOptions | RequirePermissionOptions[]>(
       REQUIRE_PERMISSION,
       [context.getHandler(), context.getClass()],
-    ) || [];
+    );
+
+    // 转换为数组（getAllAndOverride 可能返回单个对象或数组）
+    const permissionsArray = Array.isArray(requirePermissions)
+      ? requirePermissions
+      : (requirePermissions ? [requirePermissions] : []);
 
     // 如果没有要求权限，直接放行
-    if (requirePermissions.length === 0) {
+    if (permissionsArray.length === 0) {
       return true;
     }
 
@@ -98,7 +103,7 @@ export class PermissionGuard implements CanActivate {
     }
 
     // 多装饰器 OR 检查：只要匹配其中一个权限即可
-    for (const options of requirePermissions) {
+    for (const options of permissionsArray) {
       const { permCode, permissionValue } = this.normalizeOptions(options);
 
       if (!permissionValue) {
