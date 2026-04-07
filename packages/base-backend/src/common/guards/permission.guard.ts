@@ -92,16 +92,16 @@ export class PermissionGuard implements CanActivate {
     // 这里做一个简化的判断：如果没有 admin 特权，拒绝 WRITE 操作
     // 实际项目中应该从数据库查询角色权限
 
-    if (isWriteOperation) {
-      // 对于 WRITE 操作，需要额外的权限验证
-      // 在测试环境中，admin 角色的 ID 是种子数据中定义的
-      // 生产环境中应该从数据库查询角色权限
-      const adminRoleId = process.env.NODE_ENV === 'test'
-        ? 'c3d4e5f6-a7b8-4c5d-8e9f-0a1b2c3d4e5f' // 测试环境的 admin 角色 ID（有效的 UUID v4）
-        : 'a2b83a1e-b1b9-4a19-b587-2f110ee56ae9'; // 生产环境的 admin 角色 ID
-      if (!user.roleIds.includes(adminRoleId)) {
-        throw new ForbiddenException('权限不足');
-      }
+    // 种子数据定义的固定角色 ID
+    // - super_admin: a2b83a1e-b1b9-4a19-b587-2f110ee56ae9 (拥有所有权限)
+    // - admin: c3d4e5f6-a7b8-4c5d-8e9f-0a1b2c3d4e5f
+    // - user: d4e5f6a7-b8c9-4d5e-9f0a-1b2c3d4e5f6a
+    const superAdminRoleId = 'a2b83a1e-b1b9-4a19-b587-2f110ee56ae9';
+    const adminRoleId = 'c3d4e5f6-a7b8-4c5d-8e9f-0a1b2c3d4e5f';
+
+    // 对于 WRITE 操作，需要 super_admin 或 admin 角色
+    if (!user.roleIds.includes(superAdminRoleId) && !user.roleIds.includes(adminRoleId)) {
+      throw new ForbiddenException('权限不足');
     }
 
     return true;

@@ -70,9 +70,9 @@ export class Permission extends Base {
 
   /**
    * 权限编码
-   * @description 权限的唯一标识，格式：模块：资源 - 操作，如 system:user-list:view
+   * @description 权限的唯一标识，根据tree 树结构自动组装，例如：normal_root:xxx:xxx:xxx，pc_root:sys:permission
    */
-  @Column({ type: 'varchar', length: 128, comment: '权限编码 - 唯一标识，格式：模块：资源 - 操作' })
+  @Column({ type: 'varchar', length: 128, comment: '权限编码 - 唯一标识，根据树结构自动组装' })
   permCode: string;
 
   /**

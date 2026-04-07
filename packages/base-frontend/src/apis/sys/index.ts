@@ -90,7 +90,7 @@ export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
 export class ApiAuthLogout extends ApiCall<{}, any> {
   path = '/api/auth/logout'
   method: MoMethod = 'POST'
-  auth = true
+  auth = false  // 退出登录不强制带 Token，避免 Token 失效时无法退出
 }
 
 /**

@@ -91,9 +91,9 @@
                   <el-icon><Plus /></el-icon>
                 </el-button>
 
-                <!-- 编辑/删除 - 仅 NORMAL 类型 -->
+                <!-- 编辑/删除 - 仅 NORMAL 类型，且非根节点 -->
                 <el-button
-                  v-if="props.permissionType === 'NORMAL'"
+                  v-if="props.permissionType === 'NORMAL' && !isRootNode(data)"
                   type="primary"
                   link
                   size="small"
@@ -104,7 +104,7 @@
                 </el-button>
 
                 <el-button
-                  v-if="props.permissionType === 'NORMAL'"
+                  v-if="props.permissionType === 'NORMAL' && !isRootNode(data)"
                   type="danger"
                   link
                   size="small"
@@ -224,6 +224,11 @@ const getNodeTypeTagType = (nodeType?: string) => {
 
 const canSetPermissionValue = (nodeType?: string) => {
   return nodeType === 'PAGE' || nodeType === 'TAG';
+};
+
+/** 判断是否为根节点 */
+const isRootNode = (data: PermissionTreeNodeDto) => {
+  return data.permCode === 'pc_root' || data.permCode === 'normal_root';
 };
 
 // ========== API 方法 ==========
@@ -393,6 +398,7 @@ const openNodeForm = (options: {
   isEdit: boolean;
   title: string;
   parentId?: string;
+  parentPermCode?: string;
   initialData?: Partial<PermissionTreeNodeDto>;
 }) => {
   const defaultNodeType = props.permissionType === 'PC' ? 'PAGE' : 'TAG';
@@ -405,6 +411,7 @@ const openNodeForm = (options: {
       isEdit: options.isEdit,
       permissionType: props.permissionType,
       parentId: options.parentId,
+      parentPermCode: options.parentPermCode,
       nodeTypeOptions: nodeTypeOptions.value,
       defaultNodeType: options.parentId ? defaultNodeType : 'MENU',
       initialData: options.initialData,
@@ -424,6 +431,7 @@ const handleAddChild = (data: PermissionTreeNodeDto) => {
     isEdit: false,
     title: '新建子节点',
     parentId: data.id,
+    parentPermCode: data.permCode,
   });
 };
 
@@ -557,7 +565,7 @@ defineExpose({
   justify-content: space-between;
   gap: 8px;
   flex: 1;
-  padding: 4px 0;
+  padding: 6px 12px 6px 0; // 增加右侧边距
 
   .node-info {
     display: flex;
@@ -582,9 +590,19 @@ defineExpose({
   .node-actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0;
     opacity: 0;
     transition: opacity 0.2s;
+    margin-right: 4px;
+
+    :deep(.el-button) {
+      padding: 5px;
+      font-size: 14px;
+
+      &:hover {
+        background-color: var(--el-fill-color-light);
+      }
+    }
   }
 
   &:hover .node-actions {

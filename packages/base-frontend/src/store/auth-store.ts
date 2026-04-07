@@ -7,13 +7,12 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import {
   ApiAuthLogin,
-  ApiAuthLogout,
   ApiAuthRefreshToken,
   ApiAuthGetCurrentUser,
   ApiAuthGetUserApps,
   ApiAuthGetUserPermissions,
 } from '../apis/sys';
-import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionMenuNodeDto } from '../apis/sys/schemas';
+import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
 
 /** Token 存储键名 */
 export const TOKEN_KEY = 'mfw:admin:token';
@@ -181,8 +180,15 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 登出 */
   async function logout(): Promise<void> {
+    // 直接调用后端 API，不使用 ApiCall（避免触发 401 事件处理）
     try {
-      await new ApiAuthLogout({});
+      const token = localStorage.getItem(TOKEN_KEY);
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+      });
     } catch {
       // 忽略登出接口错误
     } finally {
@@ -233,7 +239,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUserApps(): Promise<AppInstance[]> {
     try {
       const response = await new ApiAuthGetUserApps({});
-      const appsData = response.apps || [];
+      const appsData = response || [];
 
       // 转换为 AppInstance 格式
       apps.value = appsData.map((app: AppInstanceItemDto) => ({
@@ -273,7 +279,7 @@ export const useAuthStore = defineStore('auth', () => {
         params: { appId },
       });
 
-      const menuNodes = response.menu || [];
+      const menuNodes = response.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
 
       return permissionMenu.value;
@@ -285,7 +291,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** 将后端权限菜单节点转换为前端格式 */
-  function transformPermissionMenu(nodes: PermissionMenuNodeDto[]): PermissionMenuItem[] {
+  function transformPermissionMenu(nodes: PermissionTreeNodeDto[]): PermissionMenuItem[] {
     return nodes
       .filter(node => node.isVisible !== 0) // 过滤不可见节点
       .map(node => ({

@@ -29,15 +29,36 @@ export class PermissionService {
    * @returns 创建的权限
    */
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
-    const { permCode, nodeType, parentId } = createPermissionDto;
+    const { permCode, nodeType, parentId, permissionType } = createPermissionDto;
+
+    // 自动生成完整的 permCode（严格按照树结构）
+    let fullPermCode = permCode;
+    if (parentId) {
+      const parent = await this.permissionRepository.findOne({
+        where: { id: parentId },
+      });
+      if (!parent) {
+        throw new NotFoundError('父权限');
+      }
+      // 拼接父节点的 permCode（严格按树结构）
+      fullPermCode = `${parent.permCode}:${permCode}`;
+    } else {
+      // 没有父节点，检查是否是根节点
+      if (permissionType === PermissionType.PC && permCode !== 'pc_root') {
+        throw new BadRequestException('PC 权限的根节点编码必须为 pc_root');
+      }
+      if (permissionType === PermissionType.NORMAL && permCode !== 'normal_root') {
+        throw new BadRequestException('普通权限的根节点编码必须为 normal_root');
+      }
+    }
 
     // 检查权限编码是否存在
     const existingPermission = await this.permissionRepository.findOne({
-      where: { permCode },
+      where: { permCode: fullPermCode },
     });
 
     if (existingPermission) {
-      throw new ConflictException('权限编码已存在');
+      throw new ConflictException(`权限编码已存在: ${fullPermCode}`);
     }
 
     // 根节点只能创建 MENU 类型
@@ -60,8 +81,11 @@ export class PermissionService {
       }
     }
 
-    // 创建权限
-    const permission = this.permissionRepository.create(createPermissionDto);
+    // 创建权限（使用完整编码）
+    const permission = this.permissionRepository.create({
+      ...createPermissionDto,
+      permCode: fullPermCode,
+    });
     return this.permissionRepository.save(permission);
   }
 
@@ -300,6 +324,11 @@ export class PermissionService {
 
     if (!permission) {
       throw new NotFoundError('权限');
+    }
+
+    // 禁止删除根节点
+    if (permission.permCode === 'pc_root' || permission.permCode === 'normal_root') {
+      throw new BadRequestException('权限根节点不允许删除');
     }
 
     // 递归删除子权限
@@ -583,12 +612,12 @@ export class PermissionService {
   }
 
   /**
-   * 生成权限编码
+   * 生成权限编码（严格按照树结构）
    * @param path - 路由路径
-   * @returns 权限编码
+   * @returns 权限编码（格式：pc_root:path:to:route）
    */
   private generatePermCode(path: string): string {
     const cleanPath = path.replace(/^\//, '').replace(/\//g, ':');
-    return `pc:${cleanPath || 'root'}`;
+    return `pc_root:${cleanPath || 'root'}`;
   }
 }

@@ -17,11 +17,18 @@
       </el-form-item>
 
       <el-form-item label="权限编码" prop="permCode">
-        <el-input
-          v-model="form.permCode"
-          placeholder="请输入权限编码"
-          :disabled="isEdit"
-        />
+        <div class="perm-code-input">
+          <span v-if="parentPermCodePrefix" class="perm-code-prefix">{{ parentPermCodePrefix }}:</span>
+          <el-input
+            v-model="form.permCode"
+            :placeholder="permCodePlaceholder"
+            :disabled="isEdit"
+            class="perm-code-input-field"
+          />
+        </div>
+        <div v-if="!isEdit && parentId" class="perm-code-hint">
+          完整编码: <strong>{{ fullPermCode }}</strong>
+        </div>
       </el-form-item>
 
       <el-form-item label="节点类型" prop="nodeType">
@@ -90,6 +97,7 @@ interface PermissionNodeFormProps {
     isEdit?: boolean;
     permissionType: 'PC' | 'NORMAL';
     parentId?: string;
+    parentPermCode?: string; // 父节点的完整编码
     nodeTypeOptions?: Array<{ label: string; value: string }>;
     defaultNodeType?: string;
     initialData?: Partial<PermissionNodeFormData>;
@@ -102,6 +110,7 @@ const props = defineProps<PermissionNodeFormProps>();
 const isEdit = computed(() => props.data?.isEdit ?? false);
 const permissionType = computed(() => props.data?.permissionType ?? 'NORMAL');
 const parentId = computed(() => props.data?.parentId);
+const parentPermCode = computed(() => props.data?.parentPermCode);
 const nodeTypeOptions = computed(() => props.data?.nodeTypeOptions ?? []);
 const defaultNodeType = computed(() => props.data?.defaultNodeType ?? 'MENU');
 const initialData = computed(() => props.data?.initialData);
@@ -123,6 +132,26 @@ const formRules: FormRules = {
   permCode: [{ required: true, message: '请输入权限编码', trigger: 'blur' }],
   nodeType: [{ required: true, message: '请选择节点类型', trigger: 'change' }],
 };
+
+// 计算父节点编码前缀（严格按照树结构）
+const parentPermCodePrefix = computed(() => {
+  if (!parentId.value || isEdit.value) return '';
+  return parentPermCode.value || '';
+});
+
+// 编码输入提示
+const permCodePlaceholder = computed(() => {
+  if (isEdit.value) return '权限编码不可修改';
+  if (!parentId.value) return '请输入权限编码（如：pc_root 或 normal_root）';
+  return '请输入最后一段编码（如：user）';
+});
+
+// 完整编码预览
+const fullPermCode = computed(() => {
+  if (!form.permCode) return '';
+  if (!parentId.value) return form.permCode;
+  return `${parentPermCode.value}:${form.permCode}`;
+});
 
 onMounted(() => {
   if (initialData.value) {
@@ -154,7 +183,7 @@ const onConfirm = async () => {
     });
     ElMessage.success('更新成功');
   } else {
-    // 新建
+    // 新建 - 只传最后一段编码，后端会自动拼接
     await new ApiPermissionCreate({
       params: {
         permName: form.permName,
@@ -177,5 +206,28 @@ defineExpose({ onConfirm });
 <style scoped lang="scss">
 .permission-node-form {
   padding: 8px 0;
+
+  .perm-code-input {
+    display: flex;
+    align-items: center;
+    width: 100%;
+
+    .perm-code-prefix {
+      color: var(--el-text-color-secondary);
+      font-size: 14px;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+
+    .perm-code-input-field {
+      flex: 1;
+    }
+  }
+
+  .perm-code-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
 }
 </style>
