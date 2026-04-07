@@ -16,15 +16,15 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { useRouter } from 'vue-router';
 import { ElMessage, ElTag, ElButton } from 'element-plus';
 import { View, Edit } from '@element-plus/icons-vue';
 import MfwPageScene from '../../../components/page/page-scene';
 import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
 import { MfwPopup } from '../../../components/feedback';
-import { ApiAppTypeFindAll } from '../../../apis/sys';
+import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import EditForm from './EditForm.vue';
+import DetailPopup from './DetailPopup.vue';
 
 /** 状态常量 */
 const STATUS = {
@@ -34,7 +34,6 @@ const STATUS = {
 
 defineOptions({ name: 'MfwAppTypeList' });
 
-const router = useRouter();
 const pageScene = ref<MfwPageSceneInstance>();
 
 /** 搜索模板 */
@@ -130,8 +129,7 @@ const loadData = async (params: Record<string, unknown>) => {
       typeStatus: params.typeStatus as number,
     },
   });
-  console.log(result);
-  
+
   return {
     list: result.list || [],
     total: result.total || 0,
@@ -139,8 +137,22 @@ const loadData = async (params: Record<string, unknown>) => {
 };
 
 /** 查看详情 */
-const handleDetail = (row: AppTypeResponseDto) => {
-  router.push(`/sys/app-type-detail/${row.id}`);
+const handleDetail = async (row: AppTypeResponseDto) => {
+  try {
+    const apiResult = await new ApiAppTypeFindById({ query: { id: row.id } });
+    // @ts-ignore - API 实际返回 { code, data, message } 结构
+    const detailData = apiResult.data || apiResult;
+
+    MfwPopup.open({
+      title: '应用类型详情',
+      type: 'drawer',
+      component: DetailPopup,
+      data: detailData,
+      popupProps: { size: 500 },
+    });
+  } catch (error) {
+    ElMessage.error('获取应用类型详情失败');
+  }
 };
 
 /** 编辑 */

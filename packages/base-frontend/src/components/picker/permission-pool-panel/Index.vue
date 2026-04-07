@@ -13,9 +13,9 @@
 
 <script setup lang="tsx">
 import { ref, watch, onMounted } from 'vue'
-import { ElTabs, ElTabPane, ElTree, ElCheckbox, ElButton, ElMessage, ElSkeleton, ElEmpty } from 'element-plus'
+import { ElTabs, ElTabPane, ElTree, ElCheckbox, ElButton, ElMessage, ElSkeleton, ElEmpty, ElIcon } from 'element-plus'
 import type { CheckboxValueType } from 'element-plus'
-import { Check } from '@element-plus/icons-vue'
+import { Check, Key } from '@element-plus/icons-vue'
 import type { PermissionTreeNodeDto, PermissionTreePayloadDto } from '../../../apis/sys/schemas'
 import {
   PermBit,
@@ -26,6 +26,8 @@ import {
   type PermissionTreeNodeState,
 } from './types'
 import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
+import { MfwPopup } from '../../feedback'
+import PermissionValuePoolPopup from './PermissionValuePoolPopup.vue'
 
 // ========== Props & Emits ==========
 
@@ -49,11 +51,44 @@ const normalTreeData = ref<PermissionTreeNodeState[]>([])
 // ========== 辅助函数 ==========
 
 /**
+ * 判断节点类型是否可以配置操作权限
+ */
+function canSetPermissionValue(nodeType?: string): boolean {
+  return nodeType === 'PAGE' || nodeType === 'TAG'
+}
+
+/**
+ * 配置操作权限
+ */
+function handleConfigPermissionValue(data: PermissionTreeNodeState, treeType: 'pc' | 'normal') {
+  MfwPopup.open({
+    title: `配置操作权限 - ${data.permName}`,
+    type: 'dialog',
+    component: PermissionValuePoolPopup,
+    data: {
+      appTypeId: props.appTypeId,
+      nodeId: data.id,
+      nodeName: data.permName,
+      nodeCode: data.permCode,
+      permissionValue: data.permissionValueBigInt ? String(data.permissionValueBigInt) : '0',
+      treeType,
+    },
+    popupProps: { width: 500 },
+    on: {
+      confirm: async () => {
+        // 重新加载数据以获取最新状态
+        await loadPermissionPool()
+      },
+    },
+  })
+}
+
+/**
  * 获取节点可用的权限位
  */
-function getNodeAvailableBits(node: PermissionTreeNodeState): bigint[] {
-  const originalValue = node.permissionValue ? BigInt(String(node.permissionValue)) : 0n
-  return getAvailablePermBits(originalValue)
+function getNodeAvailableBits(_node: PermissionTreeNodeState): bigint[] {
+  // 返回所有定义的权限位，让复选框显示所有选项
+  return Object.values(PermBit) as bigint[]
 }
 
 /**
@@ -190,7 +225,7 @@ async function loadPermissionPool() {
   loading.value = true
   try {
     const response = await new ApiAppTypeGetPermissionPool({
-      params: { appTypeId: props.appTypeId },
+      query: { appTypeId: props.appTypeId },
     })
 
     rawPcTree.value = response.permissionTrees?.pcTree || []
@@ -358,20 +393,16 @@ const treeProps = {
                     </span>
                     {{ data.permName }}
                   </span>
-                  <!-- 显示权限位选择 -->
-                  <div v-if="data.checked" class="perm-bits-wrapper">
-                    <div class="perm-bits-container">
-                      <span class="perm-bits-label">操作权限：</span>
-                      <template v-for="bit in getNodeAvailableBits(data)" :key="String(bit)">
-                        <ElCheckbox
-                          :modelValue="(data.permissionValueBigInt || 0n) !== 0n && ((data.permissionValueBigInt || 0n) & bit) !== 0n"
-                          :disabled="readonly"
-                          @change="(checked: CheckboxValueType) => handleNodePermBitChange(data.id, bit, Boolean(checked), 'pc')"
-                        >
-                          {{ PermBitDesc[String(bit)] || String(bit) }}
-                        </ElCheckbox>
-                      </template>
-                    </div>
+                  <!-- 配置操作权限按钮 - 只有 PAGE/TAG 节点显示 -->
+                  <div v-if="canSetPermissionValue(data.nodeType)" class="perm-config-action">
+                    <ElButton
+                      type="primary"
+                      link
+                      size="small"
+                      @click.stop="handleConfigPermissionValue(data, 'pc')"
+                    >
+                      <el-icon><Key /></el-icon> 配置操作权限
+                    </ElButton>
                   </div>
                 </div>
               </template>
@@ -404,20 +435,16 @@ const treeProps = {
                     </span>
                     {{ data.permName }}
                   </span>
-                  <!-- 显示权限位选择 -->
-                  <div v-if="data.checked" class="perm-bits-wrapper">
-                    <div class="perm-bits-container">
-                      <span class="perm-bits-label">操作权限：</span>
-                      <template v-for="bit in getNodeAvailableBits(data)" :key="String(bit)">
-                        <ElCheckbox
-                          :modelValue="(data.permissionValueBigInt || 0n) !== 0n && ((data.permissionValueBigInt || 0n) & bit) !== 0n"
-                          :disabled="readonly"
-                          @change="(checked: CheckboxValueType) => handleNodePermBitChange(data.id, bit, Boolean(checked), 'normal')"
-                        >
-                          {{ PermBitDesc[String(bit)] || String(bit) }}
-                        </ElCheckbox>
-                      </template>
-                    </div>
+                  <!-- 配置操作权限按钮 - 只有 PAGE/TAG 节点显示 -->
+                  <div v-if="canSetPermissionValue(data.nodeType)" class="perm-config-action">
+                    <ElButton
+                      type="primary"
+                      link
+                      size="small"
+                      @click.stop="handleConfigPermissionValue(data, 'normal')"
+                    >
+                      <el-icon><Key /></el-icon> 配置操作权限
+                    </ElButton>
                   </div>
                 </div>
               </template>
@@ -425,14 +452,14 @@ const treeProps = {
           </div>
         </ElTabPane>
       </ElTabs>
+    </div>
 
-      <!-- 操作按钮 -->
-      <div v-if="!readonly" class="panel-footer">
-        <ElButton @click="reset">重置</ElButton>
-        <ElButton type="primary" :loading="saving" :icon="Check" @click="savePermissionPool">
-          保存配置
-        </ElButton>
-      </div>
+    <!-- 操作按钮 -->
+    <div v-if="!readonly" class="panel-footer">
+      <ElButton @click="reset">重置</ElButton>
+      <ElButton type="primary" :loading="saving" :icon="Check" @click="savePermissionPool">
+        保存配置
+      </ElButton>
     </div>
   </div>
 </template>
@@ -463,12 +490,21 @@ const treeProps = {
       padding: 12px;
       overflow: auto;
 
+      :deep(.el-tree-node) {
+        margin-bottom: 4px;
+      }
+
+      :deep(.el-tree-node__content) {
+        height: auto;
+        padding: 4px 0;
+      }
+
       .tree-node-content {
         display: flex;
-        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
         gap: 8px;
         width: 100%;
-        padding: 4px 0;
 
         .node-label {
           display: flex;
@@ -495,24 +531,14 @@ const treeProps = {
           }
         }
 
-        .perm-bits-wrapper {
-          margin-left: 20px;
-          padding: 8px 0;
+        .perm-config-action {
+          display: flex;
+          align-items: center;
+          gap: 4px;
 
-          .perm-bits-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-
-            .perm-bits-label {
-              font-size: 12px;
-              color: var(--el-text-color-secondary);
-            }
-
-            :deep(.el-checkbox) {
-              margin-right: 0;
-            }
+          :deep(.el-button) {
+            padding: 4px 8px;
+            font-size: 12px;
           }
         }
       }
