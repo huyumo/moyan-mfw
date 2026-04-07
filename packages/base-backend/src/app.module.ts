@@ -22,6 +22,7 @@ import { UserRole } from './modules/sys/role/entities/user-role.entity';
 import { Permission } from './modules/sys/permission/entities/permission.entity';
 import { RolePermission } from './modules/sys/permission/entities/role-permission.entity';
 import { AppType } from './modules/sys/app-type/entities/app-type.entity';
+import { AppTypePermissionEntity } from './modules/sys/app-type/entities/app-type-permission.entity';
 import { App } from './modules/sys/app/entities/app.entity';
 import { AppMember } from './modules/sys/app/entities/app-member.entity';
 import { AuditLog } from './modules/sys/audit-log/entities/audit-log.entity';
@@ -42,7 +43,7 @@ import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 
 // 所有实体数组
-const entities = [User, Role, UserRole, Permission, RolePermission, AppType, App, AppMember, AuditLog];
+const entities = [User, Role, UserRole, Permission, RolePermission, AppType, AppTypePermissionEntity, App, AppMember, AuditLog];
 
 /**
  * 数据库配置工厂函数
