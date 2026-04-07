@@ -444,7 +444,7 @@ const handleDelete = async (data: PermissionTreeNodeDto) => {
       '确认删除',
       { type: 'warning' }
     );
-    await new ApiPermissionDelete({ params: { id: data.id } });
+    await new ApiPermissionDelete({ query: { id: data.id } });
     ElMessage.success('删除成功');
     loadPermissionTree();
   } catch {
