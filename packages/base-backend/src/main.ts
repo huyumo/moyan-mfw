@@ -23,6 +23,22 @@ async function bootstrap() {
   // 创建应用实例
   const app = await NestFactory.create(AppModule);
 
+  // 全局处理 BigInt 序列化（避免 JSON.stringify 错误）
+  // 在 Express response.json 中拦截
+  app.use((_req, res, next) => {
+    const originalJson = res.json.bind(res);
+    res.json = (data: any) => {
+      return originalJson(
+        JSON.parse(
+          JSON.stringify(data, (_key, value) =>
+            typeof value === 'bigint' ? value.toString() : value
+          )
+        )
+      );
+    };
+    next();
+  });
+
   // 获取配置服务
   const configService = app.get(ConfigService);
 

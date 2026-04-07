@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose, Type } from 'class-transformer';
+import { Expose, Type, Transform } from 'class-transformer';
 import { PermissionType, NodeType, ShowMode } from '../../entities/permission.entity';
 
 /**
@@ -127,9 +127,10 @@ export class PermissionTreeNodeDto {
   /**
    * 权限值（位运算）
    */
-  @ApiProperty({ description: '权限值（位运算）', required: false })
+  @ApiProperty({ description: '权限值（位运算）', example: '7', required: false })
   @Expose()
-  permissionValue?: bigint;
+  @Transform(({ value }) => value?.toString())
+  permissionValue?: string;
 
   /**
    * 子权限列表
@@ -266,9 +267,10 @@ export class PermissionResponseDto {
   /**
    * 权限值（位运算）
    */
-  @ApiProperty({ description: '权限值（位运算）' })
+  @ApiProperty({ description: '权限值（位运算）', example: '7' })
   @Expose()
-  permissionValue: bigint;
+  @Transform(({ value }) => value?.toString())
+  permissionValue: string;
 
   /**
    * 创建时间
