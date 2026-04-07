@@ -3,8 +3,9 @@
  * @description 执行所有种子数据，初始化系统基础数据
  */
 
-import { DataSource } from 'typeorm';
+import { DataSource, QueryFailedError } from 'typeorm';
 import { AppType } from '../../modules/sys/app-type/entities/app-type.entity';
+import { App } from '../../modules/sys/app/entities/app.entity';
 import { Permission, NodeType, ShowMode, PermissionType } from '../../modules/sys/permission/entities/permission.entity';
 import { Role } from '../../modules/sys/role/entities/role.entity';
 import { User } from '../../modules/sys/user/entities/user.entity';
@@ -22,19 +23,22 @@ export async function runSeeds(dataSource: DataSource): Promise<void> {
   // 1. 初始化应用类型
   await seedAppTypes(dataSource);
 
-  // 2. 初始化权限
+  // 2. 初始化权限（先创建权限，为角色权限绑定做准备）
   await seedPermissions(dataSource);
 
   // 3. 初始化角色
   await seedRoles(dataSource);
 
-  // 4. 初始化管理员账号
+  // 4. 初始化管理员账号（先创建用户，才能创建应用实例和绑定用户角色）
   await seedAdminUser(dataSource);
 
-  // 5. 绑定角色权限
+  // 5. 初始化应用实例（依赖 admin 用户已创建）
+  await seedAppInstances(dataSource);
+
+  // 6. 绑定角色权限
   await seedRolePermissions(dataSource);
 
-  // 6. 绑定用户角色
+  // 7. 绑定用户角色
   await seedUserRoles(dataSource);
 
   process.stdout.write('✅ 种子数据执行完成！');
@@ -65,6 +69,54 @@ async function seedAppTypes(dataSource: DataSource): Promise<void> {
       process.stdout.write(`    ✓ 创建应用类型：${appType.typeName} (typeCode: ${appType.typeCode})`);
     } else {
       process.stdout.write(`    √ 应用类型已存在：${appType.typeName} (typeCode: ${appType.typeCode})`);
+    }
+  }
+}
+
+/**
+ * 5. 初始化应用实例（为 admin 用户创建默认应用）
+ */
+async function seedAppInstances(dataSource: DataSource): Promise<void> {
+  process.stdout.write('  📱 初始化应用实例...');
+
+  // 获取系统管理应用类型
+  const systemAppType = await dataSource.manager.findOne(AppType, { where: { typeCode: 'system' } });
+
+  // 获取 admin 用户
+  const adminUser = await dataSource.manager.findOne(User, { where: { username: 'admin' } });
+
+  if (!systemAppType || !adminUser) {
+    process.stdout.write('    ⚠️ 应用类型或 admin 用户不存在，跳过应用实例初始化');
+    return;
+  }
+
+  const appInstances = [
+    {
+      appName: '系统管理后台',
+      appCode: 'system-admin',
+      appDesc: '系统管理后台应用',
+      appTypeId: systemAppType.id,
+      ownerId: adminUser.id,
+      appStatus: 1,
+      icon: 'SettingOutlined',
+    },
+  ];
+
+  for (const appData of appInstances) {
+    const exists = await dataSource.manager.findOne(App, { where: { appCode: appData.appCode } });
+    if (!exists) {
+      const app = dataSource.manager.create(App);
+      app.appName = appData.appName;
+      app.appCode = appData.appCode;
+      app.appDesc = appData.appDesc;
+      app.appTypeId = appData.appTypeId;
+      app.ownerId = appData.ownerId;
+      app.appStatus = appData.appStatus;
+      app.icon = appData.icon;
+      await dataSource.manager.save(app);
+      process.stdout.write(`    ✓ 创建应用实例：${appData.appName} (ID: ${app.id})`);
+    } else {
+      process.stdout.write(`    √ 应用实例已存在：${appData.appName} (ID: ${exists.id})`);
     }
   }
 }
@@ -170,7 +222,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
 
   for (const permData of pcPermissions) {
     const exists = await dataSource.manager.findOne(Permission, {
-      where: { permCode: permData.permCode, permissionType: PermissionType.PC }
+      where: { permCode: permData.permCode }
     });
 
     if (!exists) {
@@ -180,7 +232,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       if (pathSegments.length > 1) {
         const parentCode = 'pc:' + pathSegments.slice(0, -1).join(':');
         const parent = await dataSource.manager.findOne(Permission, {
-          where: { permCode: parentCode, permissionType: PermissionType.PC }
+          where: { permCode: parentCode }
         });
         parentId = parent?.id || null;
       } else {
@@ -223,7 +275,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
 
   for (const permData of systemPermissions) {
     const exists = await dataSource.manager.findOne(Permission, {
-      where: { permCode: permData.permCode, permissionType: PermissionType.NORMAL }
+      where: { permCode: permData.permCode }
     });
 
     if (!exists) {
@@ -244,8 +296,16 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       perm.permissionValue = permData.permissionValue || 0n;
       perm.isAutoSync = 0;
 
-      await dataSource.manager.save(perm);
-      process.stdout.write(`    ✓ 创建系统权限节点：${permData.permName} (permCode: ${permData.permCode})`);
+      try {
+        await dataSource.manager.save(perm);
+        process.stdout.write(`    ✓ 创建系统权限节点：${permData.permName} (permCode: ${permData.permCode})`);
+      } catch (error) {
+        if (error.message.includes('Duplicate entry')) {
+          process.stdout.write(`    ⚠️ 系统权限节点已存在（唯一键冲突）：${permData.permName}`);
+        } else {
+          throw error;
+        }
+      }
     } else {
       process.stdout.write(`    √ 系统权限节点已存在：${permData.permName}`);
     }
@@ -268,7 +328,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
 
   for (const permData of normalPermissions) {
     const exists = await dataSource.manager.findOne(Permission, {
-      where: { permCode: permData.permCode, permissionType: PermissionType.NORMAL }
+      where: { permCode: permData.permCode }
     });
 
     if (!exists) {
@@ -289,8 +349,16 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       perm.permissionValue = permData.permissionValue || 0n;
       perm.isAutoSync = 0;
 
-      await dataSource.manager.save(perm);
-      process.stdout.write(`    ✓ 创建普通权限子节点：${permData.permName}`);
+      try {
+        await dataSource.manager.save(perm);
+        process.stdout.write(`    ✓ 创建普通权限子节点：${permData.permName}`);
+      } catch (error) {
+        if (error.message.includes('Duplicate entry')) {
+          process.stdout.write(`    ⚠️ 普通权限子节点已存在（唯一键冲突）：${permData.permName}`);
+        } else {
+          throw error;
+        }
+      }
     } else {
       process.stdout.write(`    √ 普通权限子节点已存在：${permData.permName}`);
     }

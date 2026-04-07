@@ -4,6 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
+import { IsUUID } from 'class-validator';
 
 /**
  * 用户权限菜单请求 DTO
@@ -13,6 +14,7 @@ export class UserPermissionsDto {
   /**
    * 应用实例 ID
    */
+  @IsUUID()
   @ApiProperty({
     description: '应用实例 ID',
     example: 'app-instance-uuid',
