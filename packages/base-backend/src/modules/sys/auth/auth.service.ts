@@ -205,7 +205,7 @@ export class AuthService {
    * @param token - 当前 Token
    */
   async logout(_token: string): Promise<void> {
-    // TODO: 将 Token 加入 Redis 黑名单
+    // TODO-TASK-2026-04-07-001: 将 Token 加入 Redis 黑名单
     // await this.redisService.setex(`token_blacklist:${token}`, expiresIn, '1');
   }
 
@@ -346,8 +346,12 @@ export class AuthService {
 
     userRoles.forEach((ur) => {
       if (ur.role) {
-        // 角色属于该应用实例，或者是全局角色（appId 为空且 appTypeId 匹配）
-        if (ur.role.appId === appId || (!ur.role.appId && ur.role.appTypeId === appTypeId)) {
+        // 角色属于该应用实例，或者是全局角色（appId 和 appTypeId 都为空）
+        const isGlobalRole = !ur.role.appId && !ur.role.appTypeId;
+        const isAppRole = ur.role.appId === appId;
+        const isAppTypeRole = ur.role.appTypeId === appTypeId;
+
+        if (isGlobalRole || isAppRole || isAppTypeRole) {
           roleIds.push(ur.roleId);
           roleCodes.push(ur.role.roleCode);
         }
