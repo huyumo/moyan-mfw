@@ -83,9 +83,6 @@
         </span>
       </template>
     </el-dialog>
-
-    <!-- 全局弹窗管理器 -->
-    <MfwPopupManager />
   </div>
 </template>
 
@@ -94,7 +91,6 @@ import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
 import SettingsPanel from './panels/SettingsPanel.vue';
-import { MfwPopupManager } from '../components/feedback';
 import { useAdminLayout } from './composables/use-admin-layout';
 
 const dialogText = {

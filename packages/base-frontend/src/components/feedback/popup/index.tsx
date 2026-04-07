@@ -193,7 +193,7 @@ const MfwPopupDialog = defineComponent({
           const result = componentRef.value.onConfirm();
           if (result instanceof Promise) await result;
         }
-        item.value.on.confirm?.(item.value.data);
+        item.value.on.confirm?.(componentRef.value);
         handleClose();
       } catch (error) {
         // 如果组件的 onConfirm 抛出错误或返回 rejected Promise，则不关闭弹窗
@@ -296,7 +296,7 @@ const MfwPopupDrawer = defineComponent({
           const result = componentRef.value.onConfirm();
           if (result instanceof Promise) await result;
         }
-        item.value.on.confirm?.(item.value.data);
+        item.value.on.confirm?.(componentRef.value);
         handleClose();
       } catch (error) {
         // 如果组件的 onConfirm 抛出错误或返回 rejected Promise，则不关闭弹窗
