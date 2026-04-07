@@ -63,7 +63,7 @@ export class AppTypeController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '类型编码已存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'CREATE_APP_TYPE', description: '创建应用类型' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['添加'] })
   async create(@Body() createAppTypeDto: CreateAppTypeDto) {
     const result = await this.appTypeService.create(createAppTypeDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -75,7 +75,7 @@ export class AppTypeController {
   @Get()
   @ApiOperation({ summary: '查询应用类型列表', description: '分页查询应用类型列表' })
   @ApiPaginatedResponse(AppTypeResponseDto)
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
   async findAll(@Query() query: QueryAppTypeDto) {
     const result = await this.appTypeService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -91,7 +91,7 @@ export class AppTypeController {
     description: '查询成功',
     type: [AppTypeResponseDto],
   })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
   async findAllList() {
     const result = await this.appTypeService.findAllList();
     return ApiResponseUtil.success(result, '查询成功');
@@ -109,7 +109,7 @@ export class AppTypeController {
     type: AppTypeResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appTypeService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -127,7 +127,7 @@ export class AppTypeController {
     type: PermissionPoolResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
   async getPermissionPool(@Param('appTypeId', ParseUUIDPipe) appTypeId: string) {
     const result = await this.appTypeService.getPermissionPool(appTypeId);
     return ApiResponseUtil.success(result, '查询成功');

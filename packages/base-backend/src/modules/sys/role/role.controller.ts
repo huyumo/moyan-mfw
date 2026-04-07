@@ -57,7 +57,7 @@ export class RoleController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '角色编码已存在' })
   @AuditLog({ module: AuditModule.ROLE, event: 'CREATE_ROLE', description: '创建角色' })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['添加'] })
   async create(@Body() createRoleDto: CreateRoleDto) {
     const result = await this.roleService.create(createRoleDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -77,7 +77,7 @@ export class RoleController {
   @ApiQuery({ name: 'roleCode', required: false, type: String })
   @ApiQuery({ name: 'roleName', required: false, type: String })
   @ApiQuery({ name: 'roleStatus', required: false, type: Number })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
   async findAll(@Query() query: any) {
     const result = await this.roleService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -95,7 +95,7 @@ export class RoleController {
     type: RoleResponseDto,
   })
   @ApiResponse({ status: 404, description: '角色不存在' })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.roleService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -114,7 +114,7 @@ export class RoleController {
   })
   @ApiResponse({ status: 404, description: '角色不存在' })
   @AuditLog({ module: AuditModule.ROLE, event: 'UPDATE_ROLE', description: '更新角色' })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRoleDto: UpdateRoleDto,
@@ -134,7 +134,7 @@ export class RoleController {
   @ApiResponse({ status: 404, description: '角色不存在' })
   @ApiResponse({ status: 409, description: '内置角色不允许删除' })
   @AuditLog({ module: AuditModule.ROLE, event: 'DELETE_ROLE', description: '删除角色' })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['删除'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.roleService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -149,7 +149,7 @@ export class RoleController {
   @ApiResponse({ status: 200, description: '分配成功' })
   @ApiResponse({ status: 404, description: '角色不存在' })
   @AuditLog({ module: AuditModule.ROLE, event: 'ASSIGN_PERMISSIONS', description: '分配权限' })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['编辑'] })
   async assignPermissions(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,
@@ -168,7 +168,7 @@ export class RoleController {
     status: 200,
     description: '查询成功',
   })
-  @RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
   async getRolePermissions(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.roleService.getRolePermissions(id);
     return ApiResponseUtil.success(result, '查询成功');
