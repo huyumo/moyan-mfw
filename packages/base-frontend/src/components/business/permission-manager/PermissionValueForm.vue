@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview PermissionValue 配置弹窗
- * @description 用于配置权限节点的 permissionValue
+ * @description 用于配置权限节点的 permissionValue，内部直接调用 API
  */
 -->
 <template>
@@ -29,24 +29,23 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import { View, CircleCheck, Edit, CircleClose, Download, Upload } from '@element-plus/icons-vue';
+import { ApiPermissionUpdate } from '../../../apis/sys';
 
 interface PermissionValueFormProps {
   data?: {
-    nodeId?: string;
+    nodeId: string;
     nodeName?: string;
     nodeCode?: string;
     permissionValue?: string | number;
   };
 }
 
-export interface PermissionValueFormInstance {
-  onConfirm: () => Promise<number>;
-}
-
 const props = defineProps<PermissionValueFormProps>();
 
 // 从 data 中解构属性
+const nodeId = computed(() => props.data?.nodeId || '');
 const nodeCode = computed(() => props.data?.nodeCode || '');
 const permissionValue = computed(() => props.data?.permissionValue);
 
@@ -72,11 +71,18 @@ onMounted(() => {
     .map((action) => action.value);
 });
 
-const onConfirm = async (): Promise<number> => {
-  return selectedActions.value.reduce((acc, val) => acc | val, 0);
+const onConfirm = async () => {
+  const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
+
+  await new ApiPermissionUpdate({
+    query: { id: nodeId.value },
+    params: { permissionValue: newValue },
+  });
+
+  ElMessage.success('操作权限已更新');
 };
 
-defineExpose<PermissionValueFormInstance>({ onConfirm });
+defineExpose({ onConfirm });
 </script>
 
 <style scoped lang="scss">
