@@ -64,3 +64,13 @@ export type {
   ApiResponseUtil,
   ErrorResponse,
 } from './types/api.types';
+
+// Constants
+export {
+  PERMISSION_VALUES,
+  buildPerValue,
+  getPermValue,
+  parsePerValue,
+  hasPermission,
+  type PermissionName,
+} from './constants/permissions';

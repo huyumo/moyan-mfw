@@ -57,6 +57,16 @@ import type {
   decimal,
 } from './schemas'
 
+// 权限常量和工具函数
+export {
+  PERMISSION_VALUES,
+  buildPerValue,
+  getPermValue,
+  parsePerValue,
+  hasPermission,
+  type PermissionName,
+} from '../../utils/permissions'
+
 /**
  * auth|认证相关接口->用户登录
  */

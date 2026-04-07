@@ -32,6 +32,7 @@ import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { View, CircleCheck, Edit, CircleClose, Download, Upload } from '@element-plus/icons-vue';
 import { ApiPermissionUpdate } from '../../../apis/sys';
+import { PERMISSION_VALUES, getPermValue } from '../../../utils/permissions';
 
 interface PermissionValueFormProps {
   data?: {
@@ -49,15 +50,24 @@ const nodeId = computed(() => props.data?.nodeId || '');
 const nodeCode = computed(() => props.data?.nodeCode || '');
 const permissionValue = computed(() => props.data?.permissionValue);
 
-// 权限操作选项
-const permissionActions = [
-  { label: '查看', value: 32, icon: View },
-  { label: '新增', value: 1, icon: CircleCheck },
-  { label: '编辑', value: 2, icon: Edit },
-  { label: '删除', value: 4, icon: CircleClose },
-  { label: '导出', value: 8, icon: Download },
-  { label: '导入', value: 16, icon: Upload },
-];
+// 权限操作选项（从 PERMISSION_VALUES 动态生成）
+const permissionActions = computed(() => {
+  // 定义权限名称到图标的映射
+  const iconMap: Record<string, any> = {
+    '查看': View,
+    '添加': CircleCheck,
+    '编辑': Edit,
+    '删除': CircleClose,
+    '导出': Download,
+    '导入': Upload,
+  };
+
+  return PERMISSION_VALUES.map((name) => ({
+    label: name,
+    value: Number(getPermValue(name)),
+    icon: iconMap[name],
+  }));
+});
 
 const selectedActions = ref<number[]>([]);
 
@@ -66,7 +76,8 @@ onMounted(() => {
   const currentValue = typeof permissionValue.value === 'string'
     ? parseInt(permissionValue.value, 10)
     : (permissionValue.value || 0);
-  selectedActions.value = permissionActions
+
+  selectedActions.value = permissionActions.value
     .filter((action) => (currentValue & action.value) !== 0)
     .map((action) => action.value);
 });
@@ -76,7 +87,7 @@ const onConfirm = async () => {
 
   await new ApiPermissionUpdate({
     query: { id: nodeId.value },
-    params: { permissionValue: newValue },
+    params: { permissionValue: String(newValue) },  // 改为字符串格式
   });
 
   ElMessage.success('操作权限已更新');
