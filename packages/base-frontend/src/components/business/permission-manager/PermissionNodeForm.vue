@@ -70,17 +70,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 
-export interface PermissionNodeFormProps {
-  isEdit?: boolean;
-  nodeTypeOptions: Array<{ label: string; value: string }>;
-  defaultNodeType?: string;
-  initialData?: Partial<PermissionNodeFormData>;
-}
-
-export interface PermissionNodeFormData {
+interface PermissionNodeFormData {
   id: string;
   permName: string;
   permCode: string;
@@ -91,14 +84,26 @@ export interface PermissionNodeFormData {
   parentId?: string;
 }
 
+interface PermissionNodeFormProps {
+  data?: {
+    isEdit?: boolean;
+    nodeTypeOptions?: Array<{ label: string; value: string }>;
+    defaultNodeType?: string;
+    initialData?: Partial<PermissionNodeFormData>;
+  };
+}
+
 export interface PermissionNodeFormInstance {
   onConfirm: () => Promise<PermissionNodeFormData>;
 }
 
-const props = withDefaults(defineProps<PermissionNodeFormProps>(), {
-  isEdit: false,
-  defaultNodeType: 'MENU',
-});
+const props = defineProps<PermissionNodeFormProps>();
+
+// 从 data 中解构属性
+const isEdit = computed(() => props.data?.isEdit ?? false);
+const nodeTypeOptions = computed(() => props.data?.nodeTypeOptions ?? []);
+const defaultNodeType = computed(() => props.data?.defaultNodeType ?? 'MENU');
+const initialData = computed(() => props.data?.initialData);
 
 const formRef = ref<FormInstance>();
 
@@ -119,17 +124,17 @@ const formRules: FormRules = {
 };
 
 onMounted(() => {
-  if (props.initialData) {
-    form.id = props.initialData.id || '';
-    form.permName = props.initialData.permName || '';
-    form.permCode = props.initialData.permCode || '';
-    form.nodeType = props.initialData.nodeType || props.defaultNodeType || 'MENU';
-    form.permDesc = props.initialData.permDesc || '';
-    form.showMode = (props.initialData.showMode as 'NORMAL' | 'DEV') || 'NORMAL';
-    form.permStatus = (props.initialData.permStatus as 0 | 1) || 1;
-    form.parentId = props.initialData.parentId;
+  if (initialData.value) {
+    form.id = initialData.value.id || '';
+    form.permName = initialData.value.permName || '';
+    form.permCode = initialData.value.permCode || '';
+    form.nodeType = initialData.value.nodeType || defaultNodeType.value || 'MENU';
+    form.permDesc = initialData.value.permDesc || '';
+    form.showMode = (initialData.value.showMode as 'NORMAL' | 'DEV') || 'NORMAL';
+    form.permStatus = (initialData.value.permStatus as 0 | 1) || 1;
+    form.parentId = initialData.value.parentId;
   } else {
-    form.nodeType = props.defaultNodeType || 'MENU';
+    form.nodeType = defaultNodeType.value || 'MENU';
   }
 });
 

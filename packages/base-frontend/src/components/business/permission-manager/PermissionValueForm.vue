@@ -28,14 +28,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { View, CircleCheck, Edit, CircleClose, Download, Upload } from '@element-plus/icons-vue';
 
-export interface PermissionValueFormProps {
-  nodeId: string;
-  nodeName: string;
-  nodeCode: string;
-  permissionValue?: string | number; // API 返回字符串，内部使用数字
+interface PermissionValueFormProps {
+  data?: {
+    nodeId?: string;
+    nodeName?: string;
+    nodeCode?: string;
+    permissionValue?: string | number;
+  };
 }
 
 export interface PermissionValueFormInstance {
@@ -43,6 +45,10 @@ export interface PermissionValueFormInstance {
 }
 
 const props = defineProps<PermissionValueFormProps>();
+
+// 从 data 中解构属性
+const nodeCode = computed(() => props.data?.nodeCode || '');
+const permissionValue = computed(() => props.data?.permissionValue);
 
 // 权限操作选项
 const permissionActions = [
@@ -58,9 +64,9 @@ const selectedActions = ref<number[]>([]);
 
 onMounted(() => {
   // 兼容字符串和数字类型
-  const currentValue = typeof props.permissionValue === 'string'
-    ? parseInt(props.permissionValue, 10)
-    : (props.permissionValue || 0);
+  const currentValue = typeof permissionValue.value === 'string'
+    ? parseInt(permissionValue.value, 10)
+    : (permissionValue.value || 0);
   selectedActions.value = permissionActions
     .filter((action) => (currentValue & action.value) !== 0)
     .map((action) => action.value);
