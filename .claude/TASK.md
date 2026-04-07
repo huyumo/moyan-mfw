@@ -3,9 +3,9 @@ task: 种子数据与权限菜单修复
 status: completed
 priority: P0
 started: 2026-04-07
-updated: 2026-04-07 18:15
+updated: 2026-04-07 12:42
 session: session-20260407-180000
-lock: 1744074900
+lock: 1775565694
 assignee: @ai
 ---
 
@@ -23,6 +23,7 @@ assignee: @ai
 - [x] 修复 menuTree 返回 NORMAL 权限类型问题（system 应用类型只应返回 PC 权限）
 - [x] 修复 filterVisibleNodes 过滤逻辑（父节点不可见时子节点提升为根节点）
 - [x] 种子数据添加权限管理 PC 权限（pc_root:sys:permission、pc_root:sys:permission-pc）
+- [x] 修复同步 PC 权限后角色权限关联丢失问题
 
 ### 修复的问题
 
@@ -36,6 +37,7 @@ assignee: @ai
 | /api/auth/permissions 返回 NORMAL 权限类型 | getUserPermissions 没有根据应用类型过滤权限类型 | 添加 permissionType 过滤 + 权限池过滤逻辑 | ✅ |
 | menuTree 为空（根节点 isVisible=0） | filterVisibleNodes 直接过滤掉不可见父节点，子节点丢失 | 修改逻辑：父节点不可见时，子节点提升为根节点 | ✅ |
 | 种子数据缺少权限管理 PC 权限 | pc_root:sys:permission 和 pc_root:sys:permission-pc 是同步逻辑创建的，种子数据执行时还不存在 | 在 pcPermissions 数组中添加权限管理相关权限（permissionValue=63n） | ✅ |
+| 同步 PC 权限后所有接口权限丢失 | clearAutoSyncPermissions() 删除 sys_role_permission 时使用 `IN (?)` 语法错误，导致所有权限关联被删除 | 1. 修改 `IN (?)` 为 `FIND_IN_SET(permissionId, ?)` 语法<br>2. 确保只删除 isAutoSync=1 的权限关联 | ✅ |
 
 ### 验证结果
 
