@@ -231,7 +231,7 @@ export class PermissionService {
         showMode: item.showMode,
         permStatus: item.permStatus,
         isAutoSync: item.isAutoSync,
-        permissionValue: item.permissionValue,
+        permissionValue: typeof item.permissionValue === 'bigint' ? item.permissionValue.toString() : (item.permissionValue as string),
         createdAt: item.createdAt,
         updateAt: item.updateAt,
         children: [],
