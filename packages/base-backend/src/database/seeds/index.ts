@@ -202,9 +202,19 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
     if (!exists) {
       // 确定父节点
       let parentId: string | null = null;
-      const pathSegments = permData.permCode.replace('pc:', '').split(':');
+      // 特殊处理 pc_root 前缀的权限编码
+      const isPcRootPrefix = permData.permCode.startsWith('pc_root:');
+      const permCodeWithoutPrefix = isPcRootPrefix
+        ? permData.permCode.replace('pc_root:', '')
+        : permData.permCode.replace('pc:', '');
+      const pathSegments = permCodeWithoutPrefix.split(':');
+
       if (pathSegments.length > 1) {
-        const parentCode = 'pc:' + pathSegments.slice(0, -1).join(':');
+        // 构建父节点编码
+        const parentCodeSuffix = pathSegments.slice(0, -1).join(':');
+        const parentCode = isPcRootPrefix
+          ? `pc_root:${parentCodeSuffix}`
+          : `pc:${parentCodeSuffix}`;
         const parent = await dataSource.manager.findOne(Permission, {
           where: { permCode: parentCode }
         });
