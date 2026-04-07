@@ -57,7 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // 判断异常类型
     let httpStatus: number; // HTTP 状态码（用于 response.status()）
     let code: number; // 业务错误码（用于返回给客户端）
-    let message: string;
+    let message: string | bigint; // 错误消息（可能是 bigint）
     let details: any;
 
     if (exception instanceof HttpException) {
@@ -148,18 +148,34 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
+    // 处理异常中的 bigint 值（避免 JSON 序列化错误）
+    let safeMessage = message;
+    let safeDetails = details;
+    if (typeof message === 'bigint') {
+      safeMessage = message.toString();
+    }
+    if (safeDetails && typeof safeDetails === 'object') {
+      try {
+        safeDetails = JSON.parse(JSON.stringify(safeDetails, (key, value) =>
+          typeof value === 'bigint' ? value.toString() : value
+        ));
+      } catch {
+        safeDetails = null;
+      }
+    }
+
     // 返回统一错误响应格式
     const errorResponse: any = {
       code,
-      message,
+      message: safeMessage,
       data: null,
       timestamp: new Date().toISOString(),
       path: request.url,
     };
 
     // 如果有 details，添加到响应中
-    if (details) {
-      errorResponse.details = details;
+    if (safeDetails) {
+      errorResponse.details = safeDetails;
     }
 
     response.status(httpStatus).json(errorResponse);
