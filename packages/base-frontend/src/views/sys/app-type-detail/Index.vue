@@ -112,7 +112,7 @@ const fetchAppTypeDetail = async () => {
   loading.value = true;
   try {
     const result = await new ApiAppTypeFindById({
-      params: { id },
+      query: { id },
     });
     appTypeData.value = result;
   } catch (error) {
