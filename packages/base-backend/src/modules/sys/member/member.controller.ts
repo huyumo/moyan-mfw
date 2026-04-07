@@ -56,7 +56,7 @@ export class MemberController {
   @ApiResponse({ status: 404, description: '应用或用户不存在' })
   @ApiResponse({ status: 409, description: '成员已存在' })
   @AuditLog({ module: AuditModule.MEMBER, event: 'ADD_MEMBER', description: '添加应用成员' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 1n }) // ADD
+  @RequirePermission({ permCode: 'system:member', permissionValue: ['添加'] })
   async addMember(
     @Param('appId', ParseUUIDPipe) appId: string,
     @Body() addMemberDto: AddMemberDto,
@@ -78,7 +78,7 @@ export class MemberController {
     type: [MemberResponseDto],
   })
   @ApiResponse({ status: 404, description: '应用不存在' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:member', permissionValue: ['查看'] })
   async getMembers(@Param('appId', ParseUUIDPipe) appId: string) {
     const result = await this.memberService.getMembers(appId);
     return ApiResponseUtil.success(result, '查询成功');
@@ -99,7 +99,7 @@ export class MemberController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '应用或成员不存在' })
   @AuditLog({ module: AuditModule.MEMBER, event: 'UPDATE_MEMBER_ROLES', description: '更新成员角色' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 2n }) // EDIT
+  @RequirePermission({ permCode: 'system:member', permissionValue: ['编辑'] })
   async updateRoles(
     @Param('appId', ParseUUIDPipe) appId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -121,7 +121,7 @@ export class MemberController {
   @ApiResponse({ status: 400, description: '不能移除拥有者' })
   @ApiResponse({ status: 404, description: '成员不存在' })
   @AuditLog({ module: AuditModule.MEMBER, event: 'REMOVE_MEMBER', description: '移除应用成员' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 4n }) // DELETE
+  @RequirePermission({ permCode: 'system:member', permissionValue: ['删除'] })
   async removeMember(
     @Param('appId', ParseUUIDPipe) appId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
@@ -143,7 +143,7 @@ export class MemberController {
     type: [AvailableRoleDto],
   })
   @ApiResponse({ status: 404, description: '应用不存在' })
-  @RequirePermission({ permCode: 'system:member', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:member', permissionValue: ['查看'] })
   async getAvailableRoles(@Param('appId', ParseUUIDPipe) appId: string) {
     const result = await this.memberService.getAvailableRoles(appId);
     return ApiResponseUtil.success(result, '查询成功');

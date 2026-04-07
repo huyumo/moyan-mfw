@@ -1,47 +1,27 @@
 ---
-task: 权限节点优化与数据初始化
-current_target: 已完成
-description: 移除根节点添加操作，清空数据库重新初始化，子智能体文档阅读汇总
+task: 权限系统改进 - permissionValue 位运算优化
 status: completed
 priority: P0
-started: 2026-04-06
-completed: 2026-04-06
-updated: 2026-04-06 11:00
-session: session-20260406-100000
-lock: 1743908400
-assignee: @pm
+started: 2026-04-07
+completed: 2026-04-07
+updated: 2026-04-07 00:00
+session: session-20260407-000000
+lock: 1746226200
+assignee: @user
 ---
 
 ## 当前目标
-✅ 所有任务已完成并验证通过
+✅ 已完成 permissionValue 位运算权限系统优化
 
 ## 已完成
-- [x] 移除权限管理页面添加根节点操作（P0）
-  - 相关文件：`packages/base-frontend/src/components/business/permission-manager/Index.vue`
-  - 操作：移除第45-48行的"新建根节点"按钮
-- [x] 创建数据库清理脚本（P0）
-  - 文件：`packages/base-backend/src/database/clear-database.ts`
-  - 命令：`pnpm db:clear`
-  - 状态：✅ 执行成功，已清空6个表
-- [x] 修改种子数据脚本，创建2个权限根节点（P0）
-  - 文件：`packages/base-backend/src/database/seeds/index.ts`
-  - PC权限根节点：`permCode='pc_root', permissionType='PC'` (ID: 8b24229d-a3bf-4ef3-b435-d2b80dfa2942)
-  - 普通权限根节点：`permCode='normal_root', permissionType='NORMAL'` (ID: 0d38ec8c-bdd1-4e52-8cb4-35febfeb6471)
-  - 状态：✅ 执行成功，创建7个权限节点
-- [x] 指派子智能体阅读文档汇总差异（P1）
-  - 3个子智能体完成了文档阅读和分析
-
-## 初始化结果验证
-```
-📦 应用类型：系统管理 (typeCode: system)
-🔐 权限节点：
-  - PC权限根节点 (ID: 8b24229d-...)
-  - 普通权限根节点 (ID: 0d38ec8c-...)
-  - 系统管理、用户管理、用户列表 (PC权限子节点)
-  - 业务权限、数据查看 (普通权限子节点)
-👥 角色：超级管理员、管理员、普通用户
-👤 用户：admin / Admin@123、test / Test@123
-```
+- [x] 创建后端全局权限常量 `PERMISSION_VALUES` 数组
+- [x] 编写后端 `buildPerValue` 工具函数（字符串数组 → bigint）
+- [x] 修改 `@RequirePermission` 装饰器支持字符串数组和多次注解
+- [x] 修改 `PermissionGuard` 支持多装饰器 OR 检查和字符串转换
+- [x] 更新 `permission.controller.ts` 使用新的字符串数组格式
+- [x] 前端同步实现 `PERMISSION_VALUES` 和 `buildPerValue` 工具函数
+- [x] 更新前端 `PermissionTreeNodeDto` 类型（permissionValue 改为 string）
+- [x] 自测试验证（类型检查通过 ✅）
 
 ## 进行中
 - [ ] 无
@@ -50,116 +30,69 @@ assignee: @pm
 - [ ] 无
 
 ## 相关文件
-- `packages/base-frontend/src/components/business/permission-manager/Index.vue`
-- `packages/base-backend/src/database/clear-database.ts`
-- `packages/base-backend/src/database/seeds/index.ts`
+- `packages/base-backend/src/common/constants/permissions.ts` (新增)
+- `packages/base-backend/src/common/decorators/require-permission.decorator.ts` (修改)
+- `packages/base-backend/src/common/guards/permission.guard.ts` (修改)
+- `packages/base-backend/src/common/index.ts` (修改，导出权限常量)
+- `packages/base-backend/src/modules/sys/permission/permission.controller.ts` (修改)
+- `packages/base-frontend/src/utils/permissions.ts` (新增，工具函数)
+- `packages/base-frontend/src/apis/sys/schemas.ts` (修改)
+- `packages/base-frontend/src/apis/sys/index.ts` (修改，导出权限常量)
+
+## 实现细节
+
+### 1. 权限常量定义（前后端统一）
+
+```typescript
+export const PERMISSION_VALUES = [
+  '查看', '添加', '编辑', '删除', '导出', '导入', '审批', '拒绝', '发布', '归档'
+] as const
+```
+
+### 2. 位运算映射
+
+| 权限名 | 索引 | 位运算值 | 十进制 |
+|--------|------|----------|--------|
+| 查看 | 0 | 1n << 0 | 1n |
+| 添加 | 1 | 1n << 1 | 2n |
+| 编辑 | 2 | 1n << 2 | 4n |
+| 删除 | 3 | 1n << 3 | 8n |
+| 导出 | 4 | 1n << 4 | 16n |
+| 导入 | 5 | 1n << 5 | 32n |
+| 审批 | 6 | 1n << 6 | 64n |
+| 拒绝 | 7 | 1n << 7 | 128n |
+| 发布 | 8 | 1n << 8 | 256n |
+| 归档 | 9 | 1n << 9 | 512n |
+
+### 3. 使用方式
+
+```typescript
+// 方式 1：字符串数组（唯一推荐方式）
+@RequirePermission({ permCode: 'system:permission', permissionValue: ['查看', '添加'] })
+
+// 方式 2：多次注解（OR 逻辑）
+@RequirePermission({ permCode: 'system:permission', permissionValue: ['查看'] })
+@RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+```
+
+### 4. 工具函数
+
+| 函数 | 说明 | 示例 |
+|------|------|------|
+| `buildPerValue(names)` | 字符串数组 → bigint | `buildPerValue(['查看', '添加'])` → 3n |
+| `getPermValue(name)` | 单个权限名 → bigint | `getPermValue('查看')` → 1n |
+| `parsePerValue(value)` | bigint → 字符串数组 | `parsePerValue(7n)` → ['查看', '添加', '编辑'] |
+| `hasPermission(value, name)` | 检查是否包含权限 | `hasPermission(7n, '查看')` → true |
+| `mergePermissions(...values)` | 合并多个权限值 | `mergePermissions(1n, 2n)` → 3n |
+
+## 自测试验证（CLAUDE.md 步骤 5.5）
+- 后端类型检查：通过 ✅ (`npx tsc --noEmit`)
+- 前端类型检查：通过 ✅ (`pnpm run typecheck:vue`)
+- 单元测试：91/91 通过 ✅ (前端 91 个测试用例)
+- 项目启动：后端编译通过 ✅
 
 ## 关键决策
-- 系统只保留2个权限根节点：PC权限根节点和普通权限根节点
-- 页面上移除添加根节点的操作按钮
-- 应用类型使用`typeCode='system'`作为系统内置类型
-
-## 子智能体文档阅读汇总
-
-### 1. 数据库实体设计分析（Agent-1）
-
-#### 关键发现
-- **双层权限架构**：PermissionType（PC/NORMAL）+ NodeType（MENU/PAGE/TAG）
-- **位运算权限值**：使用bigint存储，支持64种操作权限
-- **权限池隔离**：每个应用类型有独立的权限池
-
-#### 需要初始化的数据清单
-1. 应用类型（AppType）：系统管理（typeCode='system'）
-2. 权限根节点：PC权限根节点、普通权限根节点
-3. 示例权限子节点
-4. 内置角色：超级管理员（isOwner=1）
-5. 初始用户：admin、test
-
-#### 边界条件
-- typeCode='system'为系统内置类型，不可删除
-- 每个应用类型必须有且仅有一个拥有者角色
-- 拥有者角色不允许删除
-
-#### 疑问点
-1. 普通权限根节点的具体使用场景
-2. permissionValue默认值问题
-3. isAutoSync字段的初始化值
-
----
-
-### 2. API接口和类型定义分析（Agent-2）
-
-#### 关键类型定义
-- **PermissionTreeNode**：完整的权限树节点类型
-- **枚举类型**：PermissionType（PC/NORMAL）、NodeType（MENU/PAGE/TAG）、ShowMode（NORMAL/DEV）
-- **bigint处理**：后端→前端转换为字符串，前端→后端使用字符串
-
-#### API接口清单
-| 接口 | 方法 | 路径 |
-|------|------|------|
-| 获取权限树 | GET | `/api/v1/permissions/tree` |
-| 创建权限 | POST | `/api/v1/permissions` |
-| 更新权限 | PUT | `/api/v1/permissions/:id` |
-| 删除权限 | DELETE | `/api/v1/permissions/:id` |
-
-#### 与代码实现的差异点 ⚠️
-1. **路径规范**：Controller缺少`/api/v1/`版本号前缀
-2. **类型一致性**：前端`permissionValue`类型应为明确的string
-3. **DTO重复定义**：两个位置定义了类似的PermissionTreeNodeDto
-
-#### 疑问点
-1. API版本号前缀是否有全局路由配置
-2. permissionValue序列化是否正确
-3. 约定式路由是否已支持
-
----
-
-### 3. 业务流程设计分析（Agent-3）
-
-#### 关键业务流程
-1. **权限分配流程**：打开面板 → 加载权限池 → 选择权限 → 保存分配
-2. **权限池配置流程**：进入配置 → 加载权限 → 保存配置
-
-#### 角色和权限的关系
-```
-应用类型 (AppType)
-  ├── 内置角色 (isBuiltin=1, 绑定appTypeId)
-  │   └── 拥有者角色 (isOwner=1, 每个类型必须有一个)
-  └── 应用实例 (App)
-      └── 应用级角色 (isBuiltin=0, 绑定appId)
-```
-
-#### 业务规则约束
-| 规则 | 说明 |
-|------|------|
-| 权限池非空验证 | 权限列表不能为空 |
-| 权限池包含验证 | 角色权限必须从权限池中选择 |
-| permissionValue约束 | 必须是父级的子集 `(child & parent) === child` |
-| 事务处理 | 所有权限配置必须在事务中执行 |
-
-#### 疑问点
-1. 权限池为空时的处理策略
-2. 拥有者角色的创建时机（自动/手动）
-3. 并发场景下的用户体验（覆盖/提示）
-4. 角色删除时的用户处理（先解绑/强制删除）
-
-## 执行命令
-
-```bash
-# 清空数据库
-cd packages/base-backend
-pnpm db:clear
-
-# 重新初始化数据
-pnpm seed:run
-
-# 启动后端服务
-pnpm start:dev
-```
-
-## 验证清单
-- [ ] 运行 `pnpm db:clear` 清空数据库
-- [ ] 运行 `pnpm seed:run` 初始化数据
-- [ ] 检查数据库中是否有2个权限根节点（pc_root和normal_root）
-- [ ] 检查权限管理页面是否没有"新建根节点"按钮
-- [ ] 测试权限树是否正确加载
+- 权限名称使用中文，便于理解和维护
+- 前后端共享同一套权限常量定义
+- API 传输使用字符串格式（JSON 不支持 bigint）
+- 支持多次注解，OR 逻辑检查权限

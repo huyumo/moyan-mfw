@@ -10,6 +10,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { APP_GUARD, Reflector } from '@nestjs/core';
+import { DataSource } from 'typeorm';
 
 // 配置
 import { databaseConfig, appConfig, redisConfig } from './config';
@@ -138,7 +139,11 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     },
     {
       provide: APP_GUARD,
-      useClass: PermissionGuard,
+      useFactory: (reflector: Reflector, dataSource: DataSource) => {
+        const rolePermissionRepository = dataSource.getRepository(RolePermission);
+        return new PermissionGuard(reflector, rolePermissionRepository);
+      },
+      inject: [Reflector, DataSource],
     },
   ],
 })

@@ -58,7 +58,7 @@ export class AppController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '应用编码已存在' })
   @AuditLog({ module: AuditModule.APP, event: 'CREATE_APP', description: '创建应用实例' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 1n }) // ADD
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['添加'] })
   async create(@Body() createAppDto: CreateAppDto) {
     const result = await this.appService.create(createAppDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -70,7 +70,7 @@ export class AppController {
   @Get()
   @ApiOperation({ summary: '查询应用实例列表', description: '分页查询应用实例列表' })
   @ApiPaginatedResponse(AppDetailResponseDto)
-  @RequirePermission({ permCode: 'system:app', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['查看'] })
   async findAll(@Query() query: QueryAppDto) {
     const result = await this.appService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -88,7 +88,7 @@ export class AppController {
     type: AppDetailResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用实例不存在' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['查看'] })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -108,7 +108,7 @@ export class AppController {
   @ApiResponse({ status: 404, description: '应用实例不存在' })
   @ApiResponse({ status: 409, description: '应用编码已存在' })
   @AuditLog({ module: AuditModule.APP, event: 'UPDATE_APP', description: '更新应用实例' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 2n }) // EDIT
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAppDto: UpdateAppDto,
@@ -127,7 +127,7 @@ export class AppController {
   @ApiResponse({ status: 204, description: '删除成功' })
   @ApiResponse({ status: 404, description: '应用实例不存在' })
   @AuditLog({ module: AuditModule.APP, event: 'DELETE_APP', description: '删除应用实例' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 4n }) // DELETE
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.appService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -146,7 +146,7 @@ export class AppController {
     type: AppDetailResponseDto,
   })
   @AuditLog({ module: AuditModule.APP, event: 'CHANGE_OWNER', description: '变更负责人' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 2n }) // EDIT
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['编辑'] })
   async changeOwner(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('ownerId') ownerId: string,
@@ -168,7 +168,7 @@ export class AppController {
     type: AppDetailResponseDto,
   })
   @AuditLog({ module: AuditModule.APP, event: 'UPDATE_APP_STATUS', description: '更新应用实例状态' })
-  @RequirePermission({ permCode: 'system:app', permissionValue: 2n }) // EDIT
+  @RequirePermission({ permCode: 'system:app', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('status') status: number,

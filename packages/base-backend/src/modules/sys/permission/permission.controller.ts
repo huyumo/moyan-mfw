@@ -58,7 +58,7 @@ export class PermissionController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '权限编码已存在' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'CREATE_PERMISSION', description: '创建权限' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 1n }) // ADD
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['添加'] })
   async create(@Body() createPermissionDto: CreatePermissionDto) {
     const result = await this.permissionService.create(createPermissionDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -81,7 +81,7 @@ export class PermissionController {
   @ApiQuery({ name: 'permissionType', required: false, enum: [1, 2, 3] })
   @ApiQuery({ name: 'nodeType', required: false, enum: [1, 2, 3] })
   @ApiQuery({ name: 'parentId', required: false, type: String })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['查看'] })
   async findAll(@Query() query: QueryPermissionDto) {
     const result = await this.permissionService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -98,7 +98,7 @@ export class PermissionController {
     type: [PermissionTreeNodeDto],
   })
   @ApiQuery({ name: 'permissionType', required: false, description: '权限类型：PC/NORMAL', enum: ['PC', 'NORMAL'] })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['查看'] })
   async findAllTree(@Query('permissionType') permissionType?: string) {
     const result = await this.permissionService.findAllTreeWithChildren(permissionType);
     return ApiResponseUtil.success(result, '查询成功');
@@ -115,7 +115,7 @@ export class PermissionController {
     description: '查询成功',
     type: [PermissionTreeNodeDto],
   })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['查看'] })
   async getPermissionTree(@Query('parentId') parentId?: string) {
     const result = await this.permissionService.getPermissionTreeWithChildren(parentId);
     return ApiResponseUtil.success(result, '查询成功');
@@ -133,7 +133,7 @@ export class PermissionController {
     type: PermissionResponseDto,
   })
   @ApiResponse({ status: 404, description: '权限不存在' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 32n }) // VIEW
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['查看'] })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.permissionService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -153,7 +153,7 @@ export class PermissionController {
   @ApiResponse({ status: 404, description: '权限不存在' })
   @ApiResponse({ status: 409, description: '权限编码已存在' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'UPDATE_PERMISSION', description: '更新权限' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 2n }) // EDIT
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updatePermissionDto: UpdatePermissionDto,
@@ -173,7 +173,7 @@ export class PermissionController {
   @ApiResponse({ status: 404, description: '权限不存在' })
   @ApiResponse({ status: 409, description: '存在子权限，无法删除' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'DELETE_PERMISSION', description: '删除权限' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 4n }) // DELETE
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.permissionService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -193,7 +193,7 @@ export class PermissionController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '权限编码已存在' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'BATCH_CREATE_PERMISSIONS', description: '批量创建权限' })
-  @RequirePermission({ permCode: 'system:permission', permissionValue: 1n }) // ADD
+  @RequirePermission({ permCode: 'system:permission', permissionValue: ['添加'] })
   async batchCreate(@Body() permissions: CreatePermissionDto[]) {
     const result = await this.permissionService.batchCreate(permissions);
     return ApiResponseUtil.success(result, '批量创建成功');
@@ -212,7 +212,6 @@ export class PermissionController {
   })
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @AuditLog({ module: AuditModule.PERMISSION, event: 'SYNC_PERMISSIONS', description: '同步权限路由' })
-  // @RequirePermission({ permCode: 'system:permission', permissionValue: 1n }) // ADD
   async syncPermissions(@Body() syncDto: SyncPermissionDto) {
     const result = await this.permissionService.syncPermissions(syncDto.routes);
     return ApiResponseUtil.success(result, '权限同步成功');

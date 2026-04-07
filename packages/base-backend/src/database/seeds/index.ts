@@ -11,6 +11,7 @@ import { User } from '../../modules/sys/user/entities/user.entity';
 import { UserRole } from '../../modules/sys/role/entities/user-role.entity';
 import { RolePermission } from '../../modules/sys/permission/entities/role-permission.entity';
 import { hashPassword } from '../../common/utils/encrypt';
+import { buildPerValue } from '../../common/constants/permissions';
 
 /**
  * 种子数据执行函数
@@ -163,7 +164,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/system/user/list',
       iconName: '',
-      permissionValue: 63n, // ADD|EDIT|DELETE|EXPORT|IMPORT|VIEW
+      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除', '导出', '导入']), // 63n
     },
   ];
 
@@ -216,7 +217,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       permName: '权限管理',
       permCode: 'system:permission',
       nodeType: NodeType.TAG,
-      permissionValue: 63n, // ADD|EDIT|DELETE|EXPORT|IMPORT|VIEW (全部权限)
+      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除', '导出', '导入']), // 63n (全部权限)
     },
   ];
 
@@ -261,7 +262,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       permName: '数据查看',
       permCode: 'business:view',
       nodeType: NodeType.TAG,
-      permissionValue: 32n, // VIEW
+      permissionValue: buildPerValue(['查看']), // 32n
     },
   ];
 
