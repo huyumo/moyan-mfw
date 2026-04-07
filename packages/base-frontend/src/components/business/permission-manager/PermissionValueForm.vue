@@ -35,7 +35,7 @@ export interface PermissionValueFormProps {
   nodeId: string;
   nodeName: string;
   nodeCode: string;
-  permissionValue?: number;
+  permissionValue?: string | number; // API 返回字符串，内部使用数字
 }
 
 export interface PermissionValueFormInstance {
@@ -57,7 +57,10 @@ const permissionActions = [
 const selectedActions = ref<number[]>([]);
 
 onMounted(() => {
-  const currentValue = Number(props.permissionValue || 0);
+  // 兼容字符串和数字类型
+  const currentValue = typeof props.permissionValue === 'string'
+    ? parseInt(props.permissionValue, 10)
+    : (props.permissionValue || 0);
   selectedActions.value = permissionActions
     .filter((action) => (currentValue & action.value) !== 0)
     .map((action) => action.value);
