@@ -1,19 +1,26 @@
 /**
  * @fileoverview 权限常量定义
- * @description 定义全局权限位运算常量和工具函数（与后端共享同一规则）
+ * @description 定义全局权限位运算常量和工具函数（支持可扩展配置）
  */
 
 /**
- * 权限位名称数组（按顺序对应位运算值）
- * 索引 0 = 1n (2^0), 索引 1 = 2n (2^1), 索引 2 = 4n (2^2), ...
+ * 默认权限配置（基础框架提供）
+ * 业务项目可以选择继承、扩展或完全覆盖
  */
-export const PERMISSION_VALUES = [
+export const DEFAULT_PERMISSION_VALUES = [
   '查看',    // 0: 1n << 0 = 1n
   '添加',    // 1: 1n << 1 = 2n
   '编辑',    // 2: 1n << 2 = 4n
   '删除',    // 3: 1n << 3 = 8n
   '导出',    // 4: 1n << 4 = 16n
   '导入',    // 5: 1n << 5 = 32n
+] as const
+
+/**
+ * 扩展权限配置（可选）
+ * 业务项目可以添加更多权限，如：'审批', '拒绝', '发布', '归档'
+ */
+export const EXTENSION_PERMISSION_VALUES = [
   '审批',    // 6: 1n << 6 = 64n
   '拒绝',    // 7: 1n << 7 = 128n
   '发布',    // 8: 1n << 8 = 256n
@@ -21,9 +28,55 @@ export const PERMISSION_VALUES = [
 ] as const
 
 /**
- * 权限名称类型（从 PERMISSION_VALUES 数组推断）
+ * 合并后的权限配置（默认 = 默认 + 扩展）
+ * 业务项目可以通过全局配置覆盖
  */
-export type PermissionName = (typeof PERMISSION_VALUES)[number]
+export let PERMISSION_VALUES: string[] = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
+
+/**
+ * 权限配置接口
+ */
+export interface PermissionConfig {
+  values: readonly string[]
+  labels?: Record<string, string>  // 可选：自定义显示名称
+  icons?: Record<string, any>      // 可选：自定义图标
+}
+
+/**
+ * 权限名称类型（字符串，支持动态扩展）
+ */
+export type PermissionName = string
+
+/**
+ * 创建权限配置（支持覆盖）
+ */
+export function createPermissionConfig(
+  customValues?: readonly string[],
+  options?: Omit<PermissionConfig, 'values'>
+): PermissionConfig {
+  return {
+    values: customValues || [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES],
+    labels: options?.labels || {},
+    icons: options?.icons || {},
+  }
+}
+
+/**
+ * 设置全局权限配置（业务项目使用）
+ * @param config - 权限配置对象
+ */
+export function setPermissionConfig(config: PermissionConfig) {
+  PERMISSION_VALUES = [...config.values]
+  // 存储 labels 和 icons 供组件使用
+  ;(window as any).__PERMISSION_CONFIG__ = config
+}
+
+/**
+ * 获取全局权限配置
+ */
+export function getPermissionConfig(): PermissionConfig {
+  return (window as any).__PERMISSION_CONFIG__ || createPermissionConfig()
+}
 
 /**
  * 根据权限名称数组构建位运算权限值
@@ -42,7 +95,7 @@ export function buildPerValue(names: PermissionName[]): bigint {
   for (const name of names) {
     const index = PERMISSION_VALUES.indexOf(name)
     if (index === -1) {
-      throw new Error(`未知的权限名称：${name}`)
+      throw new Error(`未知的权限名称：${name}，可用值：${PERMISSION_VALUES.join(', ')}`)
     }
     result |= (1n << BigInt(index))
   }
@@ -84,7 +137,7 @@ export function parsePerValue(value: string): PermissionName[] {
   const result: PermissionName[] = []
   for (let i = 0; i < PERMISSION_VALUES.length; i++) {
     if ((bigValue & (1n << BigInt(i))) !== 0n) {
-      result.push(PERMISSION_VALUES[i])
+      result.push(PERMISSION_VALUES[i] as PermissionName)
     }
   }
   return result
@@ -109,4 +162,23 @@ export function hasPermission(value: string, name: PermissionName): boolean {
   }
   const bigValue = BigInt(value)
   return (bigValue & (1n << BigInt(index))) !== 0n
+}
+
+/**
+ * 获取所有权限选项（用于 UI 展示）
+ * @returns 权限选项数组 {name, label, value, icon?}
+ */
+export function getPermissionOptions(): Array<{
+  name: string
+  label: string
+  value: number
+  icon?: any
+}> {
+  const config = getPermissionConfig()
+  return PERMISSION_VALUES.map((name) => ({
+    name,
+    label: config.labels?.[name] || name,
+    value: Number(1n << BigInt(PERMISSION_VALUES.indexOf(name))),
+    icon: config.icons?.[name],
+  }))
 }
