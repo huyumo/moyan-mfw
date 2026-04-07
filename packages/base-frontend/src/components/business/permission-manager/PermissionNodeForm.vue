@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 权限节点表单
- * @description 用于新建/编辑权限节点
+ * @description 用于新建/编辑权限节点，内部直接调用 API
  */
 -->
 <template>
@@ -71,7 +71,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
+import { ApiPermissionCreate, ApiPermissionUpdate } from '../../../apis/sys';
 
 interface PermissionNodeFormData {
   id: string;
@@ -81,26 +83,25 @@ interface PermissionNodeFormData {
   permDesc: string;
   showMode: 'NORMAL' | 'DEV';
   permStatus: 0 | 1;
-  parentId?: string;
 }
 
 interface PermissionNodeFormProps {
   data?: {
     isEdit?: boolean;
+    permissionType: 'PC' | 'NORMAL';
+    parentId?: string;
     nodeTypeOptions?: Array<{ label: string; value: string }>;
     defaultNodeType?: string;
     initialData?: Partial<PermissionNodeFormData>;
   };
 }
 
-export interface PermissionNodeFormInstance {
-  onConfirm: () => Promise<PermissionNodeFormData>;
-}
-
 const props = defineProps<PermissionNodeFormProps>();
 
 // 从 data 中解构属性
 const isEdit = computed(() => props.data?.isEdit ?? false);
+const permissionType = computed(() => props.data?.permissionType ?? 'NORMAL');
+const parentId = computed(() => props.data?.parentId);
 const nodeTypeOptions = computed(() => props.data?.nodeTypeOptions ?? []);
 const defaultNodeType = computed(() => props.data?.defaultNodeType ?? 'MENU');
 const initialData = computed(() => props.data?.initialData);
@@ -132,18 +133,45 @@ onMounted(() => {
     form.permDesc = initialData.value.permDesc || '';
     form.showMode = (initialData.value.showMode as 'NORMAL' | 'DEV') || 'NORMAL';
     form.permStatus = (initialData.value.permStatus as 0 | 1) || 1;
-    form.parentId = initialData.value.parentId;
   } else {
     form.nodeType = defaultNodeType.value || 'MENU';
   }
 });
 
-const onConfirm = async (): Promise<PermissionNodeFormData> => {
+const onConfirm = async () => {
   await formRef.value?.validate();
-  return { ...form };
+
+  if (isEdit.value) {
+    // 编辑
+    await new ApiPermissionUpdate({
+      query: { id: form.id },
+      params: {
+        permName: form.permName,
+        permDesc: form.permDesc,
+        showMode: form.showMode,
+        permStatus: form.permStatus,
+      },
+    });
+    ElMessage.success('更新成功');
+  } else {
+    // 新建
+    await new ApiPermissionCreate({
+      params: {
+        permName: form.permName,
+        permCode: form.permCode,
+        nodeType: form.nodeType,
+        permissionType: permissionType.value,
+        parentId: parentId.value,
+        permDesc: form.permDesc,
+        showMode: form.showMode,
+        permStatus: form.permStatus,
+      },
+    });
+    ElMessage.success('创建成功');
+  }
 };
 
-defineExpose<PermissionNodeFormInstance>({ onConfirm });
+defineExpose({ onConfirm });
 </script>
 
 <style scoped lang="scss">

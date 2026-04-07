@@ -166,7 +166,6 @@ import PermissionNodeForm from './PermissionNodeForm.vue';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import {
   ApiPermissionFindAllTree,
-  ApiPermissionCreate,
   ApiPermissionUpdate,
   ApiPermissionDelete,
 } from '../../../apis/sys';
@@ -380,28 +379,8 @@ const handleConfigPermissionValue = (data: PermissionTreeNodeDto) => {
     },
     popupProps: { width: 500 },
     on: {
-      confirm: async (formRef: any) => {
-        const newValue = await formRef.onConfirm();
-        await new ApiPermissionUpdate({
-          query: { id: data.id },
-          params: { permissionValue: newValue },
-          option: { hintSuccess: true },
-        });
-        // 更新本地数据
-        const updateNode = (nodes: PermissionTreeNodeDto[]): boolean => {
-          for (const node of nodes) {
-            if (node.id === data.id) {
-              node.permissionValue = newValue;
-              return true;
-            }
-            if (node.children && updateNode(node.children)) {
-              return true;
-            }
-          }
-          return false;
-        };
-        updateNode(permissionTree.value);
-        ElMessage.success('操作权限已更新');
+      confirm: () => {
+        loadPermissionTree();
       },
     },
   });
@@ -424,42 +403,15 @@ const openNodeForm = (options: {
     component: PermissionNodeForm,
     data: {
       isEdit: options.isEdit,
+      permissionType: props.permissionType,
+      parentId: options.parentId,
       nodeTypeOptions: nodeTypeOptions.value,
       defaultNodeType: options.parentId ? defaultNodeType : 'MENU',
       initialData: options.initialData,
     },
     popupProps: { width: 500 },
     on: {
-      confirm: async (formRef: any) => {
-        const formData = await formRef.onConfirm();
-
-        if (options.isEdit) {
-          await new ApiPermissionUpdate({
-            query: { id: formData.id },
-            params: {
-              permName: formData.permName,
-              permDesc: formData.permDesc,
-              showMode: formData.showMode,
-              permStatus: formData.permStatus,
-            },
-            option: { hintSuccess: true },
-          });
-          ElMessage.success('更新成功');
-        } else {
-          await new ApiPermissionCreate({
-            params: {
-              permName: formData.permName,
-              permCode: formData.permCode,
-              nodeType: formData.nodeType,
-              permissionType: props.permissionType,
-              parentId: options.parentId,
-              permDesc: formData.permDesc,
-              showMode: formData.showMode,
-              permStatus: formData.permStatus,
-            },
-          });
-          ElMessage.success('创建成功');
-        }
+      confirm: () => {
         loadPermissionTree();
       },
     },
