@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsBoolean, IsOptional, ValidateNested, IsArray, IsNumber } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, ValidateNested, IsArray } from 'class-validator';
 import { Type } from 'class-transformer';
 
 /**
@@ -33,8 +33,8 @@ export class PermissionTreePayloadDto {
    */
   @ApiPropertyOptional({ description: '权限值（位运算权限值，十进制字符串格式）' })
   @IsOptional()
-  @IsNumber()
-  permissionValue?: number;
+  @IsString()
+  permissionValue?: string;
 
   /**
    * 子节点

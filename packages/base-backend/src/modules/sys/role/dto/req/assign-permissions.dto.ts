@@ -24,7 +24,7 @@ class PermissionItemDto {
    */
   @ApiProperty({ description: '权限值（位运算）', example: 15 })
   @IsNotEmpty()
-  permissionValue: number;
+  permissionValue: bigint;
 }
 
 /**

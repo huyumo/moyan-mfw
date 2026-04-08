@@ -127,9 +127,10 @@ export class PermissionTreeNodeDto {
   /**
    * 权限值（位运算）
    */
-  @ApiProperty({ description: '权限值（位运算）', example: 7, required: false })
+  @ApiProperty({ description: '权限值（位运算）', example: '7', required: false })
   @Expose()
-  permissionValue?: number;
+  @Transform(({ value }) => value?.toString())
+  permissionValue?: string;
 
   /**
    * 子权限列表

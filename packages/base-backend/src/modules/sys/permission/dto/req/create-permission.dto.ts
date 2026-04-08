@@ -135,5 +135,5 @@ export class CreatePermissionDto {
    */
   @ApiProperty({ description: '权限值（位运算）', default: 0, required: false })
   @IsOptional()
-  permissionValue?: number = 0;
+  permissionValue?: bigint = 0n;
 }
