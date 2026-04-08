@@ -34,9 +34,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { PermBit, PermBitDesc, getPermissionOptions } from '../../../utils/permissions';
+import { getPermissionOptions } from '../../../utils/permissions';
 import { ApiAppTypeUpdatePermissionPool, ApiAppTypeGetPermissionPool, ApiPermissionFindById } from '../../../apis/sys';
 import type { PermissionTreePayloadDto } from '../../../apis/sys/schemas';
+import { PermBit, PermBitDesc } from './types'
 
 interface PermissionValuePoolPopupProps {
   data?: {
@@ -117,41 +118,57 @@ const onConfirm = async () => {
       query: { appTypeId: appTypeId.value },
     });
 
-    // 更新对应节点的 permissionValue
-    const updateTree = (
-      nodes: PermissionTreePayloadDto[],
+    // 转换节点为 payload 格式并更新 permissionValue
+    const convertAndUpdate = (
+      nodes: typeof currentPool.permissionTrees.pcTree,
       targetNodeId: string
     ): PermissionTreePayloadDto[] => {
       return nodes.map(node => {
-        if (node.permissionId === targetNodeId) {
-          return {
-            ...node,
-            permissionValue: String(newValue),
-          };
-        }
+        const payload: PermissionTreePayloadDto = {
+          permissionId: node.id,
+          checked: !!node.inPool,
+          permissionValue: node.id === targetNodeId ? String(newValue) : node.permissionValue,
+        };
         if (node.children && node.children.length > 0) {
-          return {
-            ...node,
-            children: updateTree(node.children, targetNodeId),
-          };
+          payload.children = convertAndUpdate(node.children, targetNodeId);
         }
-        return node;
+        return payload;
       });
     };
 
     const updatedTrees = {
       pcTree: treeType.value === 'pc'
-        ? updateTree(currentPool.permissionTrees.pcTree || [], nodeId.value)
-        : (currentPool.permissionTrees.pcTree || []),
+        ? convertAndUpdate(currentPool.permissionTrees.pcTree || [], nodeId.value)
+        : (currentPool.permissionTrees.pcTree || []).map(n => ({
+            permissionId: n.id,
+            checked: !!n.inPool,
+            permissionValue: n.permissionValue,
+            children: n.children?.map(c => ({
+              permissionId: c.id,
+              checked: !!c.inPool,
+              permissionValue: c.permissionValue,
+            })),
+          })),
       normalTree: treeType.value === 'normal'
-        ? updateTree(currentPool.permissionTrees.normalTree || [], nodeId.value)
-        : (currentPool.permissionTrees.normalTree || []),
+        ? convertAndUpdate(currentPool.permissionTrees.normalTree || [], nodeId.value)
+        : (currentPool.permissionTrees.normalTree || []).map(n => ({
+            permissionId: n.id,
+            checked: !!n.inPool,
+            permissionValue: n.permissionValue,
+            children: n.children?.map(c => ({
+              permissionId: c.id,
+              checked: !!c.inPool,
+              permissionValue: c.permissionValue,
+            })),
+          })),
     };
 
     // 更新权限池
     await new ApiAppTypeUpdatePermissionPool({
-      params: {
+      query: {
         appTypeId: appTypeId.value,
+      },
+      params: {
         permissionTrees: updatedTrees,
       },
     });
