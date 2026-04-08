@@ -176,7 +176,7 @@ export class RoleService {
    */
   async assignPermissions(
     roleId: string,
-    permissions: Array<{ permissionId: string; permissionValue: number }>,
+    permissions: Array<{ permissionId: string; permissionValue: bigint }>,
   ): Promise<void> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
