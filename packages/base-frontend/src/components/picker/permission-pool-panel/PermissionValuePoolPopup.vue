@@ -80,9 +80,8 @@ onMounted(async () => {
     // 解析 permissionValue，获取已配置的权限位
     const permValue = permissionDetail?.permissionValue ? BigInt(String(permissionDetail.permissionValue)) : 0n;
 
-    // 提取所有已配置的权限位
-    for (const [bitStr, _label] of Object.entries(PermBit)) {
-      const bit = BigInt(bitStr);
+    // 提取所有已配置的权限位（遍历 PermBit 的值）
+    for (const bit of Object.values(PermBit)) {
       if ((permValue & bit) !== 0n) {
         availablePermissionValues.value.push(Number(bit));
       }
