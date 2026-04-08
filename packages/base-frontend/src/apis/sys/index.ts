@@ -278,6 +278,8 @@ export class ApiRoleFindAll extends ApiCall<
     roleCode?: string
     pageSize?: number
     page?: number
+    appTypeId?: string
+    appId?: string
   },
   any
 > {
