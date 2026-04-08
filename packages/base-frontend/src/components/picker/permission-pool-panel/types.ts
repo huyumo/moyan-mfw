@@ -42,6 +42,8 @@ export interface MfwPermissionPoolPanelProps {
   appTypeId: string
   /** 是否只读模式 */
   readonly?: boolean
+  /** 是否隐藏底部按钮（用于弹窗模式，使用弹窗自身的按钮） */
+  hideFooter?: boolean
 }
 
 // ========== Emits 接口 ==========
