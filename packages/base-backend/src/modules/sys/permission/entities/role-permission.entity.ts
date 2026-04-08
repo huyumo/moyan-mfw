@@ -53,6 +53,6 @@ export class RolePermission extends Base {
    * 权限值
    * @description 位运算权限值，定义角色在此权限点上的具体操作权限
    */
-  @Column({ type: 'bigint', unsigned: true, comment: '权限值 - 位运算权限值，定义具体操作权限' })
-  permissionValue: bigint;
+  @Column({ type: 'number', unsigned: true, comment: '权限值 - 位运算权限值，定义具体操作权限' })
+  permissionValue: number;
 }

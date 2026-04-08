@@ -12,7 +12,7 @@
 -->
 
 <script setup lang="tsx">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, nextTick } from 'vue'
 import { ElTabs, ElTabPane, ElTree, ElCheckbox, ElButton, ElMessage, ElSkeleton, ElEmpty, ElIcon } from 'element-plus'
 import type { CheckboxValueType } from 'element-plus'
 import { Check, Key } from '@element-plus/icons-vue'
@@ -39,6 +39,10 @@ const emit = defineEmits<MfwPermissionPoolPanelEmits>()
 const loading = ref(false)
 const saving = ref(false)
 const activeTab = ref<'pc' | 'normal'>('pc')
+
+// ElTree 引用
+const pcTreeRef = ref<InstanceType<typeof ElTree>>()
+const normalTreeRef = ref<InstanceType<typeof ElTree>>()
 
 // 原始数据（从 API 加载）
 const rawPcTree = ref<PermissionTreeNodeDto[]>([])
@@ -158,6 +162,72 @@ function transformToPayload(nodes: PermissionTreeNodeState[]): PermissionTreePay
 }
 
 /**
+ * 处理节点勾选事件 - 勾选父节点时全选子节点
+ * ElTree @check 事件：(checkedKeys, { checkedKeys, halfCheckedKeys, nodes })
+ */
+function handlePcTreeCheck(checkedKeys: string[], obj: {
+  checkedKeys: string[]
+  halfCheckedKeys: string[]
+  nodes: any
+}) {
+  // 同步 PC Tree 内部数据状态（用于提交时的数据）
+  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
+    nodes.forEach(node => {
+      const newChecked = checkedKeys.includes(node.id)
+      node.checked = newChecked
+      if (!newChecked) {
+        node.permissionValueBigInt = undefined
+      }
+      if (node.children && node.children.length > 0) {
+        updateNodesCheckedState(node.children)
+      }
+    })
+  }
+
+  updateNodesCheckedState(pcTreeData.value)
+}
+
+/**
+ * 处理节点勾选事件 - 勾选父节点时全选子节点
+ */
+function handleNormalTreeCheck(checkedKeys: string[], obj: {
+  checkedKeys: string[]
+  halfCheckedKeys: string[]
+  nodes: any
+}) {
+  // 同步 Normal Tree 内部数据状态（用于提交时的数据）
+  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
+    nodes.forEach(node => {
+      const newChecked = checkedKeys.includes(node.id)
+      node.checked = newChecked
+      if (!newChecked) {
+        node.permissionValueBigInt = undefined
+      }
+      if (node.children && node.children.length > 0) {
+        updateNodesCheckedState(node.children)
+      }
+    })
+  }
+
+  updateNodesCheckedState(normalTreeData.value)
+}
+
+/**
+ * 递归更新节点的 checked 状态
+ */
+function updateNodeCheckedState(node: PermissionTreeNodeState, checkedKeys: string[]) {
+  node.checked = checkedKeys.includes(node.id)
+  if (!node.checked) {
+    node.permissionValueBigInt = undefined
+  }
+  if (node.children && node.children.length > 0) {
+    for (const child of node.children) {
+      updateNodeCheckedState(child, checkedKeys)
+    }
+  }
+}
+
+/**
  * 递归更新节点的 checked 状态
  * 勾选父节点时自动全选子节点
  */
@@ -265,6 +335,14 @@ async function loadPermissionPool() {
     emit('loaded', {
       pcTree: rawPcTree.value,
       normalTree: rawNormalTree.value,
+    })
+
+    // 下一帧设置 ElTree 的 checked 状态（确保 DOM 已渲染）
+    nextTick(() => {
+      const pcCheckedKeys = pcTreeData.value.filter(n => n.checked).map(n => n.id)
+      const normalCheckedKeys = normalTreeData.value.filter(n => n.checked).map(n => n.id)
+      pcTreeRef.value?.setCheckedKeys(pcCheckedKeys)
+      normalTreeRef.value?.setCheckedKeys(normalCheckedKeys)
     })
   } catch (error) {
     const err = error instanceof Error ? error : new Error('加载权限池失败')
@@ -395,10 +473,10 @@ const treeProps = {
     <div v-else class="panel-content">
       <!-- Tab 切换 -->
       <ElTabs v-model="activeTab" class="permission-tabs">
-        <!-- PC 权限树 Tab -->
         <ElTabPane label="PC 权限树" name="pc">
           <div class="tree-container">
             <ElTree
+              ref="pcTreeRef"
               :data="pcTreeData"
               :props="treeProps"
               node-key="id"
@@ -406,11 +484,7 @@ const treeProps = {
               default-expand-all
               :expand-on-click-node="false"
               :disabled="readonly"
-              check-strictly
-              :default-checked-keys="pcTreeData.filter(n => n.checked).map(n => n.id)"
-              @check-change="(node: PermissionTreeNodeState, checked: boolean) => {
-                updateNodeChecked(pcTreeData, node.id, checked)
-              }"
+              @check="handlePcTreeCheck"
             >
               <template #default="{ node, data }">
                 <div class="tree-node-content">
@@ -421,7 +495,7 @@ const treeProps = {
                     {{ data.permName }}
                   </span>
                   <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType) && data.checked" class="perm-config-action">
+                  <div v-if="canSetPermissionValue(data.nodeType) && node.checked" class="perm-config-action">
                     <ElButton
                       type="primary"
                       link
@@ -441,6 +515,7 @@ const treeProps = {
         <ElTabPane label="普通权限" name="normal">
           <div class="tree-container">
             <ElTree
+              ref="normalTreeRef"
               :data="normalTreeData"
               :props="treeProps"
               node-key="id"
@@ -448,11 +523,7 @@ const treeProps = {
               default-expand-all
               :expand-on-click-node="false"
               :disabled="readonly"
-              check-strictly
-              :default-checked-keys="normalTreeData.filter(n => n.checked).map(n => n.id)"
-              @check-change="(node: PermissionTreeNodeState, checked: boolean) => {
-                updateNodeChecked(normalTreeData, node.id, checked)
-              }"
+              @check="handleNormalTreeCheck"
             >
               <template #default="{ node, data }">
                 <div class="tree-node-content">
@@ -463,7 +534,7 @@ const treeProps = {
                     {{ data.permName }}
                   </span>
                   <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType) && data.checked" class="perm-config-action">
+                  <div v-if="canSetPermissionValue(data.nodeType) && node.checked" class="perm-config-action">
                     <ElButton
                       type="primary"
                       link

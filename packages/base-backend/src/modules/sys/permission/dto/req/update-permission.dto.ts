@@ -119,5 +119,5 @@ export class UpdatePermissionDto {
    */
   @ApiProperty({ description: '权限值（位运算）', required: false })
   @IsOptional()
-  permissionValue?: bigint;
+  permissionValue?: number;
 }

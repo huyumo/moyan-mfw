@@ -88,14 +88,14 @@ export class PermissionGuard implements CanActivate {
     });
 
     // 构建用户权限映射：permCode → permissionValue (位运算合并)
-    const userPermissionMap = new Map<string, bigint>();
+    const userPermissionMap = new Map<string, number>();
     for (const rp of userRolePermissions) {
       if (rp.permission && rp.permission.permStatus === 1) {
         const permCode = rp.permission.permCode;
-        // TypeORM 返回的 permissionValue 可能是字符串，需要转换为 BigInt
+        // TypeORM 返回的 permissionValue 可能是字符串，需要转换为 Number
         const rpPermValue = typeof rp.permissionValue === 'string'
-          ? BigInt(rp.permissionValue)
-          : (rp.permissionValue as bigint);
+          ? Number(rp.permissionValue)
+          : rp.permissionValue as number;
         const existing = userPermissionMap.get(permCode);
         if (existing) {
           // 合并权限值（位运算 OR）
@@ -124,8 +124,8 @@ export class PermissionGuard implements CanActivate {
 
         // 位运算检查：用户权限是否包含所需权限
         // 公式：(userValue & requiredValue) === requiredValue
-        // 或者至少包含一位：(userValue & requiredValue) !== 0n
-        if ((userValue & permissionValue) !== 0n) {
+        // 或者至少包含一位：(userValue & requiredValue) !== 0
+        if ((userValue & permissionValue) !== 0) {
           return true; // 用户拥有至少一位匹配的权限
         }
       }
@@ -136,13 +136,13 @@ export class PermissionGuard implements CanActivate {
   }
 
   /**
-   * 规范化权限选项，将字符串数组转换为 bigint
+   * 规范化权限选项，将字符串数组转换为 number
    */
   private normalizeOptions(options: RequirePermissionOptions): {
     permCode: string;
-    permissionValue: bigint;
+    permissionValue: number;
   } {
-    // 字符串数组转换为 bigint
+    // 字符串数组转换为 number
     const permissionValue = buildPerValue(options.permissionValue);
 
     return {

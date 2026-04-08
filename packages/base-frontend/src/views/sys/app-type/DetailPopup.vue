@@ -83,6 +83,16 @@ const handleConfigPermissionPool = () => {
       size: '800px',
       top: '10vh',
     },
+    footer: {
+      cancelText: '关闭',
+      confirmText: '保存',
+    },
+    on: {
+      confirm: () => {
+        // 保存成功后刷新数据
+        // 组件内部已处理重新加载
+      },
+    },
   });
 };
 
