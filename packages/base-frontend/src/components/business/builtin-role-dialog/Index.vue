@@ -43,7 +43,7 @@
     </el-table>
 
     <div class="builtin-role-footer">
-      <el-button @click="handleAddRole">新增内置角色</el-button>
+      <el-button type="primary" @click="handleAddRole">新增内置角色</el-button>
     </div>
   </div>
 </template>
@@ -51,8 +51,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { ApiRoleFindAll } from '../../../apis/sys';
+import { MfwPopup } from '../../feedback';
+import { ApiRoleFindAll, ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
+import { RolePermissionPanel } from '../role-permission-panel';
+import AddRoleForm from './AddRoleForm.vue';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 
@@ -89,14 +92,67 @@ const loadRoles = async () => {
 
 /** 配置权限 */
 const handleAssignPermissions = (row: RoleResponseDto) => {
-  ElMessage.info(`配置角色 "${row.roleName}" 的权限 - 功能开发中...`);
-  // TODO-TASK-2026-04-08-002: 打开角色权限配置弹窗
+  MfwPopup.open({
+    title: `配置角色权限 - ${row.roleName}`,
+    type: 'dialog',
+    component: RolePermissionPanel,
+    data: {
+      roleId: row.id,
+      appTypeId: props.data?.appTypeId,
+    },
+    popupProps: {
+      size: '800px',
+      top: '10vh',
+    },
+    footer: {
+      cancelText: '关闭',
+      confirmText: '保存',
+    },
+    on: {
+      confirm: () => {
+        ElMessage.success('权限配置成功');
+        loadRoles();
+      },
+    },
+  });
 };
 
 /** 新增角色 */
 const handleAddRole = () => {
-  ElMessage.info('新增内置角色功能开发中...');
-  // TODO-TASK-2026-04-08-002: 打开新增角色弹窗
+  MfwPopup.open({
+    title: '新增内置角色',
+    type: 'dialog',
+    component: AddRoleForm,
+    data: {
+      appTypeId: props.data?.appTypeId,
+    },
+    popupProps: {
+      size: '500px',
+    },
+    footer: {
+      cancelText: '取消',
+      confirmText: '确定',
+    },
+    on: {
+      confirm: async (componentInstance: any) => {
+        const isValid = await componentInstance.validate();
+        if (!isValid) return;
+
+        const formData = componentInstance.getFormData();
+        try {
+          await new ApiRoleCreate({
+            params: formData,
+          });
+          ElMessage.success('角色创建成功');
+          loadRoles();
+          return true;
+        } catch (error) {
+          ElMessage.error('创建角色失败');
+          return false;
+        }
+      },
+    },
+  });
 };
 
 onMounted(() => {
