@@ -8,15 +8,17 @@
   <div class="permission-pool-dialog">
     <MfwPermissionPoolPanel
       v-if="props?.data?.appTypeId"
+      ref="panelRef"
       :app-type-id="props.data.appTypeId"
-      :readonly="true"
       @saved="handleSaved"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { MfwPermissionPoolPanel } from '../../picker/permission-pool-panel/mod'
+import type { MfwPermissionPoolPanelInstance } from '../../picker/permission-pool-panel/types'
 
 defineOptions({ name: 'PermissionPoolDialog' })
 
@@ -33,18 +35,30 @@ const emit = defineEmits<{
   saved: []
 }>()
 
+/** 权限池面板引用 */
+const panelRef = ref<MfwPermissionPoolPanelInstance>()
+
 /** 配置权限池 */
 const handleSaved = () => {
   emit('saved')
 }
 
+/** 保存权限池 - 供 MfwPopup 调用 */
+const onConfirm = async () => {
+  if (!panelRef.value) {
+    throw new Error('面板未初始化')
+  }
+  await panelRef.value.save()
+}
+
 defineExpose({
-  save: () => {},
+  onConfirm,
+  save: onConfirm,
 })
 </script>
 
 <style scoped lang="scss">
 .permission-pool-dialog {
-  height: 500px;
+  height: 600px;
 }
 </style>

@@ -76,6 +76,6 @@ export class AppTypePermissionEntity extends Base {
    * @description 位运算权限值，是 Permission.permissionValue 的子集
    * 用于定义应用类型对该权限的可用操作范围
    */
-  @Column({ type: 'bigint', unsigned: true, default: 0, comment: '权限值 - 位运算权限值，定义可用操作范围' })
-  permissionValue: bigint;
+  @Column({ type: 'number', unsigned: true, default: 0, comment: '权限值 - 位运算权限值，定义可用操作范围' })
+  permissionValue: number;
 }

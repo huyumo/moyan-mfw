@@ -139,7 +139,9 @@ export class PermissionTreeNodeDto {
    */
   @ApiPropertyOptional({ description: '权限值（位运算权限值，十进制字符串格式）' })
   @Expose()
-  permissionValue?: string;
+  permissionValue?: number;
+
+
 
   /**
    * 子节点列表

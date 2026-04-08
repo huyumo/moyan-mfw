@@ -115,14 +115,14 @@ export class PermissionTreeNodeDto {
 
   /**
    * 权限值
-   * @description 位运算权限值，bigint 序列化为十进制字符串
+   * @description 位运算权限值，number 序列化为十进制字符串
    */
   @ApiProperty({
-    description: '位运算权限值（十进制字符串）',
-    example: '7',
+    description: '位运算权限值（十进制数字）',
+    example: 7,
     required: false,
   })
-  permissionValue?: string;
+  permissionValue?: number;
 
   /**
    * 子节点

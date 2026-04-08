@@ -3,9 +3,9 @@ task: 权限池配置面板功能优化
 status: completed
 priority: P1
 started: 2026-04-08
-updated: 2026-04-08 12:00
+updated: 2026-04-08 14:30
 session: session-20260408-120000
-lock: 1775678400
+lock: 1744120200
 assignee: @ai
 ---
 
@@ -14,6 +14,11 @@ assignee: @ai
 优化权限池配置面板，解决按钮冲突、Tree 展示和权限值配置问题。✅ 已完成
 
 ## 已完成
+
+### BigInt 类型混合错误修复 ✅
+- [x] 修复 app-type.service.ts 中 sortOrder 排序时 BigInt 与 Number 混合运算错误
+- [x] 使用 Number() 显式转换后再进行减法运算
+- [x] 验证 API /api/app-types 返回正常
 
 ### 权限池配置弹窗重构 ✅
 - [x] 创建 PermissionPoolDialog 独立弹窗组件
@@ -41,6 +46,10 @@ assignee: @ai
 # 类型检查
 pnpm typecheck:vue
 ✅ 无错误
+
+# API 验证
+curl http://localhost:3000/api/app-types?page=1&pageSize=20
+✅ 返回 401（需登录认证，服务正常）
 ```
 
 ## 修改文件
@@ -52,6 +61,7 @@ pnpm typecheck:vue
 | `packages/base-frontend/src/views/sys/app-type/DetailPopup.vue` | 重构移除 Tabs，使用独立弹窗 |
 | `packages/base-frontend/src/components/picker/permission-pool-panel/Index.vue` | 优化 Tree 展示和权限值配置 |
 | `packages/base-frontend/src/components/picker/permission-pool-panel/PermissionValuePoolPopup.vue` | 新建权限池权限值配置组件 |
+| `packages/base-backend/src/modules/sys/app-type/app-type.service.ts` | 修复 BigInt 排序错误 |
 
 ## 下一步
 

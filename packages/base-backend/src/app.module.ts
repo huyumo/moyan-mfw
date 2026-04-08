@@ -3,7 +3,7 @@
  * @description 应用的根模块，导入和配置所有功能模块
  */
 
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit, OnModuleDestroy, Injectable } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -47,6 +47,50 @@ import { PermissionGuard } from './common/guards/permission.guard';
 const entities = [User, Role, UserRole, Permission, RolePermission, AppType, AppTypePermissionEntity, App, AppMember, AuditLog];
 
 /**
+ * 数据库连接健康检查服务
+ */
+@Injectable()
+export class DatabaseHealthService implements OnModuleInit, OnModuleDestroy {
+  private healthCheckInterval: NodeJS.Timeout | null = null;
+  private readonly healthCheckIntervalMs = 30000; // 30 秒
+
+  constructor(
+    private dataSource: DataSource,
+  ) {}
+
+  async onModuleInit() {
+    console.log('[DatabaseHealth] Starting database connection health check...');
+
+    // 定期检测连接状态
+    this.healthCheckInterval = setInterval(async () => {
+      try {
+        await this.dataSource.query('SELECT 1');
+      } catch (error) {
+        console.error('[DatabaseHealth] Connection health check failed, attempting to reconnect...', error);
+        // 尝试重新建立连接
+        try {
+          if (this.dataSource.isInitialized) {
+            await this.dataSource.destroy();
+          }
+          await this.dataSource.initialize();
+          console.log('[DatabaseHealth] Reconnected successfully');
+        } catch (reconnectError) {
+          console.error('[DatabaseHealth] Reconnection failed:', reconnectError);
+        }
+      }
+    }, this.healthCheckIntervalMs);
+  }
+
+  async onModuleDestroy() {
+    if (this.healthCheckInterval) {
+      clearInterval(this.healthCheckInterval);
+      this.healthCheckInterval = null;
+      console.log('[DatabaseHealth] Stopped health check');
+    }
+  }
+}
+
+/**
  * 数据库配置工厂函数
  */
 function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOptions {
@@ -75,19 +119,29 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     // 数据库连接重试机制
     connectTimeout: 60000, // 连接超时 60 秒
     acquireTimeout: 60000, // 获取连接超时 60 秒
+    // 空闲连接回收
+    idleTimeoutMillis: 60000, // 空闲连接 60 秒后回收
+    // 启用日志
+    logger: 'advanced-console',
     extra: {
       connectionLimit: dbConfig?.poolSize || 100,
       waitForConnections: true,
       queueLimit: 0,
-      // 重试配置
-      retry: {
-        maxRetries: 5,
-        delay: 3000, // 3 秒重试间隔
-      },
+      // 连接池心跳配置（mysql2 原生支持）
+      enableKeepAlive: true,
+      keepAliveInitialDelay: 30000, // 30 秒发送一次心跳
+      // 支持大数字
+      supportBigNumbers: true,
+      bigNumberStrings: false,
+      // 时区配置
+      timezone: 'Z',
     },
     // 自动重连
     autoLoadEntities: false,
     keepConnectionAlive: true,
+    // 错误重试
+    retryAttempts: 10,
+    retryDelay: 3000, // 3 秒
   } as TypeOrmModuleOptions;
 }
 
@@ -133,6 +187,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     InstallModule,
   ],
   providers: [
+    DatabaseHealthService,
     {
       provide: APP_GUARD,
       useFactory: (jwtService: JwtService, reflector: Reflector) => {

@@ -62,18 +62,30 @@ export default () => ({
   poolSize: parseInt(process.env.DB_POOL_SIZE || '100', 10),
 
   /**
-   * 是否同步数据库（生产环境应关闭）
+   * 连接超时时间（毫秒）
+   * @type {number}
+   * @default 60000
+   */
+  connectTimeout: 60000,
+
+  /**
+   * 是否开启 SQL 日志
+   * @type {boolean}
+   */
+  logging: process.env.NODE_ENV === 'development',
+
+  /**
+   * 记录 SQL 日志到 console
+   * @type {string}
+   */
+  logger: 'advanced-console',
+
+  /**
+   * 同步数据库（生产环境应关闭）
    * @type {boolean}
    * @default false
    */
   synchronize: process.env.NODE_ENV === 'development',
-
-  /**
-   * 是否记录日志
-   * @type {boolean}
-   * @default false
-   */
-  logging: process.env.NODE_ENV === 'development',
 
   /**
    * 实体路径
@@ -86,4 +98,18 @@ export default () => ({
    * @type {string[]}
    */
   migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+
+  /**
+   * 额外配置
+   */
+  extra: {
+    // 连接池心跳
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 30000, // 30 秒
+    // 支持大数字
+    supportBigNumbers: true,
+    bigNumberStrings: false,
+    // 时区配置
+    timezone: 'Z',
+  },
 });

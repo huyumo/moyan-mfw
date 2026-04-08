@@ -17,6 +17,7 @@ let sysInitialized: boolean | null = null;
 
 /**
  * 检查系统初始化状态
+ * @description 网络/服务不可用时返回 true，避免误判为"未初始化"导致跳转
  */
 async function checkInitialized(): Promise<boolean> {
   if (sysInitialized !== null) {
@@ -31,8 +32,10 @@ async function checkInitialized(): Promise<boolean> {
     sysInitialized = result.data?.initialized ?? false;
     return sysInitialized;
   } catch (error) {
-    console.error('[RouteGuard] 检查初始化状态失败:', error);
-    return false;
+    // 网络/服务不可用时，假设系统已初始化，避免误跳转
+    console.warn('[RouteGuard] 检查初始化状态失败，假设系统已初始化:', error);
+    sysInitialized = true;
+    return true;
   }
 }
 
