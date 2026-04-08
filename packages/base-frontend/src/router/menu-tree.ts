@@ -4,6 +4,7 @@
 
 import type { RouteRecordRaw } from 'vue-router';
 import type { SideMenuItem } from '../types/layout-types';
+import { baseAdminRoutes, buildRoutesFromConfigs } from './routes';
 
 /**
  * 菜单构建上下文。
@@ -128,4 +129,30 @@ export function dedupeMenuTree(items: SideMenuItem[], existed = new Set<string>(
   }
 
   return result;
+}
+
+/**
+ * 读取路由配置并转换为菜单格式（用于安装向导预览）
+ * @returns 菜单树形结构
+ */
+export function readRoutes(): SideMenuItem[] {
+  // 直接扫描 views 目录生成菜单
+  const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
+    eager: true,
+    import: 'default',
+  });
+
+  console.log('[readRoutes] 扫描到的配置:', allConfigs);
+
+  // 构建路由（与 buildBasePackageRoutes 相同逻辑）
+  const routes = buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
+
+  console.log('[readRoutes] 构建的路由:', routes);
+
+  // 将路由转换为菜单树
+  const menuTree = createMenuTreeFromRoutes(routes, { parentPath: '' });
+
+  console.log('[readRoutes] 菜单树:', menuTree);
+
+  return menuTree;
 }

@@ -12,7 +12,7 @@ import { Permission } from './permission.entity';
  * 角色权限关联实体
  * @description 记录角色与权限的关联关系及权限值
  */
-@Entity('sys_role_permission')
+@Entity('sys_role_permissions')
 @Unique(['roleId', 'permissionId'])
 export class RolePermission extends Base {
   /**

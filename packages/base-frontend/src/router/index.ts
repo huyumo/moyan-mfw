@@ -74,6 +74,16 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
       },
     },
     {
+      path: '/install',
+      name: 'InstallWizard',
+      component: () => import('../views/install/InstallWizard.vue'),
+      meta: {
+        title: '系统初始化',
+        menu: false,
+        requiresAuth: false,
+      },
+    },
+    {
       path: '/',
       component: () => import('../layouts/AdminLayout.vue'),
       meta: {

@@ -34,6 +34,7 @@ const tablesToClear = [
   'sys_app_type_permissions',
   'sys_user_roles',
   'sys_user_apps',
+  'sys_app_members',
   'sys_permissions',
   'sys_roles',
   'sys_apps',

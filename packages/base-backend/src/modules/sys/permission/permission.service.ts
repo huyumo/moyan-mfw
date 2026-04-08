@@ -584,15 +584,11 @@ export class PermissionService {
     });
 
     if (existing) {
-      // 更新名称、路径、nodeType
+      // 更新名称、路径、nodeType（不修改 permissionValue，避免覆盖种子数据或手动设置的值）
       existing.permName = route.name;
       existing.routePath = route.path;
       existing.nodeType = nodeType;
       if (parentId) existing.parentId = parentId;
-      // 同步生成的 PAGE 节点设置默认权限值
-      if (nodeType === NodeType.PAGE) {
-        existing.permissionValue = 63n;
-      }
       await this.permissionRepository.save(existing);
     } else {
       // 新增

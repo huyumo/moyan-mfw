@@ -12,7 +12,7 @@ import { Role } from './role.entity';
  * 用户角色关联实体
  * @description 记录用户与角色的关联关系
  */
-@Entity('sys_user_role')
+@Entity('sys_user_roles')
 @Unique(['userId', 'roleId'])
 export class UserRole extends Base {
   /**

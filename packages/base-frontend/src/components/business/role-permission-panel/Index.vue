@@ -94,10 +94,7 @@ import {
   ApiRoleGetRolePermissions,
   ApiRoleAssignPermissions,
 } from '../../../apis/sys'
-import type {
-  PermissionPoolItemDto,
-  PermissionItemDto,
-} from '../../../apis/sys/schemas'
+import type { PermissionItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import type { PermissionTabType, PermissionTreeNodeWithState } from './types'
 
 /** Props 定义 - 支持直接使用和弹窗使用两种模式 */
@@ -125,7 +122,7 @@ const pcTreeRef = ref<ElTreeInstance>()
 const normalTreeRef = ref<ElTreeInstance>()
 
 /** 权限池数据 */
-const permissionPool = ref<PermissionPoolItemDto[]>([])
+const permissionPool = ref<PermissionTreeNodeDto[]>([])
 /** 角色当前权限 */
 const rolePermissions = ref<PermissionItemDto[]>([])
 
@@ -150,33 +147,25 @@ const normalPermissionTree = computed<PermissionTreeNodeWithState[]>(() => {
 /**
  * 将权限池数据转换为树形结构
  */
-function buildPermissionTree(items: PermissionPoolItemDto[]): PermissionTreeNodeWithState[] {
+function buildPermissionTree(items: PermissionTreeNodeDto[]): PermissionTreeNodeWithState[] {
   // 创建节点映射
   const nodeMap = new Map<string, PermissionTreeNodeWithState>()
   const rootNodes: PermissionTreeNodeWithState[] = []
 
   // 先创建所有节点
   for (const item of items) {
-    const rolePerm = rolePermissions.value.find(p => p.permissionId === item.permissionId)
-    nodeMap.set(item.permissionId, {
-      id: item.permissionId,
-      permName: item.permName,
-      permCode: item.permCode,
-      permissionType: item.permissionType as 'PC' | 'NORMAL',
-      nodeType: item.nodeType as 'MENU' | 'PAGE' | 'TAG',
-      parentId: item.parentId,
-      sortOrder: 0,
-      inPool: true,
+    const rolePerm = rolePermissions.value.find(p => p.permissionId === item.id)
+    nodeMap.set(item.id, {
+      ...item,
       checked: !!rolePerm,
       expanded: false,
-      permissionValue: item.permissionValue,
       children: [],
     })
   }
 
   // 建立父子关系
   for (const item of items) {
-    const node = nodeMap.get(item.permissionId)!
+    const node = nodeMap.get(item.id)!
     if (item.parentId) {
       const parent = nodeMap.get(item.parentId)
       if (parent) {
@@ -225,11 +214,18 @@ function getNodeTypeTagType(nodeType: string): 'primary' | 'success' | 'warning'
  * 加载权限池数据
  */
 async function loadPermissionPool() {
+  if (!appTypeId.value) {
+    return
+  }
   try {
     const result = await new ApiAppTypeGetPermissionPool({
-      params: { id: appTypeId.value },
+      query: { appTypeId: appTypeId.value },
     })
-    permissionPool.value = result.permissions || []
+    // 合并 PC 和 NORMAL 权限树到同一个数组
+    permissionPool.value = [
+      ...(result.permissionTrees.pcTree || []),
+      ...(result.permissionTrees.normalTree || []),
+    ]
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
     ElMessage.error(err?.response?.data?.message || '加载权限池失败')
@@ -241,6 +237,9 @@ async function loadPermissionPool() {
  * 加载角色当前权限
  */
 async function loadRolePermissions() {
+  if (!roleId.value) {
+    return
+  }
   try {
     const result = await new ApiRoleGetRolePermissions({
       params: { id: roleId.value },
@@ -275,7 +274,7 @@ function setTreeCheckedKeys() {
   // 设置 PC 权限树
   if (pcTreeRef.value) {
     const checkedIds = rolePermissions.value
-      .filter(p => permissionPool.value.some(pool => pool.permissionId === p.permissionId && pool.permissionType === 'PC'))
+      .filter(p => permissionPool.value.some(pool => pool.id === p.permissionId && pool.permissionType === 'PC'))
       .map(p => p.permissionId)
     pcTreeRef.value.setCheckedKeys(checkedIds, false)
   }
@@ -283,7 +282,7 @@ function setTreeCheckedKeys() {
   // 设置普通权限树
   if (normalTreeRef.value) {
     const checkedIds = rolePermissions.value
-      .filter(p => permissionPool.value.some(pool => pool.permissionId === p.permissionId && pool.permissionType === 'NORMAL'))
+      .filter(p => permissionPool.value.some(pool => pool.id === p.permissionId && pool.permissionType === 'NORMAL'))
       .map(p => p.permissionId)
     normalTreeRef.value.setCheckedKeys(checkedIds, false)
   }
@@ -313,7 +312,7 @@ function collectCheckedPermissions(): PermissionItemDto[] {
   if (pcTreeRef.value) {
     const checkedNodes = pcTreeRef.value.getCheckedNodes(false, false) as PermissionTreeNodeWithState[]
     for (const node of checkedNodes) {
-      const poolItem = permissionPool.value.find(p => p.permissionId === node.id)
+      const poolItem = permissionPool.value.find(p => p.id === node.id)
       permissions.push({
         permissionId: node.id,
         permissionValue: poolItem?.permissionValue || '0',
@@ -325,7 +324,7 @@ function collectCheckedPermissions(): PermissionItemDto[] {
   if (normalTreeRef.value) {
     const checkedNodes = normalTreeRef.value.getCheckedNodes(false, false) as PermissionTreeNodeWithState[]
     for (const node of checkedNodes) {
-      const poolItem = permissionPool.value.find(p => p.permissionId === node.id)
+      const poolItem = permissionPool.value.find(p => p.id === node.id)
       permissions.push({
         permissionId: node.id,
         permissionValue: poolItem?.permissionValue || '0',
