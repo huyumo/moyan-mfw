@@ -165,15 +165,18 @@ function transformToPayload(nodes: PermissionTreeNodeState[]): PermissionTreePay
  * 处理节点勾选事件 - 勾选父节点时全选子节点
  * ElTree @check 事件：(checkedKeys, { checkedKeys, halfCheckedKeys, nodes })
  */
-function handlePcTreeCheck(checkedKeys: string[], obj: {
+function handlePcTreeCheck(checkedKeys: string[] | { checkedKeys: string[] }, obj: {
   checkedKeys: string[]
   halfCheckedKeys: string[]
   nodes: any
 }) {
+  // 兼容处理：如果第一个参数是对象，使用 obj.checkedKeys
+  const actualCheckedKeys = Array.isArray(checkedKeys) ? checkedKeys : obj?.checkedKeys || []
+
   // 同步 PC Tree 内部数据状态（用于提交时的数据）
   const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
     nodes.forEach(node => {
-      const newChecked = checkedKeys.includes(node.id)
+      const newChecked = actualCheckedKeys.includes(node.id)
       node.checked = newChecked
       if (!newChecked) {
         node.permissionValueBigInt = undefined
@@ -190,15 +193,18 @@ function handlePcTreeCheck(checkedKeys: string[], obj: {
 /**
  * 处理节点勾选事件 - 勾选父节点时全选子节点
  */
-function handleNormalTreeCheck(checkedKeys: string[], obj: {
+function handleNormalTreeCheck(checkedKeys: string[] | { checkedKeys: string[] }, obj: {
   checkedKeys: string[]
   halfCheckedKeys: string[]
   nodes: any
 }) {
+  // 兼容处理：如果第一个参数是对象，使用 obj.checkedKeys
+  const actualCheckedKeys = Array.isArray(checkedKeys) ? checkedKeys : obj?.checkedKeys || []
+
   // 同步 Normal Tree 内部数据状态（用于提交时的数据）
   const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
     nodes.forEach(node => {
-      const newChecked = checkedKeys.includes(node.id)
+      const newChecked = actualCheckedKeys.includes(node.id)
       node.checked = newChecked
       if (!newChecked) {
         node.permissionValueBigInt = undefined
