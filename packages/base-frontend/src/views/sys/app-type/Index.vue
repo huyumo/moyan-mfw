@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue';
 import { ElMessage, ElTag, ElButton } from 'element-plus';
-import { View, Edit } from '@element-plus/icons-vue';
+import { View, Edit, Key, User } from '@element-plus/icons-vue';
 import MfwPageScene from '../../../components/page/page-scene';
 import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
 import { MfwPopup } from '../../../components/feedback';
@@ -25,6 +25,8 @@ import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import EditForm from './EditForm.vue';
 import DetailPopup from './DetailPopup.vue';
+import { PermissionPoolDialog } from '../../../components/business/permission-pool-dialog/mod';
+import { BuiltinRoleDialog } from '../../../components/business/builtin-role-dialog/mod';
 
 /** 状态常量 */
 const STATUS = {
@@ -100,7 +102,7 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 150,
+  width: 250,
   fixed: 'right' as const,
   render: ({ row }: { row: AppTypeResponseDto }) => h('div', { class: 'action-buttons' }, [
     h(ElButton, {
@@ -115,6 +117,18 @@ const actionColumn = {
       icon: Edit,
       onClick: () => handleEdit(row),
     }, () => '编辑'),
+    h(ElButton, {
+      type: 'primary',
+      link: true,
+      icon: Key,
+      onClick: () => handleConfigPermissionPool(row),
+    }, () => '配置权限池'),
+    h(ElButton, {
+      type: 'primary',
+      link: true,
+      icon: User,
+      onClick: () => handleConfigBuiltinRoles(row),
+    }, () => '配置内置角色'),
   ]),
 };
 
@@ -153,6 +167,51 @@ const handleDetail = async (row: AppTypeResponseDto) => {
   } catch (error) {
     ElMessage.error('获取应用类型详情失败');
   }
+};
+
+/** 配置权限池 */
+const handleConfigPermissionPool = async (row: AppTypeResponseDto) => {
+  if (!row.id) {
+    ElMessage.warning('请先保存应用类型');
+    return;
+  }
+  MfwPopup.open({
+    title: '配置权限池',
+    type: 'dialog',
+    component: PermissionPoolDialog,
+    data: { appTypeId: row.id },
+    popupProps: {
+      size: '800px',
+      top: '10vh',
+    },
+    footer: {
+      cancelText: '关闭',
+      confirmText: '保存',
+    },
+    on: {
+      confirm: () => {
+        ElMessage.success('保存成功');
+      },
+    },
+  });
+};
+
+/** 配置内置角色 */
+const handleConfigBuiltinRoles = async (row: AppTypeResponseDto) => {
+  if (!row.id) {
+    ElMessage.warning('请先保存应用类型');
+    return;
+  }
+  MfwPopup.open({
+    title: '配置内置角色',
+    type: 'dialog',
+    component: BuiltinRoleDialog,
+    data: { appTypeId: row.id },
+    popupProps: {
+      size: '800px',
+      top: '10vh',
+    },
+  });
 };
 
 /** 编辑 */
