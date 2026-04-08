@@ -159,22 +159,49 @@ function transformToPayload(nodes: PermissionTreeNodeState[]): PermissionTreePay
 
 /**
  * 递归更新节点的 checked 状态
+ * 勾选父节点时自动全选子节点
  */
 function updateNodeChecked(nodes: PermissionTreeNodeState[], nodeId: string, checked: boolean): boolean {
-  for (const node of nodes) {
+  const updateNode = (node: PermissionTreeNodeState): boolean => {
     if (node.id === nodeId) {
       node.checked = checked
       // 如果取消勾选，清空 permissionValue
       if (!checked) {
         node.permissionValueBigInt = undefined
       }
+      // 勾选父节点时，全选所有子节点
+      if (checked && node.children && node.children.length > 0) {
+        setAllChildrenChecked(node.children, true)
+      }
       return true
     }
-    if (node.children && updateNodeChecked(node.children, nodeId, checked)) {
-      return true
+    if (node.children) {
+      for (const child of node.children) {
+        if (updateNode(child)) return true
+      }
     }
+    return false
+  }
+
+  for (const node of nodes) {
+    if (updateNode(node)) return true
   }
   return false
+}
+
+/**
+ * 递归设置所有子节点为勾选状态
+ */
+function setAllChildrenChecked(nodes: PermissionTreeNodeState[], checked: boolean): void {
+  for (const node of nodes) {
+    node.checked = checked
+    if (!checked) {
+      node.permissionValueBigInt = undefined
+    }
+    if (node.children && node.children.length > 0) {
+      setAllChildrenChecked(node.children, checked)
+    }
+  }
 }
 
 /**
@@ -393,8 +420,8 @@ const treeProps = {
                     </span>
                     {{ data.permName }}
                   </span>
-                  <!-- 配置操作权限按钮 - 只有 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType)" class="perm-config-action">
+                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
+                  <div v-if="canSetPermissionValue(data.nodeType) && data.checked" class="perm-config-action">
                     <ElButton
                       type="primary"
                       link
@@ -435,8 +462,8 @@ const treeProps = {
                     </span>
                     {{ data.permName }}
                   </span>
-                  <!-- 配置操作权限按钮 - 只有 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType)" class="perm-config-action">
+                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
+                  <div v-if="canSetPermissionValue(data.nodeType) && data.checked" class="perm-config-action">
                     <ElButton
                       type="primary"
                       link
