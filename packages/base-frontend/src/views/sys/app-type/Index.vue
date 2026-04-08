@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElMessage, ElTag, ElButton } from 'element-plus';
+import { ElMessage, ElTag, ElButton, ElTooltip } from 'element-plus';
 import { View, Edit, Key, User } from '@element-plus/icons-vue';
 import MfwPageScene from '../../../components/page/page-scene';
 import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
@@ -102,33 +102,33 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 250,
+  width: 180,
   fixed: 'right' as const,
   render: ({ row }: { row: AppTypeResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElButton, {
+    h(ElTooltip, { content: '详情' }, () => h(ElButton, {
       type: 'primary',
       link: true,
       icon: View,
       onClick: () => handleDetail(row),
-    }, () => '详情'),
-    h(ElButton, {
+    })),
+    h(ElTooltip, { content: '编辑' }, () => h(ElButton, {
       type: 'primary',
       link: true,
       icon: Edit,
       onClick: () => handleEdit(row),
-    }, () => '编辑'),
-    h(ElButton, {
+    })),
+    h(ElTooltip, { content: '配置权限池' }, () => h(ElButton, {
       type: 'primary',
       link: true,
       icon: Key,
       onClick: () => handleConfigPermissionPool(row),
-    }, () => '配置权限池'),
-    h(ElButton, {
+    })),
+    h(ElTooltip, { content: '配置内置角色' }, () => h(ElButton, {
       type: 'primary',
       link: true,
       icon: User,
       onClick: () => handleConfigBuiltinRoles(row),
-    }, () => '配置内置角色'),
+    })),
   ]),
 };
 
