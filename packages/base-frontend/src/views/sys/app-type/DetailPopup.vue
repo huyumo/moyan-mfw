@@ -39,24 +39,11 @@
         {{ data?.updateAt || '-' }}
       </el-descriptions-item>
     </el-descriptions>
-
-    <!-- 操作按钮 -->
-    <div class="action-buttons">
-      <el-button type="primary" :disabled="!data?.id" @click="handleConfigPermissionPool">
-        配置权限池
-      </el-button>
-      <el-button :disabled="!data?.id" @click="handleConfigBuiltinRoles">
-        配置内置角色
-      </el-button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ElMessage } from 'element-plus';
-import { MfwPopup } from '../../../components/feedback';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-import { PermissionPoolDialog } from '../../../components/business/permission-pool-dialog/mod';
 
 /** 状态常量 */
 const STATUS = {
@@ -64,47 +51,9 @@ const STATUS = {
   DISABLED: 0,
 } as const;
 
-const props = defineProps<{
+defineProps<{
   data?: AppTypeResponseDto | null;
 }>();
-
-/** 配置权限池 */
-const handleConfigPermissionPool = () => {
-  if (!props.data?.id) {
-    ElMessage.warning('请先保存应用类型');
-    return;
-  }
-  MfwPopup.open({
-    title: '配置权限池',
-    type: 'dialog',
-    component: PermissionPoolDialog,
-    data: { appTypeId: props.data.id },
-    popupProps: {
-      size: '800px',
-      top: '10vh',
-    },
-    footer: {
-      cancelText: '关闭',
-      confirmText: '保存',
-    },
-    on: {
-      confirm: () => {
-        // 保存成功后刷新数据
-        // 组件内部已处理重新加载
-      },
-    },
-  });
-};
-
-/** 配置内置角色 */
-const handleConfigBuiltinRoles = () => {
-  if (!props.data?.id) {
-    ElMessage.warning('请先保存应用类型');
-    return;
-  }
-  ElMessage.info('内置角色配置功能开发中...');
-  // TODO-TASK-2026-04-08-001: 打开内置角色配置弹窗
-};
 </script>
 
 <style scoped lang="scss">
@@ -114,14 +63,6 @@ const handleConfigBuiltinRoles = () => {
   :deep(.el-descriptions__label) {
     width: 120px;
     font-weight: 500;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 16px;
-    border-top: 1px solid var(--el-border-color-light);
   }
 }
 </style>
