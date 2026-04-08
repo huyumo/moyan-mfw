@@ -231,7 +231,7 @@ export class PermissionService {
         showMode: item.showMode,
         permStatus: item.permStatus,
         isAutoSync: item.isAutoSync,
-        permissionValue: typeof item.permissionValue === 'number' ? item.permissionValue : Number(item.permissionValue),
+        permissionValue: typeof item.permissionValue === 'bigint' ? item.permissionValue.toString() : String(item.permissionValue),
         createdAt: item.createdAt,
         updateAt: item.updateAt,
         children: [],
@@ -509,7 +509,7 @@ export class PermissionService {
         isVisible: 0,
         isAutoSync: 0,
         permStatus: 1,
-        permissionValue: 0,
+        permissionValue: 0n,
       });
       await this.permissionRepository.save(root);
     }
@@ -603,7 +603,7 @@ export class PermissionService {
         sortOrder: depth * 10,
         isAutoSync: 1,
         permStatus: 1,
-        permissionValue: nodeType === NodeType.PAGE ? 63 : 0,
+        permissionValue: nodeType === NodeType.PAGE ? 63n : 0n,
       });
       await this.permissionRepository.save(newPerm);
     }

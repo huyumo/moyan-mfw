@@ -61,19 +61,19 @@ export type PermissionName = (typeof PERMISSION_VALUES)[number];
  *
  * @example
  * ```typescript
- * buildPerValue(['查看']) // 1
- * buildPerValue(['查看', '添加', '编辑']) // 7
- * buildPerValue(['添加', '删除']) // 10
+ * buildPerValue(['查看']) // 1n
+ * buildPerValue(['查看', '添加', '编辑']) // 7n
+ * buildPerValue(['添加', '删除']) // 10n
  * ```
  */
-export function buildPerValue(names: PermissionName[]): number {
-  let result = 0;
+export function buildPerValue(names: PermissionName[]): bigint {
+  let result = 0n;
   for (const name of names) {
     const index = PERMISSION_VALUES.indexOf(name);
     if (index === -1) {
       throw new Error(`未知的权限名称：${name}，可用值：${PERMISSION_VALUES.join(', ')}`);
     }
-    result |= (1 << index);
+    result |= (1n << BigInt(index));
   }
   return result;
 }
@@ -81,7 +81,7 @@ export function buildPerValue(names: PermissionName[]): number {
 /**
  * 根据权限名称获取单个权限位值
  * @param name - 权限名称
- * @returns number 单个权限位值
+ * @returns bigint 单个权限位值
  *
  * @example
  * ```typescript
@@ -89,12 +89,12 @@ export function buildPerValue(names: PermissionName[]): number {
  * getPermValue('添加') // 2n
  * ```
  */
-export function getPermValue(name: PermissionName): number {
+export function getPermValue(name: PermissionName): bigint {
   const index = PERMISSION_VALUES.indexOf(name);
   if (index === -1) {
     throw new Error(`未知的权限名称：${name}`);
   }
-  return 1 << index;
+  return 1n << BigInt(index);
 }
 
 /**
@@ -104,14 +104,14 @@ export function getPermValue(name: PermissionName): number {
  *
  * @example
  * ```typescript
- * parsePerValue(7) // ['查看', '添加', '编辑']
- * parsePerValue(10) // ['添加', '删除']
+ * parsePerValue(7n) // ['查看', '添加', '编辑']
+ * parsePerValue(10n) // ['添加', '删除']
  * ```
  */
-export function parsePerValue(value: number): PermissionName[] {
+export function parsePerValue(value: bigint): PermissionName[] {
   const result: PermissionName[] = [];
   for (let i = 0; i < PERMISSION_VALUES.length; i++) {
-    if ((value & (1 << i)) !== 0) {
+    if ((value & (1n << BigInt(i))) !== 0n) {
       result.push(PERMISSION_VALUES[i] as PermissionName);
     }
   }
@@ -126,16 +126,16 @@ export function parsePerValue(value: number): PermissionName[] {
  *
  * @example
  * ```typescript
- * hasPermission(7, '查看') // true
- * hasPermission(7, '删除') // false
+ * hasPermission(7n, '查看') // true
+ * hasPermission(7n, '删除') // false
  * ```
  */
-export function hasPermission(value: number, name: PermissionName): boolean {
+export function hasPermission(value: bigint, name: PermissionName): boolean {
   const index = PERMISSION_VALUES.indexOf(name);
   if (index === -1) {
     return false;
   }
-  return (value & (1 << index)) !== 0;
+  return (value & (1n << BigInt(index))) !== 0n;
 }
 
 /**
@@ -145,11 +145,11 @@ export function hasPermission(value: number, name: PermissionName): boolean {
 export function getPermissionOptions(): Array<{
   name: string;
   label: string;
-  value: number;
+  value: bigint;
 }> {
   return PERMISSION_VALUES.map((name) => ({
     name,
     label: name,
-    value: 1 << PERMISSION_VALUES.indexOf(name),
+    value: 1n << BigInt(PERMISSION_VALUES.indexOf(name)),
   }));
 }

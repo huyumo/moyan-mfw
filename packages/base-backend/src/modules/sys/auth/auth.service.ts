@@ -401,7 +401,7 @@ export class AuthService {
     });
 
     // 6. 合并权限（相同 permissionId 的 permissionValue 取位运算 OR）
-    const permissionMap = new Map<string, { permission: Permission; value: number }>();
+    const permissionMap = new Map<string, { permission: Permission; value: bigint }>();
 
     // 根据应用类型决定允许的权限类型
     // system 类型只允许 PC 权限，其他类型只允许 NORMAL 权限
@@ -461,7 +461,7 @@ export class AuthService {
           }
           permissionMap.set(perm.id, {
             permission: perm,
-            value: perm.permissionValue || Number(0),
+            value: perm.permissionValue || 0n,
           });
         }
       });
@@ -489,7 +489,7 @@ export class AuthService {
    * @returns 树形结构
    */
   private buildPermissionTree(
-    permissions: Array<{ permission: Permission; value: number }>,
+    permissions: Array<{ permission: Permission; value: bigint }>,
   ): PermissionTreeNodeDto[] {
     // 创建节点映射
     const nodeMap = new Map<string, PermissionTreeNodeDto>();
@@ -513,7 +513,7 @@ export class AuthService {
         isCache: permission.isCache,
         showMode: permission.showMode as 'NORMAL' | 'DEV',
         permStatus: permission.permStatus,
-        permissionValue: value,
+        permissionValue: value.toString(),
         children: [],
       };
       nodeMap.set(permission.id, node);
