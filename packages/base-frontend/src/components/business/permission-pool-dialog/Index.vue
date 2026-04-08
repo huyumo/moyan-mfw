@@ -10,6 +10,7 @@
       v-if="props?.data?.appTypeId"
       ref="panelRef"
       :app-type-id="props.data.appTypeId"
+      :hide-footer="true"
       @saved="handleSaved"
     />
   </div>

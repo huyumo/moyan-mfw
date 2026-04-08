@@ -102,6 +102,7 @@ onMounted(async () => {
 
 /**
  * 更新权限池中的权限值
+ * 只返回修改后的 permissionValue，由主组件处理提交
  */
 const onConfirm = async () => {
   if (!appTypeId.value || !nodeId.value) {
@@ -111,72 +112,11 @@ const onConfirm = async () => {
 
   const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
 
-  try {
-    // 先获取当前权限池数据
-    const currentPool = await new ApiAppTypeGetPermissionPool({
-      query: { appTypeId: appTypeId.value },
-    });
-
-    // 转换节点为 payload 格式并更新 permissionValue
-    const convertAndUpdate = (
-      nodes: typeof currentPool.permissionTrees.pcTree,
-      targetNodeId: string
-    ): PermissionTreePayloadDto[] => {
-      return nodes.map(node => {
-        const payload: PermissionTreePayloadDto = {
-          permissionId: node.id,
-          checked: !!node.inPool,
-          permissionValue: node.id === targetNodeId ? String(newValue) : node.permissionValue,
-        };
-        if (node.children && node.children.length > 0) {
-          payload.children = convertAndUpdate(node.children, targetNodeId);
-        }
-        return payload;
-      });
-    };
-
-    const updatedTrees = {
-      pcTree: treeType.value === 'pc'
-        ? convertAndUpdate(currentPool.permissionTrees.pcTree || [], nodeId.value)
-        : (currentPool.permissionTrees.pcTree || []).map(n => ({
-            permissionId: n.id,
-            checked: !!n.inPool,
-            permissionValue: n.permissionValue,
-            children: n.children?.map(c => ({
-              permissionId: c.id,
-              checked: !!c.inPool,
-              permissionValue: c.permissionValue,
-            })),
-          })),
-      normalTree: treeType.value === 'normal'
-        ? convertAndUpdate(currentPool.permissionTrees.normalTree || [], nodeId.value)
-        : (currentPool.permissionTrees.normalTree || []).map(n => ({
-            permissionId: n.id,
-            checked: !!n.inPool,
-            permissionValue: n.permissionValue,
-            children: n.children?.map(c => ({
-              permissionId: c.id,
-              checked: !!c.inPool,
-              permissionValue: c.permissionValue,
-            })),
-          })),
-    };
-
-    // 更新权限池
-    await new ApiAppTypeUpdatePermissionPool({
-      query: {
-        appTypeId: appTypeId.value,
-      },
-      params: {
-        permissionTrees: updatedTrees,
-      },
-    });
-
-    ElMessage.success('操作权限已更新');
-  } catch (error) {
-    ElMessage.error('更新失败');
-    throw error; // 抛出错误，让弹窗不关闭
-  }
+  // 返回修改后的值，由主组件处理提交
+  return {
+    nodeId: nodeId.value,
+    permissionValue: String(newValue),
+  };
 };
 
 defineExpose({ onConfirm });

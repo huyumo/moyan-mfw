@@ -13,13 +13,10 @@
 
 <script setup lang="tsx">
 import { ref, watch, onMounted, nextTick } from 'vue'
-import { ElTabs, ElTabPane, ElTree, ElCheckbox, ElButton, ElMessage, ElSkeleton, ElEmpty, ElIcon } from 'element-plus'
-import type { CheckboxValueType } from 'element-plus'
+import { ElTabs, ElTabPane, ElTree, ElButton, ElMessage, ElSkeleton, ElEmpty, ElIcon } from 'element-plus'
 import { Check, Key } from '@element-plus/icons-vue'
 import type { PermissionTreeNodeDto, PermissionTreePayloadDto } from '../../../apis/sys/schemas'
 import {
-  PermBit,
-  PermBitDesc,
   type MfwPermissionPoolPanelProps,
   type MfwPermissionPoolPanelEmits,
   type MfwPermissionPoolPanelInstance,
@@ -79,33 +76,32 @@ function handleConfigPermissionValue(data: PermissionTreeNodeState, treeType: 'p
     },
     popupProps: { width: 500 },
     on: {
-      confirm: async () => {
-        // 重新加载数据以获取最新状态
-        await loadPermissionPool()
+      confirm: async (componentInstance: any) => {
+        // componentInstance.onConfirm() 返回 { nodeId, permissionValue }
+        const result = await componentInstance.onConfirm()
+        if (!result) {
+          return
+        }
+        // 更新节点的 permissionValueBigInt（不保存，等待用户点击主面板的"保存配置"按钮）
+        const updateNodePerm = (nodes: PermissionTreeNodeState[]): boolean => {
+          for (const node of nodes) {
+            if (node.id === result.nodeId) {
+              node.permissionValueBigInt = BigInt(result.permissionValue)
+              return true
+            }
+            if (node.children && updateNodePerm(node.children)) {
+              return true
+            }
+          }
+          return false
+        }
+
+        const treeData = treeType === 'pc' ? pcTreeData.value : normalTreeData.value
+        updateNodePerm(treeData)
+        // 不立即保存，等待用户点击主面板的"保存配置"按钮
       },
     },
   })
-}
-
-/**
- * 获取节点可用的权限位
- */
-function getNodeAvailableBits(_node: PermissionTreeNodeState): bigint[] {
-  // 返回所有定义的权限位，让复选框显示所有选项
-  return Object.values(PermBit) as bigint[]
-}
-
-/**
- * 处理节点权限位变化
- */
-function handleNodePermBitChange(
-  nodeId: string,
-  permBit: bigint,
-  checked: boolean,
-  treeType: 'pc' | 'normal'
-) {
-  const treeData = treeType === 'pc' ? pcTreeData.value : normalTreeData.value
-  updateNodePermValue(treeData, nodeId, permBit, checked)
 }
 
 /**
@@ -117,7 +113,7 @@ function transformTreeNode(node: PermissionTreeNodeDto): PermissionTreeNodeState
 
   const result: PermissionTreeNodeState = {
     ...rest,
-    checked: node.inPool,
+    checked: !!node.inPool,
     permissionValueBigInt,
   }
 
@@ -126,20 +122,6 @@ function transformTreeNode(node: PermissionTreeNodeDto): PermissionTreeNodeState
   }
 
   return result
-}
-
-/**
- * 获取所有可选的权限位
- */
-function getAvailablePermBits(value: bigint | undefined): bigint[] {
-  if (!value) return []
-  const bits: bigint[] = []
-  for (const bit of Object.values(PermBit)) {
-    if (typeof bit === 'bigint' && (value & bit) !== 0n) {
-      bits.push(bit)
-    }
-  }
-  return bits
 }
 
 /**
@@ -163,26 +145,26 @@ function transformToPayload(nodes: PermissionTreeNodeState[]): PermissionTreePay
 
 /**
  * 处理节点勾选事件 - 勾选父节点时全选子节点
- * ElTree @check 事件：(checkedKeys, { checkedKeys, halfCheckedKeys, nodes })
  */
-function handlePcTreeCheck(checkedKeys: string[] | { checkedKeys: string[] }, obj: {
-  checkedKeys: string[]
-  halfCheckedKeys: string[]
-  nodes: any
+function handlePcTreeCheck(_checkedKeys: any, obj: {
+  checkedKeys: any[]
+  halfCheckedKeys: any[]
 }) {
-  // 兼容处理：如果第一个参数是对象，使用 obj.checkedKeys
-  const actualCheckedKeys = Array.isArray(checkedKeys) ? checkedKeys : obj?.checkedKeys || []
+  // 使用 obj.checkedKeys
+  const actualCheckedKeys = obj?.checkedKeys?.map(String) || []
 
   // 同步 PC Tree 内部数据状态（用于提交时的数据）
-  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
+  // 使用递归方式，勾选父节点时自动勾选所有子节点
+  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[], parentChecked = false) => {
     nodes.forEach(node => {
-      const newChecked = actualCheckedKeys.includes(node.id)
+      // 如果父节点已勾选，或者当前节点在 checkedKeys 中，则勾选
+      const newChecked = parentChecked || actualCheckedKeys.includes(node.id)
       node.checked = newChecked
       if (!newChecked) {
         node.permissionValueBigInt = undefined
       }
       if (node.children && node.children.length > 0) {
-        updateNodesCheckedState(node.children)
+        updateNodesCheckedState(node.children, newChecked)
       }
     })
   }
@@ -193,131 +175,30 @@ function handlePcTreeCheck(checkedKeys: string[] | { checkedKeys: string[] }, ob
 /**
  * 处理节点勾选事件 - 勾选父节点时全选子节点
  */
-function handleNormalTreeCheck(checkedKeys: string[] | { checkedKeys: string[] }, obj: {
-  checkedKeys: string[]
-  halfCheckedKeys: string[]
-  nodes: any
+function handleNormalTreeCheck(_checkedKeys: any, obj: {
+  checkedKeys: any[]
+  halfCheckedKeys: any[]
 }) {
-  // 兼容处理：如果第一个参数是对象，使用 obj.checkedKeys
-  const actualCheckedKeys = Array.isArray(checkedKeys) ? checkedKeys : obj?.checkedKeys || []
+  // 使用 obj.checkedKeys
+  const actualCheckedKeys = obj?.checkedKeys?.map(String) || []
 
   // 同步 Normal Tree 内部数据状态（用于提交时的数据）
-  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[]) => {
+  // 使用递归方式，勾选父节点时自动勾选所有子节点
+  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[], parentChecked = false) => {
     nodes.forEach(node => {
-      const newChecked = actualCheckedKeys.includes(node.id)
+      // 如果父节点已勾选，或者当前节点在 checkedKeys 中，则勾选
+      const newChecked = parentChecked || actualCheckedKeys.includes(node.id)
       node.checked = newChecked
       if (!newChecked) {
         node.permissionValueBigInt = undefined
       }
       if (node.children && node.children.length > 0) {
-        updateNodesCheckedState(node.children)
+        updateNodesCheckedState(node.children, newChecked)
       }
     })
   }
 
   updateNodesCheckedState(normalTreeData.value)
-}
-
-/**
- * 递归更新节点的 checked 状态
- */
-function updateNodeCheckedState(node: PermissionTreeNodeState, checkedKeys: string[]) {
-  node.checked = checkedKeys.includes(node.id)
-  if (!node.checked) {
-    node.permissionValueBigInt = undefined
-  }
-  if (node.children && node.children.length > 0) {
-    for (const child of node.children) {
-      updateNodeCheckedState(child, checkedKeys)
-    }
-  }
-}
-
-/**
- * 递归更新节点的 checked 状态
- * 勾选父节点时自动全选子节点
- */
-function updateNodeChecked(nodes: PermissionTreeNodeState[], nodeId: string, checked: boolean): boolean {
-  const updateNode = (node: PermissionTreeNodeState): boolean => {
-    if (node.id === nodeId) {
-      node.checked = checked
-      // 如果取消勾选，清空 permissionValue
-      if (!checked) {
-        node.permissionValueBigInt = undefined
-      }
-      // 勾选父节点时，全选所有子节点
-      if (checked && node.children && node.children.length > 0) {
-        setAllChildrenChecked(node.children, true)
-      }
-      return true
-    }
-    if (node.children) {
-      for (const child of node.children) {
-        if (updateNode(child)) return true
-      }
-    }
-    return false
-  }
-
-  for (const node of nodes) {
-    if (updateNode(node)) return true
-  }
-  return false
-}
-
-/**
- * 递归设置所有子节点为勾选状态
- */
-function setAllChildrenChecked(nodes: PermissionTreeNodeState[], checked: boolean): void {
-  for (const node of nodes) {
-    node.checked = checked
-    if (!checked) {
-      node.permissionValueBigInt = undefined
-    }
-    if (node.children && node.children.length > 0) {
-      setAllChildrenChecked(node.children, checked)
-    }
-  }
-}
-
-/**
- * 更新节点的 permissionValue
- */
-function updateNodePermValue(
-  nodes: PermissionTreeNodeState[],
-  nodeId: string,
-  permBit: bigint,
-  checked: boolean
-): boolean {
-  for (const node of nodes) {
-    if (node.id === nodeId) {
-      // 只有勾选了节点才能设置 permissionValue
-      if (!node.checked) return true
-
-      // 获取原始定义的 permissionValue（限制范围）
-      const originalValue = node.permissionValue ? BigInt(String(node.permissionValue)) : 0n
-
-      // 更新 permissionValue
-      if (checked) {
-        // 添加权限位
-        node.permissionValueBigInt = (node.permissionValueBigInt || 0n) | permBit
-      } else {
-        // 移除权限位
-        node.permissionValueBigInt = (node.permissionValueBigInt || 0n) & ~permBit
-      }
-
-      // 确保不超过原始定义范围
-      if (node.permissionValueBigInt && (node.permissionValueBigInt & originalValue) !== node.permissionValueBigInt) {
-        node.permissionValueBigInt = node.permissionValueBigInt & originalValue
-      }
-
-      return true
-    }
-    if (node.children && updateNodePermValue(node.children, nodeId, permBit, checked)) {
-      return true
-    }
-  }
-  return false
 }
 
 // ========== 加载数据 ==========
@@ -330,6 +211,7 @@ async function loadPermissionPool() {
     const response = await new ApiAppTypeGetPermissionPool({
       query: { appTypeId: props.appTypeId },
     })
+    loading.value = false
 
     rawPcTree.value = response.permissionTrees?.pcTree || []
     rawNormalTree.value = response.permissionTrees?.normalTree || []
@@ -337,16 +219,31 @@ async function loadPermissionPool() {
     // 转换为内部状态
     pcTreeData.value = rawPcTree.value.map(transformTreeNode)
     normalTreeData.value = rawNormalTree.value.map(transformTreeNode)
-
+    await nextTick()
     emit('loaded', {
       pcTree: rawPcTree.value,
       normalTree: rawNormalTree.value,
     })
 
     // 下一帧设置 ElTree 的 checked 状态（确保 DOM 已渲染）
+    // 使用递归函数收集所有 inPool=true 的节点 ID（包括子节点）
     nextTick(() => {
-      const pcCheckedKeys = pcTreeData.value.filter(n => n.checked).map(n => n.id)
-      const normalCheckedKeys = normalTreeData.value.filter(n => n.checked).map(n => n.id)
+      const collectCheckedKeys = (nodes: typeof rawPcTree.value): string[] => {
+        const keys: string[] = []
+        for (const node of nodes) {
+          if (node.inPool) {
+            keys.push(node.id)
+          }
+          if (node.children && node.children.length > 0) {
+            keys.push(...collectCheckedKeys(node.children))
+          }
+        }
+        return keys
+      }
+
+      const pcCheckedKeys = collectCheckedKeys(rawPcTree.value)
+      const normalCheckedKeys = collectCheckedKeys(rawNormalTree.value)
+      
       pcTreeRef.value?.setCheckedKeys(pcCheckedKeys)
       normalTreeRef.value?.setCheckedKeys(normalCheckedKeys)
     })
@@ -367,13 +264,17 @@ async function savePermissionPool() {
 
   saving.value = true
   try {
+    const payload = {
+      pcTree: transformToPayload(pcTreeData.value),
+      normalTree: transformToPayload(normalTreeData.value),
+    }
+
     const response = await new ApiAppTypeUpdatePermissionPool({
-      params: {
+      query: {
         appTypeId: props.appTypeId,
-        permissionTrees: {
-          pcTree: transformToPayload(pcTreeData.value),
-          normalTree: transformToPayload(normalTreeData.value),
-        },
+      },
+      params: {
+        permissionTrees: payload,
       },
     })
 
@@ -559,7 +460,7 @@ const treeProps = {
     </div>
 
     <!-- 操作按钮 -->
-    <div v-if="!readonly" class="panel-footer">
+    <div v-if="!readonly && !hideFooter" class="panel-footer">
       <ElButton @click="reset">重置</ElButton>
       <ElButton type="primary" :loading="saving" :icon="Check" @click="savePermissionPool">
         保存配置
