@@ -202,7 +202,7 @@ export class AppTypeService {
     });
 
     // 构建权限池 Map（permissionId -> permissionValue）
-    const poolMap = new Map<string, number>();
+    const poolMap = new Map<string, bigint>();
     for (const pool of poolPermissions) {
       poolMap.set(pool.permissionId, pool.permissionValue);
     }
@@ -246,7 +246,7 @@ export class AppTypeService {
     }
 
     // 收集所有待处理的权限节点
-    const allNodes: Array<{ permissionId: string; checked: boolean; permissionValue?: number }> =
+    const allNodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string }> =
       [];
 
     // 遍历 PC 权限树
@@ -270,7 +270,7 @@ export class AppTypeService {
           const entity = manager.create(AppTypePermissionEntity, {
             appTypeId,
             permissionId: node.permissionId,
-            permissionValue: node.permissionValue ? Number(node.permissionValue) : 0,
+            permissionValue: node.permissionValue ? BigInt(node.permissionValue) : 0n,
           });
           entitiesToInsert.push(entity);
         }
@@ -296,7 +296,7 @@ export class AppTypeService {
    */
   private buildPermissionTree(
     permissions: Permission[],
-    poolMap: Map<string, number>,
+    poolMap: Map<string, bigint>,
   ): PermissionTreeNodeDto[] {
     // 构建 ID -> Permission Map
     const permMap = new Map<string, Permission>();
@@ -321,7 +321,7 @@ export class AppTypeService {
   private buildTreeNode(
     permission: Permission,
     permMap: Map<string, Permission>,
-    poolMap: Map<string, number>,
+    poolMap: Map<string, bigint>,
   ): PermissionTreeNodeDto {
     // 检查是否在权限池中
     const inPool = poolMap.has(permission.id);
@@ -346,8 +346,8 @@ export class AppTypeService {
       permStatus: permission.permStatus,
       isAutoSync: permission.isAutoSync,
       inPool,
-      // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效
-      permissionValue: inPool && poolValue !== undefined ? poolValue : undefined,   
+      // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效（bigint 序列化为字符串）
+      permissionValue: inPool && poolValue !== undefined ? poolValue.toString() : undefined,
     };
 
     // 找出子节点
@@ -368,8 +368,8 @@ export class AppTypeService {
    * @param result - 收集结果
    */
   private collectPermissionNodes(
-    nodes: Array<{ permissionId: string; checked: boolean; permissionValue?: number; children?: any[] }>,
-    result: Array<{ permissionId: string; checked: boolean; permissionValue?: number }>,
+    nodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string; children?: any[] }>,
+    result: Array<{ permissionId: string; checked: boolean; permissionValue?: string }>,
   ): void {
     for (const node of nodes) {
       result.push({

@@ -108,7 +108,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
     pcRoot.isCache = 0;
     pcRoot.showMode = ShowMode.NORMAL;
     pcRoot.permStatus = 1;
-    pcRoot.permissionValue = 0;
+    pcRoot.permissionValue = 0n;
     pcRoot.isAutoSync = 0;
 
     const saved = await dataSource.manager.save(pcRoot);
