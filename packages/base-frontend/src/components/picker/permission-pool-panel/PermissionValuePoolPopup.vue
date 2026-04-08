@@ -2,16 +2,20 @@
 /**
  * @fileoverview 权限池权限值配置弹窗
  * @description 用于配置权限池中节点的 permissionValue
+ * 可选值范围来自权限管理页面配置的 permissionValue
  */
 -->
 <template>
   <div class="permission-value-pool-popup">
     <p class="node-code">权限编码：{{ nodeCode }}</p>
+    <p class="permission-range" v-if="availablePermissionValues.length > 0">
+      可选权限：{{ availablePermissionValues.map(v => PermBitDesc[String(v)]).join('、') }}
+    </p>
     <el-divider />
     <div class="permission-actions">
       <el-checkbox-group v-model="selectedActions">
         <el-checkbox
-          v-for="action in permissionOptions"
+          v-for="action in availablePermissionOptions"
           :key="action.value"
           :label="action.value"
           border
@@ -30,8 +34,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getPermissionOptions } from '../../../utils/permissions';
-import { ApiAppTypeUpdatePermissionPool, ApiAppTypeGetPermissionPool } from '../../../apis/sys';
+import { PermBit, PermBitDesc, getPermissionOptions } from '../../../utils/permissions';
+import { ApiAppTypeUpdatePermissionPool, ApiAppTypeGetPermissionPool, ApiPermissionFindById } from '../../../apis/sys';
 import type { PermissionTreePayloadDto } from '../../../apis/sys/schemas';
 
 interface PermissionValuePoolPopupProps {
@@ -53,17 +57,47 @@ const appTypeId = computed(() => props.data?.appTypeId || '');
 const nodeId = computed(() => props.data?.nodeId || '');
 const treeType = computed(() => props.data?.treeType || 'pc');
 
-const permissionOptions = computed(() => getPermissionOptions());
 const selectedActions = ref<number[]>([]);
+const availablePermissionValues = ref<number[]>([]);
 
-onMounted(() => {
+// 根据权限管理页面配置的 permissionValue 生成可选的权限选项
+const availablePermissionOptions = computed(() => {
+  const allOptions = getPermissionOptions();
+  if (availablePermissionValues.value.length === 0) {
+    return allOptions;
+  }
+  return allOptions.filter(option => availablePermissionValues.value.includes(option.value));
+});
+
+onMounted(async () => {
+  // 1. 先获取权限详情，得到权限管理页面配置的 permissionValue
+  try {
+    const permissionDetail = await new ApiPermissionFindById({
+      query: { id: nodeId.value },
+    });
+
+    // 解析 permissionValue，获取已配置的权限位
+    const permValue = permissionDetail?.permissionValue ? BigInt(String(permissionDetail.permissionValue)) : 0n;
+
+    // 提取所有已配置的权限位
+    for (const [bitStr, _label] of Object.entries(PermBit)) {
+      const bit = BigInt(bitStr);
+      if ((permValue & bit) !== 0n) {
+        availablePermissionValues.value.push(Number(bit));
+      }
+    }
+  } catch (error) {
+    console.error('获取权限详情失败:', error);
+    // 如果获取失败，使用所有权限位作为备选
+    availablePermissionValues.value = Object.values(PermBit).map(Number);
+  }
+
+  // 2. 初始化选中的权限位
   const currentValue = typeof permissionValue.value === 'string'
     ? parseInt(permissionValue.value, 10)
     : (permissionValue.value || 0);
 
-  selectedActions.value = permissionOptions.value
-    .filter((action) => (currentValue & action.value) !== 0)
-    .map((action) => action.value);
+  selectedActions.value = availablePermissionValues.value.filter(value => (currentValue & value) !== 0);
 });
 
 /**
@@ -137,7 +171,16 @@ defineExpose({ onConfirm });
   .node-code {
     color: var(--el-text-color-secondary);
     font-size: 13px;
+    margin: 0 0 8px;
+  }
+
+  .permission-range {
+    color: var(--el-color-primary);
+    font-size: 12px;
     margin: 0 0 16px;
+    padding: 8px 12px;
+    background: var(--el-color-primary-light-9);
+    border-radius: 4px;
   }
 
   .permission-actions {
