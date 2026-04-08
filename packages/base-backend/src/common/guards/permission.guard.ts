@@ -92,10 +92,12 @@ export class PermissionGuard implements CanActivate {
     for (const rp of userRolePermissions) {
       if (rp.permission && rp.permission.permStatus === 1) {
         const permCode = rp.permission.permCode;
-        // TypeORM 返回的 permissionValue 可能是字符串，需要转换为 bigint
+        // TypeORM 返回的 permissionValue 可能是 number/string/bigint，统一转换为 bigint
         const rpPermValue = typeof rp.permissionValue === 'string'
           ? BigInt(rp.permissionValue)
-          : rp.permissionValue as bigint;
+          : typeof rp.permissionValue === 'number'
+            ? BigInt(rp.permissionValue)
+            : rp.permissionValue;
         const existing = userPermissionMap.get(permCode);
         if (existing) {
           // 合并权限值（位运算 OR）
