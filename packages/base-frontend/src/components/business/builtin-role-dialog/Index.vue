@@ -51,8 +51,8 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { ApiRoleFindAll } from '../../apis/sys';
-import type { RoleResponseDto } from '../../apis/sys/schemas';
+import { ApiRoleFindAll } from '../../../apis/sys';
+import type { RoleResponseDto } from '../../../apis/sys/schemas';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 
