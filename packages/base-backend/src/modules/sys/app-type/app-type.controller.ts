@@ -147,7 +147,7 @@ export class AppTypeController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_PERMISSION_POOL', description: '更新权限池配置' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
   async updatePermissionPool(
     @Param('appTypeId', ParseUUIDPipe) appTypeId: string,
     @Body() updateDto: UpdatePermissionPoolDto,
@@ -170,7 +170,7 @@ export class AppTypeController {
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @ApiResponse({ status: 409, description: '类型编码已存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_APP_TYPE', description: '更新应用类型' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAppTypeDto: UpdateAppTypeDto,
@@ -189,7 +189,7 @@ export class AppTypeController {
   @ApiResponse({ status: 204, description: '删除成功' })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'DELETE_APP_TYPE', description: '删除应用类型' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['删除'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.appTypeService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -208,7 +208,7 @@ export class AppTypeController {
     type: AppTypeResponseDto,
   })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_APP_TYPE_STATUS', description: '更新应用类型状态' })
-  @RequirePermission({ permCode: 'system:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Query('status') status: number,
