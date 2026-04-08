@@ -42,6 +42,9 @@ import type {
   UpdateMemberRolesDto,
   AvailableRoleDto,
   AuditLogResponseDto,
+  InitStatusResponseDto,
+  InitRequestDto,
+  InitResponseDto,
   ObjectId,
   int,
   char,
@@ -56,16 +59,6 @@ import type {
   float,
   decimal,
 } from './schemas'
-
-// 权限常量和工具函数
-export {
-  PERMISSION_VALUES,
-  buildPerValue,
-  getPermValue,
-  parsePerValue,
-  hasPermission,
-  type PermissionName,
-} from '../../utils/permissions'
 
 /**
  * auth|认证相关接口->用户登录
@@ -100,7 +93,7 @@ export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
 export class ApiAuthLogout extends ApiCall<{}, any> {
   path = '/api/auth/logout'
   method: MoMethod = 'POST'
-  auth = false  // 退出登录不强制带 Token，避免 Token 失效时无法退出
+  auth = true
 }
 
 /**
@@ -474,7 +467,7 @@ export class ApiPermissionBatchCreate extends ApiCall<
  */
 export class ApiPermissionSyncPermissions extends ApiCall<
   SyncPermissionDto,
-  PermissionTreeNodeDto[]
+  Array<PermissionTreeNodeDto>
 > {
   path = '/api/permissions/sync'
   method: MoMethod = 'POST'
@@ -882,5 +875,26 @@ export class ApiHealthReadyCheck extends ApiCall<{}, any> {
 export class ApiHealthLiveCheck extends ApiCall<{}, any> {
   path = '/api/health/live'
   method: MoMethod = 'GET'
+  auth = false
+}
+
+/**
+ * 系统初始化->检查系统是否已初始化
+ */
+export class ApiInstallGetStatus extends ApiCall<{}, InitStatusResponseDto> {
+  path = '/api/install/status'
+  method: MoMethod = 'GET'
+  auth = false
+}
+
+/**
+ * 系统初始化->执行系统初始化
+ */
+export class ApiInstallInitialize extends ApiCall<
+  InitRequestDto,
+  InitResponseDto
+> {
+  path = '/api/install/init'
+  method: MoMethod = 'POST'
   auth = false
 }

@@ -3,7 +3,7 @@
  * @description 角色权限分配面板的 Props 和类型定义
  */
 
-import type { PermissionTreeNodeDto, PermissionPoolItemDto } from '../../../apis/sys/schemas'
+import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 
 /** RolePermissionPanel Props */
 export interface RolePermissionPanelProps {

@@ -7,10 +7,34 @@ import type { Router, RouteLocationNormalized } from 'vue-router';
 import { useAuthStore, TOKEN_KEY } from '../store/auth-store';
 
 /** 白名单路由（无需登录即可访问） */
-const WHITE_LIST = ['/login', '/403', '/404'];
+const WHITE_LIST = ['/login', '/install', '/403', '/404'];
 
 /** 已初始化标记 */
 let isInitialized = false;
+
+/** 系统初始化状态 */
+let sysInitialized: boolean | null = null;
+
+/**
+ * 检查系统初始化状态
+ */
+async function checkInitialized(): Promise<boolean> {
+  if (sysInitialized !== null) {
+    return sysInitialized;
+  }
+  try {
+    const response = await fetch('/api/install/status', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    const result = await response.json();
+    sysInitialized = result.data?.initialized ?? false;
+    return sysInitialized;
+  } catch (error) {
+    console.error('[RouteGuard] 检查初始化状态失败:', error);
+    return false;
+  }
+}
 
 /**
  * 设置路由权限守卫
@@ -21,7 +45,26 @@ export function setupRouteGuard(router: Router): void {
   router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next) => {
     const authStore = useAuthStore();
 
-    // 0. 处理根路径 /
+    // 0. 检查系统初始化状态
+    const initialized = await checkInitialized();
+
+    // 0.1 系统未初始化时，只允许访问 /install 页面
+    if (!initialized) {
+      if (to.path !== '/install') {
+        next({ path: '/install' });
+        return;
+      }
+      next();
+      return;
+    }
+
+    // 0.2 系统已初始化时，禁止访问 /install 页面
+    if (initialized && to.path === '/install') {
+      next({ path: '/login' });
+      return;
+    }
+
+    // 1. 处理根路径 /
     if (to.path === '/' || (to.name === 'RootRedirect' && to.path === '/')) {
       const hasToken = localStorage.getItem(TOKEN_KEY);
       if (!hasToken) {
@@ -164,4 +207,11 @@ function checkRouteInMenu(routePath: string, menu: any[]): boolean {
  */
 export function resetRouteGuard(): void {
   isInitialized = false;
+}
+
+/**
+ * 重置系统初始化状态（用于安装完成后）
+ */
+export function resetSystemInitialized(): void {
+  sysInitialized = null;
 }

@@ -67,7 +67,8 @@ export type PermissionTreeNodeDto = {
   showMode: string // 显示模式
   permStatus: number // 权限状态
   isAutoSync?: number // 是否自动同步：1=同步生成 0=手动添加
-  permissionValue?: string // 权限值（位运算，字符串格式）
+  inPool?: boolean // 是否在权限池中
+  permissionValue?: string // 权限值（位运算）
   children?: Array<PermissionTreeNodeDto> // 子权限列表
   createdAt: string // 创建时间
   updateAt: string // 更新时间
@@ -202,7 +203,7 @@ export type PermissionResponseDto = {
   isCache: number // 是否缓存
   showMode: string // 显示模式
   permStatus: number // 权限状态
-  permissionValue: integer // 权限值（位运算）
+  permissionValue: string // 权限值（位运算）
   createdAt: string // 创建时间
   updateAt: string // 更新时间
 }
@@ -378,4 +379,19 @@ export type AuditLogResponseDto = {
   ip: string // IP 地址
   userAgent?: string // User-Agent
   createAt: string // 创建时间
+}
+
+export type InitStatusResponseDto = {
+  initialized: boolean // 是否已初始化
+}
+
+export type InitRequestDto = {
+  adminPassword: string // 管理员密码
+}
+
+export type InitResponseDto = {
+  appTypeId: string // 应用类型 ID
+  appId: string // 应用实例 ID
+  adminUserId: string // 管理员用户 ID
+  message: string // 初始化消息
 }
