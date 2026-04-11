@@ -186,7 +186,7 @@ export async function run(args: string[]): Promise<HookResult> {
   }
 
   // ========== 输出日志 ==========
-  const logFile = path.join(projectRoot, '.claude', 'harness', 'output', 'test-strategy.log');
+  const logFile = path.join(projectRoot, '.harness', 'output', 'test-strategy.log');
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 
