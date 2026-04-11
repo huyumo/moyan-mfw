@@ -1,13 +1,3 @@
-# Auto Memory Index
-
-本项目自动记忆索引，用于记录开发过程中的重要信息。
-
-## 记忆文件
-
-- [质量门禁强制规则](feedback_quality_gates.md) — 任务状态管理和代码类型验证门禁
-- [用户工作模式与质量要求](feedback_user_work_mode.md) — 用户明确表达的工作方式偏好和质量标准（关键：严格对齐文档、主动识别任务、停止无效反思）
-
----
-
-**说明**: 记忆文件由 Claude 系统在跨会话协作时自动创建和管理。
-**重要**: 用户指出错误、纠正行为、表达偏好时，自动保存，不需要用户明确说"请记住"。
+- [团队协作模式](feedback_team_collaboration.md) — AI 独立团队模式，严格协同交接规范
+- [Harness 身份报告配置](project-harness-identity.md) — 会话启动时自动报告 Agent 身份和开发模式
+- [红线规则 - 不做不该做的事](feedback-no-overreach.md) — 1:1 还原原型，不添加额外功能，严格遵守权限

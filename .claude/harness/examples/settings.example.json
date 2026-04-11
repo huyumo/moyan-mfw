@@ -7,7 +7,6 @@
       "Glob",
       "Bash(pnpm *)",
       "Bash(npm run *)",
-      "Bash(cd packages/* && pnpm *)",
       "WebFetch",
       "Agent",
       "Edit(.claude/harness/**)",
@@ -15,9 +14,7 @@
       "Edit(.claude/memory/**)",
       "Write(.claude/memory/**)",
       "Edit(.claude/TASK.md)",
-      "Write(.claude/TASK.md)",
-      "Edit(CLAUDE.md)",
-      "Write(CLAUDE.md)"
+      "Write(.claude/TASK.md)"
     ],
     "deny": [
       "Bash(rm -rf *)",

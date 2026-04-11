@@ -1,0 +1,5 @@
+# Harness 依赖
+node_modules/
+
+# 输出目录
+output/

@@ -1,0 +1,119 @@
+{
+  "$schema": "./tech-stack-config-schema.json",
+  "description": "项目技术栈配置 - 请根据实际项目修改此文件",
+  "techStack": {
+    "language": {
+      "name": "TypeScript",
+      "version": "5.x",
+      "description": "主要开发语言"
+    },
+    "runtime": {
+      "name": "Node.js",
+      "version": "20.x",
+      "description": "运行时环境"
+    },
+    "frameworks": [
+      {
+        "name": "Express",
+        "version": "4.x",
+        "description": "Web 框架",
+        "optional": true
+      },
+      {
+        "name": "NestJS",
+        "version": "10.x",
+        "description": "Web 框架",
+        "optional": true
+      }
+    ],
+    "databases": [
+      {
+        "name": "PostgreSQL",
+        "version": "15.x",
+        "description": "主数据库",
+        "type": "relational"
+      },
+      {
+        "name": "Redis",
+        "version": "7.x",
+        "description": "缓存层",
+        "type": "key-value"
+      }
+    ],
+    "testing": [
+      {
+        "name": "Jest",
+        "version": "29.x",
+        "description": "单元测试框架"
+      },
+      {
+        "name": "Supertest",
+        "version": "6.x",
+        "description": "API 测试"
+      }
+    ],
+    "tooling": [
+      {
+        "name": "ESLint",
+        "description": "代码检查"
+      },
+      {
+        "name": "Prettier",
+        "description": "代码格式化"
+      }
+    ]
+  },
+  "architectureDecisions": [
+    {
+      "id": "ADR-001",
+      "title": "API 设计风格",
+      "decision": "RESTful",
+      "description": "采用 RESTful API 设计风格",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-002",
+      "title": "认证方式",
+      "decision": "JWT",
+      "description": "使用 JWT 进行无状态认证",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-003",
+      "title": "数据库迁移",
+      "decision": "迁移脚本",
+      "description": "数据库迁移使用迁移脚本管理",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-004",
+      "title": "架构模式",
+      "decision": "分层架构",
+      "description": "采用分层架构（Controller-Service-Repository）",
+      "status": "accepted"
+    }
+  ],
+  "techDebt": [
+    {
+      "id": "TD-001",
+      "description": "用户模块缺少单元测试覆盖",
+      "priority": "high",
+      "addedAt": "2026-04-01"
+    },
+    {
+      "id": "TD-002",
+      "description": "部分 API 缺少速率限制",
+      "priority": "medium",
+      "addedAt": "2026-04-05"
+    }
+  ],
+  "projectStructure": {
+    "src": "源代码目录",
+    "controllers": "控制器层",
+    "services": "服务层",
+    "repositories": "数据访问层",
+    "middleware": "中间件",
+    "utils": "工具函数",
+    "types": "类型定义"
+  }
+}
