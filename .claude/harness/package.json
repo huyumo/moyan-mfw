@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Claude Code Harness - 通用项目级自动化 Hooks 执行引擎",
   "private": true,
-  "type": "module",
   "scripts": {
     "hook:identity": "tsx hooks/identity-greeting-hook.ts",
     "hook:session-start": "tsx hooks/session-start-hook.ts",

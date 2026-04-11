@@ -1,6 +1,16 @@
 {
-  "theme": "dark",
+  "permissions": {
+    "additionalDirectories": [
+      "E:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw"
+    ],
+    "allow": [
+      "Bash(cp -r .claude/harness/config .harness/)",
+      "Bash(cp -r .claude/harness/templates .harness/)",
+      "Bash(cp .claude/harness/team.json .harness/)"
+    ]
+  },
   "language": "zh-CN",
+  "theme": "dark",
   "workspace": {
     "name": "Moyan MFW - 墨焱管理后台基础框架",
     "description": "多租户统一权限管理平台"
@@ -17,10 +27,5 @@
       "requireTypeCheck": true,
       "requireLint": true
     }
-  },
-  "permissions": {
-    "additionalDirectories": [
-      "E:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw"
-    ]
   }
 }
