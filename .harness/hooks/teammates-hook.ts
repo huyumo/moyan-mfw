@@ -89,29 +89,6 @@ function writeSpawnSuggestion(suggestions: SpawnSuggestion[], outputDir: string)
   fs.writeFileSync(suggestionFile, JSON.stringify(suggestions, null, 2), 'utf-8');
 }
 
-/**
- * 向上查找项目根目录（查找 TASK.md 文件）
- */
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
-
-  while (depth < maxDepth) {
-    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
-      return currentDir;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
-  }
-
-  return process.cwd();
-}
-
 export async function run(args: string[]): Promise<HookResult> {
   const result: HookResult = {
     passed: true,

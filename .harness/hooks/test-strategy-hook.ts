@@ -126,7 +126,7 @@ export async function run(args: string[]): Promise<HookResult> {
       '   - 技术栈说明（前端框架、路由模式等）\n' +
       '   - 测试方法（事件模拟方式、组件测试方法等）\n' +
       '   - 配置信息（端口、URL 等）\n' +
-      '   参考模板：.claude/harness/templates/test-strategy-template.md'
+      '   参考模板：.harness/templates/test-strategy-template.md'
     );
     result.passed = false;
     return result;

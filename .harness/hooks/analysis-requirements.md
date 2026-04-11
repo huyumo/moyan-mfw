@@ -64,7 +64,7 @@ PreCode Hook 检查
 
 ### 方式 1：输出到分析文件
 
-`.claude/harness/output/analysis-[timestamp].md`
+`.harness/output/analysis-[timestamp].md`
 
 ### 方式 2：输出到 TASK.md
 

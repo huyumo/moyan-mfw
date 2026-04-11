@@ -42,7 +42,7 @@ export function findProjectRoot(): string {
   let depth = 0;
 
   while (depth < maxDepth) {
-    const pathsConfig = path.join(currentDir, '.claude', 'harness', 'config', 'paths.json');
+    const pathsConfig = path.join(currentDir, '.harness', 'config', 'paths.json');
     if (fs.existsSync(pathsConfig)) {
       return currentDir;
     }

@@ -5,8 +5,8 @@
  * 从项目配置文件中读取模板，如果没有配置则提供通用模板
  *
  * 配置文件路径:
- * - .claude/harness/config/docs.json (项目特定配置)
- * - .claude/harness/config/docs.example.json (示例配置)
+ * - .harness/config/docs.json (项目特定配置)
+ * - .harness/config/docs.example.json (示例配置)
  */
 
 import * as fs from 'fs';
@@ -302,7 +302,7 @@ export async function run(args: string[]): Promise<HookResult> {
     result.message = '📄 文档模板（通用模板 - 可配置项目特定模板）';
     result.warnings.push(
       '未找到文档配置文件，已加载通用模板',
-      '建议创建 .claude/harness/config/docs.json 定义项目特定模板'
+      '建议创建 .harness/config/docs.json 定义项目特定模板'
     );
   }
 

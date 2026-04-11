@@ -5,8 +5,8 @@
  * 从项目配置文件中读取规范，如果没有配置则提供通用原则
  *
  * 配置文件路径:
- * - .claude/harness/config/frontend.json (项目特定配置)
- * - .claude/harness/config/frontend.example.json (示例配置)
+ * - .harness/config/frontend.json (项目特定配置)
+ * - .harness/config/frontend.example.json (示例配置)
  */
 
 import * as fs from 'fs';
@@ -157,7 +157,7 @@ export async function run(args: string[]): Promise<HookResult> {
     result.message = '🎨 前端开发指南（通用原则 - 建议配置项目特定规范）';
     result.warnings.push(
       '未找到前端配置文件，已加载通用原则',
-      '建议创建 .claude/harness/config/frontend.json 定义项目特定规范'
+      '建议创建 .harness/config/frontend.json 定义项目特定规范'
     );
   }
 
