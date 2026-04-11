@@ -14,6 +14,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadPathsConfig, findProjectRoot } from '../utils/paths';
 
 interface TaskFrontMatter {
   task: string;
@@ -124,8 +125,10 @@ export async function run(args: string[]): Promise<HookResult> {
 
   // 获取项目根目录
   const projectRoot = findProjectRoot();
-  const taskFilePath = path.join(projectRoot, 'TASK.md');
-  const teamConfigPath = path.join(projectRoot, '.claude', 'harness', 'team.json');
+  const paths = loadPathsConfig(projectRoot);
+
+  const taskFilePath = paths.input.taskFile;
+  const teamConfigPath = paths.input.teamConfig;
 
   // 加载团队配置（如果存在）
   let teamConfig: Record<string, any> | null = null;
@@ -318,8 +321,8 @@ export async function run(args: string[]): Promise<HookResult> {
     result.message += '\n' + result.warnings.join('\n');
   }
 
-  // 输出日志
-  const logFile = path.join(projectRoot, '.harness', 'output', 'session-start.log');
+  // 输出日志 - 使用配置路径
+  const logFile = paths.output.logs.sessionStart;
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 
