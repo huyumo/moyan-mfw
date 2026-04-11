@@ -1,47 +1,26 @@
 {
-  "permissions": {
-    "bypassPermissions": true,
-    "allow": [
-      "Bash(*)",
-      "Skill(*)",
-      "Bash(npm uninstall:*)",
-      "Bash(pkill -9 -f \"python.*http.server\")",
-      "Bash(taskkill /F /IM python.exe)",
-      "Bash(rm -f book.json .gitbook.yaml scripts/fix-mermaid.sh scripts/fix-mermaid.bat)",
-      "Bash(powershell -Command \"Remove-Item -Path _book -Recurse -Force -ErrorAction SilentlyContinue\")",
-      "Read(//e/Moyan/moyan-mfw-workspace/workspace04/**)",
-      "Bash(powershell -Command \"Get-Process | Where-Object { $_MainWindowTitle -like ''*'' -or $_ProcessName -like ''*python*'' } | Select-Object Id,ProcessName,Path\")",
-      "Bash(cmd /c \"rmdir /s /q _book\")",
-      "Bash(pnpm docs:dev)",
-      "Bash(git restore:*)",
-      "Bash(wsl python3:*)",
-      "Read(//e/Moyan/moyan/moyan-mfw-workspace/workspace04/**)",
-      "WebFetch(domain:www.npmjs.com)",
-      "Bash(pnpm start:dev)",
-      "Bash(curl -s http://localhost:3000/api-docs-json)",
-      "Bash(pnpm update:*)",
-      "Bash(npx vue-tsc:*)",
-      "Bash(cat e:Moyanmoyanmoyan-mfw-workspaceworkspace04moyan-mfwnode_modules.pnpmmoyan-api@*node_modulesmoyan-apipackage.json)",
-      "Bash(pnpm dev:*)",
-      "Bash(curl -s \"http://localhost:5175/src/main.ts\")",
-      "Bash(curl -s \"http://localhost:5175/@fs/E:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/packages/base-frontend/src/views/sys/app-type/Index.vue\")",
-      "Bash(grep -r \"from ''''@/\" packages/base-frontend/src --include=\"*.vue\" --include=\"*.ts\" --include=\"*.tsx\")"
-    ]
+  "theme": "dark",
+  "language": "zh-CN",
+  "workspace": {
+    "name": "Moyan MFW - 墨焱管理后台基础框架",
+    "description": "多租户统一权限管理平台"
   },
-  "skillHub": {
-    "enabled": true,
-    "priority": "high",
-    "registry": "https://skillhub.cn",
-    "autoUpdate": true
-  },
-  "skills": {
-    "desktop-control": {
+  "preferences": {
+    "autoSaveMemory": true,
+    "strictMode": true,
+    "teamMode": {
       "enabled": true,
-      "version": "latest"
+      "autoActivate": true
     },
-    "ui-ux-pro-max": {
-      "enabled": true,
-      "version": "latest"
+    "codeQuality": {
+      "requireSelfTest": true,
+      "requireTypeCheck": true,
+      "requireLint": true
     }
+  },
+  "permissions": {
+    "additionalDirectories": [
+      "E:\\Moyan\\moyan\\moyan-mfw-workspace\\workspace04\\moyan-mfw"
+    ]
   }
 }
