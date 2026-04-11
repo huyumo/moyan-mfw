@@ -1,24 +1,22 @@
 /**
- * 编码前检查 Hook（增强版）
+ * 编码前检查 Hook（增强版 - 含测试策略检查）
  *
- * 目的：确保 AI 在开始写代码前已经完成了所有准备工作
+ * 目的：确保 AI 在开始写代码前已经完成了充分的需求分析
  *
  * 检查项：
  * 1. TASK.md 状态是否为 in_progress
- * 2. 是否有需求分析文档
- * 3. 是否有优缺点分析（新增）
- * 4. 是否有边界条件分析（新增）
- * 5. 是否有实现思路（新增）
- * 6. 是否有文件影响分析（新增）
- * 7. 是否识别了相关文件
- * 8. 是否有待确认事项
+ * 2. 是否有需求理解
+ * 3. 是否有优缺点分析
+ * 4. 是否有边界条件分析
+ * 5. 是否有实现思路
+ * 6. 是否有文件影响分析
+ * 7. 【新增】如果是测试任务，检查测试策略文档
  *
  * @returns {Promise<HookResult>}
  */
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadPathsConfig, findProjectRoot } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -64,6 +62,129 @@ function hasAnalysisSection(content: string, keywords: string[]): boolean {
   );
 }
 
+/**
+ * 向上查找项目根目录（查找 TASK.md 文件）
+ */
+function findProjectRoot(): string {
+  let currentDir = process.cwd();
+  const maxDepth = 5;
+  let depth = 0;
+
+  while (depth < maxDepth) {
+    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
+      return currentDir;
+    }
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      break;
+    }
+    currentDir = parentDir;
+    depth++;
+  }
+
+  return process.cwd();
+}
+
+/**
+ * 检查任务是否涉及测试
+ */
+function isTestTask(taskContent: string): boolean {
+  const testPatterns = [
+    /测试/i,
+    /e2e/i,
+    /playwright/i,
+    /unit\s*test/i,
+    /vitest/i,
+    /spec\.ts/i,
+    /test.*文件/i,
+    /编写.*测试/i,
+    /修复.*测试/i,
+    /添加.*测试/i,
+    /更新.*测试/i
+  ];
+  return testPatterns.some(pattern => pattern.test(taskContent));
+}
+
+/**
+ * 检查测试策略文档的基本结构
+ */
+function checkTestStrategy(content: string): { passed: boolean; missingSections: string[] } {
+  const requiredSections = [
+    { name: '技术栈说明', keywords: ['技术栈', '框架', 'Framework', 'Stack'] },
+    { name: '测试方法', keywords: ['测试方法', '模拟方式', 'Test Method', 'Approach'] },
+    { name: '配置信息', keywords: ['配置', '端口', 'port', 'config', 'url', 'URL'] }
+  ];
+
+  const missingSections: string[] = [];
+
+  for (const section of requiredSections) {
+    const hasSection = section.keywords.some(keyword =>
+      content.toLowerCase().includes(keyword.toLowerCase())
+    );
+    if (!hasSection) {
+      missingSections.push(section.name);
+    }
+  }
+
+  return {
+    passed: missingSections.length === 0,
+    missingSections
+  };
+}
+
+/**
+ * 测试策略检查（集成到 pre-code 中）
+ */
+function checkTestStrategyTask(taskContent: string, projectRoot: string, harnessOutputDir: string): { errors: string[]; warnings: string[]; info: string[] } {
+  const result = { errors: [] as string[], warnings: [] as string[], info: [] as string[] };
+
+  // 判断是否是测试任务
+  if (!isTestTask(taskContent)) {
+    return result; // 非测试任务，跳过
+  }
+
+  // 检查测试策略文档是否存在
+  const testStrategyPath = path.join(projectRoot, 'docs', 'test-strategy.md');
+
+  if (!fs.existsSync(testStrategyPath)) {
+    result.errors.push(
+      '❌ 缺失测试策略文档 (docs/test-strategy.md)\n' +
+      '   要求：测试编写前必须完成技术对齐，记录以下信息：\n' +
+      '   - 技术栈说明（前端框架、路由模式等）\n' +
+      '   - 测试方法（事件模拟方式、组件测试方法等）\n' +
+      '   - 配置信息（端口、URL 等）\n' +
+      '   参考模板：.claude/harness/templates/test-strategy-template.md'
+    );
+    return result;
+  }
+
+  // 检查测试策略文档内容
+  const strategyContent = fs.readFileSync(testStrategyPath, 'utf-8');
+  const strategyCheck = checkTestStrategy(strategyContent);
+
+  if (!strategyCheck.passed) {
+    result.errors.push(
+      '❌ 测试策略文档缺少以下内容：\n' +
+      `   - ${strategyCheck.missingSections.join('\n   - ')}`
+    );
+  } else {
+    result.info.push('✅ 测试策略文档结构完整');
+  }
+
+  // 检查技术对齐记录（警告级别）
+  const techAlignedPath = path.join(harnessOutputDir, 'tech-aligned.md');
+  if (!fs.existsSync(techAlignedPath)) {
+    result.warnings.push(
+      '⚠️ 未找到技术对齐记录 (tech-aligned.md)\n' +
+      '   建议：PM 应组织开发 + 测试进行技术对齐会议，记录关键决策'
+    );
+  } else {
+    result.info.push('✅ 技术对齐记录存在');
+  }
+
+  return result;
+}
+
 export async function run(args: string[]): Promise<HookResult> {
   const result: HookResult = {
     passed: true,
@@ -73,14 +194,13 @@ export async function run(args: string[]): Promise<HookResult> {
   };
 
   const projectRoot = findProjectRoot();
-  const paths = loadPathsConfig(projectRoot);
-
-  const taskFilePath = paths.input.taskFile;
-  const harnessOutputDir = paths.output.directory;
+  const taskFilePath = path.join(projectRoot, 'TASK.md');
+  const harnessOutputDir = path.join(projectRoot, '.harness', 'output');
 
   // ========== 检查 1: TASK.md 状态 ==========
+  let taskContent = '';
   if (fs.existsSync(taskFilePath)) {
-    const taskContent = fs.readFileSync(taskFilePath, 'utf-8');
+    taskContent = fs.readFileSync(taskFilePath, 'utf-8');
     const frontMatterMatch = taskContent.match(/^---\n([\s\S]*?)\n---/);
 
     if (frontMatterMatch) {
@@ -98,13 +218,33 @@ export async function run(args: string[]): Promise<HookResult> {
     result.passed = false;
   }
 
-  // ========== 检查 2: 查找分析文档 ==========
+  // ========== 检查 2: 测试策略检查（新增） ==========
+  const testStrategyResult = checkTestStrategyTask(taskContent, projectRoot, harnessOutputDir);
+  result.errors.push(...testStrategyResult.errors);
+  result.warnings.push(...testStrategyResult.warnings);
+  if (testStrategyResult.errors.length > 0) {
+    result.passed = false;
+  }
+
+  // ========== 检查 3: 查找分析文档 ==========
   const analysisFiles = [
     path.join(harnessOutputDir, 'task-analysis.md'),
     path.join(harnessOutputDir, 'analysis-notes.md'),
     path.join(harnessOutputDir, 'requirement-analysis.md'),
-    taskFilePath  // 也可以检查 TASK.md 中是否有分析内容
+    path.join(harnessOutputDir, 'TASK.md')
   ];
+
+  if (fs.existsSync(harnessOutputDir)) {
+    const files = fs.readdirSync(harnessOutputDir);
+    for (const file of files) {
+      if (file.startsWith('analysis-') && file.endsWith('.md')) {
+        const filePath = path.join(harnessOutputDir, file);
+        if (!analysisFiles.includes(filePath)) {
+          analysisFiles.push(filePath);
+        }
+      }
+    }
+  }
 
   let hasAnalysis = false;
   let analysisContent = '';
@@ -112,9 +252,8 @@ export async function run(args: string[]): Promise<HookResult> {
   for (const file of analysisFiles) {
     if (fs.existsSync(file)) {
       const content = fs.readFileSync(file, 'utf-8');
-      // 跳过 YAML Front Matter
       const contentWithoutFrontMatter = content.replace(/^---\n[\s\S]*?\n---\n/, '');
-      if (contentWithoutFrontMatter.length > 100) {  // 至少 100 字才算有效分析
+      if (contentWithoutFrontMatter.length > 100) {
         hasAnalysis = true;
         analysisContent = contentWithoutFrontMatter;
         break;
@@ -127,7 +266,7 @@ export async function run(args: string[]): Promise<HookResult> {
     result.passed = false;
   }
 
-  // ========== 检查 3-6: 分析要素完整性（新增核心检查）==========
+  // ========== 检查 4-7: 分析要素完整性 ==========
   const analysisSections = {
     requirementAnalysis: false,
     prosConsAnalysis: false,
@@ -137,38 +276,32 @@ export async function run(args: string[]): Promise<HookResult> {
   };
 
   if (hasAnalysis) {
-    // 检查 3: 需求理解/需求分析
     analysisSections.requirementAnalysis = hasAnalysisSection(analysisContent, [
       '需求理解', '需求分析', '核心需求', '用户需要', '目标',
       '## 需求', '## 理解', 'user needs', 'requirement'
     ]);
 
-    // 检查 4: 优缺点分析
     analysisSections.prosConsAnalysis = hasAnalysisSection(analysisContent, [
       '优缺点', '优点', '缺点', '权衡', '利弊',
       '## 优点', '## 缺点', 'pros', 'cons', 'trade-off'
     ]);
 
-    // 检查 5: 边界条件分析
     analysisSections.boundaryAnalysis = hasAnalysisSection(analysisContent, [
       '边界条件', '边界', '限制', '适用范围', '不适用范围',
       '## 边界', '## 限制', 'boundary', 'limitation', 'scope'
     ]);
 
-    // 检查 6: 实现思路/技术方案
     analysisSections.implementationPlan = hasAnalysisSection(analysisContent, [
       '实现思路', '技术方案', '实现步骤', '设计方案', '实施计划',
       '## 实现', '## 方案', '## 步骤', 'implementation', 'approach', 'plan'
     ]);
 
-    // 检查 7: 文件影响分析
     analysisSections.fileImpact = hasAnalysisSection(analysisContent, [
       '文件影响', '会编辑', '会创建', '修改文件', '涉及文件',
       '## 文件', '相关文件', 'files to', 'will edit', 'will create'
     ]);
   }
 
-  // 汇总分析要素检查结果
   const missingSections: string[] = [];
 
   if (!analysisSections.requirementAnalysis) {
@@ -196,14 +329,17 @@ export async function run(args: string[]): Promise<HookResult> {
     result.passed = false;
   }
 
-  // ========== 检查 7: 是否识别了相关文件 ==========
+  // ========== 检查：是否识别了相关文件 ==========
   if (analysisContent) {
     const relatedFilePatterns = [
-      /相关文件 [`\s\S]*?(?:[`]{3})?/i,
-      /涉及文件 [:：]\s*[\s\S]*?(?:\n|\n\n)/i,
-      /修改范围 [:：]\s*[\s\S]*?(?:\n|\n\n)/i,
-      /文件路径 [:：]\s*[\s\S]*?(?:\n|\n\n)/i,
-      /会 [编辑 | 创建 | 删除] [:：]\s*[\s\S]*?(?:\n|\n\n)/i
+      /相关文件/i,
+      /涉及文件/i,
+      /修改范围/i,
+      /文件路径/i,
+      /会编辑/i,
+      /会创建/i,
+      /会删除/i,
+      /文件影响/i
     ];
 
     const hasRelatedFiles = relatedFilePatterns.some(pattern =>
@@ -216,7 +352,7 @@ export async function run(args: string[]): Promise<HookResult> {
     }
   }
 
-  // ========== 检查 8: 是否有"待确认"的标记 ==========
+  // ========== 检查：有待确认事项（警告） ==========
   if (analysisContent) {
     const pendingConfirmPatterns = [
       /待确认/i,
@@ -243,13 +379,13 @@ export async function run(args: string[]): Promise<HookResult> {
     return result;
   }
 
-  // 检查全部通过
   result.data = {
     taskStatus: 'in_progress',
     relatedFiles: [],
     analysisSections
   };
 
+  // 构建成功消息
   result.message = '✅ 编码前检查通过\n' +
     ` - 需求理解：${analysisSections.requirementAnalysis ? '✅' : '❌'}\n` +
     ` - 优缺点分析：${analysisSections.prosConsAnalysis ? '✅' : '❌'}\n` +
@@ -257,12 +393,17 @@ export async function run(args: string[]): Promise<HookResult> {
     ` - 实现思路：${analysisSections.implementationPlan ? '✅' : '❌'}\n` +
     ` - 文件影响：${analysisSections.fileImpact ? '✅' : '❌'}`;
 
+  // 添加测试策略检查信息
+  if (testStrategyResult.info.length > 0) {
+    result.message += '\n\n📋 测试策略检查:\n' + testStrategyResult.info.map(i => ` - ${i}`).join('\n');
+  }
+
   if (result.warnings.length > 0) {
     result.message += '\n\n警告:\n' + result.warnings.join('\n');
   }
 
   // ========== 输出日志 ==========
-  const logFile = paths.output.logs.preCode;
+  const logFile = path.join(projectRoot, '.harness', 'output', 'pre-code.log');
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 

@@ -67,13 +67,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:identity",
+            "command": "cd .harness && pnpm run hook:identity",
             "timeout": 30,
             "statusMessage": "🔔 运行 Harness 身份报告检查..."
           },
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:session-start",
+            "command": "cd .harness && pnpm run hook:session-start",
             "timeout": 60,
             "statusMessage": "🔔 运行 Harness 会话开始检查..."
           }
@@ -86,7 +86,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:pre-code",
+            "command": "cd .harness && pnpm run hook:pre-code",
             "timeout": 60,
             "statusMessage": "🔔 运行 Harness 编码前检查..."
           }
@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:code-quality",
+            "command": "cd .harness && pnpm run hook:code-quality",
             "timeout": 180,
             "statusMessage": "🔔 运行 Harness 代码质量检查..."
           }
@@ -112,7 +112,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:pm-context",
+            "command": "cd .harness && pnpm run hook:pm-context",
             "timeout": 30,
             "statusMessage": "📋 加载项目管理上下文..."
           }
@@ -123,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:architect-context",
+            "command": "cd .harness && pnpm run hook:architect-context",
             "timeout": 30,
             "statusMessage": "🏗️ 加载架构设计上下文..."
           }
@@ -134,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:backend-security",
+            "command": "cd .harness && pnpm run hook:backend-security",
             "timeout": 30,
             "statusMessage": "🔒 注入后端安全规范..."
           }
@@ -145,7 +145,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:frontend-guidelines",
+            "command": "cd .harness && pnpm run hook:frontend-guidelines",
             "timeout": 30,
             "statusMessage": "🎨 加载前端开发指南..."
           }
@@ -156,7 +156,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:review-checklist",
+            "command": "cd .harness && pnpm run hook:review-checklist",
             "timeout": 30,
             "statusMessage": "📝 加载代码审查清单..."
           }
@@ -167,7 +167,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:docs-template",
+            "command": "cd .harness && pnpm run hook:docs-template",
             "timeout": 30,
             "statusMessage": "📄 加载文档模板..."
           }
@@ -180,7 +180,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:subagent-review",
+            "command": "cd .harness && pnpm run hook:subagent-review",
             "timeout": 60,
             "statusMessage": "🔔 审查 subagent 工作成果..."
           }
@@ -193,7 +193,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd .claude/harness && pnpm run hook:session-end",
+            "command": "cd .harness && pnpm run hook:session-end",
             "timeout": 90,
             "statusMessage": "🔔 运行 Harness 会话结束检查..."
           }
