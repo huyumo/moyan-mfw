@@ -3,19 +3,19 @@
   "description": "Harness 目录路径配置 - 定义所有输入/输出目录",
 
   "input": {
-    "teamConfig": ".harness/team.json",
-    "harnessConfig": ".harness/config.json",
+    "teamConfig": ".claude/harness/team.json",
+    "harnessConfig": ".claude/harness/config.json",
     "taskFile": ".claude/TASK.md",
     "memory": ".harness/memory",
     "rules": ".harness/rules",
     "templates": ".harness/templates",
     "config": {
-      "techStack": ".harness/config/tech-stack.json",
-      "backend": ".harness/config/backend.json",
-      "frontend": ".harness/config/frontend.json",
-      "review": ".harness/config/review.json",
-      "docs": ".harness/config/docs.json",
-      "analysis": ".harness/config/analysis.json"
+      "techStack": ".claude/harness/config/tech-stack.json",
+      "backend": ".claude/harness/config/backend.json",
+      "frontend": ".claude/harness/config/frontend.json",
+      "review": ".claude/harness/config/review.json",
+      "docs": ".claude/harness/config/docs.json",
+      "analysis": ".claude/harness/config/analysis.json"
     }
   },
 

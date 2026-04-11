@@ -1,0 +1,49 @@
+{
+  "name": "@claude-code/harness",
+  "version": "1.0.0",
+  "description": "Claude Code Harness - 通用项目级自动化 Hooks 执行引擎",
+  "private": true,
+  "scripts": {
+    "hook:identity": "tsx hooks/identity-greeting-hook.ts",
+    "hook:session-start": "tsx hooks/session-start-hook.ts",
+    "hook:task-analysis": "tsx hooks/task-analysis-hook.ts",
+    "hook:test-strategy": "tsx hooks/test-strategy-hook.ts",
+    "hook:pre-code": "tsx hooks/pre-code-hook.ts",
+    "hook:code-quality": "tsx hooks/code-quality-gate.ts",
+    "hook:session-end": "tsx hooks/session-end-hook.ts",
+    "hook:teammates": "tsx hooks/teammates-hook.ts",
+    "hook:subagent-review": "tsx hooks/subagent-review-hook.ts",
+    "hook:pm-context": "tsx hooks/pm-context-hook.ts",
+    "hook:backend-security": "tsx hooks/backend-security-hook.ts",
+    "hook:architect-context": "tsx hooks/architect-context-hook.ts",
+    "hook:frontend-guidelines": "tsx hooks/frontend-guidelines-hook.ts",
+    "hook:review-checklist": "tsx hooks/review-checklist-hook.ts",
+    "hook:docs-template": "tsx hooks/docs-template-hook.ts",
+    "generate:test-template": "tsx scripts/generate-test-template.ts",
+    "start": "tsx hooks/identity-greeting-hook.ts && tsx hooks/session-start-hook.ts",
+    "pm-agent": "tsx scripts/pm-agent.ts",
+    "run-all": "tsx scripts/run-all-hooks.ts",
+    "verify": "tsx scripts/run-all-hooks.ts",
+    "track-tasks": "tsx scripts/track-active-tasks.ts",
+    "init": "tsx scripts/init-project.ts"
+  },
+  "keywords": [
+    "claude-code",
+    "harness",
+    "hooks",
+    "automation",
+    "workflow",
+    "code-quality"
+  ],
+  "author": "Harness Team",
+  "license": "MIT",
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "yaml": "^2.3.4",
+    "@types/node": "^20.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

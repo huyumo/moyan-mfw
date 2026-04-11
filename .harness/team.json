@@ -1,0 +1,361 @@
+{
+  "version": "2.1.0",
+  "name": "Moyan MFW 项目团队",
+  "description": "AI 独立团队模式 - 人类技术负责人协调决策，AI 智能体执行（开发 - 测试循环）",
+  "currentUser": "技术负责人",
+  "userRole": {
+    "name": "技术负责人/人类",
+    "description": "人类技术负责人 - 负责任务协调、技术决策和最终审批，不参与编码"
+  },
+  "autonomousMode": {
+    "enabled": false,
+    "pmAgent": "PM-001",
+    "checkpoints": [
+      "requirement-confirmed",
+      "design-confirmed",
+      "delivery-ready"
+    ],
+    "requireMultiAgentMeeting": true,
+    "meetingThreshold": {
+      "minAgents": 2,
+      "complexTaskMarkers": [
+        "需要 spawn Agent",
+        "需要多 Agent 协作",
+        "并行处理",
+        "多方对齐",
+        "协调会议",
+        "复杂任务",
+        "E2E 测试",
+        "架构设计",
+        "制定计划"
+      ],
+      "minPendingTasks": 5
+    }
+  },
+  "teamMode": {
+    "enabled": true,
+    "autoActivateOnSessionStart": true
+  },
+  "taskFlow": {
+    "singleTaskMode": true,
+    "devQaLoopEnabled": true,
+    "states": {
+      "pending": "待处理",
+      "in_progress": "开发中",
+      "awaiting_qa": "待测试",
+      "qa_approved": "测试通过",
+      "rejected": "打回修复",
+      "completed": "已完成"
+    },
+    "transitions": {
+      "developer": ["pending→in_progress", "in_progress→awaiting_qa", "rejected→in_progress"],
+      "qa": ["awaiting_qa→qa_approved", "awaiting_qa→rejected", "qa_approved→completed"],
+      "pm": ["*"]
+    },
+    "submissionRule": {
+      "onlyQaCanSubmit": true,
+      "requiredStatus": "qa_approved"
+    }
+  },
+  "team": {
+    "name": "Moyan MFW 项目团队",
+    "members": [
+      {
+        "id": "USER-001",
+        "name": "技术负责人",
+        "role": "lead",
+        "active": true,
+        "isHuman": true,
+        "isAgent": false,
+        "description": "人类技术负责人 - 负责任务协调、技术决策和最终审批"
+      },
+      {
+        "id": "PM-001",
+        "name": "PM-Agent",
+        "role": "pm",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "project-manager.md",
+        "description": "项目经理（智能体）- 需求分析、任务分解、文档编写、团队协调"
+      },
+      {
+        "id": "ARCH-001",
+        "name": "Tech-Architect",
+        "role": "architect",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "tech-architect.md",
+        "description": "技术架构师 - 负责系统架构设计、技术决策、复杂问题解决"
+      },
+      {
+        "id": "DEV-001",
+        "name": "Backend-Dev",
+        "role": "developer",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "backend-ts-node-dev.md",
+        "description": "后端开发专家 - TypeScript/Node.js API 开发、服务器端逻辑、数据库操作"
+      },
+      {
+        "id": "DEV-002",
+        "name": "Frontend-Dev",
+        "role": "developer",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "frontend-dev.md",
+        "description": "前端开发专家 - UI 组件、样式、交互和浏览器端逻辑"
+      },
+      {
+        "id": "QA-001",
+        "name": "QA-Agent",
+        "role": "reviewer",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "code-reviewer-tester.md",
+        "description": "质量审查专家 - 代码审查、测试执行和验证"
+      },
+      {
+        "id": "DOC-001",
+        "name": "Docs-Architect",
+        "role": "developer",
+        "active": true,
+        "isAgent": true,
+        "agentFile": "docs-architect.md",
+        "description": "文档架构师 - 技术文档编写和整理"
+      }
+    ],
+    "roles": {
+      "lead": {
+        "description": "技术负责人（人类）",
+        "permissions": [
+          "assign-task",
+          "approve-plan",
+          "review-code",
+          "merge-pr",
+          "deploy",
+          "view-all",
+          "coordinate-team"
+        ],
+        "canCode": false
+      },
+      "pm": {
+        "description": "项目经理（智能体）",
+        "permissions": [
+          "assign-task",
+          "review-code",
+          "approve-pr",
+          "coordinate-team",
+          "write-document"
+        ],
+        "canCode": false
+      },
+      "architect": {
+        "description": "技术架构师",
+        "permissions": [
+          "assign-task",
+          "approve-plan",
+          "review-code",
+          "write-document"
+        ],
+        "canCode": false
+      },
+      "developer": {
+        "description": "开发工程师",
+        "permissions": [
+          "create-task",
+          "assign-self",
+          "submit-pr",
+          "write-code",
+          "write-document"
+        ]
+      },
+      "reviewer": {
+        "description": "质量审查员",
+        "permissions": [
+          "review-code",
+          "approve-pr",
+          "quality-gate",
+          "run-tests"
+        ]
+      }
+    }
+  },
+  "collaboration": {
+    "discussionFlow": {
+      "enabled": true,
+      "description": "AI 独立团队模式：技术负责人协调 → PM 分析需求 → 团队执行 → QA 审查",
+      "steps": [
+        {
+          "step": 1,
+          "name": "任务协调",
+          "participants": [
+            "USER-001"
+          ],
+          "description": "技术负责人协调任务和决策",
+          "output": "任务分配"
+        },
+        {
+          "step": 2,
+          "name": "需求分析",
+          "participants": [
+            "PM-001"
+          ],
+          "description": "PM-Agent 分析需求并制定方案",
+          "output": "技术方案"
+        },
+        {
+          "step": 3,
+          "name": "架构设计",
+          "participants": [
+            "ARCH-001"
+          ],
+          "description": "技术架构师设计方案和决策",
+          "output": "架构设计"
+        },
+        {
+          "step": 4,
+          "name": "执行开发",
+          "participants": [
+            "DEV-001",
+            "DEV-002"
+          ],
+          "description": "开发工程师执行任务",
+          "output": "代码实现"
+        },
+        {
+          "step": 5,
+          "name": "质量审查",
+          "participants": [
+            "QA-001"
+          ],
+          "description": "QA-Agent 审查代码和测试",
+          "output": "审查报告"
+        },
+        {
+          "step": 6,
+          "name": "文档编写",
+          "participants": [
+            "DOC-001"
+          ],
+          "description": "文档架构师编写技术文档",
+          "output": "技术文档"
+        }
+      ]
+    },
+    "taskAssignment": {
+      "enabled": true,
+      "requireAssignee": true,
+      "allowSelfAssign": false,
+      "maxConcurrentTasks": 3,
+      "autoAssignByPm": true
+    },
+    "codeReview": {
+      "enabled": true,
+      "requireReviewBeforeMerge": true,
+      "minReviewers": 2,
+      "reviewerRoles": [
+        "pm",
+        "architect",
+        "reviewer"
+      ],
+      "reviewStatus": {
+        "pending": "待审查",
+        "revision_required": "需要修改（打回）",
+        "approved": "已通过"
+      },
+      "autoReviewByQa": true,
+      "strictMode": true
+    },
+    "handoff": {
+      "enabled": true,
+      "strictMode": true,
+      "requireHandoffDocument": true,
+      "description": "严格的交接规范：任务转手必须有书面交接文档",
+      "template": {
+        "required": [
+          "任务说明",
+          "已完成内容",
+          "待完成内容",
+          "注意事项",
+          "相关文件"
+        ]
+      }
+    },
+    "sessionLock": {
+      "enabled": true,
+      "timeoutMinutes": 30,
+      "notifyOnConflict": true,
+      "allowForceTakeover": false
+    }
+  },
+  "qualityGate": {
+    "strictMode": true,
+    "requiredChecks": [
+      "typecheck",
+      "lint",
+      "self-review",
+      "test-coverage"
+    ],
+    "blockOnFailure": true,
+    "coverageThresholds": {
+      "lines": 60,
+      "functions": 60,
+      "branches": 50,
+      "statements": 60
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "channels": {
+      "taskAssigned": {
+        "type": "internal",
+        "recipients": [
+          "assignee"
+        ]
+      },
+      "codeReviewRequested": {
+        "type": "internal",
+        "recipients": [
+          "reviewers"
+        ]
+      },
+      "sessionConflict": {
+        "type": "internal",
+        "recipients": [
+          "all"
+        ]
+      },
+      "handoffRequired": {
+        "type": "internal",
+        "recipients": [
+          "all"
+        ]
+      },
+      "deliveryReady": {
+        "type": "internal",
+        "recipients": [
+          "lead"
+        ]
+      }
+    }
+  },
+  "teammates": {
+    "enabled": true,
+    "autoSpawnSubagents": true,
+    "defaultModel": "claude-sonnet-4-6",
+    "maxConcurrentTeammates": 3,
+    "taskDistribution": {
+      "strategy": "skill-based",
+      "fallback": "round-robin"
+    },
+    "spawnTrigger": {
+      "keywords": [
+        "并行",
+        "多任务",
+        "spawn",
+        "Agent 协作"
+      ],
+      "autoDetectTaskComplexity": true
+    }
+  }
+}
