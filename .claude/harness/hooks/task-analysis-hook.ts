@@ -17,6 +17,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadPathsConfig } from '../utils/paths';
 import {
   analyzeTaskComplexity,
   getRequiredRolesForTask

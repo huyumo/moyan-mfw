@@ -15,6 +15,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadPathsConfig } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -81,9 +82,11 @@ export async function run(_args: string[]): Promise<HookResult> {
   };
 
   const projectRoot = findProjectRoot();
-  const taskFilePath = path.join(projectRoot, 'TASK.md');
-  const harnessOutputDir = path.join(projectRoot, '.harness', 'output');
-  const teamConfigPath = path.join(projectRoot, '.claude', 'harness', 'team.json');
+  const paths = loadPathsConfig(projectRoot);
+
+  const taskFilePath = paths.input.taskFile;
+  const harnessOutputDir = paths.output.directory;
+  const teamConfigPath = paths.input.teamConfig;
 
   // 加载团队配置（如果存在）
   let teamConfig: Record<string, any> | null = null;
@@ -311,8 +314,8 @@ export async function run(_args: string[]): Promise<HookResult> {
     result.message += `\n\n警告 (${warningCount} 项):\n` + result.warnings.join('\n');
   }
 
-  // 输出日志
-  const logFile = path.join(projectRoot, '.harness', 'output', 'session-end.log');
+  // 输出日志 - 使用配置路径
+  const logFile = paths.output.logs.sessionEnd;
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 

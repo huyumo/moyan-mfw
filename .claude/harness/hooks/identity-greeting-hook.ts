@@ -15,6 +15,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { loadPathsConfig, findProjectRoot } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -28,35 +29,6 @@ interface HookResult {
     autonomousMode: boolean;
     strictMode: boolean;
   };
-}
-
-/**
- * 向上查找项目根目录（查找 .claude/harness/team.json 或 TASK.md）
- */
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
-
-  while (depth < maxDepth) {
-    // 优先查找 .claude/harness/team.json
-    const harnessTeamConfig = path.join(currentDir, '.claude', 'harness', 'team.json');
-    if (fs.existsSync(harnessTeamConfig)) {
-      return currentDir;
-    }
-    // 兼容查找 TASK.md
-    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
-      return currentDir;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
-  }
-
-  return process.cwd();
 }
 
 export async function run(args: string[]): Promise<HookResult> {
@@ -75,10 +47,10 @@ export async function run(args: string[]): Promise<HookResult> {
   };
 
   const projectRoot = findProjectRoot();
-  const teamConfigPath = path.join(projectRoot, '.claude', 'harness', 'team.json');
-  const configPath = path.join(projectRoot, '.claude', 'harness', 'config.json');
+  const paths = loadPathsConfig(projectRoot);
 
   // 检查 1: team.json 是否存在
+  const teamConfigPath = paths.input.teamConfig;
   if (!fs.existsSync(teamConfigPath)) {
     result.passed = false;
     result.errors.push('team.json 配置文件不存在');
@@ -125,9 +97,9 @@ export async function run(args: string[]): Promise<HookResult> {
 
   // 读取 config.json 获取严格模式状态
   let strictMode = false;
-  if (fs.existsSync(configPath)) {
+  if (fs.existsSync(paths.input.harnessConfig)) {
     try {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      const config = JSON.parse(fs.readFileSync(paths.input.harnessConfig, 'utf-8'));
       // 支持两种命名：strict-mode 或 strictMode
       strictMode = config?.enforcement?.['strict-mode'] === true || config?.enforcement?.strictMode === true;
     } catch (e) {
@@ -159,8 +131,8 @@ export async function run(args: string[]): Promise<HookResult> {
     `团队成员：${teamMembers.filter((m: any) => m.active).map((m: any) => m.name).join(', ')}\n` +
     `用户角色：${userRole.name}（${userRole.description}）`;
 
-  // 输出日志
-  const logFile = path.join(projectRoot, '.harness', 'output', 'identity-greeting.log');
+  // 输出日志 - 使用配置路径
+  const logFile = paths.output.logs.identity;
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 

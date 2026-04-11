@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json.schemastore.org/harness-paths.json",
+  "description": "Harness 目录路径配置 - 定义所有输入/输出目录",
+
+  "input": {
+    "teamConfig": ".claude/harness/team.json",
+    "harnessConfig": ".claude/harness/config.json",
+    "taskFile": ".claude/TASK.md",
+    "memory": ".harness/memory",
+    "rules": ".harness/rules",
+    "templates": ".harness/templates",
+    "config": {
+      "techStack": ".claude/harness/config/tech-stack.json",
+      "backend": ".claude/harness/config/backend.json",
+      "frontend": ".claude/harness/config/frontend.json",
+      "review": ".claude/harness/config/review.json",
+      "docs": ".claude/harness/config/docs.json",
+      "analysis": ".claude/harness/config/analysis.json"
+    }
+  },
+
+  "output": {
+    "directory": ".harness/output",
+    "logs": {
+      "identity": ".harness/output/identity-greeting.log",
+      "sessionStart": ".harness/output/session-start.log",
+      "sessionEnd": ".harness/output/session-end.log",
+      "taskAnalysis": ".harness/output/task-analysis.log",
+      "testStrategy": ".harness/output/test-strategy.log",
+      "preCode": ".harness/output/pre-code.log",
+      "codeQuality": ".harness/output/code-quality-gate.log",
+      "teammates": ".harness/output/teammates.log",
+      "subagentReview": ".harness/output/subagent-review.log",
+      "subagentFiles": ".harness/output/subagent-files.log",
+      "meetingRequired": ".harness/output/meeting-required.log",
+      "docsTemplate": ".harness/output/docs-template.log",
+      "architectContext": ".harness/output/architect-context.log",
+      "backendSecurity": ".harness/output/backend-security.log",
+      "frontendGuidelines": ".harness/output/frontend-guidelines.log",
+      "reviewChecklist": ".harness/output/review-checklist.log",
+      "pmContext": ".harness/output/pm-context.log"
+    },
+    "analysis": ".harness/output/analysis",
+    "suggestions": ".harness/output/suggestions"
+  },
+
+  "harness": {
+    "root": ".harness",
+    "hooks": ".harness/hooks",
+    "scripts": ".harness/scripts",
+    "utils": ".harness/utils"
+  }
+}

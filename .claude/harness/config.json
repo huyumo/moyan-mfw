@@ -61,6 +61,7 @@
     "memory-directory": ".harness/memory",
     "rules-directory": ".harness/rules",
     "output-directory": ".harness/output",
+    "paths-config": ".claude/harness/config/paths.json",
 
     "required-sections-before-code": [
       "需求理解",
@@ -74,6 +75,10 @@
       "lint",
       "self-review"
     ]
+  },
+
+  "paths": {
+    "$ref": "./config/paths.json"
   },
 
   "enforcement": {
