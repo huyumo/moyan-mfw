@@ -5,8 +5,8 @@
  * 从项目配置文件中读取技术栈信息，如果没有配置则提供通用模板
  *
  * 配置文件路径:
- * - .claude/harness/config/tech-stack.json (项目特定配置)
- * - .claude/harness/config/tech-stack.example.json (示例配置)
+ * - .harness/config/tech-stack.json (项目特定配置)
+ * - .harness/config/tech-stack.example.json (示例配置)
  */
 
 import * as fs from 'fs';
@@ -72,8 +72,8 @@ function loadConfig(projectRoot: string): { config: any | null; path: string | n
 function buildTechStack(config: any): string[] {
   if (!config?.techStack) {
     return [
-      '⚠️ 未配置技术栈 - 请在 .claude/harness/config/tech-stack.json 中定义',
-      'ℹ️ 参考示例：.claude/harness/config/tech-stack.example.json'
+      '⚠️ 未配置技术栈 - 请在 .harness/config/tech-stack.json 中定义',
+      'ℹ️ 参考示例：.harness/config/tech-stack.example.json'
     ];
   }
 
@@ -200,7 +200,7 @@ export async function run(args: string[]): Promise<HookResult> {
     result.message = '🏗️ 架构设计上下文（通用模板 - 建议配置技术栈）';
     result.warnings.push(
       '未找到技术栈配置文件，已加载通用模板',
-      '建议复制 .claude/harness/config/tech-stack.example.json 为 tech-stack.json 并根据项目修改'
+      '建议复制 .harness/config/tech-stack.example.json 为 tech-stack.json 并根据项目修改'
     );
   }
 
