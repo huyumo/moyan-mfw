@@ -40,7 +40,9 @@
       "Edit(docs/**)",
       "Write(docs/**)",
       "Edit(**/*.md)",
-      "Write(**/*.md)"
+      "Write(**/*.md)",
+      "Edit(.harness/**)",
+      "Write(.harness/**)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -52,7 +54,8 @@
     ],
     "additionalDirectories": [
       ".claude/harness",
-      ".claude/harness/output",
+      ".harness",
+      ".harness/output",
       ".claude/memory",
       ".claude/agents"
     ]

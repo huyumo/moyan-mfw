@@ -58,9 +58,9 @@
 
   "rules": {
     "task-file-path": ".claude/TASK.md",
-    "memory-directory": ".claude/memory",
-    "rules-directory": ".claude/rules",
-    "output-directory": ".claude/harness/output",
+    "memory-directory": ".harness/memory",
+    "rules-directory": ".harness/rules",
+    "output-directory": ".harness/output",
 
     "required-sections-before-code": [
       "需求理解",
