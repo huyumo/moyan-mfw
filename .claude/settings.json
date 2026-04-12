@@ -91,6 +91,17 @@
             "statusMessage": "🔔 运行 Harness 编码前检查..."
           }
         ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm --filter @claude-code/harness tsx scripts/run-hook.ts PreToolUse hook:docs-norm \"pnpm run hook:docs-norm {{filePath}}\"",
+            "timeout": 30,
+            "statusMessage": "📄 运行文档规范检查..."
+          }
+        ]
       }
     ],
     "PostToolUse": [

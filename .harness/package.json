@@ -20,6 +20,7 @@
     "hook:frontend-guidelines": "tsx hooks/frontend-guidelines-hook.ts",
     "hook:review-checklist": "tsx hooks/review-checklist-hook.ts",
     "hook:docs-template": "tsx hooks/docs-template-hook.ts",
+    "hook:docs-norm": "tsx hooks/docs-norm-hook.ts",
     "generate:test-template": "tsx scripts/generate-test-template.ts",
     "start": "tsx hooks/identity-greeting-hook.ts && tsx hooks/session-start-hook.ts",
     "pm-agent": "tsx scripts/pm-agent.ts",
