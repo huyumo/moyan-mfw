@@ -11,6 +11,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { findProjectRoot, loadPathsConfig } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -29,40 +30,28 @@ interface HookResult {
   };
 }
 
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
+function loadConfig(projectRoot: string): { config: any | null; path: string | null } {
+  const paths = loadPathsConfig(projectRoot);
+  const configPath = paths.input.config.techStack;
 
-  while (depth < maxDepth) {
-    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
-      return currentDir;
+  // 检查项目特定配置
+  if (fs.existsSync(configPath)) {
+    try {
+      const content = fs.readFileSync(configPath, 'utf-8');
+      return { config: JSON.parse(content), path: configPath };
+    } catch (e) {
+      // 继续尝试示例配置
     }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
   }
 
-  return process.cwd();
-}
-
-function loadConfig(projectRoot: string): { config: any | null; path: string | null } {
-  const configPaths = [
-    path.join(projectRoot, '.claude', 'harness', 'config', 'tech-stack.json'),
-    path.join(projectRoot, '.claude', 'harness', 'config', 'tech-stack.example.json')
-  ];
-
-  for (const configPath of configPaths) {
-    if (fs.existsSync(configPath)) {
-      try {
-        const content = fs.readFileSync(configPath, 'utf-8');
-        return { config: JSON.parse(content), path: configPath };
-      } catch (e) {
-        continue;
-      }
+  // 尝试示例配置
+  const exampleConfigPath = configPath.replace('.json', '.example.json');
+  if (fs.existsSync(exampleConfigPath)) {
+    try {
+      const content = fs.readFileSync(exampleConfigPath, 'utf-8');
+      return { config: JSON.parse(content), path: exampleConfigPath };
+    } catch (e) {
+      // 继续
     }
   }
 

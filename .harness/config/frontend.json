@@ -1,0 +1,109 @@
+{
+  "$schema": "./frontend-config-schema.json",
+  "description": "Moyan MFW 前端开发规范配置",
+  "projectName": "moyan-mfw-base-frontend",
+  "framework": {
+    "name": "Vue 3",
+    "version": "3.x",
+    "api": "Composition API",
+    "scriptSetup": true
+  },
+  "styling": {
+    "approach": "Sass + CSS Modules",
+    "preprocessor": "Sass",
+    "uiLibrary": "Element Plus 2.x"
+  },
+  "buildTool": {
+    "name": "Vite",
+    "version": "5.x"
+  },
+  "stateManagement": {
+    "name": "Pinia",
+    "version": "2.x"
+  },
+  "router": {
+    "name": "Vue Router",
+    "version": "4.x"
+  },
+  "componentNamingConventions": [
+    {
+      "pattern": "组件文件名",
+      "rule": "PascalCase + Mfw 前缀",
+      "example": "MfwFormat.vue, MfwJsonEditor.vue"
+    },
+    {
+      "pattern": "组件导出名",
+      "rule": "PascalCase",
+      "example": "export default MfwFormat"
+    },
+    {
+      "pattern": "辅助函数",
+      "rule": "camelCase",
+      "example": "formatDate, parseJson"
+    },
+    {
+      "pattern": "常量",
+      "rule": "UPPER_SNAKE_CASE",
+      "example": "DEFAULT_PAGE_SIZE"
+    },
+    {
+      "pattern": "CSS 类名",
+      "rule": "kebab-case + BEM",
+      "example": "mfw-format__item--active"
+    },
+    {
+      "pattern": "测试文件",
+      "rule": "*.spec.ts",
+      "example": "MfwFormat.spec.ts"
+    },
+    {
+      "pattern": "Store 文件",
+      "rule": "camelCase + Store 后缀",
+      "example": "authStore.ts, layoutStore.ts"
+    }
+  ],
+  "responsiveBreakpoints": {
+    "sm": "640px",
+    "md": "768px",
+    "lg": "1024px",
+    "xl": "1280px",
+    "2xl": "1536px"
+  },
+  "accessibility": {
+    "standard": "WCAG 2.1 AA",
+    "requirements": [
+      "所有图片必须有 alt 属性",
+      "表单控件必须有关联的 label",
+      "颜色对比度至少 4.5:1 (文本), 3:1 (大文本)",
+      "支持键盘导航（Tab 顺序合理）",
+      "焦点状态必须可见",
+      "使用语义化 HTML 标签"
+    ]
+  },
+  "performanceOptimizations": [
+    "实现组件懒加载 (defineAsyncComponent)",
+    "实现路由懒加载 (component: () => import(...))",
+    "图片使用懒加载 (v-lazy 或 loading=lazy)",
+    "使用 v-memo 优化静态内容",
+    "虚拟滚动长列表 (element-plus ElTable 虚拟滚动)",
+    "防抖/节流高频事件",
+    "减少 bundle 大小 (Tree Shaking, 按需引入 Element Plus)"
+  ],
+  "codeStyle": {
+    "scriptSetup": true,
+    "reactiveVsRef": "优先使用 ref，复杂对象使用 reactive",
+    "propsDefinition": "使用 defineProps<>() 泛型语法",
+    "emitsDefinition": "使用 defineEmits<>() 泛型语法",
+    "slotsDefinition": "使用 defineSlots<>() 泛型语法",
+    "importsOrder": [
+      "Vue APIs (ref, reactive, computed...)",
+      "Vue lifecycle hooks",
+      "Pinia stores",
+      "Vue Router",
+      "Element Plus components",
+      "Project components",
+      "Utils",
+      "Types"
+    ]
+  }
+}

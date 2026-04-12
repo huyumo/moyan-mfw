@@ -40,6 +40,12 @@ interface HookResult {
     hasActiveSession: boolean;
     assignee?: string;
     teammates?: string[];
+    taskHistory?: {
+      totalTasks: number;
+      completedTasks: number;
+      mockTestCount: number;
+      lastTask?: string;
+    };
   };
 }
 
@@ -58,29 +64,6 @@ function parseFrontMatter(content: string): Record<string, string> {
   }
 
   return result;
-}
-
-/**
- * 向上查找项目根目录（查找 TASK.md 文件）
- */
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
-
-  while (depth < maxDepth) {
-    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
-      return currentDir;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
-  }
-
-  return process.cwd();
 }
 
 /**
@@ -138,9 +121,22 @@ export async function run(args: string[]): Promise<HookResult> {
 
   // 检查 1: TASK.md 文件是否存在
   if (!fs.existsSync(taskFilePath)) {
-    result.passed = false;
-    result.errors.push('TASK.md 文件不存在');
-    result.message = '【阻塞】TASK.md 文件不存在，请先创建任务文件';
+    // 允许无任务模式（用于测试/临时会话）
+    result.passed = true;
+    result.warnings.push('⚠️ TASK.md 文件不存在，当前为无任务模式（测试/临时会话）');
+    result.message = '✅ 会话开始检查通过 - 无任务模式（测试/临时会话）';
+    result.data = {
+      taskName: '无',
+      taskStatus: '无',
+      taskPriority: '无',
+      hasActiveSession: false,
+      assignee: '未分配',
+      teammates: teamConfig?.team?.members?.filter((m: any) => m.active).map((m: any) => m.name) || []
+    };
+    // 输出日志
+    const logFile = paths.output.logs.sessionStart;
+    fs.mkdirSync(path.dirname(logFile), { recursive: true });
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
     return result;
   }
 
@@ -306,16 +302,82 @@ export async function run(args: string[]): Promise<HookResult> {
   }
 
   // 全部检查通过
+  // 加载任务历史（新增）
+  let taskHistory = null;
+  try {
+    const registryPath = path.join(projectRoot, '.harness', 'registry', 'tasks.json');
+    const statePath = path.join(projectRoot, '.harness', 'state', 'last-task-state.json');
+    const categoriesPath = path.join(projectRoot, '.harness', 'registry', 'categories.json');
+
+    // 加载分类配置
+    let categoryNames: Record<string, string> = {};
+    if (fs.existsSync(categoriesPath)) {
+      const categories = JSON.parse(fs.readFileSync(categoriesPath, 'utf-8'));
+      (categories.categories || []).forEach((cat: any) => {
+        categoryNames[cat.id] = cat.name;
+      });
+    }
+
+    if (fs.existsSync(registryPath)) {
+      const registry = JSON.parse(fs.readFileSync(registryPath, 'utf-8'));
+
+      // 按分类统计（使用 category 字段）
+      const byCategory = registry.statistics?.byCategory || {};
+
+      // 转换为中文名称显示
+      const byCategoryCN: Record<string, number> = {};
+      Object.entries(byCategory).forEach(([catId, count]: [string, any]) => {
+        const cnName = categoryNames[catId] || catId;
+        byCategoryCN[cnName] = count;
+      });
+
+      taskHistory = {
+        totalTasks: registry.statistics?.total || 0,
+        completedTasks: registry.statistics?.completed || 0,
+        byCategory: byCategoryCN,  // 按分类统计（中文名称）
+        lastTask: registry.tasks.length > 0 ? registry.tasks[registry.tasks.length - 1].title : undefined
+      };
+    }
+
+    // 加载上次任务状态
+    if (fs.existsSync(statePath)) {
+      const state = JSON.parse(fs.readFileSync(statePath, 'utf-8'));
+      if (!taskHistory) taskHistory = { totalTasks: 0, completedTasks: 0, byCategory: {} };
+      taskHistory.lastTask = state.currentTask?.title;
+    }
+  } catch (e) {
+    // 忽略历史加载错误
+  }
+
   result.data = {
     taskName: frontMatterRaw.task,
     taskStatus: frontMatterRaw.status,
     taskPriority: frontMatterRaw.priority,
     hasActiveSession: frontMatterRaw.lock ? (Date.now() / 1000 - parseInt(frontMatterRaw.lock, 10) < 300) : false,
     assignee: frontMatterRaw.assignee || '未分配',
-    teammates: teamConfig?.team?.members?.filter((m: any) => m.active).map((m: any) => m.name) || []
+    teammates: teamConfig?.team?.members?.filter((m: any) => m.active).map((m: any) => m.name) || [],
+    taskHistory: taskHistory || undefined
   };
 
   result.message = `✅ 会话开始检查通过 - 当前任务：${frontMatterRaw.task} (${frontMatterRaw.status}, ${frontMatterRaw.priority})`;
+
+  // 添加任务历史信息（如果有）
+  if (taskHistory) {
+    result.message += `\n📊 项目历史：已完成 ${taskHistory.completedTasks}/${taskHistory.totalTasks} 个任务`;
+
+    // 按分类显示（使用 categoryName，不硬编码）
+    if (taskHistory.byCategory && Object.keys(taskHistory.byCategory).length > 0) {
+      const categoryParts = Object.entries(taskHistory.byCategory)
+        .map(([catId, count]: [string, any]) => `${catId}: ${count}`);
+      if (categoryParts.length > 0) {
+        result.message += ` | 分类统计：${categoryParts.join(', ')}`;
+      }
+    }
+
+    if (taskHistory.lastTask) {
+      result.message += `\n💡 上次任务：${taskHistory.lastTask}`;
+    }
+  }
 
   if (result.warnings.length > 0) {
     result.message += '\n' + result.warnings.join('\n');

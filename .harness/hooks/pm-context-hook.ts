@@ -10,6 +10,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { findProjectRoot, loadPathsConfig } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -22,26 +23,6 @@ interface HookResult {
     activeTeammates: string[];
     collaborationRules: string[];
   };
-}
-
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
-
-  while (depth < maxDepth) {
-    if (fs.existsSync(path.join(currentDir, 'TASK.md'))) {
-      return currentDir;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
-  }
-
-  return process.cwd();
 }
 
 export async function run(args: string[]): Promise<HookResult> {

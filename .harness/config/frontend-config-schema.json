@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "前端开发规范配置 Schema",
+  "description": "定义前端开发规范配置的格式",
+  "type": "object",
+  "required": ["framework", "styling", "buildTool"],
+  "properties": {
+    "framework": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "api": { "type": "string" },
+        "scriptSetup": { "type": "boolean" }
+      }
+    },
+    "styling": {
+      "type": "object",
+      "properties": {
+        "approach": { "type": "string" },
+        "preprocessor": { "type": "string" },
+        "uiLibrary": { "type": "string" }
+      }
+    },
+    "buildTool": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "stateManagement": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "router": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "version": { "type": "string" }
+      }
+    },
+    "componentNamingConventions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "pattern": { "type": "string" },
+          "rule": { "type": "string" },
+          "example": { "type": "string" }
+        }
+      }
+    },
+    "responsiveBreakpoints": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "accessibility": {
+      "type": "object",
+      "properties": {
+        "standard": { "type": "string" },
+        "requirements": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "performanceOptimizations": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "codeStyle": {
+      "type": "object",
+      "properties": {
+        "scriptSetup": { "type": "boolean" },
+        "reactiveVsRef": { "type": "string" },
+        "propsDefinition": { "type": "string" },
+        "emitsDefinition": { "type": "string" },
+        "importsOrder": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

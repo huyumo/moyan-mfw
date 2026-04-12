@@ -10,6 +10,7 @@
     "hook:test-strategy": "tsx hooks/test-strategy-hook.ts",
     "hook:pre-code": "tsx hooks/pre-code-hook.ts",
     "hook:code-quality": "tsx hooks/code-quality-gate.ts",
+    "hook:task-archive": "tsx hooks/task-archive-hook.ts",
     "hook:session-end": "tsx hooks/session-end-hook.ts",
     "hook:teammates": "tsx hooks/teammates-hook.ts",
     "hook:subagent-review": "tsx hooks/subagent-review-hook.ts",
@@ -25,7 +26,10 @@
     "run-all": "tsx scripts/run-all-hooks.ts",
     "verify": "tsx scripts/run-all-hooks.ts",
     "track-tasks": "tsx scripts/track-active-tasks.ts",
-    "init": "tsx scripts/init-project.ts"
+    "init": "tsx scripts/init-project.ts",
+    "log:hook-calls": "tsx scripts/hook-call-logger.ts",
+    "log:summary": "tsx scripts/hook-call-logger.ts --summary",
+    "log:history": "tsx scripts/hook-call-logger.ts --history"
   },
   "keywords": [
     "claude-code",
