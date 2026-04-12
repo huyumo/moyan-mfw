@@ -1,11 +1,16 @@
 /**
  * 任务自动归档 Hook
  *
- * 目的：当 TASK.md 状态变更为 completed 时，自动归档任务到 registry
+ * 目的：当 TASK.md 状态变更为 completed 时，自动归档任务
  *
  * 触发时机：PostToolUse (Write/Edit TASK.md)
  *
  * 全自动：无需用户确认，自动检测、自动归档、自动登记
+ *
+ * 归档位置：
+ * 1. .harness/registry/tasks.json - 任务注册表
+ * 2. docs/04-项目实施/05-任务追踪/archived/by-category/ - 按类别归档
+ * 3. docs/04-项目实施/05-任务追踪/archived/by-date/ - 按日期归档
  */
 
 import * as fs from 'fs';
@@ -15,6 +20,7 @@ interface TaskMeta {
   task: string;
   status: string;
   priority: string;
+  hours: string;
   started: string;
   updated: string;
   session: string;
@@ -377,6 +383,70 @@ export async function run(args: string[]): Promise<{
 
     // 保存注册表
     saveRegistry(projectRoot, registry);
+
+    // 新增：归档任务详情文档到 docs/04-项目实施/05-任务追踪/archived/
+    const categoryDir = path.join(projectRoot, 'docs', '04-项目实施', '05-任务追踪', 'archived', 'by-category', category.name);
+    const dateDir = path.join(projectRoot, 'docs', '04-项目实施', '05-任务追踪', 'archived', 'by-date', frontMatter.updated?.slice(0, 7).replace(':', '-'));
+
+    // 创建目录
+    fs.mkdirSync(categoryDir, { recursive: true });
+    fs.mkdirSync(dateDir, { recursive: true });
+
+    // 生成归档文件名（精确到分，无空格）
+    const datePart = frontMatter.updated?.slice(0, 10).replace(/-/g, '') || new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const timePart = frontMatter.updated?.slice(11, 16).replace(':', '') || new Date().toISOString().slice(11, 16).replace(':', '');
+    const taskSeq = registry.tasks.length;
+    const archiveFileName = `${datePart}-${String(taskSeq).padStart(3, '0')}-${frontMatter.task.replace(/\s+/g, '-').replace(/[^a-z0-9\u4e00-\u9fa5-]/gi, '')}.md`;
+
+    // 构建归档文档内容
+    const archiveContent = `---
+title: ${archiveFileName.replace('.md', '')}
+status: archived
+version: 1.0.0
+created: ${frontMatter.started?.split('T')[0] || new Date().toISOString().split('T')[0]}
+updated: ${frontMatter.updated || new Date().toISOString()}
+archived_date: ${new Date().toISOString()}
+
+task_id: "${datePart}-${String(taskSeq).padStart(3, '0')}"
+task_status: completed
+task_completed_date: ${frontMatter.updated || new Date().toISOString()}
+task_assignee: ${frontMatter.assignee || '未指定'}
+task_session: ${frontMatter.session || 'unknown'}
+task_priority: ${frontMatter.priority || 'P2'}
+task_hours: ${frontMatter.hours || '未指定'}
+
+archived_location: "docs/04-项目实施/05-任务追踪/archived/by-category/${category.name}/"
+archived_reason: "任务完成"
+---
+
+## 任务目标
+
+${frontMatter.task}
+
+## 完成总结
+
+### 达成目标
+
+- ✅ 任务已完成
+
+### 关键产出
+
+- 详见任务详情文档
+
+---
+
+## 相关文件
+
+- 任务详情：../../active/${datePart}-${String(taskSeq).padStart(3, '0')}-*.md
+- 任务注册表：.harness/registry/tasks.json
+`;
+
+    // 写入归档文档
+    const categoryArchivePath = path.join(categoryDir, archiveFileName);
+    const dateArchivePath = path.join(dateDir, archiveFileName);
+
+    fs.writeFileSync(categoryArchivePath, archiveContent, 'utf-8');
+    fs.writeFileSync(dateArchivePath, archiveContent, 'utf-8');
 
     // 更新状态
     saveTaskState(projectRoot, {

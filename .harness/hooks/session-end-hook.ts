@@ -294,6 +294,53 @@ export async function run(_args: string[]): Promise<HookResult> {
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
   fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
 
+  // 新增：检查是否有任务完成，如有则创建 TASK.md 快照
+  if (fs.existsSync(taskFilePath)) {
+    const taskContent = fs.readFileSync(taskFilePath, 'utf-8');
+
+    // 检查是否有 completed 状态的任务
+    const hasCompletedTasks = taskContent.includes('status: completed') ||
+                              taskContent.includes('status:已完成');
+
+    if (hasCompletedTasks) {
+      // 创建 TASK.md 快照
+      const dateStr = new Date().toISOString().slice(0, 16).replace('T', ' ').replace(':', '');
+      const snapshotFileName = `TASK-${dateStr.substring(0, 10).replace(/-/g, '')}-${dateStr.slice(-5).replace(/:/g, '')}.md`;
+
+      const snapshotDir = path.join(projectRoot, 'docs', '04-项目实施', '05-任务追踪', 'archived', 'snapshots');
+      fs.mkdirSync(snapshotDir, { recursive: true });
+
+      const snapshotPath = path.join(snapshotDir, snapshotFileName);
+
+      // 解析 Front Matter 获取 session ID
+      const frontMatterMatchLocal = taskContent.match(/^---\n([\s\S]*?)\n---/);
+      let sessionId = 'unknown';
+      if (frontMatterMatchLocal) {
+        const frontMatterLocal = parseFrontMatter(frontMatterMatchLocal[1]);
+        sessionId = frontMatterLocal.session || 'unknown';
+      }
+
+      const snapshotContent = `---
+title: TASK.md 快照 - ${dateStr}
+type: session-snapshot
+created: ${new Date().toISOString()}
+session: ${sessionId}
+---
+
+## 快照说明
+
+这是 TASK.md 在会话结束时的完整快照。
+
+## 快照内容
+
+${taskContent}
+`;
+
+      fs.writeFileSync(snapshotPath, snapshotContent, 'utf-8');
+      result.warnings.push(`📸 已创建 TASK.md 快照：${snapshotFileName}`);
+    }
+  }
+
   return result;
 }
 
