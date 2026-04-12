@@ -5,7 +5,7 @@
   "input": {
     "teamConfig": ".harness/team.json",
     "harnessConfig": ".harness/config.json",
-    "taskFile": ".claude/TASK.md",
+    "taskFile": "TASK.md",
     "memory": ".harness/memory",
     "rules": ".harness/rules",
     "templates": ".harness/templates",

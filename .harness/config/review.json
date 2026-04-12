@@ -1,0 +1,122 @@
+{
+  "$schema": "./review-config-schema.json",
+  "description": "Moyan MFW 代码审查配置",
+  "projectName": "moyan-mfw",
+  "security": {
+    "criticalChecks": [
+      "无硬编码凭证（密码、API Key、Token）",
+      "无 eval()、exec() 等危险函数调用",
+      "所有用户输入已验证（使用 class-validator / 前端表单验证）",
+      "所有输出已编码（防止 XSS）",
+      "使用 TypeORM 参数化查询（禁止 SQL 拼接）",
+      "敏感数据加密存储（密码 bcrypt 哈希）",
+      "JWT token 正确处理（HttpOnly Cookie 或安全存储）",
+      "文件上传有限制（类型、大小、病毒扫描）",
+      "认证/授权逻辑完整（AuthGuard + Permission Guard）",
+      "速率限制已实现（ThrottlerGuard）"
+    ],
+    "blockers": [
+      "发现明文密码存储",
+      "发现 SQL 注入漏洞",
+      "发现硬编码凭证",
+      "发现越权访问漏洞"
+    ]
+  },
+  "performance": {
+    "checks": [
+      "无 N+1 查询问题（使用 JOIN 或批量查询）",
+      "数据库查询有适当索引",
+      "缓存策略合理（Redis 缓存热点数据）",
+      "数据库连接池配置合理",
+      "大数据集已分页（使用 PageQuery）",
+      "异步操作有错误处理",
+      "前端组件懒加载（defineAsyncComponent）",
+      "前端路由懒加载（component: () => import(...)）",
+      "虚拟滚动长列表（ElTable 虚拟滚动）",
+      "API 请求防抖/节流"
+    ],
+    "thresholds": {
+      "apiResponseTime": "300ms (P95)",
+      "dbQueryTime": "100ms (P95)",
+      "frontendBundleSize": "1MB",
+      "testCoverage": "60%"
+    }
+  },
+  "maintainability": {
+    "checks": [
+      "遵循分层架构（Controller-Service-Repository）",
+      "函数职责单一（SRP）",
+      "函数长度合理（< 50 行）",
+      "变量/函数命名清晰达意",
+      "无魔术数字（使用常量或配置）",
+      "错误处理完整（使用 AllExceptionsFilter）",
+      "日志记录适当（禁止记录敏感信息）",
+      "注释解释为什么而非是什么",
+      "无死代码/注释代码",
+      "类型定义完整（TypeScript 严格模式）",
+      "公共 API 有 JSDoc 文档注释",
+      "Vue 组件使用 script setup 语法",
+      "Pinia Store 职责单一"
+    ],
+    "metrics": {
+      "maxFunctionLength": 50,
+      "maxCyclomaticComplexity": 10,
+      "minTestCoverage": 0.6
+    }
+  },
+  "testing": {
+    "requirements": [
+      "后端单元测试覆盖率 ≥ 60%（Jest）",
+      "前端单元测试覆盖率 ≥ 60%（Vitest）",
+      "关键业务逻辑 100% 覆盖",
+      "边界条件测试",
+      "错误场景测试",
+      "API 集成测试覆盖所有端点",
+      "E2E 测试覆盖核心用户流程",
+      "测试用例独立可运行",
+      "测试命名清晰描述场景（it('should ... when ...')）",
+      "Mock 外部依赖（HTTP 请求、数据库）"
+    ]
+  },
+  "codeStyle": {
+    "backend": [
+      "遵循 ESLint 配置",
+      "遵循 Prettier 格式化",
+      "缩进 2 空格",
+      "使用 TypeScript 严格模式",
+      "NestJS 模块使用 @Module 装饰器",
+      "服务注入使用 Constructor Injection",
+      "DTO 使用 class-validator 装饰器",
+      "实体继承 BaseEntity"
+    ],
+    "frontend": [
+      "Vue 组件使用 <script setup> 语法",
+      "组件名使用 PascalCase + Mfw 前缀",
+      "模板表达式保持简单（复杂逻辑移到 computed）",
+      " Props 使用泛型 defineProps<>() 定义",
+      "Emits 使用泛型 defineEmits<>() 定义",
+      "使用 Element Plus 组件库",
+      "Sass 缩进 2 空格",
+      "CSS 类名使用 BEM 命名"
+    ]
+  },
+  "vueSpecific": {
+    "rules": [
+      "使用 Composition API + script setup",
+      "优先使用 ref，复杂对象使用 reactive",
+      "计算属性优先于 watch",
+      "v-for 必须设置 key（使用唯一 ID）",
+      "v-if 和 v-for 禁止同时使用",
+      "事件处理器使用 kebab-case（@submit.prevent）",
+      "组件通信优先使用 props/emits，复杂状态用 Pinia",
+      "生命周期钩子按顺序使用"
+    ],
+    "templateRules": [
+      "模板表达式保持简单（不超过 3 个操作符）",
+      "条件渲染使用语义化标签",
+      "列表渲染支持空状态",
+      "表单支持错误提示",
+      "按钮支持 loading 状态"
+    ]
+  }
+}

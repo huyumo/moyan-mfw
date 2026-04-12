@@ -38,6 +38,17 @@ let cachedConfig: PathsConfig | null = null;
  */
 export function findProjectRoot(): string {
   let currentDir = process.cwd();
+
+  // 防御性检查：如果当前目录就是 .harness，向上退一级
+  // 这是为了防止 .harness/.harness 嵌套目录问题
+  if (path.basename(currentDir) === '.harness') {
+    const parentDir = path.dirname(currentDir);
+    const parentPathsConfig = path.join(parentDir, '.harness', 'config', 'paths.json');
+    if (fs.existsSync(parentPathsConfig)) {
+      return parentDir;  // 返回项目根目录
+    }
+  }
+
   const maxDepth = 5;
   let depth = 0;
 
@@ -69,7 +80,7 @@ export function loadPathsConfig(projectRoot?: string): PathsConfig {
   }
 
   const root = projectRoot || findProjectRoot();
-  const pathsConfigPath = path.join(root, '.claude', 'harness', 'config', 'paths.json');
+  const pathsConfigPath = path.join(root, '.harness', 'config', 'paths.json');
 
   if (!fs.existsSync(pathsConfigPath)) {
     // 返回默认配置
@@ -94,18 +105,18 @@ function getDefaultPathsConfig(projectRoot: string): PathsConfig {
   return {
     input: {
       teamConfig: path.join(projectRoot, '.harness', 'team.json'),
-      harnessConfig: path.join(projectRoot, '.claude', 'harness', 'config.json'),
-      taskFile: path.join(projectRoot, '.claude', 'TASK.md'),
+      harnessConfig: path.join(projectRoot, '.harness', 'config.json'),
+      taskFile: path.join(projectRoot, 'TASK.md'),
       memory: path.join(projectRoot, '.harness', 'memory'),
       rules: path.join(projectRoot, '.harness', 'rules'),
       templates: path.join(projectRoot, '.harness', 'templates'),
       config: {
-        techStack: path.join(projectRoot, '.claude', 'harness', 'config', 'tech-stack.json'),
-        backend: path.join(projectRoot, '.claude', 'harness', 'config', 'backend.json'),
-        frontend: path.join(projectRoot, '.claude', 'harness', 'config', 'frontend.json'),
-        review: path.join(projectRoot, '.claude', 'harness', 'config', 'review.json'),
-        docs: path.join(projectRoot, '.claude', 'harness', 'config', 'docs.json'),
-        analysis: path.join(projectRoot, '.claude', 'harness', 'config', 'analysis.json')
+        techStack: path.join(projectRoot, '.harness', 'config', 'tech-stack.json'),
+        backend: path.join(projectRoot, '.harness', 'config', 'backend.json'),
+        frontend: path.join(projectRoot, '.harness', 'config', 'frontend.json'),
+        review: path.join(projectRoot, '.harness', 'config', 'review.json'),
+        docs: path.join(projectRoot, '.harness', 'config', 'docs.json'),
+        analysis: path.join(projectRoot, '.harness', 'config', 'analysis.json')
       }
     },
     output: {

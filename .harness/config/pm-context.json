@@ -1,0 +1,106 @@
+{
+  "$schema": "./review-config-schema.json",
+  "description": "Moyan MFW 项目管理上下文配置",
+  "projectName": "moyan-mfw",
+  "version": "1.0.0",
+  "productOverview": {
+    "name": "Moyan Management Framework (MFW)",
+    "description": "基于 NestJS + Vue 3 的企业级管理后台框架",
+    "targetUsers": [
+      "企业内部管理系统开发者",
+      "需要快速搭建管理后台的团队"
+    ],
+    "coreFeatures": [
+      "RBAC 权限管理系统",
+      "JWT 认证（支持 refresh token）",
+      "可复用 Vue 3 组件库",
+      "TypeORM 数据库迁移",
+      "审计日志记录",
+      "Swagger API 文档"
+    ]
+  },
+  "teamRoles": {
+    "technicalLead": {
+      "name": "技术负责人",
+      "role": "lead",
+      "responsibilities": [
+        "技术决策和架构设计",
+        "代码审查和质量把控",
+        "任务分配和进度跟踪",
+        "团队协调和沟通"
+      ]
+    },
+    "backend": {
+      "name": "后端开发",
+      "responsibilities": [
+        "NestJS API 开发",
+        "数据库设计和优化",
+        "单元测试编写",
+        "API 文档维护"
+      ]
+    },
+    "frontend": {
+      "name": "前端开发",
+      "responsibilities": [
+        "Vue 3 组件开发",
+        "页面交互实现",
+        "前端状态管理",
+        "单元测试编写"
+      ]
+    },
+    "qa": {
+      "name": "QA 工程师",
+      "responsibilities": [
+        "测试用例设计",
+        "E2E 测试执行",
+        "缺陷跟踪"
+      ]
+    },
+    "docs": {
+      "name": "文档工程师",
+      "responsibilities": [
+        "技术文档编写",
+        "API 文档维护",
+        "用户指南编写"
+      ]
+    }
+  },
+  "developmentWorkflow": {
+    "branchNaming": [
+      "feature/xxx - 新功能",
+      "fix/xxx - Bug 修复",
+      "docs/xxx - 文档更新",
+      "refactor/xxx - 代码重构",
+      "test/xxx - 测试相关",
+      "chore/xxx - 构建/工具相关"
+    ],
+    "commitConvention": "Conventional Commits",
+    "prProcess": [
+      "创建 PR 并关联 Issue",
+      "自动检查通过（Lint/Typecheck/Test）",
+      "至少 1 人 Code Review",
+      "Review 通过后 Merge"
+    ],
+    "ciChecks": [
+      "pnpm lint",
+      "pnpm typecheck",
+      "pnpm test (backend)",
+      "pnpm test:unit (frontend)"
+    ]
+  },
+  "currentSprint": {
+    "name": "Sprint 1 - Harness 摸底测试",
+    "startDate": "2026-04-11",
+    "endDate": "2026-04-18",
+    "goals": [
+      "完成 Harness Hook 配置验证",
+      "完成项目配置文件更新",
+      "确保所有 Agent 正常工作"
+    ]
+  },
+  "communicationChannels": {
+    "daily": "每日站会（可选）",
+    "weekly": "周会（进度同步 + 问题讨论）",
+    "adHoc": "即时通讯（紧急问题）"
+  }
+}

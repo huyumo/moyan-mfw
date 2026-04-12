@@ -15,7 +15,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadPathsConfig } from '../utils/paths';
+import { loadPathsConfig, findProjectRoot } from '../utils/paths';
 
 interface HookResult {
   passed: boolean;
@@ -46,31 +46,6 @@ function parseFrontMatter(content: string): Record<string, string> {
   }
 
   return result;
-}
-
-/**
- * 向上查找项目根目录（查找包含 .claude 子目录的目录）
- */
-function findProjectRoot(): string {
-  let currentDir = process.cwd();
-  const maxDepth = 5;
-  let depth = 0;
-  let lastFound = null;
-
-  while (depth < maxDepth) {
-    // 查找包含 .claude 子目录的目录（项目根目录）
-    if (fs.existsSync(path.join(currentDir, '.claude')) && !currentDir.endsWith('.claude')) {
-      lastFound = currentDir;
-    }
-    const parentDir = path.dirname(currentDir);
-    if (parentDir === currentDir) {
-      break;
-    }
-    currentDir = parentDir;
-    depth++;
-  }
-
-  return lastFound || process.cwd();
 }
 
 export async function run(_args: string[]): Promise<HookResult> {

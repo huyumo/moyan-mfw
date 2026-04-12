@@ -1,0 +1,166 @@
+{
+  "$schema": "./tech-stack-config-schema.json",
+  "description": "Moyan MFW 项目技术栈配置",
+  "projectName": "moyan-mfw",
+  "version": "1.0.0",
+  "techStack": {
+    "language": {
+      "name": "TypeScript",
+      "version": "5.x",
+      "description": "主要开发语言"
+    },
+    "runtime": {
+      "name": "Node.js",
+      "version": "20.x",
+      "description": "运行时环境"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "10.x",
+      "description": "包管理器"
+    },
+    "frameworks": {
+      "backend": {
+        "name": "NestJS",
+        "version": "10.x",
+        "description": "后端 Web 框架"
+      },
+      "frontend": {
+        "name": "Vue 3",
+        "version": "3.x",
+        "description": "前端框架",
+        "features": ["Composition API", "script setup"]
+      }
+    },
+    "uiLibrary": {
+      "name": "Element Plus",
+      "version": "2.x",
+      "description": "Vue 3 UI 组件库"
+    },
+    "databases": [
+      {
+        "name": "MySQL",
+        "version": "8.0+",
+        "description": "主数据库",
+        "type": "relational",
+        "orm": "TypeORM"
+      },
+      {
+        "name": "Redis",
+        "version": "7.x",
+        "description": "缓存层",
+        "type": "key-value"
+      }
+    ],
+    "testing": [
+      {
+        "name": "Jest",
+        "version": "30.x",
+        "description": "后端单元测试框架"
+      },
+      {
+        "name": "Vitest",
+        "version": "1.x",
+        "description": "前端单元测试框架"
+      },
+      {
+        "name": "Supertest",
+        "version": "7.x",
+        "description": "API 测试"
+      },
+      {
+        "name": "Playwright",
+        "version": "1.x",
+        "description": "E2E 测试"
+      }
+    ],
+    "tooling": [
+      {
+        "name": "ESLint",
+        "version": "9.x",
+        "description": "代码检查"
+      },
+      {
+        "name": "Prettier",
+        "version": "3.x",
+        "description": "代码格式化"
+      },
+      {
+        "name": "Vite",
+        "version": "5.x",
+        "description": "前端构建工具"
+      },
+      {
+        "name": "vue-tsc",
+        "version": "2.x",
+        "description": "Vue 类型检查"
+      }
+    ],
+    "stateManagement": {
+      "name": "Pinia",
+      "version": "2.x",
+      "description": "Vue 3 状态管理"
+    },
+    "router": {
+      "name": "Vue Router",
+      "version": "4.x",
+      "description": "前端路由"
+    }
+  },
+  "architectureDecisions": [
+    {
+      "id": "ADR-001",
+      "title": "前后端分离架构",
+      "decision": "Monorepo + 前后端分离",
+      "description": "使用 pnpm workspace 管理 Monorepo，前后端独立部署",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-002",
+      "title": "认证方式",
+      "decision": "JWT",
+      "description": "使用 JWT 进行无状态认证，支持 refresh token",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-003",
+      "title": "数据库迁移",
+      "decision": "TypeORM Migration",
+      "description": "使用 TypeORM 迁移脚本管理数据库结构变更",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-004",
+      "title": "架构模式",
+      "decision": "分层架构",
+      "description": "后端采用 Controller-Service-Repository 分层架构",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-005",
+      "title": "RBAC 权限模型",
+      "decision": "用户 - 角色 - 权限",
+      "description": "实现基于角色的访问控制（RBAC），支持权限粒度控制",
+      "status": "accepted"
+    },
+    {
+      "id": "ADR-006",
+      "title": "前端组件化",
+      "decision": "可复用组件库",
+      "description": "base-frontend 提供可复用组件，业务前端按需使用",
+      "status": "accepted"
+    }
+  ],
+  "techDebt": [],
+  "projectStructure": {
+    "root": "moyan-mfw/",
+    "packages": {
+      "base-frontend": "可复用 Vue 3 组件库（Element Plus 封装）",
+      "base-backend": "NestJS 后端核心（RBAC + TypeORM）"
+    },
+    "frontend": "业务前端应用",
+    "examples": "示例应用",
+    "docs": "VitePress 文档",
+    "tests/e2e": "Playwright E2E 测试"
+  }
+}
