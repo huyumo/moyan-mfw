@@ -5,6 +5,7 @@
   "private": true,
   "scripts": {
     "hook:identity": "tsx hooks/identity-greeting-hook.ts",
+    "hook:agent-identity-check": "tsx hooks/agent-identity-check.ts",
     "hook:session-start": "tsx hooks/session-start-hook.ts",
     "hook:task-analysis": "tsx hooks/task-analysis-hook.ts",
     "hook:test-strategy": "tsx hooks/test-strategy-hook.ts",

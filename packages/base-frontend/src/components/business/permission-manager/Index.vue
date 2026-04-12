@@ -161,8 +161,8 @@ import {
   Search,
 } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../feedback';
-import PermissionValueForm from './PermissionValueForm.vue';
-import PermissionNodeForm from './PermissionNodeForm.vue';
+import PermissionValueForm from './MfwPermissionValueForm.vue';
+import PermissionNodeForm from './MfwPermissionNodeForm.vue';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import {
   ApiPermissionFindAllTree,

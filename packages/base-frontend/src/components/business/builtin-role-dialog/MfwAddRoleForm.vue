@@ -46,7 +46,7 @@
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
 
-defineOptions({ name: 'AddBuiltinRoleForm' });
+defineOptions({ name: 'MfwAddRoleForm' });
 
 const props = defineProps<{
   data?: {
