@@ -73,6 +73,12 @@
           },
           {
             "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=lead",
+            "timeout": 30,
+            "statusMessage": "👤 确认主智能体身份和职责..."
+          },
+          {
+            "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:session-start",
             "timeout": 60,
             "statusMessage": "🔔 运行 Harness 会话开始检查..."
