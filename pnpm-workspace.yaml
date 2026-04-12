@@ -5,6 +5,7 @@ packages:
   - frontend
   - examples
   - docs
+  - .harness
 
 ignoredBuiltDependencies:
   - '@nestjs/core'
