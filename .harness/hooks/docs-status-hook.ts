@@ -277,16 +277,20 @@ const isMain = require.main === module;
 if (isMain) {
   run(process.argv.slice(2))
     .then(result => {
-      console.log(JSON.stringify(result, null, 2));
+      // 写入日志文件
+      const projectRoot = findProjectRoot();
+      const logFile = path.join(projectRoot, '.harness', 'output', 'docs-status.log');
+      fs.mkdirSync(path.dirname(logFile), { recursive: true });
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] CLI Output: ${JSON.stringify(result, null, 2)}\n`);
+
       process.exit(result.passed ? 0 : 1);
     })
     .catch(error => {
-      console.error(JSON.stringify({
-        passed: false,
-        message: `钩子执行失败：${error.message}`,
-        errors: [error.message],
-        warnings: []
-      }, null, 2));
+      const projectRoot = findProjectRoot();
+      const logFile = path.join(projectRoot, '.harness', 'output', 'docs-status.log');
+      fs.mkdirSync(path.dirname(logFile), { recursive: true });
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] CLI Error: ${error.message}\n`);
+
       process.exit(1);
     });
 }
