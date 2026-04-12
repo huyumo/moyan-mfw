@@ -13,10 +13,10 @@ interface AgentIdentity {
   role: string;
   description: string;
   permissions: {
-    allowed: string[];    // 允许的操作
-    denied: string[];      // 禁止的操作
-    canWrite: string[];    // 可写目录/文件
-    readOnly: string[];     // 只读目录/文件
+    allowed: string[];
+    denied: string[];
+    canWrite: string[];
+    readOnly: string[];
   };
   responsibilities: string[];
   forbiddenActions: string[];
@@ -37,6 +37,72 @@ interface HookResult {
  * 智能体身份定义
  */
 const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
+  // 主智能体：技术负责人
+  'lead': {
+    name: '技术负责人',
+    role: 'Technical Lead (技术负责人)',
+    description: '负责任务协调、技术决策、团队管理',
+    permissions: {
+      allowed: [
+        'Read', 'Grep', 'Glob',
+        'Agent',
+        'Edit(.claude/**)',
+        'Write(.claude/**)',
+        'Edit(CLAUDE.md)',
+        'Write(CLAUDE.md)',
+      ],
+      denied: [
+        'Edit(packages/**)',
+        'Write(packages/**)',
+        'Edit(src/**)',
+        'Write(src/**)',
+        'Edit(backend/**)',
+        'Write(backend/**)',
+        'Edit(frontend/**)',
+        'Write(frontend/**)',
+        'Edit(examples/**)',
+        'Write(examples/**)',
+        'Edit(tests/**)',
+        'Write(tests/**)',
+        'Edit(test/**)',
+        'Write(test/**)',
+        'Bash(pnpm *)',
+        'Bash(npm *)',
+        'Bash(git *)'
+      ],
+      canWrite: [
+        '.claude/**',
+        'CLAUDE.md'
+      ],
+      readOnly: [
+        'packages/**',
+        'src/**',
+        'backend/**',
+        'frontend/**',
+        'examples/**',
+        'tests/**',
+        'test/**'
+      ]
+    },
+    responsibilities: [
+      '✅ 协调团队成员工作',
+      '✅ 进行技术决策',
+      '✅ 审批工作成果',
+      '✅ 管理项目配置',
+      '✅ 调用 appropriate subagent 完成任务'
+    ],
+    forbiddenActions: [
+      '⛔ 直接编写业务代码',
+      '⛔ 修改 packages/ 目录',
+      '⛔ 修改 backend/ 目录',
+      '⛔ 修改 frontend/ 目录',
+      '⛔ 修改 examples/ 目录',
+      '⛔ 执行构建命令',
+      '⛔ 执行测试命令',
+      '⛔ 提交代码到 Git'
+    ]
+  },
+
   'project-manager': {
     name: 'PM-Agent',
     role: 'Project Manager (项目经理)',
@@ -48,9 +114,13 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'Write(.claude/**/TASK*.md)',
         'Write(.claude/**/task-*.md)',
         'Write(.claude/memory/**)',
+        'Write(docs/**/TASK*.md)',
+        'Write(docs/**/task-*.md)'
       ],
       denied: [
-        'Edit', 'Write(packages/**)',
+        'Edit(packages/**)',
+        'Write(packages/**)',
+        'Edit(src/**)',
         'Write(src/**)',
         'Bash(pnpm *)',
         'Bash(git *)'
@@ -95,12 +165,15 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'Write(.claude/**/adr-*.md)',
         'Write(.claude/**/design-*.md)',
         'Write(docs/**/architecture/**)',
+        'Write(docs/**/design/**)'
       ],
       denied: [
-        'Edit', 'Write(packages/**)',
+        'Edit(packages/**)',
+        'Write(packages/**)',
+        'Edit(src/**)',
         'Write(src/**)',
         'Bash(pnpm build)',
-        'Bash(pnpm deploy)'
+        'Bash(p)npm deploy)'
       ],
       canWrite: [
         '.claude/**/adr-*.md',
@@ -144,12 +217,12 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'Write(backend/src/**)',
         'Write(backend/src/**/*.test.ts)',
         'Write(packages/base-backend/tests/**)',
-        'Write(backend/tests/**)',
+        'Write(backend/tests/**)'
       ],
       denied: [
         'Edit(frontend/**)',
-        'Edit(examples/**)',
         'Write(frontend/**)',
+        'Edit(examples/**)',
         'Write(examples/**)',
         'Bash(pnpm deploy)',
         'Bash(git push)'
@@ -199,12 +272,12 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'Write(examples/src/**)',
         'Write(packages/base-frontend/src/**/__tests__/**)',
         'Write(frontend/src/**/*.test.ts)',
-        'Write(frontend/src/**/*.spec.ts)',
+        'Write(frontend/src/**/*.spec.ts)'
       ],
       denied: [
         'Edit(packages/base-backend/src/**)',
-        'Edit(backend/src/**)',
         'Write(packages/base-backend/src/**)',
+        'Edit(backend/src/**)',
         'Write(backend/src/**)',
         'Bash(pnpm deploy)',
         'Bash(git push)'
@@ -252,14 +325,14 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'Write(**/*.test.ts)',
         'Write(**/*.spec.ts)',
         'Edit(**/*.test.ts)',
-        'Edit(**/*.spec.ts)',
+        'Edit(**/*.spec.ts)'
       ],
       denied: [
         'Write(packages/base-backend/src/**)',
         'Write(packages/base-frontend/src/**)',
         'Write(backend/src/**)',
         'Write(frontend/src/**)',
-        'Bash(git push)',
+        'Bash(git push)'
       ],
       canWrite: [
         'tests/**',
@@ -301,13 +374,13 @@ const AGENT_IDENTITIES: { [key: string]: AgentIdentity } = {
         'WebFetch', 'WebSearch',
         'Write(docs/**)',
         'Write(**/*.md)',
-        'Write(.harness/templates/**)',
+        'Write(.harness/templates/**)'
       ],
       denied: [
         'Write(packages/**)',
         'Write(src/**)',
         'Write(backend/src/**)',
-        'Write(frontend/src/**)',
+        'Write(frontend/src/**)'
       ],
       canWrite: [
         'docs/**',
@@ -363,8 +436,7 @@ function findProjectRoot(): string {
  * 从环境变量获取智能体类型
  */
 function getAgentType(): string | null {
-  // 可能的环境变量（取决于 Claude Code 实现）
-  const agentType = process.env.CLAUDE_AGENT_TYPE ||
+  const agentType = process.env.CLAUDE_AGENT_AGENT_TYPE ||
                    process.env.AGENT_TYPE ||
                    process.env.SUBAGENT_TYPE;
 
@@ -372,8 +444,6 @@ function getAgentType(): string | null {
     return agentType;
   }
 
-  // 如果没有环境变量，检查是否在特定的智能体会话中
-  // 这需要根据实际实现调整
   return null;
 }
 
@@ -381,18 +451,54 @@ function getAgentType(): string | null {
  * 从命令行参数获取智能体类型
  */
 function getAgentTypeFromArgs(args: string[]): string | null {
-  // 检查是否通过参数传递
   const typeArg = args.find(arg => arg.startsWith('--agent-type='));
   if (typeArg) {
     return typeArg.split('=')[1];
   }
 
-  // 检查是否直接传递了类型
   if (args.length > 0 && AGENT_IDENTITIES[args[0]]) {
     return args[0];
   }
 
   return null;
+}
+
+/**
+ * 生成身份报告
+ */
+function generateIdentityReport(agentType: string, identity: AgentIdentity): string {
+  const sections = [
+    '',
+    '╔══════════════════════════════════════════════════════════╗',
+    '║                  智能体身份确认                               ║',
+    '╚════════════════════════════════════════════════════════════╝',
+    '',
+    `👤 名称：${identity.name}`,
+    `🎭 角色：${identity.role}`,
+    `📝 描述：${identity.description}`,
+    '',
+    '═════════════════════════════════════════════════════════════',
+    '📋 职责范围',
+    '═════════════════════════════════════════════════════════════',
+    ...identity.responsibilities,
+    '',
+    '═════════════════════════════════════════════════════════════',
+    '🚫 禁止操作',
+    '═════════════════════════════════════════════════════════════',
+    ...identity.forbiddenActions,
+    '',
+    '═════════════════════════════════════════════════════════════',
+    '🔒 权限限制',
+    '═════════════════════════════════════════════════════════════',
+    '✅ 可写目录：',
+    ...identity.permissions.canWrite.map(p => `   - ${p}`),
+    '',
+    '👁️ 只读目录：',
+    ...identity.permissions.readOnly.map(p => `   - ${p}`),
+    ''
+  ];
+
+  return sections.join('\n');
 }
 
 export async function run(args: string[]): Promise<HookResult> {
@@ -403,7 +509,6 @@ export async function run(args: string[]): Promise<HookResult> {
     errors: []
   };
 
-  // 获取智能体类型
   const agentType = getAgentType() || getAgentTypeFromArgs(args);
 
   if (!agentType) {
@@ -421,45 +526,12 @@ export async function run(args: string[]): Promise<HookResult> {
     return result;
   }
 
-  // 生成身份报告
-  const sections = [
-    '',
-    `╔══════════════════════════════════════════════════════════════╗`,
-    `║                  智能体身份确认                               ║`,
-    `╚══════════════════════════════════════════════════════════════╝`,
-    '',
-    `👤 名称：${identity.name}`,
-    `🎭 角色：${identity.role}`,
-    `📝 描述：${identity.description}`,
-    '',
-    `══════════════════════════════════════════════════════════════`,
-    `📋 职责范围`,
-    `══════════════════════════════════════════════════════════════`,
-    ...identity.responsibilities,
-    '',
-    `══════════════════════════════════════════════════════════════`,
-    `🚫 禁止操作`,
-    `══════════════════════════════════════════════════════════════`,
-    ...identity.forbiddenActions,
-    '',
-    `══════════════════════════════════════════════════════════════`,
-    `🔒 权限限制`,
-    `══════════════════════════════════════════════════════════════`,
-    `✅ 可写目录：`,
-    ...identity.permissions.canWrite.map(p => `   - ${p}`),
-    '',
-    `👁️ 只读目录：`,
-    ...identity.permissions.readOnly.map(p => `   - ${p}`),
-    ''
-  ];
-
-  result.message = sections.join('\n');
+  result.message = generateIdentityReport(agentType, identity);
   result.data = {
     agentType,
     identity
   };
 
-  // 输出到日志
   const projectRoot = findProjectRoot();
   const logFile = path.join(projectRoot, '.harness', 'output', 'agent-identity-check.log');
   fs.mkdirSync(path.dirname(logFile), { recursive: true });
@@ -468,11 +540,10 @@ export async function run(args: string[]): Promise<HookResult> {
   return result;
 }
 
-// CLI 入口
 const isMain = require.main === module;
 
 if (isMain) {
-  run(process.argv.slice(2))
+  (run(process.argv.slice(2)) as Promise<HookResult>)
     .then(result => {
       console.log(result.message);
       console.log(JSON.stringify({
