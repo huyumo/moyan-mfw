@@ -76,8 +76,11 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup
+ lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+
+defineOptions({ name: 'MfwPermissionNodeForm' });
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
 import { ApiPermissionCreate, ApiPermissionUpdate } from '../../../apis/sys';

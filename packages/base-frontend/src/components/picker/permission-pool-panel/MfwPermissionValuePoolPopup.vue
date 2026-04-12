@@ -33,6 +33,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+
+defineOptions({ name: 'MfwPermissionValuePoolPopup' });
 import { ElMessage } from 'element-plus';
 import { getPermissionOptions } from '../../../utils/permissions';
 import { ApiAppTypeUpdatePermissionPool, ApiAppTypeGetPermissionPool, ApiPermissionFindById } from '../../../apis/sys';

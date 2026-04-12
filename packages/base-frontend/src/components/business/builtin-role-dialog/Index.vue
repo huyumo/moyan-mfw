@@ -55,7 +55,7 @@ import { MfwPopup } from '../../feedback';
 import { ApiRoleFindAll, ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
-import AddRoleForm from './AddRoleForm.vue';
+import AddRoleForm from './MfwAddRoleForm.vue';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 

@@ -24,7 +24,7 @@ import {
 } from './types'
 import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
 import { MfwPopup } from '../../feedback'
-import PermissionValuePoolPopup from './PermissionValuePoolPopup.vue'
+import PermissionValuePoolPopup from './MfwPermissionValuePoolPopup.vue'
 
 // ========== Props & Emits ==========
 

@@ -140,6 +140,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=tech-architect",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
+          {
+            "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:architect-context",
             "timeout": 30,
             "statusMessage": "🏗️ 加载架构设计上下文..."
@@ -149,6 +155,12 @@
       {
         "matcher": "backend-ts-node-dev",
         "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=backend-ts-node-dev",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
           {
             "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:backend-security",
@@ -162,6 +174,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=frontend-dev",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
+          {
+            "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:frontend-guidelines",
             "timeout": 30,
             "statusMessage": "🎨 加载前端开发指南..."
@@ -173,6 +191,12 @@
         "hooks": [
           {
             "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=code-reviewer-tester",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
+          {
+            "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:review-checklist",
             "timeout": 30,
             "statusMessage": "📝 加载代码审查清单..."
@@ -182,6 +206,12 @@
       {
         "matcher": "docs-architect",
         "hooks": [
+          {
+            "type": "command",
+            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=docs-architect",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
           {
             "type": "command",
             "command": "pnpm --filter @claude-code/harness run hook:docs-template",
