@@ -1,7 +1,16 @@
-﻿packages:
-  - 'packages/base-backend'
-  - 'packages/base-frontend'
-  - 'packages/component-demo'
-  - 'frontend'
-  - 'examples'
-  - 'docs'
+packages:
+  - packages/base-backend
+  - packages/base-frontend
+  - packages/component-demo
+  - frontend
+  - examples
+  - docs
+
+ignoredBuiltDependencies:
+  - '@nestjs/core'
+  - '@parcel/watcher'
+  - cypress
+  - ejs
+  - esbuild
+  - unrs-resolver
+  - vue-demi
