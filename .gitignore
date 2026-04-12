@@ -12,3 +12,4 @@ packages/*/test-results/
 .claude/worktrees/
 **/.env.example
 **/.env.test
+**/agent-memory/
