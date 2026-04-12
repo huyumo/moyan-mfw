@@ -546,11 +546,6 @@ if (isMain) {
   (run(process.argv.slice(2)) as Promise<HookResult>)
     .then(result => {
       console.log(result.message);
-      console.log(JSON.stringify({
-        passed: result.passed,
-        warnings: result.warnings,
-        errors: result.errors
-      }, null, 2));
       process.exit(result.passed ? 0 : 1);
     })
     .catch(error => {
