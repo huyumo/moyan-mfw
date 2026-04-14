@@ -1,15 +1,15 @@
 ---
 title: 任务追踪 - 活跃索引
 status: active
-version: 2.0.1
+version: 2.0.4
 created: 2026-04-12
-updated: 2026-04-13T14:30:00Z
-current_session: session-2026-04-13-001
+updated: 2026-04-14T15:30:00Z
+current_session: session-2026-04-14-001
 
 active_tasks:
   - id: "2026-04-12-002"
     name: "第五次 Harness 摸底测试 - SessionEnd Hook 专项验证"
-    status: in_progress
+    status: completed
     priority: P0
     assignee: 技术负责人
     deadline: 2026-04-15
@@ -25,88 +25,29 @@ active_tasks:
 
   - id: "2026-04-14-002"
     name: "测试数据库规范对齐 - 本地隔离测试环境"
-    status: in_progress
+    status: completed
     priority: P0
     assignee: PM-Agent
     deadline: 2026-04-15
     detail: "docs/04-项目实施/05-任务追踪/active/2026-04-14-002-测试数据库规范对齐.md"
 
-pending_tasks:
-  - id: "2026-04-12-004"
-    name: "第三次全员摸底测试 - Harness 完整流程验证"
-    priority: P0
-    deadline: 2026-04-18
-
-  - id: "2026-04-22-001"
-    name: "P0 组件开发 - MfwFormCard"
-    priority: P0
-    deadline: 2026-04-22
-
-  - id: "2026-04-22-002"
-    name: "P0 组件开发 - MfwTableList"
-    priority: P0
-    deadline: 2026-04-22
-
-  - id: "2026-04-22-003"
-    name: "P0 组件开发 - MfwUpload"
-    priority: P0
-    deadline: 2026-04-22
-
-  - id: "2026-04-28-001"
-    name: "P1 组件开发 - MfwPicker"
-    priority: P1
-    deadline: 2026-04-28
-
-  - id: "2026-04-28-002"
-    name: "P1 组件开发 - MfwModal"
-    priority: P1
-    deadline: 2026-04-28
-
-  - id: "2026-04-28-003"
-    name: "P1 组件开发 - MfwTabs"
-    priority: P1
-    deadline: 2026-04-28
-
-  - id: "2026-04-28-004"
-    name: "P1-可访问性改进 - ARIA 属性完善"
-    priority: P1
-    deadline: 2026-04-28
-
-  - id: "2026-04-28-005"
-    name: "P1-核心组件测试补充"
-    priority: P1
-    deadline: 2026-04-28
-
-  - id: "2026-04-30-001"
-    name: "P2 组件开发 - MfwBreadcrumb"
-    priority: P2
-    deadline: 2026-04-30
-
-  - id: "2026-04-30-002"
-    name: "P2 组件开发 - MfwPagination"
-    priority: P2
-    deadline: 2026-04-30
-
-  - id: "2026-04-30-003"
-    name: "P2 组件开发 - MfwSkeleton"
-    priority: P2
-    deadline: 2026-04-30
-
-  - id: "2026-04-30-004"
-    name: "P2 组件开发 - MfwEmpty"
-    priority: P2
-    deadline: 2026-04-30
+pending_tasks: []
 ---
 
 ## 当前活跃任务
 
-### 1. 第五次 Harness 摸底测试
-- **状态**: 进行中
+### 1. 第五次 Harness 摸底测试 ✅ 已完成
+- **状态**: 已完成
 - **负责人**: 技术负责人
 - **截止**: 2026-04-15
 - **详情**: [查看](docs/04-项目实施/05-任务追踪/active/2026-04-12-002-第五次 Harness 摸底测试.md)
 
 **目标**: 验证 SessionEnd Hook 自动触发
+
+**实施结果**:
+- SessionEnd Hook 正常触发 ✅
+- 日志记录到 `session-end.log` 和 `hook-calls.log` ✅
+- 修复了检查失败时跳过日志记录的 bug
 
 ### 2. 权限池接口统一优化方案 - 需求对齐会议 ✅ 已完成
 - **状态**: 已完成
@@ -132,24 +73,11 @@ pending_tasks:
 
 ---
 
-## 待开始任务 (13 个)
+---
 
-| 任务 | 优先级 | 截止 | 详情 |
-|------|--------|------|------|
-| 第三次全员摸底测试 | P0 | 04-18 | [active](docs/04-项目实施/05-任务追踪/active/2026-04-12-004-第三次全员摸底测试.md) |
-| MfwFormCard | P0 | 04-22 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-22-001-P0-组件开发-MfwFormCard.md) |
-| MfwTableList | P0 | 04-22 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-22-002-P0-组件开发-MfwTableList.md) |
-| MfwUpload | P0 | 04-22 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-22-003-P0-组件开发-MfwUpload.md) |
-| MfwPicker | P1 | 04-28 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-28-001-P1-组件开发-MfwPicker.md) |
-| MfwModal | P1 | 04-28 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-28-002-P1-组件开发-MfwModal.md) |
-| MfwTabs | P1 | 04-28 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-28-003-P1-组件开发-MfwTabs.md) |
-| ARIA 可访问性 | P1 | 04-28 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-28-004-P1-可访问性改进-ARIA 属性完善.md) |
-| 核心组件测试 | P1 | 04-28 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-28-005-P1-核心组件测试补充.md) |
-| MfwBreadcrumb | P2 | 04-30 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-30-001-P2-组件开发-MfwBreadcrumb.md) |
-| MfwPagination | P2 | 04-30 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-30-002-P2-组件开发-MfwPagination.md) |
-| MfwSkeleton | P2 | 04-30 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-30-003-P2-组件开发-MfwSkeleton.md) |
-| MfwEmpty | P2 | 04-30 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-30-004-P2-组件开发-MfwEmpty.md) |
-| 文档链接修复 | P1 | 04-30 | [backlog](docs/04-项目实施/05-任务追踪/backlog/2026-04-30-006-P1-文档链接错误修复.md) |
+## 待开始任务 (0 个)
+
+> 当前无待开始任务
 
 ---
 
@@ -157,9 +85,9 @@ pending_tasks:
 
 | 状态 | 数量 | 位置 |
 |------|------|------|
-| 进行中 | 1 | 本文件 |
-| 已完成 | 2 | 本文件 |
-| 待开始 | 13 | [backlog/](docs/04-项目实施/05-任务追踪/backlog/) |
+| 进行中 | 0 | 本文件 |
+| 已完成 | 3 | 本文件 |
+| 待开始 | 0 | [backlog/](docs/04-项目实施/05-任务追踪/backlog/) |
 | 已归档 | 10 | [archived/](docs/04-项目实施/05-任务追踪/archived/) |
 
 ---
