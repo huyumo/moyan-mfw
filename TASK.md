@@ -23,6 +23,14 @@ active_tasks:
     deadline: 2026-04-16
     detail: "docs/04-项目实施/05-任务追踪/active/2026-04-14-001-权限池接口优化需求对齐.md"
 
+  - id: "2026-04-14-002"
+    name: "测试数据库规范对齐 - 本地隔离测试环境"
+    status: in_progress
+    priority: P0
+    assignee: PM-Agent
+    deadline: 2026-04-15
+    detail: "docs/04-项目实施/05-任务追踪/active/2026-04-14-002-测试数据库规范对齐.md"
+
 pending_tasks:
   - id: "2026-04-12-004"
     name: "第三次全员摸底测试 - Harness 完整流程验证"
@@ -108,14 +116,19 @@ pending_tasks:
 
 **目标**: 组织前端、后端、测试对齐需求，确认实施范围和排期
 
+### 3. 测试数据库规范对齐 - 本地隔离测试环境 ✅ 已完成
+- **状态**: 已完成
+- **负责人**: PM-Agent
+- **截止**: 2026-04-15
+- **详情**: [查看](docs/04-项目实施/05-任务追踪/active/2026-04-14-002-测试数据库规范对齐.md)
+
+**目标**: 建立本地隔离测试环境，确保测试数据不污染开发环境
+
 **实施结果**:
-- 后端 DTO 修改完成（inPool → checked, 新增 parentPermissionValue）
-- 后端 Service 修改完成（构建树时设置 checked 字段）
-- 前端类型定义更新完成
-- 前端组件逻辑简化完成
-- 前端单元测试 91/91 通过
-- 前端类型检查通过
-- 后端类型检查通过
+- `.env.test` 配置修改：localhost + test_moyan_mfw + root/root
+- `jest.global-setup.ts`: 数据库空状态检测、自动创建数据库、种子数据初始化
+- `jest.global-teardown.ts`: 测试完成后清理所有 sys_* 表
+- 测试数据与开发环境完全隔离
 
 ---
 
@@ -145,8 +158,9 @@ pending_tasks:
 | 状态 | 数量 | 位置 |
 |------|------|------|
 | 进行中 | 1 | 本文件 |
+| 已完成 | 2 | 本文件 |
 | 待开始 | 13 | [backlog/](docs/04-项目实施/05-任务追踪/backlog/) |
-| 已完成 | 10 | [archived/](docs/04-项目实施/05-任务追踪/archived/) |
+| 已归档 | 10 | [archived/](docs/04-项目实施/05-任务追踪/archived/) |
 
 ---
 
