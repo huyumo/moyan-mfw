@@ -171,6 +171,17 @@ watch(
   { immediate: true }
 )
 
+// 监听 checkedIds 变化，同步更新 ElTree 的勾选状态
+watch(
+  () => props.checkedIds,
+  (newCheckedIds) => {
+    const keys = newCheckedIds || []
+    // 使用 nextTick 确保 DOM 更新后再设置勾选状态
+    pcTreeRef.value?.setCheckedKeys(keys)
+    normalTreeRef.value?.setCheckedKeys(keys)
+  }
+)
+
 // ========== 暴露方法 ==========
 
 defineExpose({
@@ -212,6 +223,7 @@ defineExpose({
               show-checkbox
               :default-expand-all="false"
               :expand-on-click-node="false"
+              :default-checked-keys="checkedIds"
               :disabled="readonly"
               @check="() => emit('check-change', collectCheckedIds(pcTreeNodes))"
             >
@@ -263,6 +275,7 @@ defineExpose({
               show-checkbox
               :default-expand-all="false"
               :expand-on-click-node="false"
+              :default-checked-keys="checkedIds"
               :disabled="readonly"
               @check="() => emit('check-change', collectCheckedIds(normalTreeNodes))"
             >
