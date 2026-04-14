@@ -22,7 +22,7 @@ import { ElTree, ElButton, ElEmpty, ElIcon, ElTabs, ElTabPane } from 'element-pl
 import { Key } from '@element-plus/icons-vue'
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import { MfwPopup } from '../../feedback'
-import { MfwPermissionValuePopup } from '../permission-value-popup/mod'
+import { MfwPermissionValuePopup } from '../permission-value-popup'
 
 // ========== 类型定义 ==========
 

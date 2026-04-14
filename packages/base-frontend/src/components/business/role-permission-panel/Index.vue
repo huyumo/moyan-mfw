@@ -44,7 +44,7 @@ import {
   ApiRoleAssignPermissions,
 } from '../../../apis/sys'
 import type { PermissionItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
-import { MfwPermissionTree } from '../permission-tree/mod'
+import { MfwPermissionTree } from '../permission-tree'
 
 defineOptions({ name: 'RolePermissionPanel' })
 
