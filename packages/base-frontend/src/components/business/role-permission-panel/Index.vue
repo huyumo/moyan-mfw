@@ -34,21 +34,32 @@
               node-key="id"
               :default-expand-all="false"
               :expand-on-click-node="false"
-              @check="onPcTreeCheck"
             >
-              <template #default="{ node, data }">
+              <template #default="{ data }">
                 <div class="tree-node-content">
-                  <span class="node-label">{{ data.permName }}</span>
+                  <span class="node-label">
+                    <span class="node-type-tag" :class="data.nodeType.toLowerCase()">
+                      {{ data.nodeType }}
+                    </span>
+                    {{ data.permName }}
+                  </span>
                   <span class="node-code">{{ data.permCode }}</span>
-                  <el-tag size="small" :type="getNodeTypeTagType(data.nodeType)">
-                    {{ data.nodeType }}
-                  </el-tag>
+                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
+                  <el-button
+                    v-if="canSetPermissionValue(data.nodeType) && getIsChecked(data.id)"
+                    type="primary"
+                    link
+                    size="small"
+                    @click.stop="handleConfigPermissionValue(data)"
+                  >
+                    <el-icon><Key /></el-icon> 配置操作权限
+                  </el-button>
                 </div>
               </template>
             </el-tree>
 
             <!-- 提示：无权限池数据 -->
-            <el-empty v-if="pcPermissionTree.length === 0" description="该应用类型未配置权限池" />
+            <el-empty v-if="pcPermissionTree.length === 0" description="该应用类型未配置 PC 权限池" />
           </div>
         </el-tab-pane>
 
@@ -63,21 +74,32 @@
               node-key="id"
               :default-expand-all="false"
               :expand-on-click-node="false"
-              @check="onNormalTreeCheck"
             >
-              <template #default="{ node, data }">
+              <template #default="{ data }">
                 <div class="tree-node-content">
-                  <span class="node-label">{{ data.permName }}</span>
+                  <span class="node-label">
+                    <span class="node-type-tag" :class="data.nodeType.toLowerCase()">
+                      {{ data.nodeType }}
+                    </span>
+                    {{ data.permName }}
+                  </span>
                   <span class="node-code">{{ data.permCode }}</span>
-                  <el-tag size="small" :type="getNodeTypeTagType(data.nodeType)">
-                    {{ data.nodeType }}
-                  </el-tag>
+                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
+                  <el-button
+                    v-if="canSetPermissionValue(data.nodeType) && getIsChecked(data.id)"
+                    type="primary"
+                    link
+                    size="small"
+                    @click.stop="handleConfigPermissionValue(data)"
+                  >
+                    <el-icon><Key /></el-icon> 配置操作权限
+                  </el-button>
                 </div>
               </template>
             </el-tree>
 
             <!-- 提示：无权限池数据 -->
-            <el-empty v-if="normalPermissionTree.length === 0" description="该应用类型未配置权限池" />
+            <el-empty v-if="normalPermissionTree.length === 0" description="该应用类型未配置普通权限池" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -87,7 +109,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { ElMessage, ElTree } from 'element-plus'
+import { ElMessage, ElTree, ElButton, ElIcon } from 'element-plus'
+import { Key } from '@element-plus/icons-vue'
 import type { ElTreeInstance } from '../../../types/element-plus'
 import {
   ApiAppTypeGetPermissionPool,
@@ -96,6 +119,10 @@ import {
 } from '../../../apis/sys'
 import type { PermissionItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import type { PermissionTabType, PermissionTreeNodeWithState } from './types'
+import { MfwPopup } from '../../feedback'
+import MfwPermissionValuePopup from './MfwPermissionValuePopup.vue'
+
+defineOptions({ name: 'RolePermissionPanel' })
 
 /** Props 定义 - 支持直接使用和弹窗使用两种模式 */
 interface Props {
@@ -109,8 +136,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineOptions({ name: 'RolePermissionPanel' })
-
 // 兼容弹窗模式：优先使用 data 中的值
 const roleId = computed(() => props.data?.roleId || props.roleId || '')
 const appTypeId = computed(() => props.data?.appTypeId || props.appTypeId || '')
@@ -123,13 +148,66 @@ const normalTreeRef = ref<ElTreeInstance>()
 
 /** 权限池数据 */
 const permissionPool = ref<PermissionTreeNodeDto[]>([])
-/** 角色当前权限 */
+/** 角色当前权限（含 permissionValue） */
 const rolePermissions = ref<PermissionItemDto[]>([])
+/** 已勾选的节点 ID 集合（用于快速判断） */
+const checkedNodeIds = ref<Set<string>>(new Set())
 
 /** 树节点属性配置 */
 const treeProps = {
   children: 'children',
   label: 'permName',
+}
+
+/**
+ * 判断节点类型是否可以配置操作权限
+ */
+function canSetPermissionValue(nodeType?: string): boolean {
+  return nodeType === 'PAGE' || nodeType === 'TAG'
+}
+
+/**
+ * 配置操作权限
+ */
+function handleConfigPermissionValue(data: PermissionTreeNodeWithState) {
+  MfwPopup.open({
+    title: `配置操作权限 - ${data.permName}`,
+    type: 'dialog',
+    component: MfwPermissionValuePopup,
+    data: {
+      appTypeId: appTypeId.value,
+      nodeId: data.id,
+      nodeName: data.permName,
+      nodeCode: data.permCode,
+      permissionValue: data.permissionValue || '0',
+    },
+    popupProps: { width: 500 },
+    on: {
+      confirm: async (componentInstance: any) => {
+        const result = await componentInstance.onConfirm()
+        if (!result) return
+
+        // 更新节点的 permissionValue（不保存，等待用户点击"保存"按钮）
+        const updateNodePerm = (nodes: PermissionTreeNodeWithState[]): boolean => {
+          for (const node of nodes) {
+            if (node.id === result.nodeId) {
+              node.permissionValue = result.permissionValue
+              return true
+            }
+            if (node.children && updateNodePerm(node.children)) {
+              return true
+            }
+          }
+          return false
+        }
+
+        // 在两个树中查找并更新
+        if (!updateNodePerm(pcPermissionTree.value)) {
+          updateNodePerm(normalPermissionTree.value)
+        }
+      },
+    },
+  })
 }
 
 /** 构建 PC 权限树 */
@@ -145,83 +223,48 @@ const normalPermissionTree = computed<PermissionTreeNodeWithState[]>(() => {
 })
 
 /**
- * 将权限池数据转换为树形结构
+ * 将权限池数据转换为树形结构（带勾选状态）
+ * 保留 API 返回的原始树形结构，只添加 checked 状态
+ * 仅展示在权限池中的节点（inPool === true）
  */
 function buildPermissionTree(items: PermissionTreeNodeDto[]): PermissionTreeNodeWithState[] {
-  // 创建节点映射
-  const nodeMap = new Map<string, PermissionTreeNodeWithState>()
-  const rootNodes: PermissionTreeNodeWithState[] = []
+  function processTree(nodes: PermissionTreeNodeDto[]): PermissionTreeNodeWithState[] {
+    const result: PermissionTreeNodeWithState[] = []
 
-  // 先创建所有节点
-  for (const item of items) {
-    const rolePerm = rolePermissions.value.find(p => p.permissionId === item.id)
-    nodeMap.set(item.id, {
-      ...item,
-      checked: !!rolePerm,
-      expanded: false,
-      children: [],
-    })
-  }
+    for (const node of nodes) {
+      const children = node.children ? processTree(node.children) : []
+      const isInPool = node.inPool === true
+      const hasChildrenInPool = children.length > 0
 
-  // 建立父子关系
-  for (const item of items) {
-    const node = nodeMap.get(item.id)!
-    if (item.parentId) {
-      const parent = nodeMap.get(item.parentId)
-      if (parent) {
-        parent.children!.push(node)
+      // 只有节点本身在池中，或者有子节点在池中，才展示该节点
+      if (isInPool || hasChildrenInPool) {
+        const rolePerm = rolePermissions.value.find(p => p.permissionId === node.id)
+        result.push({
+          ...node,
+          checked: isInPool && !!rolePerm,
+          expanded: false,
+          permissionValue: rolePerm?.permissionValue ? String(rolePerm.permissionValue) : node.permissionValue,
+          children,
+        })
       }
-    } else {
-      rootNodes.push(node)
     }
+
+    return result
   }
 
-  // 排序
-  sortTreeNodes(rootNodes)
-
-  return rootNodes
-}
-
-/**
- * 树节点排序
- */
-function sortTreeNodes(nodes: PermissionTreeNodeWithState[]) {
-  nodes.sort((a, b) => a.sortOrder - b.sortOrder)
-  for (const node of nodes) {
-    if (node.children?.length) {
-      sortTreeNodes(node.children)
-    }
-  }
-}
-
-/**
- * 获取节点类型对应的 Tag 类型
- */
-function getNodeTypeTagType(nodeType: string): 'primary' | 'success' | 'warning' | 'info' {
-  switch (nodeType) {
-    case 'MENU':
-      return 'primary'
-    case 'PAGE':
-      return 'success'
-    case 'TAG':
-      return 'warning'
-    default:
-      return 'info'
-  }
+  return processTree(items)
 }
 
 /**
  * 加载权限池数据
  */
 async function loadPermissionPool() {
-  if (!appTypeId.value) {
-    return
-  }
+  if (!appTypeId.value) return
+
   try {
     const result = await new ApiAppTypeGetPermissionPool({
       query: { appTypeId: appTypeId.value },
     })
-    // 合并 PC 和 NORMAL 权限树到同一个数组
     permissionPool.value = [
       ...(result.permissionTrees.pcTree || []),
       ...(result.permissionTrees.normalTree || []),
@@ -237,12 +280,11 @@ async function loadPermissionPool() {
  * 加载角色当前权限
  */
 async function loadRolePermissions() {
-  if (!roleId.value) {
-    return
-  }
+  if (!roleId.value) return
+
   try {
     const result = await new ApiRoleGetRolePermissions({
-      params: { id: roleId.value },
+      query: { id: roleId.value },
     })
     rolePermissions.value = result || []
   } catch (error: unknown) {
@@ -259,7 +301,6 @@ async function initData() {
   loading.value = true
   try {
     await Promise.all([loadPermissionPool(), loadRolePermissions()])
-    // 设置树的勾选状态
     await nextTick()
     setTreeCheckedKeys()
   } finally {
@@ -271,75 +312,71 @@ async function initData() {
  * 设置树的勾选状态
  */
 function setTreeCheckedKeys() {
-  // 设置 PC 权限树
+  const getCheckedIds = (permissionType: 'PC' | 'NORMAL') => {
+    return rolePermissions.value
+      .filter(p => permissionPool.value.some(pool => pool.id === p.permissionId && pool.permissionType === permissionType))
+      .map(p => p.permissionId)
+  }
+
+  const pcIds = getCheckedIds('PC')
+  const normalIds = getCheckedIds('NORMAL')
+
+  // 更新已勾选 ID 集合
+  checkedNodeIds.value = new Set([...pcIds, ...normalIds])
+
   if (pcTreeRef.value) {
-    const checkedIds = rolePermissions.value
-      .filter(p => permissionPool.value.some(pool => pool.id === p.permissionId && pool.permissionType === 'PC'))
-      .map(p => p.permissionId)
-    pcTreeRef.value.setCheckedKeys(checkedIds, false)
+    pcTreeRef.value.setCheckedKeys(pcIds, false)
   }
-
-  // 设置普通权限树
   if (normalTreeRef.value) {
-    const checkedIds = rolePermissions.value
-      .filter(p => permissionPool.value.some(pool => pool.id === p.permissionId && pool.permissionType === 'NORMAL'))
-      .map(p => p.permissionId)
-    normalTreeRef.value.setCheckedKeys(checkedIds, false)
+    normalTreeRef.value.setCheckedKeys(normalIds, false)
   }
 }
 
 /**
- * PC 权限树勾选变化
+ * 判断节点是否已勾选（用于显示"配置操作权限"按钮）
  */
-function onPcTreeCheck(data: PermissionTreeNodeWithState, _checkedInfo: { checkedNodes: unknown[] }) {
-  // 可以在这里处理 permissionValue 的逻辑
+function getIsChecked(nodeId: string): boolean {
+  return checkedNodeIds.value.has(nodeId)
 }
 
 /**
- * 普通权限树勾选变化
+ * 收集勾选的权限（支持 PC 和普通权限）
  */
-function onNormalTreeCheck(data: PermissionTreeNodeWithState, _checkedInfo: { checkedNodes: unknown[] }) {
-  // 可以在这里处理权限变化的逻辑
-}
-
-/**
- * 收集所有勾选的权限
- */
-function collectCheckedPermissions(): PermissionItemDto[] {
+function collectCheckedPermissions(treeRef: ElTreeInstance | undefined): PermissionItemDto[] {
   const permissions: PermissionItemDto[] = []
 
-  // 收集 PC 权限
-  if (pcTreeRef.value) {
-    const checkedNodes = pcTreeRef.value.getCheckedNodes(false, false) as PermissionTreeNodeWithState[]
-    for (const node of checkedNodes) {
-      const poolItem = permissionPool.value.find(p => p.id === node.id)
-      permissions.push({
-        permissionId: node.id,
-        permissionValue: poolItem?.permissionValue || '0',
-      })
-    }
-  }
+  if (!treeRef) return permissions
 
-  // 收集普通权限
-  if (normalTreeRef.value) {
-    const checkedNodes = normalTreeRef.value.getCheckedNodes(false, false) as PermissionTreeNodeWithState[]
-    for (const node of checkedNodes) {
-      const poolItem = permissionPool.value.find(p => p.id === node.id)
-      permissions.push({
-        permissionId: node.id,
-        permissionValue: poolItem?.permissionValue || '0',
-      })
+  const checkedNodes = treeRef.getCheckedNodes(false, false) as PermissionTreeNodeWithState[]
+  for (const node of checkedNodes) {
+    const poolItem = permissionPool.value.find(p => p.id === node.id)
+    if (poolItem?.inPool !== true) {
+      ElMessage.warning(`权限"${node.permName}"不在权限池中，已自动过滤`)
+      continue
     }
+    permissions.push({
+      permissionId: node.id,
+      permissionValue: node.permissionValue || '0',
+    })
   }
 
   return permissions
 }
 
 /**
+ * 收集所有勾选的权限
+ */
+function collectAllCheckedPermissions(): PermissionItemDto[] {
+  const pcPerms = collectCheckedPermissions(pcTreeRef.value)
+  const normalPerms = collectCheckedPermissions(normalTreeRef.value)
+  return [...pcPerms, ...normalPerms]
+}
+
+/**
  * 确认保存（供 MfwPopup 调用）
  */
 async function onConfirm() {
-  const permissions = collectCheckedPermissions()
+  const permissions = collectAllCheckedPermissions()
 
   if (permissions.length === 0) {
     ElMessage.warning('请至少选择一个权限')
@@ -415,9 +452,31 @@ defineExpose({
   align-items: center;
   gap: 8px;
   flex: 1;
+  justify-content: space-between;
 
   .node-label {
-    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .node-type-tag {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #fff;
+
+      &.menu {
+        background-color: var(--el-color-primary);
+      }
+
+      &.page {
+        background-color: var(--el-color-success);
+      }
+
+      &.tag {
+        background-color: var(--el-color-warning);
+      }
+    }
   }
 
   .node-code {
