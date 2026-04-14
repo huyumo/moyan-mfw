@@ -1,73 +1,63 @@
 /**
  * @fileoverview RolePermissionPanel 组件类型定义
- * @description 角色权限分配面板的 Props 和类型定义
  */
 
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 
-/** RolePermissionPanel Props */
-export interface RolePermissionPanelProps {
-  /** 角色 ID */
-  roleId: string
-  /** 应用类型 ID（用于获取权限池） */
-  appTypeId: string
-}
+/** Tab 类型 */
+export type PermissionTabType = 'pc' | 'normal'
 
-/** 权限勾选状态 */
-export interface PermissionCheckState {
-  /** 权限 ID */
-  permissionId: string
-  /** 是否勾选 */
-  checked: boolean
-  /** permissionValue（位运算权限值） */
-  permissionValue?: string
-}
-
-/** 权限树节点（带勾选状态） */
+/** 权限树节点（带勾选状态和 permissionValue） */
 export interface PermissionTreeNodeWithState extends PermissionTreeNodeDto {
-  /** 勾选状态 */
+  /** 是否勾选 */
   checked: boolean
   /** 展开状态 */
   expanded: boolean
-  /** permissionValue 勾选状态（各操作位的勾选） */
-  permissionValueBits?: PermissionValueBitState[]
+  /** 权限值（位运算） */
+  permissionValue?: string
   /** 子节点 */
   children?: PermissionTreeNodeWithState[]
 }
 
-/** permissionValue 位运算状态 */
-export interface PermissionValueBitState {
-  /** 位值（如 1n, 2n, 4n） */
-  bit: string
-  /** 操作名称（如 ADD, EDIT, DELETE） */
-  name: string
-  /** 是否勾选 */
-  checked: boolean
+/** RolePermissionPanel Props */
+export interface RolePermissionPanelProps {
+  /** 角色 ID */
+  roleId?: string
+  /** 应用类型 ID（用于获取权限池） */
+  appTypeId?: string
+  /** 弹窗模式数据 */
+  data?: {
+    roleId: string
+    appTypeId: string
+  }
 }
 
-/** 权限操作常量 */
-export const PERMISSION_OPERATIONS = {
-  ADD: 1n,      // 添加
-  EDIT: 2n,     // 编辑
-  DELETE: 4n,   // 删除
-  VIEW: 8n,     // 查看
-  EXPORT: 16n,  // 导出
-  IMPORT: 32n,  // 导入
-  APPROVE: 64n, // 审批
-  REJECT: 128n, // 拒绝
+/** RolePermissionPanel 暴露实例 */
+export interface RolePermissionPanelInstance {
+  /** 保存权限分配 */
+  onConfirm: () => Promise<void>
+}
+
+/** 全局权限位常量（位运算） */
+export const PermBit = {
+  ADD: 1n,      // 2^0 = 新增
+  EDIT: 2n,     // 2^1 = 编辑
+  DELETE: 4n,   // 2^2 = 删除
+  EXPORT: 8n,   // 2^3 = 导出
+  IMPORT: 16n,  // 2^4 = 导入
+  VIEW: 32n,    // 2^5 = 查看
+  APPROVE: 64n, // 2^6 = 审批
+  REJECT: 128n, // 2^7 = 拒绝
 } as const
 
-/** 操作名称映射 */
-export const OPERATION_NAMES: Record<string, string> = {
-  '1': '添加',
+/** 权限位描述映射 */
+export const PermBitDesc: Record<string, string> = {
+  '1': '新增',
   '2': '编辑',
   '4': '删除',
-  '8': '查看',
-  '16': '导出',
-  '32': '导入',
+  '8': '导出',
+  '16': '导入',
+  '32': '查看',
   '64': '审批',
   '128': '拒绝',
 }
-
-/** Tab 类型 */
-export type PermissionTabType = 'pc' | 'normal'
