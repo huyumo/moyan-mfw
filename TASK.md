@@ -1,20 +1,12 @@
 ---
 title: 任务追踪 - 活跃索引
 status: active
-version: 2.0.0
+version: 2.0.1
 created: 2026-04-12
-updated: 2026-04-12T17:30:00Z
-current_session: session-2026-04-12-009
+updated: 2026-04-13T14:30:00Z
+current_session: session-2026-04-13-001
 
 active_tasks:
-  - id: "2026-04-12-008"
-    name: "前端项目第一阶段 - 核心问题修复"
-    status: in_progress
-    priority: P0
-    assignee: Frontend-Dev
-    deadline: 2026-04-15
-    detail: "docs/04-项目实施/05-任务追踪/active/2026-04-12-008-前端项目第一阶段 - 核心问题修复.md"
-
   - id: "2026-04-12-002"
     name: "第五次 Harness 摸底测试 - SessionEnd Hook 专项验证"
     status: in_progress
@@ -88,32 +80,11 @@ pending_tasks:
     name: "P2 组件开发 - MfwEmpty"
     priority: P2
     deadline: 2026-04-30
-
-  - id: "2026-04-30-006"
-    name: "P1-文档链接错误修复"
-    priority: P1
-    deadline: 2026-04-30
 ---
 
 ## 当前活跃任务
 
-### 1. 前端项目第一阶段 - 核心问题修复
-- **状态**: 进行中
-- **负责人**: Frontend-Dev
-- **截止**: 2026-04-15
-- **详情**: [查看](docs/04-项目实施/05-任务追踪/active/2026-04-12-008-前端项目第一阶段 - 核心问题修复.md)
-
-**目标**: 修复组件导出、命名规范、类型定义
-
-**进度**:
-- [ ] 组件导出修复
-- [ ] 组件命名规范
-- [ ] 类型定义修复
-- [ ] 自测试验证
-
----
-
-### 2. 第五次 Harness 摸底测试
+### 1. 第五次 Harness 摸底测试
 - **状态**: 进行中
 - **负责人**: 技术负责人
 - **截止**: 2026-04-15
@@ -148,9 +119,9 @@ pending_tasks:
 
 | 状态 | 数量 | 位置 |
 |------|------|------|
-| 进行中 | 2 | 本文件 |
-| 待开始 | 14 | [backlog/](docs/04-项目实施/05-任务追踪/backlog/) |
-| 已完成 | 7 | [archived/](docs/04-项目实施/05-任务追踪/archived/) |
+| 进行中 | 1 | 本文件 |
+| 待开始 | 13 | [backlog/](docs/04-项目实施/05-任务追踪/backlog/) |
+| 已完成 | 9 | [archived/](docs/04-项目实施/05-任务追踪/archived/) |
 
 ---
 
@@ -158,6 +129,8 @@ pending_tasks:
 
 | 日期 | 任务名称 | 类别 | 位置 |
 |------|----------|------|------|
+| 2026-04-13 | 文档链接错误修复 | 文档维护 | [archived/by-category/文档维护/](docs/04-项目实施/05-任务追踪/archived/by-category/文档维护/) |
+| 2026-04-13 | 前端项目第一阶段 - 核心问题修复 | 前端开发 | [archived/by-category/前端开发/](docs/04-项目实施/05-任务追踪/archived/by-category/前端开发/) |
 | 2026-04-12 | 第四次全员摸底测试 | 摸底测试 | [archived/by-category/摸底测试/](docs/04-项目实施/05-任务追踪/archived/by-category/摸底测试/) |
 | 2026-04-12 | 任务自动归档系统实施 | Harness 配置 | [archived/by-category/Harness 配置/](docs/04-项目实施/05-任务追踪/archived/by-category/Harness%20配置/) |
 | 2026-04-12 | 第二次项目摸底测试 | 摸底测试 | [archived/by-category/摸底测试/](docs/04-项目实施/05-任务追踪/archived/by-category/摸底测试/) |

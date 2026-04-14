@@ -48,6 +48,7 @@ export type AppInstanceItemDto = {
   appTypeName: string // 应用类型名称
   role: string // 用户身份
   icon?: string // 应用图标
+  appStatus: number // 应用状态 (1:启用 0:禁用)
 }
 
 export type PermissionTreeNodeDto = {
@@ -76,6 +77,7 @@ export type PermissionTreeNodeDto = {
 
 export type UserPermissionsResponseDto = {
   menuTree: Array<PermissionTreeNodeDto> // 用户权限菜单树
+  menu?: Array<PermissionTreeNodeDto> // 别名：用户权限菜单树
   permissions: Array<string> // 用户权限列表（扁平化）
   appTypeId: string // 应用类型 ID
 }

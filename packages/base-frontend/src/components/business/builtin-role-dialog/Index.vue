@@ -145,10 +145,8 @@ const handleAddRole = () => {
           });
           ElMessage.success('角色创建成功');
           loadRoles();
-          return true;
         } catch (error) {
           ElMessage.error('创建角色失败');
-          return false;
         }
       },
     },

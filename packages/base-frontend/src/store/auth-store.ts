@@ -239,7 +239,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUserApps(): Promise<AppInstance[]> {
     try {
       const response = await new ApiAuthGetUserApps({});
-      const appsData = response || [];
+      const appsData = response?.apps || [];
 
       // 转换为 AppInstance 格式
       apps.value = appsData.map((app: AppInstanceItemDto) => ({

@@ -21,7 +21,7 @@ let sysInitialized: boolean | null = null;
  */
 async function checkInitialized(): Promise<boolean> {
   if (sysInitialized !== null) {
-    return sysInitialized;
+    return sysInitialized as boolean;
   }
   try {
     const response = await fetch('/api/install/status', {
@@ -29,7 +29,7 @@ async function checkInitialized(): Promise<boolean> {
       headers: { 'Content-Type': 'application/json' },
     });
     const result = await response.json();
-    sysInitialized = result.data?.initialized ?? false;
+    sysInitialized = Boolean(result.data?.initialized);
     return sysInitialized;
   } catch (error) {
     // 网络/服务不可用时，假设系统已初始化，避免误跳转

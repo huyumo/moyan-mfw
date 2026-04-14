@@ -94,7 +94,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
         {
           path: '',
           name: 'RootRedirect',
-          // 不在这里设置重定向，由守卫处理
+          redirect: '/dashboard',
           meta: { requiresAuth: true },
         },
         // 注入合并后的路由

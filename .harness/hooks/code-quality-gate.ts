@@ -109,6 +109,7 @@ function findProjectRoot(): string {
 /**
  * 检查 QA 审批状态
  * 读取 TASK.md 中的任务状态，确认是否为 qa_approved
+ * 支持两种格式：单任务格式和任务索引格式
  */
 function checkQAApproval(projectRoot: string): { approved: boolean; status?: string; error?: string } {
   const taskFilePath = path.join(projectRoot, 'TASK.md');
@@ -136,7 +137,33 @@ function checkQAApproval(projectRoot: string): { approved: boolean; status?: str
 
   const status = frontMatterRaw['status'];
 
-  // 检查状态是否为 qa_approved
+  // 检查是否是任务索引格式
+  const isIndexFormat = content.includes('active_tasks:');
+
+  if (isIndexFormat) {
+    // 索引格式：检查是否有 qa_approved 状态的任务
+    const hasQaApprovedTask = content.includes('qa_approved');
+    const hasCompletedTask = content.includes('status: completed');
+
+    if (hasQaApprovedTask || hasCompletedTask) {
+      return { approved: true, status: 'index_format' };
+    }
+
+    // 索引格式下，检查是否有进行中的任务（允许提交）
+    const hasInProgressTask = content.includes('status: in_progress');
+    if (hasInProgressTask) {
+      // 警告但不阻塞
+      return { approved: true, status: 'in_progress' };
+    }
+
+    return {
+      approved: false,
+      status: 'index_format_no_qa',
+      error: '任务索引中未找到 qa_approved 或 completed 状态的任务'
+    };
+  }
+
+  // 单任务格式：检查状态是否为 qa_approved
   if (status === 'qa_approved') {
     return { approved: true, status };
   }

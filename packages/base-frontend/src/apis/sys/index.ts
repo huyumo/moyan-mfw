@@ -99,7 +99,12 @@ export class ApiAuthLogout extends ApiCall<{}, any> {
 /**
  * auth|认证相关接口->获取用户应用列表
  */
-export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
+export class ApiAuthGetUserApps extends ApiCall<
+  {},
+  {
+    apps: Array<AppInstanceItemDto> // 用户应用列表
+  }
+> {
   path = '/api/auth/apps'
   method: MoMethod = 'GET'
   auth = true

@@ -61,25 +61,38 @@
     ]
   },
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts UserPromptSubmit hook:user-prompt-submit \"pnpm run hook:user-prompt-submit\"",
+            "timeout": 30,
+            "statusMessage": "🔔 运行用户提示提交检查..."
+          }
+        ]
+      }
+    ],
     "SessionStart": [
       {
         "matcher": "*",
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:identity",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SessionStart hook:identity \"pnpm run hook:identity\"",
             "timeout": 30,
             "statusMessage": "🔔 运行 Harness 身份报告检查..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=lead",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SessionStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=lead\"",
             "timeout": 30,
             "statusMessage": "👤 确认主智能体身份和职责..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:session-start",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SessionStart hook:session-start \"pnpm run hook:session-start\"",
             "timeout": 60,
             "statusMessage": "🔔 运行 Harness 会话开始检查..."
           }
@@ -92,7 +105,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:pre-code",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts PreToolUse hook:pre-code \"pnpm run hook:pre-code\"",
             "timeout": 60,
             "statusMessage": "🔔 运行 Harness 编码前检查..."
           }
@@ -103,7 +116,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:docs-norm {{filePath}}",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts PreToolUse hook:docs-norm \"pnpm run hook:docs-norm {{filePath}}\"",
             "timeout": 30,
             "statusMessage": "📄 运行文档规范检查..."
           }
@@ -116,13 +129,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:code-quality",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts PostToolUse hook:code-quality \"pnpm run hook:code-quality\"",
             "timeout": 180,
             "statusMessage": "🔔 运行 Harness 代码质量检查..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:task-archive",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts PostToolUse hook:task-archive \"pnpm run hook:task-archive\"",
             "timeout": 30,
             "statusMessage": "📋 检查任务归档..."
           }
@@ -135,7 +148,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:pm-context",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=project-manager\"",
+            "timeout": 30,
+            "statusMessage": "👤 确认智能体身份..."
+          },
+          {
+            "type": "command",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:pm-context \"pnpm run hook:pm-context\"",
             "timeout": 30,
             "statusMessage": "📋 加载项目管理上下文..."
           }
@@ -146,13 +165,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=tech-architect",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=tech-architect\"",
             "timeout": 30,
             "statusMessage": "👤 确认智能体身份..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:architect-context",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:architect-context \"pnpm run hook:architect-context\"",
             "timeout": 30,
             "statusMessage": "🏗️ 加载架构设计上下文..."
           }
@@ -163,13 +182,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=backend-ts-node-dev",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=backend-ts-node-dev\"",
             "timeout": 30,
             "statusMessage": "👤 确认智能体身份..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:backend-security",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:backend-security \"pnpm run hook:backend-security\"",
             "timeout": 30,
             "statusMessage": "🔒 注入后端安全规范..."
           }
@@ -180,13 +199,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=frontend-dev",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=frontend-dev\"",
             "timeout": 30,
             "statusMessage": "👤 确认智能体身份..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:frontend-guidelines",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:frontend-guidelines \"pnpm run hook:frontend-guidelines\"",
             "timeout": 30,
             "statusMessage": "🎨 加载前端开发指南..."
           }
@@ -197,13 +216,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=code-reviewer-tester",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=code-reviewer-tester\"",
             "timeout": 30,
             "statusMessage": "👤 确认智能体身份..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:review-checklist",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:review-checklist \"pnpm run hook:review-checklist\"",
             "timeout": 30,
             "statusMessage": "📝 加载代码审查清单..."
           }
@@ -214,13 +233,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:agent-identity-check --agent-type=docs-architect",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:agent-identity-check \"pnpm run hook:agent-identity-check --agent-type=docs-architect\"",
             "timeout": 30,
             "statusMessage": "👤 确认智能体身份..."
           },
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:docs-template",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStart hook:docs-template \"pnpm run hook:docs-template\"",
             "timeout": 30,
             "statusMessage": "📄 加载文档模板..."
           }
@@ -233,7 +252,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:subagent-review",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SubagentStop hook:subagent-review \"pnpm run hook:subagent-review\"",
             "timeout": 60,
             "statusMessage": "🔔 审查 subagent 工作成果..."
           }
@@ -246,7 +265,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "pnpm --filter @claude-code/harness run hook:session-end",
+            "command": "cd .harness && pnpm exec tsx scripts/run-hook.ts SessionEnd hook:session-end \"pnpm run hook:session-end\"",
             "timeout": 90,
             "statusMessage": "🔔 运行 Harness 会话结束检查..."
           }
