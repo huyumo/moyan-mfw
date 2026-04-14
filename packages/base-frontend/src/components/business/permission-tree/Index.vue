@@ -97,14 +97,22 @@ function getNodeTypeTagType(nodeType: string): 'primary' | 'success' | 'warning'
 }
 
 /**
- * 构建树节点（添加勾选状态）
+ * 构建树节点（优先使用后端返回的 checked 字段）
+ * @description 如果后端已返回 checked 字段，直接使用；否则从 checkedIds 映射
  */
-function buildTreeNodes(nodes: PermissionTreeNodeDto[], checkedIds: string[]): (PermissionTreeNodeDto & { checked: boolean; children?: (PermissionTreeNodeDto & { checked: boolean })[] })[] {
-  return nodes.map(node => ({
-    ...node,
-    checked: checkedIds.includes(node.id),
-    children: node.children ? buildTreeNodes(node.children, checkedIds) : [],
-  }))
+function buildTreeNodes(
+  nodes: PermissionTreeNodeDto[],
+  checkedIds: string[]
+): (PermissionTreeNodeDto & { checked: boolean; children?: (PermissionTreeNodeDto & { checked: boolean })[] })[] {
+  return nodes.map(node => {
+    // 优先使用后端返回的 checked 字段，否则从 checkedIds 映射
+    const checked = node.checked !== undefined ? node.checked : checkedIds.includes(node.id)
+    return {
+      ...node,
+      checked,
+      children: node.children ? buildTreeNodes(node.children, checkedIds) : [],
+    }
+  })
 }
 
 /**

@@ -324,8 +324,17 @@ export class AppTypeService {
     poolMap: Map<string, bigint>,
   ): PermissionTreeNodeDto {
     // 检查是否在权限池中
-    const inPool = poolMap.has(permission.id);
+    const checked = poolMap.has(permission.id);
     const poolValue = poolMap.get(permission.id);
+
+    // 获取父权限的权限值（Permission 实体定义的 permissionValue）
+    let parentPermissionValue: string | undefined;
+    if (permission.parentId) {
+      const parentPerm = permMap.get(permission.parentId);
+      if (parentPerm) {
+        parentPermissionValue = parentPerm.permissionValue.toString();
+      }
+    }
 
     // 构建节点
     const node: PermissionTreeNodeDto = {
@@ -345,9 +354,11 @@ export class AppTypeService {
       showMode: permission.showMode as 'NORMAL' | 'DEV',
       permStatus: permission.permStatus,
       isAutoSync: permission.isAutoSync,
-      inPool,
+      checked,
       // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效（bigint 序列化为字符串）
-      permissionValue: inPool && poolValue !== undefined ? poolValue.toString() : undefined,
+      permissionValue: checked && poolValue !== undefined ? poolValue.toString() : undefined,
+      // parentPermissionValue 父权限定义的权限值
+      parentPermissionValue,
     };
 
     // 找出子节点

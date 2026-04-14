@@ -137,7 +137,7 @@ export default async function globalSetup() {
       // 给用户分配管理员角色
       const userRoleId = 'd4e5f6a7-b8c9-4d5e-1f2a-3b4c5d6e7f8a';
       await newConnection.query(`
-        INSERT INTO sys_user_role (id, userId, roleId, created_at)
+        INSERT INTO sys_user_roles (id, userId, roleId, created_at)
         VALUES ('${userRoleId}', '${adminUserId}', '${adminRoleId}', NOW())
       `);
 
@@ -174,7 +174,7 @@ export default async function globalSetup() {
       // 给 test 用户分配 test 角色
       const testUserRoleId = 'f7a8b9c0-d1e2-4f7a-5b6c-7d8e9f0a1b2c';
       await newConnection.query(`
-        INSERT INTO sys_user_role (id, userId, roleId, created_at)
+        INSERT INTO sys_user_roles (id, userId, roleId, created_at)
         VALUES ('${testUserRoleId}', '${testUser3Id}', '${testRoleId2}', NOW())
       `);
 

@@ -60,23 +60,23 @@ async function loadPermissionPool() {
     pcTreeData.value = response.permissionTrees?.pcTree || []
     normalTreeData.value = response.permissionTrees?.normalTree || []
 
-    // 收集已勾选的 ID（inPool === true）
-    const collectInPoolIds = (nodes: PermissionTreeNodeDto[]): string[] => {
+    // 收集已勾选的 ID（checked === true）
+    const collectCheckedIds = (nodes: PermissionTreeNodeDto[]): string[] => {
       const ids: string[] = []
       for (const node of nodes) {
-        if (node.inPool) {
+        if (node.checked) {
           ids.push(node.id)
         }
         if (node.children) {
-          ids.push(...collectInPoolIds(node.children))
+          ids.push(...collectCheckedIds(node.children))
         }
       }
       return ids
     }
 
     checkedIds.value = [
-      ...collectInPoolIds(pcTreeData.value),
-      ...collectInPoolIds(normalTreeData.value),
+      ...collectCheckedIds(pcTreeData.value),
+      ...collectCheckedIds(normalTreeData.value),
     ]
 
     emit('loaded', {
