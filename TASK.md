@@ -17,7 +17,7 @@ active_tasks:
 
   - id: "2026-04-14-001"
     name: "权限池接口统一优化方案 - 需求对齐会议"
-    status: pending
+    status: in_progress
     priority: P0
     assignee: PM-Agent
     deadline: 2026-04-16
