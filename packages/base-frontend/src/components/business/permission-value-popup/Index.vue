@@ -170,7 +170,7 @@ defineExpose({ onConfirm })
 <style scoped lang="scss">
 .permission-value-popup {
   .node-code {
-    color: var(--el-text-color-secondary)
+    color: var(--el-text-color-secondary);
     font-size: 13px;
     margin: 0 0 8px;
   }
