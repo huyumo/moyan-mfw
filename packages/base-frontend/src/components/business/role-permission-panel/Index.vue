@@ -118,7 +118,37 @@ async function loadPermissionPool() {
 }
 
 /**
+ * 从树结构中递归收集勾选状态和权限值
+ */
+function collectFromTree(nodes: PermissionTreeNodeDto[]): { checkedIds: string[]; permissionValues: Map<string, string> } {
+  const checkedIds: string[] = []
+  const permissionValues = new Map<string, string>()
+
+  const collect = (nodeList: PermissionTreeNodeDto[]) => {
+    for (const node of nodeList) {
+      // 使用 checked 字段判断勾选状态
+      if (node.checked) {
+        checkedIds.push(node.id)
+        // 收集权限值
+        if (node.permissionValue) {
+          permissionValues.set(node.id, node.permissionValue)
+        }
+      }
+      if (node.children && node.children.length > 0) {
+        collect(node.children)
+      }
+    }
+  }
+
+  collect(nodes)
+  return { checkedIds, permissionValues }
+}
+
+/**
  * 加载角色当前权限
+ * @description 支持两种返回格式：
+ * 1. 树结构格式（推荐）：{ permissionTrees: { pcTree, normalTree } }
+ * 2. 扁平数组格式（兼容）：[{ permissionId, permissionValue }]
  */
 async function loadRolePermissions() {
   if (!roleId.value) return
@@ -127,15 +157,31 @@ async function loadRolePermissions() {
     const result = await new ApiRoleGetRolePermissions({
       query: { id: roleId.value },
     })
-    const rolePerms = (result || []) as PermissionItemDto[]
 
-    // 设置已勾选的权限 ID
-    checkedIds.value = rolePerms.map(p => p.permissionId)
+    // 判断返回格式：树结构 or 扁平数组
+    if (result && typeof result === 'object') {
+      // 检查是否为树结构格式
+      if ('permissionTrees' in result && result.permissionTrees) {
+        // 树结构格式：直接使用 checked 字段
+        const pcTree = result.permissionTrees.pcTree || []
+        const normalTree = result.permissionTrees.normalTree || []
 
-    // 设置权限值映射
-    permissionValues.value = new Map(
-      rolePerms.map(p => [p.permissionId, String(p.permissionValue || '0')])
-    )
+        // 从树结构中收集勾选状态
+        const pcData = collectFromTree(pcTree)
+        const normalData = collectFromTree(normalTree)
+
+        checkedIds.value = [...pcData.checkedIds, ...normalData.checkedIds]
+        // 合并权限值映射
+        permissionValues.value = new Map([...pcData.permissionValues, ...normalData.permissionValues])
+      } else if (Array.isArray(result)) {
+        // 扁平数组格式：兼容旧接口
+        const rolePerms = result as PermissionItemDto[]
+        checkedIds.value = rolePerms.map(p => p.permissionId)
+        permissionValues.value = new Map(
+          rolePerms.map(p => [p.permissionId, String(p.permissionValue || '0')])
+        )
+      }
+    }
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } } }
     ElMessage.error(err?.response?.data?.message || '加载角色权限失败')

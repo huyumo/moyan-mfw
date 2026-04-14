@@ -127,11 +127,12 @@ export class PermissionTreeNodeDto {
   isAutoSync?: number;
 
   /**
-   * 是否在权限池中
+   * 是否选中
+   * @description 前端勾选状态，true=已选中
    */
-  @ApiProperty({ description: '是否在权限池中' })
+  @ApiProperty({ description: '是否选中（前端勾选状态）' })
   @Expose()
-  inPool: boolean;
+  checked: boolean;
 
   /**
    * 权限值
@@ -140,6 +141,14 @@ export class PermissionTreeNodeDto {
   @ApiPropertyOptional({ description: '权限值（位运算权限值，十进制字符串格式）' })
   @Expose()
   permissionValue?: string;
+
+  /**
+   * 父权限的权限值
+   * @description 权限池场景：Permission 实体定义的 permissionValue；角色权限场景：权限池配置的 permissionValue
+   */
+  @ApiPropertyOptional({ description: '父权限的权限值（十进制字符串格式）' })
+  @Expose()
+  parentPermissionValue?: string;
 
   /**
    * 子节点列表

@@ -68,8 +68,9 @@ export type PermissionTreeNodeDto = {
   showMode: string // 显示模式
   permStatus: number // 权限状态
   isAutoSync?: number // 是否自动同步：1=同步生成 0=手动添加
-  inPool?: boolean // 是否在权限池中
+  checked?: boolean // 是否选中（前端勾选状态）
   permissionValue?: string // 权限值（位运算）
+  parentPermissionValue?: string // 父权限的权限值（十进制字符串格式）
   children?: Array<PermissionTreeNodeDto> // 子权限列表
   createdAt: string // 创建时间
   updateAt: string // 更新时间
