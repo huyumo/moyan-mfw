@@ -22,7 +22,7 @@ import {
   type MfwPermissionPoolPanelInstance,
 } from './types'
 import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
-import { MfwPermissionTree } from '../../business/permission-tree/mod'
+import { MfwPermissionTree } from '../../business/permission-tree'
 
 defineOptions({ name: 'MfwPermissionPoolPanel' })
 
