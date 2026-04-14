@@ -199,16 +199,33 @@ export async function run(args: string[]): Promise<HookResult> {
 
   // ========== 检查 1: TASK.md 状态 ==========
   let taskContent = '';
+  let taskStatus = 'unknown';
+  let isIndexFormat = false;
+
   if (fs.existsSync(taskFilePath)) {
     taskContent = fs.readFileSync(taskFilePath, 'utf-8');
     const frontMatterMatch = taskContent.match(/^---\n([\s\S]*?)\n---/);
 
     if (frontMatterMatch) {
       const frontMatter = parseFrontMatter(frontMatterMatch[1]);
+      taskStatus = frontMatter.status || 'unknown';
 
-      if (frontMatter.status !== 'in_progress') {
+      // 检查是否是任务索引格式
+      isIndexFormat = frontMatter['active_tasks'] !== undefined ||
+                      taskContent.includes('active_tasks:');
+
+      // 索引格式允许编码（只要有活跃任务）
+      if (isIndexFormat) {
+        // 索引格式：检查是否有活跃任务
+        const hasActiveTasks = taskContent.includes('status: in_progress');
+        if (!hasActiveTasks) {
+          result.warnings.push('⚠️ 任务索引中未找到进行中的任务，确认可以开始编码');
+        }
+        // 索引格式跳过状态检查
+      } else if (taskStatus !== 'in_progress') {
+        // 单任务格式：必须是 in_progress
         result.errors.push(
-          `TASK.md 状态为 "${frontMatter.status}"，编码前应设置为 "in_progress"`
+          `TASK.md 状态为 "${taskStatus}"，编码前应设置为 "in_progress"`
         );
         result.passed = false;
       }

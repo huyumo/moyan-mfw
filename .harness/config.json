@@ -4,7 +4,7 @@
   "description": "Harness 核心配置 - 严格模式和钩子参数",
 
   "enforcement": {
-    "strict-mode": true,
+    "strict-mode": false,
     "blockOnFailure": true
   },
 

@@ -109,7 +109,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Monitor, OfficeBuilding, Check } from '@element-plus/icons-vue'
 import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../apis/sys'
-import type { AppInstanceItemDto, PermissionMenuNodeDto } from '../../../apis/sys/schemas'
+import type { AppInstanceItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import { useAuthStore } from '../../../store/auth-store'
 import type { PopupComponentProps } from '../../feedback/popup/types'
 import type { AppSelectorDialogData } from './types'
@@ -189,7 +189,7 @@ async function handleSelectApp(app: AppInstanceItemDto) {
 /**
  * 将权限菜单节点转换为 auth-store 格式
  */
-function transformMenuNodes(nodes: PermissionMenuNodeDto[]): any[] {
+function transformMenuNodes(nodes: PermissionTreeNodeDto[]): any[] {
   return nodes.map(node => ({
     id: node.id,
     permName: node.permName,
