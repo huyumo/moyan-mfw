@@ -11,20 +11,20 @@
   ```
 -->
 
-<script setup lang="tsx">
-import { ref, watch, onMounted, nextTick } from 'vue'
-import { ElTabs, ElTabPane, ElTree, ElButton, ElMessage, ElSkeleton, ElEmpty, ElIcon } from 'element-plus'
-import { Check, Key } from '@element-plus/icons-vue'
+<script setup lang="ts">
+import { ref, watch, onMounted } from 'vue'
+import { ElButton, ElMessage } from 'element-plus'
+import { Check } from '@element-plus/icons-vue'
 import type { PermissionTreeNodeDto, PermissionTreePayloadDto } from '../../../apis/sys/schemas'
 import {
   type MfwPermissionPoolPanelProps,
   type MfwPermissionPoolPanelEmits,
   type MfwPermissionPoolPanelInstance,
-  type PermissionTreeNodeState,
 } from './types'
 import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys'
-import { MfwPopup } from '../../feedback'
-import PermissionValuePoolPopup from './MfwPermissionValuePoolPopup.vue'
+import { MfwPermissionTree } from '../../business/permission-tree/mod'
+
+defineOptions({ name: 'MfwPermissionPoolPanel' })
 
 // ========== Props & Emits ==========
 
@@ -35,171 +35,16 @@ const emit = defineEmits<MfwPermissionPoolPanelEmits>()
 
 const loading = ref(false)
 const saving = ref(false)
-const activeTab = ref<'pc' | 'normal'>('pc')
-
-// ElTree 引用
-const pcTreeRef = ref<InstanceType<typeof ElTree>>()
-const normalTreeRef = ref<InstanceType<typeof ElTree>>()
 
 // 原始数据（从 API 加载）
-const rawPcTree = ref<PermissionTreeNodeDto[]>([])
-const rawNormalTree = ref<PermissionTreeNodeDto[]>([])
+const pcTreeData = ref<PermissionTreeNodeDto[]>([])
+const normalTreeData = ref<PermissionTreeNodeDto[]>([])
 
-// 处理后的树数据（含选中状态）
-const pcTreeData = ref<PermissionTreeNodeState[]>([])
-const normalTreeData = ref<PermissionTreeNodeState[]>([])
+// 已勾选的权限 ID
+const checkedIds = ref<string[]>([])
 
-// ========== 辅助函数 ==========
-
-/**
- * 判断节点类型是否可以配置操作权限
- */
-function canSetPermissionValue(nodeType?: string): boolean {
-  return nodeType === 'PAGE' || nodeType === 'TAG'
-}
-
-/**
- * 配置操作权限
- */
-function handleConfigPermissionValue(data: PermissionTreeNodeState, treeType: 'pc' | 'normal') {
-  MfwPopup.open({
-    title: `配置操作权限 - ${data.permName}`,
-    type: 'dialog',
-    component: PermissionValuePoolPopup,
-    data: {
-      appTypeId: props.appTypeId,
-      nodeId: data.id,
-      nodeName: data.permName,
-      nodeCode: data.permCode,
-      permissionValue: data.permissionValueBigInt ? String(data.permissionValueBigInt) : '0',
-      treeType,
-    },
-    popupProps: { width: 500 },
-    on: {
-      confirm: async (componentInstance: any) => {
-        // componentInstance.onConfirm() 返回 { nodeId, permissionValue }
-        const result = await componentInstance.onConfirm()
-        if (!result) {
-          return
-        }
-        // 更新节点的 permissionValueBigInt（不保存，等待用户点击主面板的"保存配置"按钮）
-        const updateNodePerm = (nodes: PermissionTreeNodeState[]): boolean => {
-          for (const node of nodes) {
-            if (node.id === result.nodeId) {
-              node.permissionValueBigInt = BigInt(result.permissionValue)
-              return true
-            }
-            if (node.children && updateNodePerm(node.children)) {
-              return true
-            }
-          }
-          return false
-        }
-
-        const treeData = treeType === 'pc' ? pcTreeData.value : normalTreeData.value
-        updateNodePerm(treeData)
-        // 不立即保存，等待用户点击主面板的"保存配置"按钮
-      },
-    },
-  })
-}
-
-/**
- * 将 PermissionTreeNodeDto 转换为 PermissionTreeNodeState
- */
-function transformTreeNode(node: PermissionTreeNodeDto): PermissionTreeNodeState {
-  const permissionValueBigInt = node.permissionValue ? BigInt(String(node.permissionValue)) : undefined
-  const { children, ...rest } = node
-
-  const result: PermissionTreeNodeState = {
-    ...rest,
-    checked: !!node.inPool,
-    permissionValueBigInt,
-  }
-
-  if (children && children.length > 0) {
-    result.children = children.map(transformTreeNode)
-  }
-
-  return result
-}
-
-/**
- * 将树节点转换为提交格式
- */
-function transformToPayload(nodes: PermissionTreeNodeState[]): PermissionTreePayloadDto[] {
-  return nodes.map(node => {
-    const result: PermissionTreePayloadDto = {
-      permissionId: node.id,
-      checked: node.checked,
-      permissionValue: node.checked && node.permissionValueBigInt
-        ? String(node.permissionValueBigInt)
-        : undefined,
-    }
-    if (node.children && node.children.length > 0) {
-      result.children = transformToPayload(node.children)
-    }
-    return result
-  })
-}
-
-/**
- * 处理节点勾选事件 - 勾选父节点时全选子节点
- */
-function handlePcTreeCheck(_checkedKeys: any, obj: {
-  checkedKeys: any[]
-  halfCheckedKeys: any[]
-}) {
-  // 使用 obj.checkedKeys
-  const actualCheckedKeys = obj?.checkedKeys?.map(String) || []
-
-  // 同步 PC Tree 内部数据状态（用于提交时的数据）
-  // 使用递归方式，勾选父节点时自动勾选所有子节点
-  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[], parentChecked = false) => {
-    nodes.forEach(node => {
-      // 如果父节点已勾选，或者当前节点在 checkedKeys 中，则勾选
-      const newChecked = parentChecked || actualCheckedKeys.includes(node.id)
-      node.checked = newChecked
-      if (!newChecked) {
-        node.permissionValueBigInt = undefined
-      }
-      if (node.children && node.children.length > 0) {
-        updateNodesCheckedState(node.children, newChecked)
-      }
-    })
-  }
-
-  updateNodesCheckedState(pcTreeData.value)
-}
-
-/**
- * 处理节点勾选事件 - 勾选父节点时全选子节点
- */
-function handleNormalTreeCheck(_checkedKeys: any, obj: {
-  checkedKeys: any[]
-  halfCheckedKeys: any[]
-}) {
-  // 使用 obj.checkedKeys
-  const actualCheckedKeys = obj?.checkedKeys?.map(String) || []
-
-  // 同步 Normal Tree 内部数据状态（用于提交时的数据）
-  // 使用递归方式，勾选父节点时自动勾选所有子节点
-  const updateNodesCheckedState = (nodes: PermissionTreeNodeState[], parentChecked = false) => {
-    nodes.forEach(node => {
-      // 如果父节点已勾选，或者当前节点在 checkedKeys 中，则勾选
-      const newChecked = parentChecked || actualCheckedKeys.includes(node.id)
-      node.checked = newChecked
-      if (!newChecked) {
-        node.permissionValueBigInt = undefined
-      }
-      if (node.children && node.children.length > 0) {
-        updateNodesCheckedState(node.children, newChecked)
-      }
-    })
-  }
-
-  updateNodesCheckedState(normalTreeData.value)
-}
+// 权限值映射（nodeId -> permissionValue）
+const permissionValues = ref<Map<string, string>>(new Map())
 
 // ========== 加载数据 ==========
 
@@ -211,41 +56,32 @@ async function loadPermissionPool() {
     const response = await new ApiAppTypeGetPermissionPool({
       query: { appTypeId: props.appTypeId },
     })
-    loading.value = false
 
-    rawPcTree.value = response.permissionTrees?.pcTree || []
-    rawNormalTree.value = response.permissionTrees?.normalTree || []
+    pcTreeData.value = response.permissionTrees?.pcTree || []
+    normalTreeData.value = response.permissionTrees?.normalTree || []
 
-    // 转换为内部状态
-    pcTreeData.value = rawPcTree.value.map(transformTreeNode)
-    normalTreeData.value = rawNormalTree.value.map(transformTreeNode)
-    await nextTick()
-    emit('loaded', {
-      pcTree: rawPcTree.value,
-      normalTree: rawNormalTree.value,
-    })
-
-    // 下一帧设置 ElTree 的 checked 状态（确保 DOM 已渲染）
-    // 使用递归函数收集所有 inPool=true 的节点 ID（包括子节点）
-    nextTick(() => {
-      const collectCheckedKeys = (nodes: typeof rawPcTree.value): string[] => {
-        const keys: string[] = []
-        for (const node of nodes) {
-          if (node.inPool) {
-            keys.push(node.id)
-          }
-          if (node.children && node.children.length > 0) {
-            keys.push(...collectCheckedKeys(node.children))
-          }
+    // 收集已勾选的 ID（inPool === true）
+    const collectInPoolIds = (nodes: PermissionTreeNodeDto[]): string[] => {
+      const ids: string[] = []
+      for (const node of nodes) {
+        if (node.inPool) {
+          ids.push(node.id)
         }
-        return keys
+        if (node.children) {
+          ids.push(...collectInPoolIds(node.children))
+        }
       }
+      return ids
+    }
 
-      const pcCheckedKeys = collectCheckedKeys(rawPcTree.value)
-      const normalCheckedKeys = collectCheckedKeys(rawNormalTree.value)
-      
-      pcTreeRef.value?.setCheckedKeys(pcCheckedKeys)
-      normalTreeRef.value?.setCheckedKeys(normalCheckedKeys)
+    checkedIds.value = [
+      ...collectInPoolIds(pcTreeData.value),
+      ...collectInPoolIds(normalTreeData.value),
+    ]
+
+    emit('loaded', {
+      pcTree: pcTreeData.value,
+      normalTree: normalTreeData.value,
     })
   } catch (error) {
     const err = error instanceof Error ? error : new Error('加载权限池失败')
@@ -260,22 +96,41 @@ async function loadPermissionPool() {
 
 async function savePermissionPool() {
   if (!props.appTypeId) return
-  if (!validate()) return
+
+  // 验证：检查是否有勾选的权限
+  if (checkedIds.value.length === 0) {
+    ElMessage.warning('请至少选择一个权限')
+    return
+  }
 
   saving.value = true
   try {
+    // 构建树形 payload（包含勾选状态和 permissionValue）
+    const buildPayload = (nodes: PermissionTreeNodeDto[]): PermissionTreePayloadDto[] => {
+      return nodes.map(node => {
+        const isChecked = checkedIds.value.includes(node.id)
+        const payload: PermissionTreePayloadDto = {
+          permissionId: node.id,
+          checked: isChecked,
+          permissionValue: isChecked && permissionValues.value.has(node.id)
+            ? permissionValues.value.get(node.id)
+            : undefined,
+        }
+        if (node.children && node.children.length > 0) {
+          payload.children = buildPayload(node.children)
+        }
+        return payload
+      })
+    }
+
     const payload = {
-      pcTree: transformToPayload(pcTreeData.value),
-      normalTree: transformToPayload(normalTreeData.value),
+      pcTree: buildPayload(pcTreeData.value),
+      normalTree: buildPayload(normalTreeData.value),
     }
 
     const response = await new ApiAppTypeUpdatePermissionPool({
-      query: {
-        appTypeId: props.appTypeId,
-      },
-      params: {
-        permissionTrees: payload,
-      },
+      query: { appTypeId: props.appTypeId },
+      params: { permissionTrees: payload },
     })
 
     ElMessage.success('保存成功')
@@ -283,7 +138,6 @@ async function savePermissionPool() {
       appTypeId: response.appTypeId,
       updatedCount: response.updatedCount,
     })
-    // 重新加载以获取最新状态
     await loadPermissionPool()
   } catch (error) {
     const err = error instanceof Error ? error : new Error('保存权限池失败')
@@ -294,39 +148,10 @@ async function savePermissionPool() {
   }
 }
 
-// ========== 验证 ==========
-
-function validate(): boolean {
-  // 检查是否有勾选的权限
-  const hasChecked = (nodes: PermissionTreeNodeState[]): boolean => {
-    return nodes.some(node => node.checked || (node.children && hasChecked(node.children)))
-  }
-
-  const pcHasChecked = hasChecked(pcTreeData.value)
-  const normalHasChecked = hasChecked(normalTreeData.value)
-
-  if (!pcHasChecked && !normalHasChecked) {
-    ElMessage.warning('请至少选择一个权限')
-    return false
-  }
-
-  return true
-}
-
 // ========== 重置 ==========
 
 function reset() {
-  pcTreeData.value = rawPcTree.value.map(transformTreeNode)
-  normalTreeData.value = rawNormalTree.value.map(transformTreeNode)
-}
-
-// ========== 获取配置 ==========
-
-function getConfig() {
-  return {
-    pcTree: transformToPayload(pcTreeData.value),
-    normalTree: transformToPayload(normalTreeData.value),
-  }
+  loadPermissionPool()
 }
 
 // ========== 暴露实例方法 ==========
@@ -335,129 +160,34 @@ defineExpose<MfwPermissionPoolPanelInstance>({
   load: loadPermissionPool,
   save: savePermissionPool,
   reset,
-  getConfig,
-  validate,
 })
 
-// ========== 监听 appTypeId 变化 ==========
+// ========== 监听 ==========
 
 watch(
   () => props.appTypeId,
-  (newId, oldId) => {
-    if (newId && newId !== oldId) {
+  (newId) => {
+    if (newId) {
       loadPermissionPool()
     }
   },
   { immediate: true }
 )
-
-onMounted(() => {
-  if (props.appTypeId) {
-    loadPermissionPool()
-  }
-})
-
-// ========== Tree 配置 ==========
-
-const treeProps = {
-  children: 'children',
-  label: 'permName',
-}
 </script>
 
 <template>
   <div class="mfw-permission-pool-panel">
-    <!-- 加载状态 -->
-    <ElSkeleton v-if="loading" animated :rows="10" />
-
-    <!-- 空状态 -->
-    <ElEmpty
-      v-else-if="!loading && pcTreeData.length === 0 && normalTreeData.length === 0"
-      description="暂无权限数据"
+    <!-- 使用统一的权限树组件 -->
+    <MfwPermissionTree
+      :pc-tree-data="pcTreeData"
+      :normal-tree-data="normalTreeData"
+      :checked-ids="checkedIds"
+      mode="pool"
+      :loading="loading"
+      :readonly="readonly"
+      @check-change="checkedIds = $event"
+      @permission-value-change="(nodeId, value) => permissionValues.set(nodeId, value)"
     />
-
-    <!-- 主内容 -->
-    <div v-else class="panel-content">
-      <!-- Tab 切换 -->
-      <ElTabs v-model="activeTab" class="permission-tabs">
-        <ElTabPane label="PC 权限树" name="pc">
-          <div class="tree-container">
-            <ElTree
-              ref="pcTreeRef"
-              :data="pcTreeData"
-              :props="treeProps"
-              node-key="id"
-              show-checkbox
-              default-expand-all
-              :expand-on-click-node="false"
-              :disabled="readonly"
-              @check="handlePcTreeCheck"
-            >
-              <template #default="{ node, data }">
-                <div class="tree-node-content">
-                  <span class="node-label">
-                    <span class="node-type-tag" :class="data.nodeType.toLowerCase()">
-                      {{ data.nodeType }}
-                    </span>
-                    {{ data.permName }}
-                  </span>
-                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType) && node.checked" class="perm-config-action">
-                    <ElButton
-                      type="primary"
-                      link
-                      size="small"
-                      @click.stop="handleConfigPermissionValue(data, 'pc')"
-                    >
-                      <el-icon><Key /></el-icon> 配置操作权限
-                    </ElButton>
-                  </div>
-                </div>
-              </template>
-            </ElTree>
-          </div>
-        </ElTabPane>
-
-        <!-- 普通权限 Tab -->
-        <ElTabPane label="普通权限" name="normal">
-          <div class="tree-container">
-            <ElTree
-              ref="normalTreeRef"
-              :data="normalTreeData"
-              :props="treeProps"
-              node-key="id"
-              show-checkbox
-              default-expand-all
-              :expand-on-click-node="false"
-              :disabled="readonly"
-              @check="handleNormalTreeCheck"
-            >
-              <template #default="{ node, data }">
-                <div class="tree-node-content">
-                  <span class="node-label">
-                    <span class="node-type-tag" :class="data.nodeType.toLowerCase()">
-                      {{ data.nodeType }}
-                    </span>
-                    {{ data.permName }}
-                  </span>
-                  <!-- 配置操作权限按钮 - 只有已勾选的 PAGE/TAG 节点显示 -->
-                  <div v-if="canSetPermissionValue(data.nodeType) && node.checked" class="perm-config-action">
-                    <ElButton
-                      type="primary"
-                      link
-                      size="small"
-                      @click.stop="handleConfigPermissionValue(data, 'normal')"
-                    >
-                      <el-icon><Key /></el-icon> 配置操作权限
-                    </ElButton>
-                  </div>
-                </div>
-              </template>
-            </ElTree>
-          </div>
-        </ElTabPane>
-      </ElTabs>
-    </div>
 
     <!-- 操作按钮 -->
     <div v-if="!readonly && !hideFooter" class="panel-footer">
@@ -475,88 +205,13 @@ const treeProps = {
   display: flex;
   flex-direction: column;
 
-  .panel-content {
-    flex: 1;
+  .panel-footer {
     display: flex;
-    flex-direction: column;
-    overflow: hidden;
-
-    .permission-tabs {
-      flex: 1;
-      overflow: hidden;
-
-      :deep(.el-tabs__content) {
-        flex: 1;
-        overflow: auto;
-      }
-    }
-
-    .tree-container {
-      padding: 12px;
-      overflow: auto;
-
-      :deep(.el-tree-node) {
-        margin-bottom: 4px;
-      }
-
-      :deep(.el-tree-node__content) {
-        height: auto;
-        padding: 4px 0;
-      }
-
-      .tree-node-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-        width: 100%;
-
-        .node-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-
-          .node-type-tag {
-            font-size: 12px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            color: #fff;
-
-            &.menu {
-              background-color: var(--el-color-primary);
-            }
-
-            &.page {
-              background-color: var(--el-color-success);
-            }
-
-            &.tag {
-              background-color: var(--el-color-warning);
-            }
-          }
-        }
-
-        .perm-config-action {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-
-          :deep(.el-button) {
-            padding: 4px 8px;
-            font-size: 12px;
-          }
-        }
-      }
-    }
-
-    .panel-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 12px;
-      padding: 12px 16px;
-      border-top: 1px solid var(--el-border-color-light);
-      background: var(--el-bg-color);
-    }
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 12px 16px;
+    border-top: 1px solid var(--el-border-color-light);
+    background: var(--el-bg-color);
   }
 }
 </style>
