@@ -48,6 +48,23 @@ function parseFrontMatter(content: string): Record<string, string> {
   return result;
 }
 
+/**
+ * 写入日志文件 - 无论检查通过与否都记录
+ */
+function writeLog(result: HookResult, projectRoot?: string, paths?: any) {
+  // 如果传入了 paths，使用配置路径；否则使用默认路径
+  const logFile = paths
+    ? path.join(paths.output.directory, 'session-end.log')
+    : path.join(projectRoot || process.cwd(), '.harness/output/session-end.log');
+
+  try {
+    fs.mkdirSync(path.dirname(logFile), { recursive: true });
+    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
+  } catch (error) {
+    console.error('[writeLog] 日志写入失败:', error);
+  }
+}
+
 export async function run(_args: string[]): Promise<HookResult> {
   const result: HookResult = {
     passed: true,
@@ -258,6 +275,7 @@ export async function run(_args: string[]): Promise<HookResult> {
   if (criticalErrors.length > 0) {
     result.passed = false;
     result.message = '【阻塞】会话结束检查失败:\n' + criticalErrors.join('\n');
+    writeLog(result, projectRoot, paths);  // 写入日志
     return result;
   }
 
@@ -272,6 +290,7 @@ export async function run(_args: string[]): Promise<HookResult> {
       `\n - 下一步行动：${hasNextSteps ? '✅' : '❌'}` +
       `\n - 自我反思：${hasSelfReflection ? '✅' : '❌'}` +
       `\n - 记忆检查：${hasMemoryCheck ? '✅' : '❌'}`;
+    writeLog(result, projectRoot, paths);  // 写入日志
     return result;
   }
 
@@ -290,9 +309,7 @@ export async function run(_args: string[]): Promise<HookResult> {
   }
 
   // 输出日志 - 使用配置路径
-  const logFile = paths.output.logs.sessionEnd;
-  fs.mkdirSync(path.dirname(logFile), { recursive: true });
-  fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${result.message}\n`);
+  writeLog(result, projectRoot, paths);
 
   // 新增：检查是否有任务完成，如有则创建 TASK.md 快照
   if (fs.existsSync(taskFilePath)) {
