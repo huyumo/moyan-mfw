@@ -22,7 +22,7 @@ import { ElTree, ElButton, ElEmpty, ElIcon, ElTabs, ElTabPane } from 'element-pl
 import { Key } from '@element-plus/icons-vue'
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import { MfwPopup } from '../../feedback'
-import { MfwPermissionValuePopup } from '../../permission-value-popup/mod'
+import { MfwPermissionValuePopup } from '../permission-value-popup/mod'
 
 // ========== 类型定义 ==========
 
@@ -99,7 +99,7 @@ function getNodeTypeTagType(nodeType: string): 'primary' | 'success' | 'warning'
 /**
  * 构建树节点（添加勾选状态）
  */
-function buildTreeNodes(nodes: PermissionTreeNodeDto[], checkedIds: string[]): PermissionTreeNodeDto[] {
+function buildTreeNodes(nodes: PermissionTreeNodeDto[], checkedIds: string[]): (PermissionTreeNodeDto & { checked: boolean; children?: (PermissionTreeNodeDto & { checked: boolean })[] })[] {
   return nodes.map(node => ({
     ...node,
     checked: checkedIds.includes(node.id),
@@ -110,15 +110,15 @@ function buildTreeNodes(nodes: PermissionTreeNodeDto[], checkedIds: string[]): P
 /**
  * 收集所有已勾选的节点 ID（包括子节点）
  */
-function collectCheckedIds(nodes: PermissionTreeNodeDto[]): string[] {
+function collectCheckedIds(nodes: (PermissionTreeNodeDto & { checked?: boolean })[]): string[] {
   const ids: string[] = []
-  const collect = (list: PermissionTreeNodeDto[]) => {
+  const collect = (list: (PermissionTreeNodeDto & { checked?: boolean })[]) => {
     for (const node of list) {
       if (node.checked) {
         ids.push(node.id)
       }
       if (node.children && node.children.length > 0) {
-        collect(node.children)
+        collect(node.children as (PermissionTreeNodeDto & { checked?: boolean })[])
       }
     }
   }
