@@ -46,3 +46,5 @@ export * from './picker/mod';
 // 业务类组件
 export * from './business/role-permission-panel';
 export * from './business/app-selector-dialog';
+export * from './business/permission-tree';
+export * from './business/permission-value-popup';

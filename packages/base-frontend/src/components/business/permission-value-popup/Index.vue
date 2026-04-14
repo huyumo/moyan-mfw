@@ -38,6 +38,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getPermissionOptions } from '../../../utils/permissions'
 import { ApiPermissionFindById, ApiAppTypeGetPermissionPool } from '../../../apis/sys'
+import { PermBit, PermBitDesc } from '../../picker/permission-pool-panel/types'
 
 defineOptions({ name: 'MfwPermissionValuePopup' })
 
@@ -164,30 +165,6 @@ const onConfirm = async () => {
 }
 
 defineExpose({ onConfirm })
-
-/** 全局权限位常量 */
-const PermBit = {
-  ADD: 1n,      // 2^0 = 新增
-  EDIT: 2n,     // 2^1 = 编辑
-  DELETE: 4n,   // 2^2 = 删除
-  EXPORT: 8n,   // 2^3 = 导出
-  IMPORT: 16n,  // 2^4 = 导入
-  VIEW: 32n,    // 2^5 = 查看
-  APPROVE: 64n, // 2^6 = 审批
-  REJECT: 128n, // 2^7 = 拒绝
-} as const
-
-/** 权限位描述映射 */
-const PermBitDesc: Record<string, string> = {
-  '1': '新增',
-  '2': '编辑',
-  '4': '删除',
-  '8': '导出',
-  '16': '导入',
-  '32': '查看',
-  '64': '审批',
-  '128': '拒绝',
-}
 </script>
 
 <style scoped lang="scss">

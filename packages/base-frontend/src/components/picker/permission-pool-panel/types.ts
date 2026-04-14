@@ -98,8 +98,4 @@ export interface MfwPermissionPoolPanelInstance {
   save: () => Promise<void>
   /** 重置为初始状态 */
   reset: () => void
-  /** 获取当前配置数据 */
-  getConfig: () => { pcTree: PermissionTreePayloadDto[]; normalTree: PermissionTreePayloadDto[] }
-  /** 验证配置有效性 */
-  validate: () => boolean
 }
