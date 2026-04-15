@@ -8,12 +8,11 @@
  * 业务项目可以选择继承、扩展或完全覆盖
  */
 export const DEFAULT_PERMISSION_VALUES = [
-  '查看',    // 0: 1n << 0 = 1n
-  '添加',    // 1: 1n << 1 = 2n
-  '编辑',    // 2: 1n << 2 = 4n
-  '删除',    // 3: 1n << 3 = 8n
-  '导出',    // 4: 1n << 4 = 16n
-  '导入',    // 5: 1n << 5 = 32n
+  '添加',    // 0: 1n << 0 = 1n
+  '编辑',    // 1: 1n << 1 = 2n
+  '删除',    // 2: 1n << 2 = 4n
+  '导出',    // 3: 1n << 3 = 8n
+  '导入',    // 4: 1n << 4 = 16n
 ] as const
 
 /**
@@ -21,10 +20,10 @@ export const DEFAULT_PERMISSION_VALUES = [
  * 业务项目可以添加更多权限，如：'审批', '拒绝', '发布', '归档'
  */
 export const EXTENSION_PERMISSION_VALUES = [
-  '审批',    // 6: 1n << 6 = 64n
-  '拒绝',    // 7: 1n << 7 = 128n
-  '发布',    // 8: 1n << 8 = 256n
-  '归档',    // 9: 1n << 9 = 512n
+  '审批',    // 5: 1n << 5 = 32n
+  '拒绝',    // 6: 1n << 6 = 64n
+  '发布',    // 7: 1n << 7 = 128n
+  '归档',    // 8: 1n << 8 = 256n
 ] as const
 
 /**
@@ -67,8 +66,8 @@ export function createPermissionConfig(
  */
 export function setPermissionConfig(config: PermissionConfig) {
   PERMISSION_VALUES = [...config.values]
-  // 存储 labels 和 icons 供组件使用
-  ;(window as any).__PERMISSION_CONFIG__ = config
+    // 存储 labels 和 icons 供组件使用
+    ; (window as any).__PERMISSION_CONFIG__ = config
 }
 
 /**
@@ -166,19 +165,29 @@ export function hasPermission(value: string, name: PermissionName): boolean {
 
 /**
  * 获取所有权限选项（用于 UI 展示）
+ * @param parentPermissionValue - 父权限值（可选）
  * @returns 权限选项数组 {name, label, value, icon?}
  */
-export function getPermissionOptions(): Array<{
+export function getPermissionOptions(parentPermissionValue?: string | number): Array<{
   name: string
   label: string
   value: number
   icon?: any
 }> {
+  let NOW_PERMISSION_VALUES = [...PERMISSION_VALUES]
+  if (parentPermissionValue) {
+    const parentValue = BigInt(parentPermissionValue)
+    NOW_PERMISSION_VALUES = PERMISSION_VALUES.filter((name) => {
+      const index = PERMISSION_VALUES.indexOf(name)
+      const childValue = 1n << BigInt(index)
+      return (parentValue & childValue) !== 0n
+    })
+  }
   const config = getPermissionConfig()
-  return PERMISSION_VALUES.map((name) => ({
+  return NOW_PERMISSION_VALUES.map((name) => ({
     name,
     label: config.labels?.[name] || name,
-    value: Number(1n << BigInt(PERMISSION_VALUES.indexOf(name))),
+    value: Number(1n << BigInt(NOW_PERMISSION_VALUES.indexOf(name))),
     icon: config.icons?.[name],
   }))
 }

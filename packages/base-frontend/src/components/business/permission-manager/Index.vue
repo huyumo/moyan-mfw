@@ -13,13 +13,7 @@
       <slot name="toolbar-extra" />
 
       <!-- 关键词搜索 -->
-      <el-input
-        v-model="keyword"
-        placeholder="搜索权限名称/编码"
-        style="width: 200px"
-        clearable
-        @input="handleSearch"
-      >
+      <el-input v-model="keyword" placeholder="搜索权限名称/编码" style="width: 200px" clearable @input="handleSearch">
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
@@ -57,11 +51,7 @@
                   <CollectionTag v-else />
                 </el-icon>
                 <span class="node-name">{{ data.permName }}</span>
-                <el-tag
-                  :type="getNodeTypeTagType(data.nodeType)"
-                  size="small"
-                  class="node-type-tag"
-                >
+                <el-tag :type="getNodeTypeTagType(data.nodeType)" size="small" class="node-type-tag">
                   {{ data.nodeType }}
                 </el-tag>
               </div>
@@ -144,31 +134,18 @@
         </div>
       </div>
     </div>
-    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import {
-  Plus,
-  Edit,
-  Delete,
-  Key,
-  FolderOpened,
-  Document,
-  CollectionTag,
-  Search,
-} from '@element-plus/icons-vue';
+import { Plus, Edit, Delete, Key, FolderOpened, Document, CollectionTag, Search } from '@element-plus/icons-vue';
 import { MfwPopup } from '../../feedback';
-import PermissionValueForm from './MfwPermissionValueForm.vue';
-import PermissionNodeForm from './MfwPermissionNodeForm.vue';
+import PermissionNodeForm from './PermissionNodeForm.vue';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
-import {
-  ApiPermissionFindAllTree,
-  ApiPermissionUpdate,
-  ApiPermissionDelete,
-} from '../../../apis/sys';
+import { ApiPermissionFindAllTree, ApiPermissionUpdate, ApiPermissionDelete } from '../../../apis/sys';
+import { MfwPermissionValuePanel } from '../permission-value-panel';
 
 // ========== Props & Emits ==========
 
@@ -234,10 +211,7 @@ const isRootNode = (data: PermissionTreeNodeDto) => {
 // ========== API 方法 ==========
 
 // 树形数据过滤函数
-const filterTree = (
-  nodes: PermissionTreeNodeDto[],
-  keyword: string
-): PermissionTreeNodeDto[] => {
+const filterTree = (nodes: PermissionTreeNodeDto[], keyword: string): PermissionTreeNodeDto[] => {
   if (!keyword.trim()) return nodes;
 
   const lowerKeyword = keyword.toLowerCase();
@@ -282,9 +256,7 @@ const loadPermissionTree = async () => {
       },
     });
     originalTree.value = result || [];
-    permissionTree.value = keyword.value
-      ? filterTree(originalTree.value, keyword.value)
-      : originalTree.value;
+    permissionTree.value = keyword.value ? filterTree(originalTree.value, keyword.value) : originalTree.value;
   } catch (error) {
     permissionTree.value = [];
   }
@@ -319,7 +291,7 @@ const handleNodeDrop = async (
   draggingNode: any,
   _dropNode: any,
   dropType: 'before' | 'after' | 'inner',
-  _ev: DragEvent
+  _ev: DragEvent,
 ) => {
   if (dropType === 'inner') return;
 
@@ -375,12 +347,14 @@ const handleConfigPermissionValue = (data: PermissionTreeNodeDto) => {
   MfwPopup.open({
     title: `配置操作权限 - ${data.permName}`,
     type: 'dialog',
-    component: PermissionValueForm,
+    component: MfwPermissionValuePanel,
     data: {
-      nodeId: data.id,
-      nodeName: data.permName,
-      nodeCode: data.permCode,
-      permissionValue: data.permissionValue,
+      permissiondData: {
+        nodeId: data.id,
+        nodeName: data.permName,
+        nodeCode: data.permCode,
+        permissionValue: data.permissionValue,
+      },
     },
     popupProps: { width: 500 },
     on: {
@@ -447,11 +421,9 @@ const handleEdit = (data: PermissionTreeNodeDto) => {
 /** 删除节点 */
 const handleDelete = async (data: PermissionTreeNodeDto) => {
   try {
-    await ElMessageBox.confirm(
-      `确定要删除权限「${data.permName}」吗？将同时删除所有子节点。`,
-      '确认删除',
-      { type: 'warning' }
-    );
+    await ElMessageBox.confirm(`确定要删除权限「${data.permName}」吗？将同时删除所有子节点。`, '确认删除', {
+      type: 'warning',
+    });
     await new ApiPermissionDelete({ query: { id: data.id } });
     ElMessage.success('删除成功');
     loadPermissionTree();

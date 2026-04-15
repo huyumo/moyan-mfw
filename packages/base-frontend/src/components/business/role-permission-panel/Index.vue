@@ -49,19 +49,18 @@ onMounted(() => {
 })
 
 const onConfirm = async () => {
-  // console.log(data.value)
-  // await new ApiRoleAssignPermissions({
-  //   query: {
-  //     id: roleId
-  //   },
-  //   params: {
-  //     permissionTrees: {
-  //       pcTree: data.value.pcTree,
-  //       normalTree: data.value.normalTree
-  //     }
-  //   },
-  //   option: { hintFail: true }
-  // })
+  await new ApiRoleAssignPermissions({
+    query: {
+      id: roleId
+    },
+    params: {
+      permissionTrees: {
+        pcTree: data.value.pcTree,
+        normalTree: data.value.normalTree
+      }
+    },
+    option: { hintFail: true }
+  })
 }
 
 defineExpose({

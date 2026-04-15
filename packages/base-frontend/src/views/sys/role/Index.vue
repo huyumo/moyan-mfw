@@ -152,6 +152,7 @@ const loadData = async (params: Record<string, unknown>) => {
       roleName: params.roleName as string,
       roleCode: params.roleCode as string,
       roleStatus: params.roleStatus as number,
+      appTypeId: params.appTypeId as string,
     },
   });
   return {
