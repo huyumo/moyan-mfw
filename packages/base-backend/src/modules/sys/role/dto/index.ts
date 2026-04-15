@@ -10,3 +10,8 @@ export { AssignPermissionsDto } from './req/assign-permissions.dto';
 
 // Response DTOs
 export { RoleResponseDto } from './res/role-response.dto';
+export {
+  RolePermissionTreeNodeDto,
+  RolePermissionTreesResponseDto,
+  RolePermissionResponseDto,
+} from './res/role-permission-response.dto';

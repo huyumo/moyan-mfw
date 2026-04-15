@@ -1,3 +1,7 @@
+// @generated moyan-api - DO NOT EDIT MANUALLY
+// 此文件由 moyan-api 自动生成，手动修改将在提交时被门禁拦截
+// 如需修改 API 类型定义，请联系后端开发人员完善 Swagger 文档后重新生成
+
 export type ObjectId = string
 export type int = number | string
 export type integer = number | string
@@ -48,7 +52,6 @@ export type AppInstanceItemDto = {
   appTypeName: string // 应用类型名称
   role: string // 用户身份
   icon?: string // 应用图标
-  appStatus: number // 应用状态 (1:启用 0:禁用)
 }
 
 export type PermissionTreeNodeDto = {
@@ -60,25 +63,22 @@ export type PermissionTreeNodeDto = {
   nodeType: string // 节点类型
   parentId?: string // 父权限 ID
   routePath?: string // 路由路径
-  externalUrl?: string // 外部链接
+  externalUrl?: string // 外部链接 URL
   iconName?: string // 图标名称
   sortOrder: number // 排序号
   isVisible: number // 是否可见
   isCache: number // 是否缓存
   showMode: string // 显示模式
-  permStatus: number // 权限状态
-  isAutoSync?: number // 是否自动同步：1=同步生成 0=手动添加
-  checked?: boolean // 是否选中（前端勾选状态）
-  permissionValue?: string // 权限值（位运算）
+  permStatus: number // 权限状态（1:启用 0:禁用）
+  isAutoSync?: number // 是否自动同步
+  checked: boolean // 是否选中（前端勾选状态）
+  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
   parentPermissionValue?: string // 父权限的权限值（十进制字符串格式）
-  children?: Array<PermissionTreeNodeDto> // 子权限列表
-  createdAt: string // 创建时间
-  updateAt: string // 更新时间
+  children?: Array<PermissionTreeNodeDto> // 子节点列表
 }
 
 export type UserPermissionsResponseDto = {
   menuTree: Array<PermissionTreeNodeDto> // 用户权限菜单树
-  menu?: Array<PermissionTreeNodeDto> // 别名：用户权限菜单树
   permissions: Array<string> // 用户权限列表（扁平化）
   appTypeId: string // 应用类型 ID
 }
@@ -170,6 +170,39 @@ export type PermissionItemDto = {
 
 export type AssignPermissionsDto = {
   permissions: Array<PermissionItemDto> // 权限列表
+}
+
+export type RolePermissionTreeNodeDto = {
+  id: string // 权限 ID
+  permName: string // 权限名称
+  permCode: string // 权限编码
+  permDesc?: string // 权限描述
+  permissionType: string // 权限类型
+  nodeType: string // 节点类型
+  parentId?: string // 父权限 ID
+  routePath?: string // 路由路径
+  externalUrl?: string // 外部链接 URL
+  iconName?: string // 图标名称
+  sortOrder: number // 排序号
+  isVisible: number // 是否可见
+  isCache: number // 是否缓存
+  showMode: string // 显示模式
+  permStatus: number // 权限状态（1:启用 0:禁用）
+  isAutoSync?: number // 是否自动同步
+  checked: boolean // 是否选中（前端勾选状态）
+  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
+  parentPermissionValue?: string // 父权限的权限值（十进制字符串格式）
+  children?: Array<RolePermissionTreeNodeDto> // 子节点列表
+}
+
+export type RolePermissionTreesResponseDto = {
+  pcTree: Array<RolePermissionTreeNodeDto> // PC 权限树
+  normalTree: Array<RolePermissionTreeNodeDto> // 普通权限树
+}
+
+export type RolePermissionResponseDto = {
+  roleId: string // 角色 ID
+  permissionTrees: RolePermissionTreesResponseDto // 权限树配置
 }
 
 export type CreatePermissionDto = {

@@ -55,8 +55,7 @@
         :key="app.appId"
         class="app-item"
         :class="{
-          selected: selectedAppId === app.appId,
-          disabled: appDisabled(app)
+          selected: selectedAppId === app.appId
         }"
         @click="handleSelectApp(app)"
       >
@@ -132,21 +131,10 @@ const selectedAppId = ref<string>('')
 const authStore = useAuthStore()
 
 /**
- * 判断应用是否禁用
- */
-function appDisabled(app: AppInstanceItemDto): boolean {
-  // 根据后端数据判断是否可用（appStatus 为 0 表示禁用）
-  return app.appStatus === 0
-}
-
-/**
  * 选择应用
  */
 async function handleSelectApp(app: AppInstanceItemDto) {
-  if (appDisabled(app)) {
-    return
-  }
-
+  // 后端已过滤禁用的应用，此处直接处理选择
   selectedAppId.value = app.appId
 
   try {
@@ -168,7 +156,7 @@ async function handleSelectApp(app: AppInstanceItemDto) {
     })
 
     // 3. 设置权限菜单
-    const menuNodes = permissionsResult.menu || []
+    const menuNodes = permissionsResult.menuTree || []
     authStore.setPermissionMenu(transformMenuNodes(menuNodes))
 
     // 4. 调用成功回调
@@ -207,7 +195,7 @@ async function loadAppList() {
   loading.value = true
   try {
     const result = await new ApiAuthGetUserApps({})
-    appList.value = result.apps || []
+    appList.value = Array.isArray(result) ? result : (result as any)?.list || []
 
     // 如果只有一个应用，自动选择
     if (appList.value.length === 1) {

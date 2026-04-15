@@ -24,6 +24,7 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiExtraModels,
 } from '@nestjs/swagger';
 import { AppTypeService } from './app-type.service';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto, AppTypeResponseDto } from './dto';
@@ -31,6 +32,7 @@ import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
 import {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
+  PermissionTreeNodeDto,
 } from './dto/res/permission-pool-response.dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
@@ -44,6 +46,7 @@ import { ApiPaginatedResponse } from '../../../common';
  */
 @ApiTags('app-type', '应用类型相关接口')
 @ApiBearerAuth('Authorization')
+@ApiExtraModels(PermissionTreeNodeDto)
 @UseGuards(AuthGuard)
 @Controller('app-types')
 export class AppTypeController {
