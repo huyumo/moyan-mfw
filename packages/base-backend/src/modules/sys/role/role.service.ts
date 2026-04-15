@@ -184,6 +184,27 @@ export class RoleService {
   }
 
   /**
+   * 收集权限节点（递归）
+   * @param nodes - 权限树节点列表
+   * @param result - 收集结果
+   */
+  private collectPermissionNodes(
+    nodes: Array<{ id: string; checked: boolean; permissionValue?: string; children?: any[] }>,
+    result: Array<{ id: string; checked: boolean; permissionValue?: string }>,
+  ): void {
+    for (const node of nodes) {
+      node.checked && result.push({
+        id: node.id,
+        checked: node.checked,
+        permissionValue: node.permissionValue,
+      });
+
+      if (node.children && node.children.length > 0) {
+        this.collectPermissionNodes(node.children, result);
+      }
+    }
+  }
+  /**
    * 为角色分配权限
    * @param roleId - 角色 ID
    * @param permissions - 权限列表
@@ -197,14 +218,20 @@ export class RoleService {
       // 删除角色所有权限
       await manager.delete(RolePermission, { roleId });
 
-
-
-
-
-
+      // 收集所有待处理的权限节点
+      const allNodes: Array<{ id: string; checked: boolean; permissionValue?: string }> =
+        [];
+      this.collectPermissionNodes(assignPermissionsDto.permissionTrees.pcTree, allNodes);
+      this.collectPermissionNodes(assignPermissionsDto.permissionTrees.normalTree, allNodes);
+      const datas = allNodes.map((item)=>{
+        return manager.create(RolePermission, {
+          roleId,
+          permissionId: item.id,
+          permissionValue: item.permissionValue ? BigInt(item.permissionValue) : 0n,
+        })
+      })
+      await manager.save(datas);
     });
-
-
   }
 
   /**
@@ -237,7 +264,7 @@ export class RoleService {
     // 权限池数据
     const permissionPool = await this.appTypeService.getPermissionPool(role.appTypeId);
     // 已选中的角色权限
-    const rolePermissions = await  this.rolePermissionRepository.find({where:{roleId:Equal(roleId)}})
+    const rolePermissions = await this.rolePermissionRepository.find({ where: { roleId: Equal(roleId) } })
 
     const pcTree = this.buildRolePermissions(
       permissionPool.permissionTrees.pcTree,
@@ -271,8 +298,6 @@ export class RoleService {
       })
     }
     const filteredTree = filter(tree);
-    console.log(rolePermissions.map((perm) => perm.permissionId));
-    
     const newTree = filteredTree.map((item) => {
       if (item.children) {
         item.children = this.buildRolePermissions(item.children, rolePermissions);

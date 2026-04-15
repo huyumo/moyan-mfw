@@ -11,7 +11,7 @@
     <div class="permission-actions">
       <el-checkbox-group v-model="selectedActions">
         <el-checkbox
-          v-for="action in permissionOptions"
+          v-for="action in slefPermissionOptions"
           :key="action.value"
           :label="action.value"
           border
@@ -36,37 +36,35 @@ import { ApiPermissionUpdate } from '../../../apis/sys';
 import { getPermissionOptions } from '../../../utils/permissions';
 
 interface PermissionValueFormProps {
-  data?: {
+  permissiondData?: {
     nodeId: string;
     nodeName?: string;
     nodeCode?: string;
     permissionValue?: string | number;
+    parentPermissionValue?: string | number;
   };
   // 可选：传入自定义权限选项（支持业务项目覆盖）
   permissionOptions?: ReturnType<typeof getPermissionOptions>;
 }
 
-const props = defineProps<PermissionValueFormProps>();
+const {permissiondData,permissionOptions} = defineProps<PermissionValueFormProps>();
 
 // 从 data 中解构属性
-const nodeId = computed(() => props.data?.nodeId || '');
-const nodeCode = computed(() => props.data?.nodeCode || '');
-const permissionValue = computed(() => props.data?.permissionValue);
+const nodeId = computed(() => permissiondData?.nodeId || '');
+const nodeCode = computed(() => permissiondData?.nodeCode || '');
+const permissionValue = computed(() => permissiondData?.permissionValue);
 
 // 权限操作选项（使用传入的或默认的）
-const permissionOptions = computed(() =>
-  props.permissionOptions || getPermissionOptions()
-);
+const slefPermissionOptions = computed(() => permissionOptions || getPermissionOptions(permissiondData?.parentPermissionValue));
 
 const selectedActions = ref<number[]>([]);
 
 onMounted(() => {
   // 兼容字符串和数字类型
-  const currentValue = typeof permissionValue.value === 'string'
-    ? parseInt(permissionValue.value, 10)
-    : (permissionValue.value || 0);
+  const currentValue =
+    typeof permissionValue.value === 'string' ? parseInt(permissionValue.value, 10) : permissionValue.value || 0;
 
-  selectedActions.value = permissionOptions.value
+  selectedActions.value = slefPermissionOptions.value
     .filter((action) => (currentValue & action.value) !== 0)
     .map((action) => action.value);
 });
@@ -76,10 +74,9 @@ const onConfirm = async () => {
 
   await new ApiPermissionUpdate({
     query: { id: nodeId.value },
-    params: { permissionValue: String(newValue) },  // 改为字符串格式
+    params: { permissionValue: String(newValue) }, // 改为字符串格式
+    option:{hintSuccess:true,successMsg:'操作权限已更新'}
   });
-
-  ElMessage.success('操作权限已更新');
 };
 
 defineExpose({ onConfirm });

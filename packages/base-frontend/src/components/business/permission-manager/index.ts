@@ -1,0 +1,1 @@
+export {default as PermissionManager} from './Index.vue'

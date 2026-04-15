@@ -1,1 +1,4 @@
-export { default as MfwPermissionTree } from './Index.vue'
+/**
+ * @fileoverview PermissionTree 模块导出
+ */
+export * from './mod'

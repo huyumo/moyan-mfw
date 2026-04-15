@@ -6,86 +6,74 @@
 -->
 <template>
   <div class="builtin-role-dialog">
-    <el-alert
-      title="内置角色说明"
-      type="info"
-      :closable="false"
-      show-icon
-      class="mb-4"
-    >
+    <el-alert title="内置角色说明" type="info" :closable="false" show-icon class="mb-4">
       <p>内置角色是与应用类型绑定的预设角色，用于快速分配权限。</p>
       <p>每个应用类型可以配置多个内置角色，例如：管理员、普通用户等。</p>
     </el-alert>
-
-    <el-table :data="roleList" border style="width: 100%">
-      <el-table-column prop="roleName" label="角色名称" min-width="120" />
-      <el-table-column prop="roleCode" label="角色编码" min-width="120" />
-      <el-table-column prop="roleDesc" label="角色描述" min-width="200" />
-      <el-table-column prop="roleStatus" label="状态" width="80">
-        <template #default="{ row }">
-          <el-tag :type="row.roleStatus === 1 ? 'success' : 'danger'" size="small">
-            {{ row.roleStatus === 1 ? '启用' : '禁用' }}
-          </el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column label="操作" width="120" fixed="right">
-        <template #default="{ row }">
-          <el-button
-            type="primary"
-            link
-            size="small"
-            @click="handleAssignPermissions(row)"
-          >
-            配置权限
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
+    <MfwTableList :data="roleList" :columns="columns" :loading="loading" :action-column="actionColumn" />
     <div class="builtin-role-footer">
-      <el-button type="primary" @click="handleAddRole">新增内置角色</el-button>
+      <el-button type="primary" @click="handleAddAndEditRole()">新增内置角色</el-button>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup lang="tsx">
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { MfwPopup } from '../../feedback';
-import { ApiRoleFindAll, ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
-import type { RoleResponseDto } from '../../../apis/sys/schemas';
+import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
+import type { CreateRoleDto, RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
-import AddRoleForm from './MfwAddRoleForm.vue';
+import { ActionColumnConfig, MfwTableList, TableColumnConfig } from '../../table';
+import { RoleForm } from '..';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 
-const props = defineProps<{
+const { appTypeId } = defineProps<{
   appTypeId: string;
 }>();
 
 const roleList = ref<RoleResponseDto[]>([]);
 const loading = ref(false);
+const columns: TableColumnConfig[] = [
+  { prop: 'roleName', label: '角色名称', width: 120 },
+  { prop: 'roleCode', label: '角色编码', width: 120 },
+  { prop: 'roleDesc', label: '角色描述', width: 200 },
+  { prop: 'roleStatus', label: '状态', width: 80 },
+  { prop: 'action', label: '操作', width: 120, fixed: 'right' },
+];
+
+const actionColumn: ActionColumnConfig = {
+  label: '操作',
+  width: 120,
+  fixed: 'right' as const,
+  render: ({ row }: { row: RoleResponseDto }) => (
+    <div>
+      <el-button type="primary" link size="small" onClick={() => handleAssignPermissions(row)}>
+        配置权限
+      </el-button>
+      <el-button type="danger" link size="small" onClick={() => handleDeleteRole(row)}>
+        删除
+      </el-button>
+      <el-button type="info" link size="small" onClick={() => handleAddAndEditRole(row)}>
+        编辑
+      </el-button>
+    </div>
+  ),
+};
 
 /** 加载内置角色列表 */
 const loadRoles = async () => {
-  if (!props.appTypeId) return;
-
-  loading.value = true;
-  try {
-    const result = await new ApiRoleFindAll({
-      params: {
-        page: 1,
-        pageSize: 100,
-        appTypeId: props.appTypeId,
-      },
-    });
-
-    roleList.value = result.list || [];
-  } catch (error) {
-    ElMessage.error('加载角色列表失败');
-  } finally {
-    loading.value = false;
-  }
+  if (!appTypeId) return;
+  const result = await new ApiRoleFindAll({
+    params: {
+      page: 1,
+      pageSize: 100,
+      appTypeId: appTypeId,
+    },
+    option:{loading}
+  });
+  roleList.value = result.list || [];
 };
 
 /** 配置权限 */
@@ -96,7 +84,7 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
     component: RolePermissionPanel,
     data: {
       roleId: row.id,
-      appTypeId: props.appTypeId,
+      appTypeId: appTypeId,
     },
     popupProps: {
       size: '800px',
@@ -116,14 +104,18 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
 };
 
 /** 新增角色 */
-const handleAddRole = () => {
+const handleAddAndEditRole = (row?: RoleResponseDto) => {
+  const role: CreateRoleDto = row || {
+    roleName: '',
+    roleCode: '',
+    roleDesc: '',
+    appTypeId: appTypeId,
+  };
   MfwPopup.open({
     title: '新增内置角色',
     type: 'dialog',
-    component: AddRoleForm,
-    data: {
-      appTypeId: props.appTypeId,
-    },
+    component: RoleForm,
+    data: { role },
     popupProps: {
       size: '500px',
     },
@@ -132,23 +124,16 @@ const handleAddRole = () => {
       confirmText: '确定',
     },
     on: {
-      confirm: async (componentInstance: any) => {
-        const isValid = await componentInstance.validate();
-        if (!isValid) return;
-
-        const formData = componentInstance.getFormData();
-        try {
-          await new ApiRoleCreate({
-            params: formData,
-          });
-          ElMessage.success('角色创建成功');
-          loadRoles();
-        } catch (error) {
-          ElMessage.error('创建角色失败');
-        }
+      confirm: async () => {
+        loadRoles();
       },
     },
   });
+};
+
+/** 删除角色 */
+const handleDeleteRole = async (row: RoleResponseDto) => {
+  await new ApiRoleDelete({ query: { id: row.id } });
 };
 
 onMounted(() => {

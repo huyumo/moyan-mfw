@@ -1,0 +1,1 @@
+export { default as RolePermissionPanel } from './Index.vue'
