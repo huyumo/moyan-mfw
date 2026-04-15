@@ -14,7 +14,7 @@ import { Role } from './role.entity';
  */
 @Entity('sys_user_roles')
 @Unique(['userId', 'roleId'])
-export class UserRole extends Base {
+export class UserRole {
   /**
    * 主键 ID
    */

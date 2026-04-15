@@ -90,7 +90,7 @@ export class AppTypeService {
 
     // 使用 PaginationHelper 执行分页查询
     return PaginationHelper.executeQuery(
-      qb.orderBy('appType.sortOrder', 'ASC').addOrderBy('appType.createdAt', 'DESC'),
+      qb.orderBy('appType.sortOrder', 'ASC'),
       query,
     );
   }
@@ -102,8 +102,7 @@ export class AppTypeService {
   async findAllList(): Promise<AppType[]> {
     return this.appTypeRepository.find({
       order: {
-        sortOrder: 'ASC',
-        createdAt: 'DESC',
+        sortOrder: 'ASC'
       },
     });
   }

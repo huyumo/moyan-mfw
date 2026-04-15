@@ -55,10 +55,10 @@ export class PaginationQueryDto {
    * 排序字段
    * @default 'created_at'
    */
-  @ApiProperty({ description: '排序字段', default: 'created_at', required: false })
+  @ApiProperty({ description: '排序字段', default: 'createdAt', required: false })
   @IsOptional()
   @IsString()
-  sortField?: string = 'created_at';
+  sortField?: string = 'createdAt';
 
   /**
    * 排序方向
@@ -206,10 +206,11 @@ export class PaginationHelper {
     qb: SelectQueryBuilder<T>,
     pageQuery: PaginationQueryDto,
   ): Promise<PaginationResult<T>> {
-    const [items, total] = await qb
+    qb = qb
       .skip(pageQuery.getSkip())
       .take(pageQuery.getTake())
-      .getManyAndCount();
+
+    const [items, total] = await qb.getManyAndCount();
 
     return PaginationResult.fromQuery(items, total, pageQuery);
   }

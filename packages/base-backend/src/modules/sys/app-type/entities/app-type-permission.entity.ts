@@ -31,7 +31,7 @@ import { Permission } from '../../permission/entities/permission.entity';
  */
 @Entity('sys_app_type_permissions')
 @Unique(['appTypeId', 'permissionId'])
-export class AppTypePermissionEntity extends Base {
+export class AppTypePermissionEntity {
   /**
    * 主键 ID
    * @description UUID 格式的主键

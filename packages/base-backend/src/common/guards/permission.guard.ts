@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import {
   REQUIRE_PERMISSION,
   RequirePermissionOptions,
@@ -83,7 +83,9 @@ export class PermissionGuard implements CanActivate {
 
     // 查询用户所有角色的权限（从数据库）
     const userRolePermissions = await this.rolePermissionRepository.find({
-      where: { roleId: request.user.roleIds },
+      where: request.user.roleIds && request.user.roleIds.length > 0
+        ? { roleId: In(request.user.roleIds) }
+        : undefined,
       relations: ['permission'],
     });
 
