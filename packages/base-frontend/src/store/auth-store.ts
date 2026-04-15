@@ -13,6 +13,7 @@ import {
   ApiAuthGetUserPermissions,
 } from '../apis/sys';
 import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
+import type { SideMenuItem } from '../types/layout-types';
 
 /** Token 存储键名 */
 export const TOKEN_KEY = 'mfw:admin:token';
@@ -272,6 +273,21 @@ export const useAuthStore = defineStore('auth', () => {
     await loadPermissions(app.appId);
   }
 
+  /** 将权限菜单转换为侧边栏菜单格式 */
+  function transformPermissionMenuToSideMenu(nodes: PermissionMenuItem[]): SideMenuItem[] {
+    return nodes
+      .filter(item => item.routePath) // 只保留有路由路径的菜单项
+      .map(item => ({
+        key: item.permCode || item.id,
+        label: item.permName,
+        to: item.routePath,
+        icon: item.iconName,
+        children: item.children 
+          ? transformPermissionMenuToSideMenu(item.children) 
+          : undefined,
+      }));
+  }
+
   /** 加载用户在指定应用下的权限菜单 */
   async function loadPermissions(appId: string): Promise<PermissionMenuItem[]> {
     try {
@@ -282,6 +298,16 @@ export const useAuthStore = defineStore('auth', () => {
       const menuNodes = response.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
 
+      console.log('加载权限菜单:', permissionMenu.value);
+
+      // 同步到侧边栏菜单
+      const { useLayoutStore } = await import('./layout-store');
+      const layoutStore = useLayoutStore();
+      const sideMenu = transformPermissionMenuToSideMenu(permissionMenu.value);
+      layoutStore.setNavigation({ sideMenu });
+
+      console.log('已更新侧边栏菜单:', sideMenu);
+      
       return permissionMenu.value;
     } catch (error) {
       console.error('加载权限菜单失败:', error);

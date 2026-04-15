@@ -110,8 +110,10 @@ import { Monitor, OfficeBuilding, Check } from '@element-plus/icons-vue'
 import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../apis/sys'
 import type { AppInstanceItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
 import { useAuthStore } from '../../../store/auth-store'
+import { useLayoutStore } from '../../../store/layout-store'
 import type { PopupComponentProps } from '../../feedback/popup/types'
 import type { AppSelectorDialogData } from './types'
+import type { SideMenuItem } from '../../../types/layout-types'
 
 defineOptions({ name: 'AppSelectorDialog' })
 
@@ -129,6 +131,24 @@ const loading = ref(true)
 const appList = ref<AppInstanceItemDto[]>([])
 const selectedAppId = ref<string>('')
 const authStore = useAuthStore()
+const layoutStore = useLayoutStore()
+
+/**
+ * 将权限菜单节点转换为侧边栏菜单格式
+ */
+function transformMenuNodesToSideMenu(nodes: any[]): SideMenuItem[] {
+  return nodes
+    .filter((item: any) => item.routePath) // 只保留有路由路径的菜单项
+    .map((item: any) => ({
+      key: item.permCode || item.id,
+      label: item.permName,
+      to: item.routePath,
+      icon: item.iconName,
+      children: item.children 
+        ? transformMenuNodesToSideMenu(item.children) 
+        : undefined,
+    }));
+}
 
 /**
  * 选择应用
@@ -157,12 +177,19 @@ async function handleSelectApp(app: AppInstanceItemDto) {
 
     // 3. 设置权限菜单
     const menuNodes = permissionsResult.menuTree || []
-    authStore.setPermissionMenu(transformMenuNodes(menuNodes))
+    const permissionMenu = transformMenuNodes(menuNodes)
+    authStore.setPermissionMenu(permissionMenu)
 
-    // 4. 调用成功回调
+    // 4. 同步到侧边栏菜单
+    const sideMenu = transformMenuNodesToSideMenu(permissionMenu)
+    layoutStore.setNavigation({ sideMenu })
+
+    console.log('已更新侧边栏菜单:', sideMenu)
+
+    // 5. 调用成功回调
     dialogData.value.onSelect?.(app)
 
-    // 5. 调用弹窗关闭方法（如果有 popupRef）
+    // 6. 调用弹窗关闭方法（如果有 popupRef）
     if (props.popupRef) {
       props.popupRef.close()
     }
