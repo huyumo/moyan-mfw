@@ -1,5 +1,11 @@
 <template>
-  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" @check-change="handleCheckChange">
+  <el-tree
+    :data="refData"
+    show-checkbox
+    node-key="id"
+    :default-checked-keys="checkedKeys"
+    @check="handleCheck"
+  >
     <template #default="{ data }">
       <div class="custom-tree-node">
         <div class="custom-tree-node_left">
@@ -10,7 +16,7 @@
             link
             type="primary"
             size="mini"
-            v-if="data.checked && (data.nodeType ==='PAGE' || data.nodeType ==='TAG')"
+            v-if="data.checked && (data.nodeType === 'PAGE' || data.nodeType === 'TAG')"
             :icon="Key"
             @click.stop="handlePermissionValue(data)"
           >
@@ -25,7 +31,7 @@ import { computed, PropType } from 'vue';
 import { ElTree, TreeKey } from 'element-plus';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import { Key } from '@element-plus/icons-vue';
-import { ref, watch ,nextTick} from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import { MfwPopup } from '../../feedback';
 import { MfwPermissionValuePanel } from '../permission-value-panel';
 
@@ -70,17 +76,22 @@ const buildCheckedKeys = (node: PermissionTreeNodeDto[], checkedKeys: TreeKey[] 
   return checkedKeys;
 };
 
-/**
- * 处理节点选中状态变化
- * @param data 节点数据
- * @param checked 是否选中
- */
-const handleCheckChange = (data: PermissionTreeNodeDto, checked: boolean) => {
-  data.checked = checked;
+
+const handleCheck = (node: PermissionTreeNodeDto, e: any) => {
+  //{checkedKeys:TreeKey[],checkedNodes:PermissionTreeNodeDto[],halfCheckedKeys:TreeKey[],halfCheckedNodes:PermissionTreeNodeDto[]}
+  const { checkedKeys, checkedNodes, halfCheckedKeys, halfCheckedNodes } = e;
+  checkedNodes.forEach((item: PermissionTreeNodeDto) => {
+    item.checked = checkedKeys.includes(item.id);
+  });
+  halfCheckedNodes.forEach((item: PermissionTreeNodeDto) => {
+    item.checked = halfCheckedKeys.includes(item.id);
+  });
+
   nextTick(() => {
     emit('update:modelValue', refData.value);
   });
 };
+
 /** 初始化选中节点的ID列表 */
 const initCheckedKeys = () => {
   const checkedKeys: TreeKey[] = [];
@@ -99,13 +110,13 @@ const handlePermissionValue = (data: PermissionTreeNodeDto) => {
     type: 'dialog',
     component: MfwPermissionValuePanel,
     data: {
-      permissiondData:{
+      permissiondData: {
         nodeId: data.id,
         nodeName: data.permName,
         nodeCode: data.permCode,
         permissionValue: data.permissionValue,
         parentPermissionValue: data.parentPermissionValue,
-      }
+      },
     },
   });
 };

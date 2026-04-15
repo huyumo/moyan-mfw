@@ -14,7 +14,7 @@ import { Permission } from '../../permission/entities/permission.entity';
  */
 @Entity('sys_role_permissions')
 @Unique(['roleId', 'permissionId'])
-export class RolePermission extends Base {
+export class RolePermission {
   /**
    * 主键 ID
    */

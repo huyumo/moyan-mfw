@@ -37,4 +37,13 @@ export class QueryAppTypeDto extends PaginationQueryDto {
   @Min(0)
   @Max(1)
   typeStatus?: number;
+
+  /**
+   * 排序字段
+   * @default 'sortOrder'
+   */
+  @ApiProperty({ description: '排序字段', default: 'sortOrder', required: false })
+  @IsOptional()
+  @IsString()
+  sortField?: string = 'sortOrder';
 }

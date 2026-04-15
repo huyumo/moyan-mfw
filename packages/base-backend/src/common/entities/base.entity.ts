@@ -27,7 +27,7 @@ export abstract class Base {
    * @description 记录创建时的时间戳，首次插入时自动设置
    * @type {Date}
    */
-  @CreateDateColumn({ type: 'datetime', nullable: false, name: 'created_at' })
+  @CreateDateColumn({ type: 'datetime', nullable: false})
   createdAt: Date;
 
   /**
@@ -35,7 +35,7 @@ export abstract class Base {
    * @description 记录最后修改时的时间戳，每次更新自动刷新
    * @type {Date}
    */
-  @UpdateDateColumn({ type: 'datetime', nullable: true, name: 'updated_at' })
+  @UpdateDateColumn({ type: 'datetime', nullable: true  })
   updateAt: Date;
 
   /**
@@ -43,6 +43,6 @@ export abstract class Base {
    * @description 逻辑删除时使用，记录删除时的时间戳，未删除时为 null
    * @type {Date}
    */
-  @DeleteDateColumn({ type: 'datetime', nullable: true, name: 'deleted_at' })
+  @DeleteDateColumn({ type: 'datetime', nullable: true })
   deleteAt: Date;
 }

@@ -5,8 +5,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { InjectDataSource, InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { Repository, In, DataSource, EntityManager } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
 import { Role } from '../role/entities/role.entity';
@@ -31,7 +31,9 @@ import { RegisterDto } from './dto/req/register.dto';
 import { CheckAvailabilityResponseDto } from './dto/req/check-availability.dto';
 import { BusinessException } from '../../../common/exceptions/business.exception';
 import { hashPassword } from '../../../common/utils/encrypt';
+import { executeRawSql } from '../../../common/utils/sql.util';
 import { PermissionTreeNodeDto } from '../permission';
+import { flatToTree } from '@/common/utils/tree.util';
 
 /**
  * 认证服务
@@ -39,6 +41,10 @@ import { PermissionTreeNodeDto } from '../permission';
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectEntityManager()
+    private entityManager: EntityManager,
+    @InjectDataSource()
+    private dataSource: DataSource,
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(UserRole)
@@ -312,273 +318,41 @@ export class AuthService {
     userId: string,
     appId: string,
   ): Promise<UserPermissionsResponseDto> {
-    // 1. 查询应用实例信息，获取 appTypeId
-    const app = await this.appRepository.findOne({
-      where: { id: appId },
-    });
 
-    if (!app) {
-      throw new BusinessException('应用实例不存在', 404);
-    }
+    const sql = `
+    SELECT 
+      sp.id,
+      sp.permCode,
+      sp.permName,
+      sp.permissionType,
+      sp.nodeType,
+      sp.parentId,
+      sp.routePath,
+      sp.externalUrl,
+      sp.iconName,
+      sp.sortOrder,
+      sp.isVisible,
+      sp.isCache,
+      sp.showMode,
+      BIT_OR(sp.permissionValue) permissionValue
+    FROM sys_user_roles sur
+    INNER JOIN sys_roles sr ON sur.roleId = sr.id
+    INNER JOIN sys_role_permissions srp ON srp.roleId = sr.id
+    INNER JOIN sys_permissions sp ON sp.id = srp.permissionId
+    WHERE sur.userId = :userId AND sp.isVisible = 1
+    GROUP BY sp.permCode
+    ORDER BY sp.sortOrder ASC;
+    `
 
-    const appTypeId = app.appTypeId;
-
-    // 2. 查询应用类型信息，确定权限类型过滤规则
-    let appType: AppType | null = null;
-    if (appTypeId) {
-      appType = await this.appTypeRepository.findOne({
-        where: { id: appTypeId },
-      });
-    }
-
-    // 3. 查询用户在该应用实例下的角色
-    // 用户作为拥有者时，自动拥有管理员角色的全部权限
-    const isOwner = app.ownerId === userId;
-
-    // 查询用户角色关联
-    const userRoles = await this.userRoleRepository.find({
-      where: { userId },
-      relations: ['role'],
-    });
-
-    // 过滤出该应用实例下的角色（appId 匹配）或全局角色（appId 为空）
-    const roleIds: string[] = [];
-    const roleCodes: string[] = [];
-
-    if (isOwner) {
-      // 拥有者自动获得拥有者角色
-      const ownerRole = await this.roleRepository.findOne({
-        where: { appId, isOwner: 1 },
-      });
-      if (ownerRole) {
-        roleIds.push(ownerRole.id);
-        roleCodes.push(ownerRole.roleCode);
-      }
-    }
-
-    userRoles.forEach((ur) => {
-      if (ur.role) {
-        // 角色属于该应用实例，或者是全局角色（appId 和 appTypeId 都为空）
-        const isGlobalRole = !ur.role.appId && !ur.role.appTypeId;
-        const isAppRole = ur.role.appId === appId;
-        const isAppTypeRole = ur.role.appTypeId === appTypeId;
-
-        if (isGlobalRole || isAppRole || isAppTypeRole) {
-          roleIds.push(ur.roleId);
-          roleCodes.push(ur.role.roleCode);
-        }
-      }
-    });
-
-    if (roleIds.length === 0) {
-      // 用户没有角色，返回空菜单
-      return {
-        menuTree: [],
-        permissions: [],
-        appTypeId: appTypeId || '',
-      };
-    }
-
-    // 4. 查询应用类型权限池（如果存在 appTypeId）
-    // 权限池定义了该应用类型可用的权限范围
-    let appTypePermissionIds: string[] | null = null;
-    let hasAppTypePermissionPool = false; // 是否配置了权限池
-
-    if (appTypeId) {
-      const appTypePermissions = await this.appTypePermissionRepository.find({
-        where: { appTypeId },
-      });
-      if (appTypePermissions.length > 0) {
-        hasAppTypePermissionPool = true;
-        appTypePermissionIds = appTypePermissions.map((p) => p.permissionId);
-      }
-    }
-
-    // 5. 获取所有角色的权限
-    const rolePermissions = await this.rolePermissionRepository.find({
-      where: { roleId: In(roleIds) },
-      relations: ['permission'],
-    });
-
-    // 6. 合并权限（相同 permissionId 的 permissionValue 取位运算 OR）
-    const permissionMap = new Map<string, { permission: Permission; value: bigint }>();
-
-    // 根据应用类型决定允许的权限类型
-    // system 类型只允许 PC 权限，其他类型只允许 NORMAL 权限
-    const allowedPermissionType = appType?.typeCode === 'system'
-      ? PermissionType.PC
-      : PermissionType.NORMAL;
-
-    rolePermissions.forEach((rp) => {
-      if (rp.permission && rp.permission.permStatus === 1) {
-        const permId = rp.permissionId;
-
-        // 过滤：权限类型必须匹配
-        if (rp.permission.permissionType !== allowedPermissionType) {
-          return; // 跳过权限类型不匹配的权限
-        }
-
-        // 过滤：如果应用类型配置了权限池，只保留权限池内的权限
-        // 如果没有配置权限池，则不过滤（降级兼容）
-        if (hasAppTypePermissionPool && appTypePermissionIds && !appTypePermissionIds.includes(permId)) {
-          return; // 跳过不在权限池中的权限
-        }
-
-        const existing = permissionMap.get(permId);
-        if (existing) {
-          // 合并权限值（位运算 OR）
-          existing.value = existing.value | rp.permissionValue;
-        } else {
-          permissionMap.set(permId, {
-            permission: rp.permission,
-            value: rp.permissionValue,
-          });
-        }
-      }
-    });
-
-    // 如果是拥有者，需要查询该应用类型下所有权限
-    if (isOwner) {
-      // 根据应用类型决定查询的权限类型
-      const permissionTypeFilter = appType?.typeCode === 'system'
-        ? PermissionType.PC
-        : PermissionType.NORMAL;
-
-      const allPermissions = await this.permissionRepository.find({
-        where: {
-          permStatus: 1,
-          permissionType: permissionTypeFilter,
-        },
-        order: { sortOrder: 'ASC' },
-      });
-
-      // 添加拥有者可能遗漏的权限（全部权限）
-      allPermissions.forEach((perm) => {
-        if (!permissionMap.has(perm.id)) {
-          // 检查是否在权限池中（如果有配置）
-          if (hasAppTypePermissionPool && appTypePermissionIds && !appTypePermissionIds.includes(perm.id)) {
-            return;
-          }
-          permissionMap.set(perm.id, {
-            permission: perm,
-            value: perm.permissionValue || 0n,
-          });
-        }
-      });
-    }
-
-    // 7. 转换为 DTO 格式（bigint 序列化为字符串）
-    const permissions = Array.from(permissionMap.values());
-
-    // 8. 构建菜单树结构
-    const menuTree = this.buildPermissionTree(permissions);
-
-    // 9. 构建扁平化权限编码列表
-    const permissionCodes = permissions.map((p) => p.permission.permCode);
-
+    const result = await executeRawSql(this.entityManager, sql, { userId });
+    const menuTree = flatToTree(result)
+    const permissions = result.map((item)=>item.permCode)
+    const appTypeId = result[0].appTypeId || ''
     return {
       menuTree,
-      permissions: permissionCodes,
-      appTypeId: appTypeId || '',
+      permissions: permissions,
+      appTypeId: appTypeId,
     };
-  }
-
-  /**
-   * 构建权限树结构
-   * @param permissions - 权限列表
-   * @returns 树形结构
-   */
-  private buildPermissionTree(
-    permissions: Array<{ permission: Permission; value: bigint }>,
-  ): PermissionTreeNodeDto[] {
-    // 创建节点映射
-    const nodeMap = new Map<string, PermissionTreeNodeDto>();
-    const rootNodes: PermissionTreeNodeDto[] = [];
-
-    // 先创建所有节点
-    permissions.forEach(({ permission, value }) => {
-      const node: PermissionTreeNodeDto = {
-        id: permission.id,
-        permName: permission.permName,
-        permCode: permission.permCode,
-        permDesc: permission.permDesc,
-        permissionType: permission.permissionType as PermissionType,
-        nodeType: permission.nodeType as NodeType,
-        parentId: permission.parentId ?? undefined,
-        routePath: permission.routePath,
-        externalUrl: permission.externalUrl,
-        iconName: permission.iconName,
-        sortOrder: permission.sortOrder,
-        isVisible: permission.isVisible,
-        isCache: permission.isCache,
-        showMode: permission.showMode as ShowMode,
-        permStatus: permission.permStatus,
-        permissionValue: value.toString(),
-        children: [],
-        checked: false
-      };
-      nodeMap.set(permission.id, node);
-    });
-
-    // 构建树形关系
-    permissions.forEach(({ permission }) => {
-      const node = nodeMap.get(permission.id);
-      if (node) {
-        if (permission.parentId) {
-          const parent = nodeMap.get(permission.parentId);
-          if (parent) {
-            parent.children = parent.children || [];
-            parent.children.push(node);
-          } else {
-            // 父节点不存在，作为根节点
-            rootNodes.push(node);
-          }
-        } else {
-          // 无父节点，作为根节点
-          rootNodes.push(node);
-        }
-      }
-    });
-
-    // 按 sortOrder 排序
-    rootNodes.sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
-    nodeMap.forEach((node) => {
-      if (node.children && node.children.length > 0) {
-        node.children.sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder));
-      }
-    });
-
-    // 过滤掉不可见的节点
-    return this.filterVisibleNodes(rootNodes);
-  }
-
-  /**
-   * 过滤不可见节点
-   * @param nodes - 节点列表
-   * @returns 可见节点列表
-   * @description 如果父节点不可见，子节点会提升为根节点
-   */
-  private filterVisibleNodes(nodes: PermissionTreeNodeDto[]): PermissionTreeNodeDto[] {
-    const result: PermissionTreeNodeDto[] = [];
-
-    for (const node of nodes) {
-      if (node.isVisible === 1) {
-        // 当前节点可见，保留
-        const newNode = { ...node };
-        if (node.children && node.children.length > 0) {
-          newNode.children = this.filterVisibleNodes(node.children);
-        }
-        result.push(newNode);
-      } else {
-        // 当前节点不可见，递归处理子节点（子节点提升为根节点）
-        if (node.children && node.children.length > 0) {
-          const visibleChildren = this.filterVisibleNodes(node.children);
-          result.push(...visibleChildren);
-        }
-      }
-    }
-
-    return result;
   }
 
   /**

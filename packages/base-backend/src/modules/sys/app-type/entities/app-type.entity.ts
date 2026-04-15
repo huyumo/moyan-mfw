@@ -12,7 +12,7 @@ import { Base } from '../../../../common/entities/base.entity';
  */
 @Entity('sys_app_types')
 @Unique(['typeCode'])
-export class AppType extends Base {
+export class AppType {
   /**
    * 应用类型 ID
    */
