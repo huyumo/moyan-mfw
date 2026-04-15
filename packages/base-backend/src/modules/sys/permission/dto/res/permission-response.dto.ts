@@ -118,6 +118,13 @@ export class PermissionTreeNodeDto {
   permStatus: number;
 
   /**
+   * 是否选中
+   */
+  @ApiProperty({ description: '是否选中' })
+  @Expose()
+  checked: boolean;
+
+  /**
    * 是否自动同步
    */
   @ApiProperty({ description: '是否自动同步：1=同步生成 0=手动添加', required: false })
@@ -133,6 +140,14 @@ export class PermissionTreeNodeDto {
   permissionValue?: string;
 
   /**
+   * 父权限值（位运算）
+   */
+  @ApiProperty({ description: '父权限值（位运算）', example: '7', required: false })
+  @Expose()
+  @Transform(({ value }) => value?.toString())
+  parentPermissionValue?: string;
+
+  /**
    * 子权限列表
    */
   @ApiProperty({ description: '子权限列表', type: () => [PermissionTreeNodeDto], required: false })
@@ -145,14 +160,14 @@ export class PermissionTreeNodeDto {
    */
   @ApiProperty({ description: '创建时间' })
   @Expose()
-  createdAt: Date;
+  createdAt?: Date;
 
   /**
    * 更新时间
    */
   @ApiProperty({ description: '更新时间' })
   @Expose()
-  updateAt: Date;
+  updateAt?: Date;
 }
 
 /**

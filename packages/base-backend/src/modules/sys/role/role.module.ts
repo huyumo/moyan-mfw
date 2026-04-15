@@ -12,6 +12,7 @@ import { Permission } from '../permission/entities/permission.entity';
 import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
 import { RoleService } from './role.service';
 import { RoleController } from './role.controller';
+import { AppTypeModule } from '../app-type';
 
 /**
  * 角色模块
@@ -19,6 +20,7 @@ import { RoleController } from './role.controller';
  */
 @Module({
   imports: [
+    AppTypeModule,
     TypeOrmModule.forFeature([Role, UserRole, RolePermission, Permission, AppTypePermissionEntity]),
   ],
   providers: [RoleService],

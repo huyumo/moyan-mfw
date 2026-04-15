@@ -32,13 +32,13 @@ import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
 import {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
-  PermissionTreeNodeDto,
 } from './dto/res/permission-pool-response.dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../common';
+import { PermissionTreeNodeDto } from '../permission';
 
 /**
  * 应用类型控制器

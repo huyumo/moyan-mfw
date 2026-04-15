@@ -18,6 +18,6 @@ export {
   UserAppsResponseDto,
 } from './res/auth-response.dto';
 export {
-  PermissionTreeNodeDto,
+
   UserPermissionsResponseDto,
 } from './res/user-permissions-response.dto';

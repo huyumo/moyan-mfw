@@ -17,7 +17,7 @@ export class PermissionTreePayloadDto {
    */
   @ApiProperty({ description: '权限 ID' })
   @IsString()
-  permissionId: string;
+  id: string;
 
   /**
    * 是否选中

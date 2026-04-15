@@ -17,13 +17,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { MfwPermissionTree } from '../permission-tree'
-import { PermissionTreesResponseDto } from '../../../apis/sys/schemas';
-import { ApiRoleGetRolePermissions } from '../../../apis/sys';
+import { PermissionTreeNodeDto, PermissionTreesResponseDto, UpdatePermissionPoolDto } from '../../../apis/sys/schemas';
+import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys';
 
-defineOptions({ name: 'RolePermissionPanel' })
+defineOptions({ name: 'PermissionPoolPanel' })
 
-const { roleId } = defineProps({
-  roleId: {
+const { appTypeId } = defineProps({
+  appTypeId: {
     type: String,
     required: true
   }
@@ -34,10 +34,12 @@ const data = ref<PermissionTreesResponseDto>({
   normalTree: []
 })
 
+
+
 const getTreeData = async () => {
-  new ApiRoleGetRolePermissions({
+  new ApiAppTypeGetPermissionPool({
     query: {
-      id: roleId
+      appTypeId: appTypeId
     }
   }).then(res => {
     data.value = res.permissionTrees
@@ -46,6 +48,26 @@ const getTreeData = async () => {
 
 onMounted(() => {
   getTreeData()
+})
+
+const onConfirm = async () => {
+  console.log(data.value)
+  await new ApiAppTypeUpdatePermissionPool({
+    query: {
+      appTypeId: appTypeId
+    },
+    params: {
+      permissionTrees: {
+        pcTree: data.value.pcTree,
+        normalTree: data.value.normalTree
+      }
+    },
+    option: { hintFail: true }
+  })
+}
+
+defineExpose({
+  onConfirm
 })
 
 </script>

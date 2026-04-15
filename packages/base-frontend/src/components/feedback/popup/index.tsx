@@ -11,7 +11,8 @@ import {
   reactive,
   provide,
   toRef,
-  type Component
+  type Component,
+  h
 } from 'vue';
 import { ElDialog, ElDrawer, ElButton } from 'element-plus';
 import type { DialogProps, DrawerProps } from 'element-plus';
@@ -211,24 +212,18 @@ const MfwPopupDialog = defineComponent({
 
     return () => {
       const slots: any = {
-        default: () => (
-          <item.value.component
-            ref={componentRef}
-            data={item.value.data}
-            popupRef={{
-              uuid: item.value.uuid,
-              open: () => { visible.value = true; },
-              close: handleClose,
-              confirm: handleConfirm,
-              update: (options: Partial<OpenPopupOptions>) => {
-                Object.assign(item.value, options);
-              }
-            } as PopupInstance}
-            close={handleClose}
-            confirm={handleConfirm}
-          />
-        )
+        default: h(item.value.component, {...item.value.data, ref: componentRef ,popupRef: {
+          uuid: item.value.uuid,
+          open: () => { visible.value = true; },
+          close: handleClose,
+          confirm: handleConfirm,
+          update: (options: Partial<OpenPopupOptions>) => {
+            Object.assign(item.value, options);
+          }
+        } as PopupInstance})
       };
+
+
 
       if (item.value.footer !== false) {
         slots.footer = () => (
