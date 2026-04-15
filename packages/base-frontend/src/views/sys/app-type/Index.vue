@@ -25,7 +25,7 @@ import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import EditForm from './EditForm.vue';
 import DetailPopup from './DetailPopup.vue';
-import { PermissionPoolDialog } from '../../../components/business/permission-pool-dialog/mod';
+import { PermissionPoolPanel } from '../../../components/business/permission-pool-panel';
 import { BuiltinRoleDialog } from '../../../components/business/builtin-role-dialog/mod';
 
 /** 状态常量 */
@@ -175,10 +175,11 @@ const handleConfigPermissionPool = async (row: AppTypeResponseDto) => {
     ElMessage.warning('请先保存应用类型');
     return;
   }
+  console.log('****************KKKKK::',row.id)
   MfwPopup.open({
     title: '配置权限池',
     type: 'dialog',
-    component: PermissionPoolDialog,
+    component: PermissionPoolPanel,
     data: { appTypeId: row.id },
     popupProps: {
       size: '800px',

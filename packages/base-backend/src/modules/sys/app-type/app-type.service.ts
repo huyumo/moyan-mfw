@@ -8,16 +8,16 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
-import { Permission, PermissionType } from '../permission/entities/permission.entity';
+import { NodeType, Permission, PermissionType, ShowMode } from '../permission/entities/permission.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
 import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
 import {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
-  PermissionTreeNodeDto,
 } from './dto/res/permission-pool-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { PermissionTreeNodeDto } from '../permission';
 
 /**
  * 应用类型服务
@@ -246,7 +246,7 @@ export class AppTypeService {
     }
 
     // 收集所有待处理的权限节点
-    const allNodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string }> =
+    const allNodes: Array<{ id: string; checked: boolean; permissionValue?: string }> =
       [];
 
     // 遍历 PC 权限树
@@ -269,7 +269,7 @@ export class AppTypeService {
         if (node.checked) {
           const entity = manager.create(AppTypePermissionEntity, {
             appTypeId,
-            permissionId: node.permissionId,
+            permissionId: node.id,
             permissionValue: node.permissionValue ? BigInt(node.permissionValue) : 0n,
           });
           entitiesToInsert.push(entity);
@@ -333,8 +333,8 @@ export class AppTypeService {
       permName: permission.permName,
       permCode: permission.permCode,
       permDesc: permission.permDesc,
-      permissionType: permission.permissionType as 'PC' | 'NORMAL',
-      nodeType: permission.nodeType as 'MENU' | 'PAGE' | 'TAG',
+      permissionType: permission.permissionType as PermissionType,
+      nodeType: permission.nodeType as NodeType,
       parentId: permission.parentId ?? undefined,
       routePath: permission.routePath,
       externalUrl: permission.externalUrl,
@@ -342,7 +342,7 @@ export class AppTypeService {
       sortOrder: permission.sortOrder,
       isVisible: permission.isVisible,
       isCache: permission.isCache,
-      showMode: permission.showMode as 'NORMAL' | 'DEV',
+      showMode: permission.showMode as ShowMode,
       permStatus: permission.permStatus,
       isAutoSync: permission.isAutoSync,
       checked,
@@ -370,12 +370,12 @@ export class AppTypeService {
    * @param result - 收集结果
    */
   private collectPermissionNodes(
-    nodes: Array<{ permissionId: string; checked: boolean; permissionValue?: string; children?: any[] }>,
-    result: Array<{ permissionId: string; checked: boolean; permissionValue?: string }>,
+    nodes: Array<{ id: string; checked: boolean; permissionValue?: string; children?: any[] }>,
+    result: Array<{ id: string; checked: boolean; permissionValue?: string }>,
   ): void {
     for (const node of nodes) {
       result.push({
-        permissionId: node.permissionId,
+        id: node.id,
         checked: node.checked,
         permissionValue: node.permissionValue,
       });

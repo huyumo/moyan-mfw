@@ -19,14 +19,8 @@ import type {
   UpdateRoleDto,
   PermissionItemDto,
   AssignPermissionsDto,
-  RolePermissionTreeNodeDto,
   RolePermissionTreesResponseDto,
   RolePermissionResponseDto,
-  CreatePermissionDto,
-  PermissionResponseDto,
-  UpdatePermissionDto,
-  RouteNodeDto,
-  SyncPermissionDto,
   CreateAppTypeDto,
   AppTypeResponseDto,
   PermissionTreesResponseDto,
@@ -36,6 +30,11 @@ import type {
   UpdatePermissionPoolDto,
   UpdatePermissionPoolResponseDto,
   UpdateAppTypeDto,
+  CreatePermissionDto,
+  PermissionResponseDto,
+  UpdatePermissionDto,
+  RouteNodeDto,
+  SyncPermissionDto,
   CreateAppDto,
   AppDetailResponseDto,
   UpdateAppDto,
@@ -353,131 +352,6 @@ export class ApiRoleGetRolePermissions extends ApiCall<
 }
 
 /**
- * permission|权限相关接口->创建权限
- */
-export class ApiPermissionCreate extends ApiCall<
-  CreatePermissionDto,
-  PermissionResponseDto
-> {
-  path = '/api/permissions'
-  method: MoMethod = 'POST'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->查询权限列表
- */
-export class ApiPermissionFindAll extends ApiCall<
-  {
-    appTypeId?: string //应用类型 ID
-    permName?: string //权限名称（模糊查询）
-    permCode?: string //权限编码（模糊查询）
-    permissionType?: number //权限类型
-    nodeType?: number //节点类型
-    parentId?: string //父权限 ID
-    page?: number //当前页码
-    pageSize?: number //每页数量
-  },
-  any
-> {
-  path = '/api/permissions'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->查询所有权限树
- */
-export class ApiPermissionFindAllTree extends ApiCall<
-  {
-    permissionType?: string //权限类型：PC/NORMAL
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  path = '/api/permissions/tree/all'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->获取权限树
- */
-export class ApiPermissionGetPermissionTree extends ApiCall<
-  {
-    parentId?: string //父权限 ID，不传则查询根节点
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  path = '/api/permissions/tree'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->根据 ID 查询权限
- */
-export class ApiPermissionFindById extends ApiCall<
-  {
-    id: string //权限 ID
-  },
-  PermissionResponseDto
-> {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'GET'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->更新权限
- */
-export class ApiPermissionUpdate extends ApiCall<
-  UpdatePermissionDto,
-  PermissionResponseDto
-> {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->删除权限
- */
-export class ApiPermissionDelete extends ApiCall<
-  {
-    id: string //权限 ID
-  },
-  any
-> {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->批量创建权限
- */
-export class ApiPermissionBatchCreate extends ApiCall<
-  {},
-  Array<PermissionResponseDto>
-> {
-  path = '/api/permissions/batch'
-  method: MoMethod = 'POST'
-  auth = true
-}
-
-/**
- * permission|权限相关接口->同步路由到权限表
- */
-export class ApiPermissionSyncPermissions extends ApiCall<
-  SyncPermissionDto,
-  Array<PermissionTreeNodeDto>
-> {
-  path = '/api/permissions/sync'
-  method: MoMethod = 'POST'
-  auth = true
-}
-
-/**
  * app-type|应用类型相关接口->创建应用类型
  */
 export class ApiAppTypeCreate extends ApiCall<
@@ -607,6 +481,131 @@ export class ApiAppTypeUpdateStatus extends ApiCall<
 > {
   path = '/api/app-types/{id}/status'
   method: MoMethod = 'PUT'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->创建权限
+ */
+export class ApiPermissionCreate extends ApiCall<
+  CreatePermissionDto,
+  PermissionResponseDto
+> {
+  path = '/api/permissions'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->查询权限列表
+ */
+export class ApiPermissionFindAll extends ApiCall<
+  {
+    appTypeId?: string //应用类型 ID
+    permName?: string //权限名称（模糊查询）
+    permCode?: string //权限编码（模糊查询）
+    permissionType?: number //权限类型
+    nodeType?: number //节点类型
+    parentId?: string //父权限 ID
+    page?: number //当前页码
+    pageSize?: number //每页数量
+  },
+  any
+> {
+  path = '/api/permissions'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->查询所有权限树
+ */
+export class ApiPermissionFindAllTree extends ApiCall<
+  {
+    permissionType?: string //权限类型：PC/NORMAL
+  },
+  Array<PermissionTreeNodeDto>
+> {
+  path = '/api/permissions/tree/all'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->获取权限树
+ */
+export class ApiPermissionGetPermissionTree extends ApiCall<
+  {
+    parentId?: string //父权限 ID，不传则查询根节点
+  },
+  Array<PermissionTreeNodeDto>
+> {
+  path = '/api/permissions/tree'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->根据 ID 查询权限
+ */
+export class ApiPermissionFindById extends ApiCall<
+  {
+    id: string //权限 ID
+  },
+  PermissionResponseDto
+> {
+  path = '/api/permissions/{id}'
+  method: MoMethod = 'GET'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->更新权限
+ */
+export class ApiPermissionUpdate extends ApiCall<
+  UpdatePermissionDto,
+  PermissionResponseDto
+> {
+  path = '/api/permissions/{id}'
+  method: MoMethod = 'PUT'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->删除权限
+ */
+export class ApiPermissionDelete extends ApiCall<
+  {
+    id: string //权限 ID
+  },
+  any
+> {
+  path = '/api/permissions/{id}'
+  method: MoMethod = 'DELETE'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->批量创建权限
+ */
+export class ApiPermissionBatchCreate extends ApiCall<
+  {},
+  Array<PermissionResponseDto>
+> {
+  path = '/api/permissions/batch'
+  method: MoMethod = 'POST'
+  auth = true
+}
+
+/**
+ * permission|权限相关接口->同步路由到权限表
+ */
+export class ApiPermissionSyncPermissions extends ApiCall<
+  SyncPermissionDto,
+  Array<PermissionTreeNodeDto>
+> {
+  path = '/api/permissions/sync'
+  method: MoMethod = 'POST'
   auth = true
 }
 

@@ -209,12 +209,12 @@ export class PermissionService {
     permissions: Permission[],
     rootParentId?: string,
   ): PermissionTreeNodeDto[] {
-    const map = new Map<string, PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] }>();
+    const map = new Map<string, PermissionTreeNodeDto>();
     const roots: PermissionTreeNodeDto[] = [];
 
     // 先创建所有节点的映射
     permissions.forEach(item => {
-      const node: PermissionTreeNodeDto & { children?: PermissionTreeNodeDto[] } = {
+      const node: PermissionTreeNodeDto = {
         id: item.id,
         permName: item.permName,
         permCode: item.permCode,
@@ -234,6 +234,7 @@ export class PermissionService {
         permissionValue: typeof item.permissionValue === 'bigint' ? item.permissionValue.toString() : String(item.permissionValue),
         createdAt: item.createdAt,
         updateAt: item.updateAt,
+        checked: false,
         children: [],
       };
       map.set(item.id, node);

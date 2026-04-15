@@ -47,4 +47,3 @@ export * from './picker/mod';
 export * from './business/role-permission-panel';
 export * from './business/app-selector-dialog';
 export * from './business/permission-tree';
-export * from './business/permission-value-popup';

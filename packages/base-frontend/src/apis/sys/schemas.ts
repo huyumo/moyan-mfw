@@ -1,7 +1,3 @@
-// @generated moyan-api - DO NOT EDIT MANUALLY
-// 此文件由 moyan-api 自动生成，手动修改将在提交时被门禁拦截
-// 如需修改 API 类型定义，请联系后端开发人员完善 Swagger 文档后重新生成
-
 export type ObjectId = string
 export type int = number | string
 export type integer = number | string
@@ -63,18 +59,20 @@ export type PermissionTreeNodeDto = {
   nodeType: string // 节点类型
   parentId?: string // 父权限 ID
   routePath?: string // 路由路径
-  externalUrl?: string // 外部链接 URL
+  externalUrl?: string // 外部链接
   iconName?: string // 图标名称
   sortOrder: number // 排序号
   isVisible: number // 是否可见
   isCache: number // 是否缓存
   showMode: string // 显示模式
-  permStatus: number // 权限状态（1:启用 0:禁用）
-  isAutoSync?: number // 是否自动同步
-  checked: boolean // 是否选中（前端勾选状态）
-  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
-  parentPermissionValue?: string // 父权限的权限值（十进制字符串格式）
-  children?: Array<PermissionTreeNodeDto> // 子节点列表
+  permStatus: number // 权限状态
+  checked: boolean // 是否选中
+  isAutoSync?: number // 是否自动同步：1=同步生成 0=手动添加
+  permissionValue?: string // 权限值（位运算）
+  parentPermissionValue?: string // 父权限值（位运算）
+  children?: Array<PermissionTreeNodeDto> // 子权限列表
+  createdAt: string // 创建时间
+  updateAt: string // 更新时间
 }
 
 export type UserPermissionsResponseDto = {
@@ -172,37 +170,78 @@ export type AssignPermissionsDto = {
   permissions: Array<PermissionItemDto> // 权限列表
 }
 
-export type RolePermissionTreeNodeDto = {
-  id: string // 权限 ID
-  permName: string // 权限名称
-  permCode: string // 权限编码
-  permDesc?: string // 权限描述
-  permissionType: string // 权限类型
-  nodeType: string // 节点类型
-  parentId?: string // 父权限 ID
-  routePath?: string // 路由路径
-  externalUrl?: string // 外部链接 URL
-  iconName?: string // 图标名称
-  sortOrder: number // 排序号
-  isVisible: number // 是否可见
-  isCache: number // 是否缓存
-  showMode: string // 显示模式
-  permStatus: number // 权限状态（1:启用 0:禁用）
-  isAutoSync?: number // 是否自动同步
-  checked: boolean // 是否选中（前端勾选状态）
-  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
-  parentPermissionValue?: string // 父权限的权限值（十进制字符串格式）
-  children?: Array<RolePermissionTreeNodeDto> // 子节点列表
-}
-
 export type RolePermissionTreesResponseDto = {
-  pcTree: Array<RolePermissionTreeNodeDto> // PC 权限树
-  normalTree: Array<RolePermissionTreeNodeDto> // 普通权限树
+  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
+  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
 }
 
 export type RolePermissionResponseDto = {
   roleId: string // 角色 ID
   permissionTrees: RolePermissionTreesResponseDto // 权限树配置
+}
+
+export type CreateAppTypeDto = {
+  typeName: string // 类型名称
+  typeCode: string // 类型编码
+  typeDesc?: string // 类型描述
+  icon?: string // 图标 URL 或图标名称
+  multiAppEnabled: number // 是否支持多应用
+  typeStatus: number // 类型状态
+  sortOrder: number // 排序号
+}
+
+export type AppTypeResponseDto = {
+  id: string // 应用类型 ID
+  typeName: string // 类型名称
+  typeCode: string // 类型编码
+  typeDesc: string // 类型描述
+  icon: string // 图标
+  multiAppEnabled: number // 是否支持多应用
+  typeStatus: number // 类型状态
+  sortOrder: number // 排序号
+  createdAt: string // 创建时间
+  updateAt: string // 更新时间
+}
+
+export type PermissionTreesResponseDto = {
+  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
+  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
+}
+
+export type PermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  permissionTrees: PermissionTreesResponseDto // 权限树配置
+}
+
+export type PermissionTreePayloadDto = {
+  id: string // 权限 ID
+  checked: boolean // 是否选中（true=加入权限池，false=移除）
+  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
+  children?: Array<PermissionTreePayloadDto> // 子节点列表
+}
+
+export type PermissionTreesDto = {
+  pcTree: Array<PermissionTreePayloadDto> // PC 权限树
+  normalTree: Array<PermissionTreePayloadDto> // 普通权限树
+}
+
+export type UpdatePermissionPoolDto = {
+  permissionTrees: PermissionTreesDto // 权限树配置
+}
+
+export type UpdatePermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  updatedCount: number // 更新的权限节点数量
+}
+
+export type UpdateAppTypeDto = {
+  typeName?: string // 类型名称
+  typeCode?: string // 类型编码
+  typeDesc?: string // 类型描述
+  icon?: string // 图标 URL 或图标名称
+  multiAppEnabled?: number // 是否支持多应用
+  typeStatus?: number // 类型状态
+  sortOrder?: number // 排序号
 }
 
 export type CreatePermissionDto = {
@@ -268,70 +307,6 @@ export type RouteNodeDto = {
 
 export type SyncPermissionDto = {
   routes: Array<RouteNodeDto> // 路由树结构
-}
-
-export type CreateAppTypeDto = {
-  typeName: string // 类型名称
-  typeCode: string // 类型编码
-  typeDesc?: string // 类型描述
-  icon?: string // 图标 URL 或图标名称
-  multiAppEnabled: number // 是否支持多应用
-  typeStatus: number // 类型状态
-  sortOrder: number // 排序号
-}
-
-export type AppTypeResponseDto = {
-  id: string // 应用类型 ID
-  typeName: string // 类型名称
-  typeCode: string // 类型编码
-  typeDesc: string // 类型描述
-  icon: string // 图标
-  multiAppEnabled: number // 是否支持多应用
-  typeStatus: number // 类型状态
-  sortOrder: number // 排序号
-  createdAt: string // 创建时间
-  updateAt: string // 更新时间
-}
-
-export type PermissionTreesResponseDto = {
-  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
-  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
-}
-
-export type PermissionPoolResponseDto = {
-  appTypeId: string // 应用类型 ID
-  permissionTrees: PermissionTreesResponseDto // 权限树配置
-}
-
-export type PermissionTreePayloadDto = {
-  permissionId: string // 权限 ID
-  checked: boolean // 是否选中（true=加入权限池，false=移除）
-  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
-  children?: Array<PermissionTreePayloadDto> // 子节点列表
-}
-
-export type PermissionTreesDto = {
-  pcTree: Array<PermissionTreePayloadDto> // PC 权限树
-  normalTree: Array<PermissionTreePayloadDto> // 普通权限树
-}
-
-export type UpdatePermissionPoolDto = {
-  permissionTrees: PermissionTreesDto // 权限树配置
-}
-
-export type UpdatePermissionPoolResponseDto = {
-  appTypeId: string // 应用类型 ID
-  updatedCount: number // 更新的权限节点数量
-}
-
-export type UpdateAppTypeDto = {
-  typeName?: string // 类型名称
-  typeCode?: string // 类型编码
-  typeDesc?: string // 类型描述
-  icon?: string // 图标 URL 或图标名称
-  multiAppEnabled?: number // 是否支持多应用
-  typeStatus?: number // 类型状态
-  sortOrder?: number // 排序号
 }
 
 export type CreateAppDto = {
