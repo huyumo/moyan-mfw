@@ -4,14 +4,14 @@
  */
 
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource, EntityManager, Equal } from 'typeorm';
 import { Role } from './entities/role.entity';
-import { RolePermission } from '../permission/entities/role-permission.entity';
+import { RolePermission } from './entities/role-permission.entity';
 import { UserRole } from './entities/user-role.entity';
 import { Permission, PermissionType } from '../permission/entities/permission.entity';
 import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
-import { CreateRoleDto, UpdateRoleDto } from './dto';
+import { AssignPermissionsDto, CreateRoleDto, UpdateRoleDto } from './dto';
 import {
   RolePermissionResponseDto,
 } from './dto/res/role-permission-response.dto';
@@ -25,6 +25,8 @@ import { PermissionTreeNodeDto } from '../permission';
 @Injectable()
 export class RoleService {
   constructor(
+    @InjectEntityManager()
+    private entityManager: EntityManager,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     @InjectRepository(RolePermission)
@@ -37,7 +39,7 @@ export class RoleService {
     private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
     private dataSource: DataSource,
     private appTypeService: AppTypeService,
-  ) {}
+  ) { }
 
   /**
    * 创建角色
@@ -188,35 +190,21 @@ export class RoleService {
    */
   async assignPermissions(
     roleId: string,
-    permissions: Array<{ permissionId: string; permissionValue: bigint }>,
+    assignPermissionsDto: AssignPermissionsDto,
   ): Promise<void> {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    return this.entityManager.transaction(async (manager) => {
 
-    try {
-      // 删除旧的权限关联
-      await queryRunner.manager.delete(RolePermission, { roleId });
+      // 删除角色所有权限
+      await manager.delete(RolePermission, { roleId });
 
-      // 添加新的权限关联
-      if (permissions && permissions.length > 0) {
-        const rolePermissions = permissions.map((item) =>
-          queryRunner.manager.create(RolePermission, {
-            roleId,
-            permissionId: item.permissionId,
-            permissionValue: item.permissionValue,
-          }),
-        );
-        await queryRunner.manager.save(rolePermissions);
-      }
 
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+
+
+
+
+    });
+
+
   }
 
   /**
@@ -249,7 +237,7 @@ export class RoleService {
     // 权限池数据
     const permissionPool = await this.appTypeService.getPermissionPool(role.appTypeId);
     // 已选中的角色权限
-    const rolePermissions = await this.getRolePermissions(roleId);
+    const rolePermissions = await  this.rolePermissionRepository.find({where:{roleId:Equal(roleId)}})
 
     const pcTree = this.buildRolePermissions(
       permissionPool.permissionTrees.pcTree,
@@ -273,7 +261,19 @@ export class RoleService {
     tree: PermissionTreeNodeDto[],
     rolePermissions: RolePermission[],
   ): PermissionTreeNodeDto[] {
-    const newTree = tree.map((item) => {
+
+    const filter = (arr: PermissionTreeNodeDto[]) => {
+      return arr.filter((item) => {
+        if (item.children?.length) {
+          item.children = filter(item.children);
+        }
+        return item.checked || (item.children && item.children.length > 0);
+      })
+    }
+    const filteredTree = filter(tree);
+    console.log(rolePermissions.map((perm) => perm.permissionId));
+    
+    const newTree = filteredTree.map((item) => {
       if (item.children) {
         item.children = this.buildRolePermissions(item.children, rolePermissions);
       }

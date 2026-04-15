@@ -10,7 +10,7 @@ export {
   NodeType,
   ShowMode,
 } from './entities/permission.entity';
-export { RolePermission } from './entities/role-permission.entity';
+export { RolePermission } from '../role/entities/role-permission.entity';
 
 // Services
 export { PermissionService } from './permission.service';

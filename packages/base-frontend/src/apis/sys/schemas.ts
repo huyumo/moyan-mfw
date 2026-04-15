@@ -161,13 +161,20 @@ export type UpdateRoleDto = {
   roleStatus?: number // 角色状态 (1:启用 0:禁用)
 }
 
-export type PermissionItemDto = {
-  permissionId: string // 权限 ID
-  permissionValue: integer // 权限值（位运算）
+export type PermissionTreePayloadDto = {
+  id: string // 权限 ID
+  checked: boolean // 是否选中（true=加入权限池，false=移除）
+  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
+  children?: Array<PermissionTreePayloadDto> // 子节点列表
+}
+
+export type PermissionTreesDto = {
+  pcTree: Array<PermissionTreePayloadDto> // PC 权限树
+  normalTree: Array<PermissionTreePayloadDto> // 普通权限树
 }
 
 export type AssignPermissionsDto = {
-  permissions: Array<PermissionItemDto> // 权限列表
+  permissionTrees: PermissionTreesDto // 权限树配置
 }
 
 export type RolePermissionTreesResponseDto = {
@@ -211,18 +218,6 @@ export type PermissionTreesResponseDto = {
 export type PermissionPoolResponseDto = {
   appTypeId: string // 应用类型 ID
   permissionTrees: PermissionTreesResponseDto // 权限树配置
-}
-
-export type PermissionTreePayloadDto = {
-  id: string // 权限 ID
-  checked: boolean // 是否选中（true=加入权限池，false=移除）
-  permissionValue?: string // 权限值（位运算权限值，十进制字符串格式）
-  children?: Array<PermissionTreePayloadDto> // 子节点列表
-}
-
-export type PermissionTreesDto = {
-  pcTree: Array<PermissionTreePayloadDto> // PC 权限树
-  normalTree: Array<PermissionTreePayloadDto> // 普通权限树
 }
 
 export type UpdatePermissionPoolDto = {

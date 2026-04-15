@@ -17,7 +17,8 @@ import type {
   CreateRoleDto,
   RoleResponseDto,
   UpdateRoleDto,
-  PermissionItemDto,
+  PermissionTreePayloadDto,
+  PermissionTreesDto,
   AssignPermissionsDto,
   RolePermissionTreesResponseDto,
   RolePermissionResponseDto,
@@ -25,8 +26,6 @@ import type {
   AppTypeResponseDto,
   PermissionTreesResponseDto,
   PermissionPoolResponseDto,
-  PermissionTreePayloadDto,
-  PermissionTreesDto,
   UpdatePermissionPoolDto,
   UpdatePermissionPoolResponseDto,
   UpdateAppTypeDto,
@@ -275,6 +274,7 @@ export class ApiRoleCreate extends ApiCall<CreateRoleDto, RoleResponseDto> {
  */
 export class ApiRoleFindAll extends ApiCall<
   {
+    appTypeId: string
     roleStatus?: number
     roleName?: string
     roleCode?: string

@@ -77,6 +77,7 @@ export class RoleController {
   @ApiQuery({ name: 'roleCode', required: false, type: String })
   @ApiQuery({ name: 'roleName', required: false, type: String })
   @ApiQuery({ name: 'roleStatus', required: false, type: Number })
+  @ApiQuery({ name: 'appTypeId', required: true, type: String })
   @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
   async findAll(@Query() query: any) {
     const result = await this.roleService.findAll(query);
@@ -154,7 +155,7 @@ export class RoleController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() assignPermissionsDto: AssignPermissionsDto,
   ) {
-    await this.roleService.assignPermissions(id, assignPermissionsDto.permissions);
+    await this.roleService.assignPermissions(id, assignPermissionsDto);
     return ApiResponseUtil.success(null, '分配成功');
   }
 

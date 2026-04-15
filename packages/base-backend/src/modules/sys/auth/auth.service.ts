@@ -13,8 +13,8 @@ import { Role } from '../role/entities/role.entity';
 import { App } from '../app/entities/app.entity';
 import { AppMember } from '../app/entities/app-member.entity';
 import { AppType } from '../app-type/entities/app-type.entity';
-import { Permission } from '../permission/entities/permission.entity';
-import { RolePermission } from '../permission/entities/role-permission.entity';
+import { NodeType, Permission, ShowMode } from '../permission/entities/permission.entity';
+import { RolePermission } from '../role/entities/role-permission.entity';
 import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
 import { PermissionType } from '../permission/entities/permission.entity';
 import { verifyPassword } from '../../../common/utils/encrypt';
@@ -25,13 +25,13 @@ import {
   AppInstanceItemDto,
 } from './dto/res/auth-response.dto';
 import {
-  UserPermissionsResponseDto,
-  PermissionTreeNodeDto,
+  UserPermissionsResponseDto
 } from './dto/res/user-permissions-response.dto';
 import { RegisterDto } from './dto/req/register.dto';
 import { CheckAvailabilityResponseDto } from './dto/req/check-availability.dto';
 import { BusinessException } from '../../../common/exceptions/business.exception';
 import { hashPassword } from '../../../common/utils/encrypt';
+import { PermissionTreeNodeDto } from '../permission';
 
 /**
  * 认证服务
@@ -502,8 +502,8 @@ export class AuthService {
         permName: permission.permName,
         permCode: permission.permCode,
         permDesc: permission.permDesc,
-        permissionType: permission.permissionType as 'PC' | 'NORMAL',
-        nodeType: permission.nodeType as 'MENU' | 'PAGE' | 'TAG',
+        permissionType: permission.permissionType as PermissionType,
+        nodeType: permission.nodeType as NodeType,
         parentId: permission.parentId ?? undefined,
         routePath: permission.routePath,
         externalUrl: permission.externalUrl,
@@ -511,10 +511,11 @@ export class AuthService {
         sortOrder: permission.sortOrder,
         isVisible: permission.isVisible,
         isCache: permission.isCache,
-        showMode: permission.showMode as 'NORMAL' | 'DEV',
+        showMode: permission.showMode as ShowMode,
         permStatus: permission.permStatus,
         permissionValue: value.toString(),
         children: [],
+        checked: false
       };
       nodeMap.set(permission.id, node);
     });

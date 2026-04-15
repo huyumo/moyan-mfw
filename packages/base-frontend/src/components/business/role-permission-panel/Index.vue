@@ -18,7 +18,7 @@
 import { onMounted, ref } from 'vue'
 import { MfwPermissionTree } from '../permission-tree'
 import { PermissionTreesResponseDto } from '../../../apis/sys/schemas';
-import { ApiRoleGetRolePermissions } from '../../../apis/sys';
+import { ApiRoleAssignPermissions, ApiRoleGetRolePermissions } from '../../../apis/sys';
 
 defineOptions({ name: 'RolePermissionPanel' })
 
@@ -46,6 +46,26 @@ const getTreeData = async () => {
 
 onMounted(() => {
   getTreeData()
+})
+
+const onConfirm = async () => {
+  // console.log(data.value)
+  // await new ApiRoleAssignPermissions({
+  //   query: {
+  //     id: roleId
+  //   },
+  //   params: {
+  //     permissionTrees: {
+  //       pcTree: data.value.pcTree,
+  //       normalTree: data.value.normalTree
+  //     }
+  //   },
+  //   option: { hintFail: true }
+  // })
+}
+
+defineExpose({
+  onConfirm
 })
 
 </script>

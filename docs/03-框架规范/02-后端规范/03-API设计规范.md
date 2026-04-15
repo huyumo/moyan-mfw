@@ -288,7 +288,7 @@ async function bootstrap() {
     new ValidationPipe({
       transform: true,      // 自动类型转换
       whitelist: true,      // 剥离未装饰的属性
-      forbidNonWhitelisted: true,  // 禁止额外属性
+      forbidNonWhitelisted: false,  // 禁止额外属性
       stopAtFirstError: true,      // 第一个错误停止
     })
   );

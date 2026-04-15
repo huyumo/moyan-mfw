@@ -20,7 +20,7 @@ import { User } from './modules/sys/user/entities/user.entity';
 import { Role } from './modules/sys/role/entities/role.entity';
 import { UserRole } from './modules/sys/role/entities/user-role.entity';
 import { Permission } from './modules/sys/permission/entities/permission.entity';
-import { RolePermission } from './modules/sys/permission/entities/role-permission.entity';
+import { RolePermission } from './modules/sys/role/entities/role-permission.entity';
 import { AppType } from './modules/sys/app-type/entities/app-type.entity';
 import { AppTypePermissionEntity } from './modules/sys/app-type/entities/app-type-permission.entity';
 import { App } from './modules/sys/app/entities/app.entity';

@@ -60,9 +60,7 @@ import AddRoleForm from './MfwAddRoleForm.vue';
 defineOptions({ name: 'BuiltinRoleDialog' });
 
 const props = defineProps<{
-  data?: {
-    appTypeId: string;
-  };
+  appTypeId: string;
 }>();
 
 const roleList = ref<RoleResponseDto[]>([]);
@@ -70,7 +68,7 @@ const loading = ref(false);
 
 /** 加载内置角色列表 */
 const loadRoles = async () => {
-  if (!props.data?.appTypeId) return;
+  if (!props.appTypeId) return;
 
   loading.value = true;
   try {
@@ -78,6 +76,7 @@ const loadRoles = async () => {
       params: {
         page: 1,
         pageSize: 100,
+        appTypeId: props.appTypeId,
       },
     });
 
@@ -97,7 +96,7 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
     component: RolePermissionPanel,
     data: {
       roleId: row.id,
-      appTypeId: props.data?.appTypeId,
+      appTypeId: props.appTypeId,
     },
     popupProps: {
       size: '800px',
@@ -123,7 +122,7 @@ const handleAddRole = () => {
     type: 'dialog',
     component: AddRoleForm,
     data: {
-      appTypeId: props.data?.appTypeId,
+      appTypeId: props.appTypeId,
     },
     popupProps: {
       size: '500px',
