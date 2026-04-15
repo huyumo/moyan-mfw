@@ -6,7 +6,7 @@
 // Entities
 export { Role } from './entities/role.entity';
 export { UserRole } from './entities/user-role.entity';
-export { RolePermission } from '../permission/entities/role-permission.entity';
+export { RolePermission } from './entities/role-permission.entity';
 
 // DTOs
 export * from './dto';

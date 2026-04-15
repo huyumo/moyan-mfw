@@ -275,6 +275,8 @@ export class AppTypeService {
           entitiesToInsert.push(entity);
         }
       }
+      console.log(entitiesToInsert);
+      
 
       if (entitiesToInsert.length > 0) {
         await manager.save(entitiesToInsert);

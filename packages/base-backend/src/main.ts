@@ -60,7 +60,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // 自动移除未声明的属性
-      forbidNonWhitelisted: true, // 遇到未声明的属性时抛出错误
+      forbidNonWhitelisted: false, // 遇到未声明的属性时抛出错误
       transform: true, // 自动转换类型
       transformOptions: {
         enableImplicitConversion: true, // 启用隐式转换

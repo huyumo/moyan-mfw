@@ -1,5 +1,5 @@
 <template>
-  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" @check="handleCheckChange">
+  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" @check-change="handleCheckChange">
     <template #default="{ node, data }">
       <div class="custom-tree-node">
         <div class="custom-tree-node_left">
@@ -62,14 +62,11 @@ const buildCheckedKeys = (node: PermissionTreeNodeDto[], checkedKeys: TreeKey[] 
   return checkedKeys;
 };
 
-const handleCheckChange = (node: any, checkeds: any) => {
-  console.log(checkeds);
-  const checkedNodes = checkeds.checkedNodes;
-  checkedNodes.forEach((item: any) => {
-    item.checked = !item.checked;
+const handleCheckChange = (data: PermissionTreeNodeDto, checked: boolean) => {
+  data.checked = checked;
+  nextTick(() => {
+    emit('update:modelValue', refData.value);
   });
-  checkedKeys.value = checkeds.checkedKeys;
-  emit('update:modelValue', checkedNodes.value);
 };
 
 const initCheckedKeys = () => {

@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { MfwPermissionTree } from '../permission-tree'
-import { PermissionTreeNodeDto, PermissionTreesResponseDto, UpdatePermissionPoolDto } from '../../../apis/sys/schemas';
+import {  PermissionTreesResponseDto } from '../../../apis/sys/schemas';
 import { ApiAppTypeGetPermissionPool, ApiAppTypeUpdatePermissionPool } from '../../../apis/sys';
 
 defineOptions({ name: 'PermissionPoolPanel' })

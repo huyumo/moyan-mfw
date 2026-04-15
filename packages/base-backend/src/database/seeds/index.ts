@@ -10,7 +10,7 @@ import { Permission, NodeType, ShowMode, PermissionType } from '../../modules/sy
 import { Role } from '../../modules/sys/role/entities/role.entity';
 import { User } from '../../modules/sys/user/entities/user.entity';
 import { UserRole } from '../../modules/sys/role/entities/user-role.entity';
-import { RolePermission } from '../../modules/sys/permission/entities/role-permission.entity';
+import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';
 import { hashPassword } from '../../common/utils/encrypt';
 import { buildPerValue } from '../../common/constants/permissions';
 import { AppTypePermissionEntity } from '../../modules/sys/app-type/entities/app-type-permission.entity';

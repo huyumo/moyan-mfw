@@ -21,7 +21,7 @@ import {
   PERMISSION_VALUES,
   buildPerValue,
 } from '../constants/permissions';
-import { RolePermission } from '../../modules/sys/permission/entities/role-permission.entity';
+import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';
 
 /**
  * 权限守卫
