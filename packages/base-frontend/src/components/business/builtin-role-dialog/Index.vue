@@ -78,7 +78,6 @@ const loadRoles = async () => {
       params: {
         page: 1,
         pageSize: 100,
-        appTypeId: props.data.appTypeId,
       },
     });
 

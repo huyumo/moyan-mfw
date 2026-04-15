@@ -19,6 +19,9 @@ import type {
   UpdateRoleDto,
   PermissionItemDto,
   AssignPermissionsDto,
+  RolePermissionTreeNodeDto,
+  RolePermissionTreesResponseDto,
+  RolePermissionResponseDto,
   CreatePermissionDto,
   PermissionResponseDto,
   UpdatePermissionDto,
@@ -99,12 +102,7 @@ export class ApiAuthLogout extends ApiCall<{}, any> {
 /**
  * auth|认证相关接口->获取用户应用列表
  */
-export class ApiAuthGetUserApps extends ApiCall<
-  {},
-  {
-    apps: Array<AppInstanceItemDto> // 用户应用列表
-  }
-> {
+export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
   path = '/api/auth/apps'
   method: MoMethod = 'GET'
   auth = true
@@ -283,8 +281,6 @@ export class ApiRoleFindAll extends ApiCall<
     roleCode?: string
     pageSize?: number
     page?: number
-    appTypeId?: string
-    appId?: string
   },
   any
 > {
@@ -349,7 +345,7 @@ export class ApiRoleGetRolePermissions extends ApiCall<
   {
     id: string //角色 ID
   },
-  any
+  RolePermissionResponseDto
 > {
   path = '/api/roles/{id}/permissions'
   method: MoMethod = 'GET'

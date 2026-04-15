@@ -135,6 +135,25 @@ function collectCheckedIds(nodes: (PermissionTreeNodeDto & { checked?: boolean }
 }
 
 /**
+ * 展开节点及其所有父节点
+ */
+function expandNodeAndParents(treeRef: InstanceType<typeof ElTree> | undefined, nodeId: string) {
+  if (!treeRef) return
+  const node = treeRef.getNode(nodeId)
+  if (!node) return
+
+  // 展开当前节点
+  treeRef.expand(nodeId)
+
+  // 递归展开父节点
+  let parent = node.parent
+  while (parent && parent.id !== node.root) {
+    treeRef.expand(parent.id)
+    parent = parent.parent
+  }
+}
+
+/**
  * 配置操作权限
  */
 function handleConfigPermissionValue(data: PermissionTreeNodeDto, treeType: 'pc' | 'normal') {
@@ -180,15 +199,7 @@ watch(
 )
 
 // 监听 checkedIds 变化，同步更新 ElTree 的勾选状态
-watch(
-  () => props.checkedIds,
-  (newCheckedIds) => {
-    const keys = newCheckedIds || []
-    // 使用 nextTick 确保 DOM 更新后再设置勾选状态
-    pcTreeRef.value?.setCheckedKeys(keys)
-    normalTreeRef.value?.setCheckedKeys(keys)
-  }
-)
+// 注意：不使用 setCheckedKeys 避免重置树的展开状态
 
 // ========== 暴露方法 ==========
 
@@ -233,7 +244,13 @@ defineExpose({
               :expand-on-click-node="false"
               :default-checked-keys="checkedIds"
               :disabled="readonly"
-              @check="() => emit('check-change', collectCheckedIds(pcTreeNodes))"
+              @check="(_, { checkedKeys, node }) => {
+                emit('check-change', checkedKeys as string[])
+                // 展开被勾选的节点及其父节点
+                if (node) {
+                  expandNodeAndParents(pcTreeRef.value, node.id)
+                }
+              }"
             >
               <template #default="{ data }">
                 <div class="tree-node-content">
@@ -285,7 +302,13 @@ defineExpose({
               :expand-on-click-node="false"
               :default-checked-keys="checkedIds"
               :disabled="readonly"
-              @check="() => emit('check-change', collectCheckedIds(normalTreeNodes))"
+              @check="(_, { checkedKeys, node }) => {
+                emit('check-change', checkedKeys as string[])
+                // 展开被勾选的节点及其父节点
+                if (node) {
+                  expandNodeAndParents(normalTreeRef.value, node.id)
+                }
+              }"
             >
               <template #default="{ data }">
                 <div class="tree-node-content">

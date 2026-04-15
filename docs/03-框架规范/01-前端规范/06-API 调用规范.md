@@ -1,6 +1,45 @@
 # API 调用规范
 
-> 状态：**已完成** | 版本：2.0.0
+> 状态：**已完成** | 版本：2.1.0 | 最后更新：2026-04-14
+
+---
+
+## 铁律：禁止手动修改 API 类型定义
+
+### ❌ 禁止行为
+
+**严禁手动修改 `src/apis/*/index.ts` 文件中的接口定义！**
+**严禁手动修改 `src/apis/*/schemas.ts` 文件中的类型定义！**
+
+```typescript
+// ❌ 错误：手动添加字段
+export type PermissionTreeNodeDto = {
+  id: string
+  checked: boolean  // 手动添加
+  parentPermissionValue?: string  // 手动添加
+}
+```
+
+### ✅ 正确流程
+
+当发现 API 类型定义与后端接口不一致时，必须遵循以下流程：
+
+```
+1. 确认后端 DTO 已添加字段 + Swagger 注解
+   ↓
+2. 后端添加 @ApiExtraModels 注册嵌套类型（如需要）
+   ↓
+3. 重启后端服务，确保 Swagger 文档更新
+   ↓
+4. 前端运行 pnpm api:build 自动生成
+   ↓
+5. 验证生成的类型定义是否正确
+```
+
+**原因：**
+- moyan-api 根据后端 Swagger 文档自动生成类型定义
+- 手动修改会在下次生成时被覆盖
+- 保证前后端接口定义严格一致
 
 ---
 
@@ -48,6 +87,55 @@ pnpm outdated moyan-api
 # 更新到最新版本
 pnpm update moyan-api
 ```
+
+### 6.1.4 前端项目 API 同步流程
+
+**项目特定配置：**
+
+前端项目通过 `api.build.cjs` 脚本从本地后端 Swagger 同步：
+
+```javascript
+// packages/base-frontend/api.build.cjs
+const ApisdkCreator = require('moyan-api/dist/main.js').ApisdkCreator
+const Program = require('moyan-api/dist/program.js').Program
+
+const configs = [
+  {
+    jsonurl: 'http://localhost:3000/api-docs-json', // 后端 OpenAPI JSON 文档地址
+    output: './src/apis',
+    dirname: 'sys'
+  },
+]
+
+const create = async () => {
+  for (let i = 0; i < configs.length; i++) {
+    await new ApisdkCreator(new Program(configs[i])).create()
+  }
+}
+
+create()
+```
+
+**同步命令：**
+```bash
+# 1. 确保后端服务已启动 (http://localhost:3000)
+# 2. 运行生成命令
+cd packages/base-frontend
+pnpm api:build
+
+# 输出示例：
+# > moyan-mfw-base-frontend@1.0.0 api:build
+# > node api.build.cjs
+# 
+# 获取远程数据：http://localhost:3000/api-docs-json
+# ✅ 生成完成
+```
+
+**注意事项：**
+1. 运行 `pnpm api:build` 前必须启动后端服务
+2. 后端添加新字段后，必须重启服务才能同步
+3. 嵌套类型（如 `PermissionTreeNodeDto`）需要在 Controller 中用 `@ApiExtraModels` 注册
+4. 生成的类型定义存储于 `src/apis/*/schemas.ts`，**严禁手动修改**
 
 ---
 

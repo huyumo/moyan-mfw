@@ -25,13 +25,6 @@
       @check-change="checkedIds = $event"
       @permission-value-change="handlePermissionValueChange"
     />
-
-    <!-- 底部操作按钮 -->
-    <div v-if="!hideFooter" class="panel-footer">
-      <ElButton type="primary" :loading="saving" @click="onConfirm">
-        保存
-      </ElButton>
-    </div>
   </div>
 </template>
 
@@ -88,32 +81,9 @@ const normalTreeData = ref<PermissionTreeNodeDto[]>([])
 async function initData() {
   loading.value = true
   try {
-    await Promise.all([loadPermissionPool(), loadRolePermissions()])
+    await Promise.all([loadRolePermissions()])
   } finally {
     loading.value = false
-  }
-}
-
-/**
- * 加载权限池数据
- */
-async function loadPermissionPool() {
-  if (!appTypeId.value) return
-
-  try {
-    const result = await new ApiAppTypeGetPermissionPool({
-      query: { appTypeId: appTypeId.value },
-    })
-    permissionPool.value = [
-      ...(result.permissionTrees?.pcTree || []),
-      ...(result.permissionTrees?.normalTree || []),
-    ]
-    pcTreeData.value = result.permissionTrees?.pcTree || []
-    normalTreeData.value = result.permissionTrees?.normalTree || []
-  } catch (error: unknown) {
-    const err = error as { response?: { data?: { message?: string } } }
-    ElMessage.error(err?.response?.data?.message || '加载权限池失败')
-    throw error
   }
 }
 

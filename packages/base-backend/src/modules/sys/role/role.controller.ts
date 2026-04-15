@@ -26,7 +26,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { RoleService } from './role.service';
-import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, RoleResponseDto } from './dto';
+import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, RoleResponseDto, RolePermissionResponseDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -162,15 +162,16 @@ export class RoleController {
    * 获取角色的权限列表
    */
   @Get(':id/permissions')
-  @ApiOperation({ summary: '获取角色权限', description: '获取指定角色的权限列表' })
+  @ApiOperation({ summary: '获取角色权限', description: '获取指定角色的权限树配置' })
   @ApiParam({ name: 'id', description: '角色 ID' })
   @ApiResponse({
     status: 200,
     description: '查询成功',
+    type: RolePermissionResponseDto,
   })
   @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
   async getRolePermissions(@Param('id', ParseUUIDPipe) id: string) {
-    const result = await this.roleService.getRolePermissions(id);
+    const result = await this.roleService.getRolePermissionTree(id);
     return ApiResponseUtil.success(result, '查询成功');
   }
 }
