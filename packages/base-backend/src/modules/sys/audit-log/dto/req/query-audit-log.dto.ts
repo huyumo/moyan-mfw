@@ -4,14 +4,15 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { AuditModule } from '../../../../../common/decorators/audit-log.decorator';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 审计日志查询参数 DTO
+ * @description 继承自 PaginationQueryDto，自动获得分页参数
  */
-export class QueryAuditLogDto {
+export class QueryAuditLogDto extends PaginationQueryDto {
   /**
    * 所属模块
    */
@@ -61,22 +62,11 @@ export class QueryAuditLogDto {
   endTime?: string;
 
   /**
-   * 当前页码
+   * 排序字段
+   * @default 'createAt'
    */
-  @ApiProperty({ description: '当前页码', default: 1, required: false })
+  @ApiProperty({ description: '排序字段', default: 'createAt', required: false })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  /**
-   * 每页数量
-   */
-  @ApiProperty({ description: '每页数量', default: 10, required: false })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  pageSize?: number = 10;
+  @IsString()
+  sortField?: string = 'createAt';
 }

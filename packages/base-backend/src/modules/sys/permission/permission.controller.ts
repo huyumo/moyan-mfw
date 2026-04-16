@@ -32,6 +32,7 @@ import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 权限控制器
@@ -70,20 +71,9 @@ export class PermissionController {
    */
   @Get()
   @ApiOperation({ summary: '查询权限列表', description: '分页查询权限列表' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  @ApiQuery({ name: 'appTypeId', required: false, type: String })
-  @ApiQuery({ name: 'permName', required: false, type: String })
-  @ApiQuery({ name: 'permCode', required: false, type: String })
-  @ApiQuery({ name: 'permissionType', required: false, enum: [1, 2, 3] })
-  @ApiQuery({ name: 'nodeType', required: false, enum: [1, 2, 3] })
-  @ApiQuery({ name: 'parentId', required: false, type: String })
-  @RequirePermission({ permCode: 'pc_root:sys:permission-pc', permissionValue: ['查看'] })
-  @RequirePermission({ permCode: 'pc_root:sys:permission', permissionValue: ['查看'] })
+  @ApiPaginatedResponse(PermissionResponseDto)
+  @RequirePermission({ permCode: 'pc_root:sys:permission-pc' })
+  @RequirePermission({ permCode: 'pc_root:sys:permission'})
   async findAll(@Query() query: QueryPermissionDto) {
     const result = await this.permissionService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');

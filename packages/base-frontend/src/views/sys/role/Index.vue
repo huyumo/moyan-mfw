@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue';
+import { ref, h, computed } from 'vue';
 import { ElMessage, ElMessageBox, ElTag, ElButton, ElTooltip } from 'element-plus';
 import { Plus, Edit, Delete, Key } from '@element-plus/icons-vue';
 import MfwPageScene from '../../../components/page/page-scene';
@@ -32,6 +32,7 @@ import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import RoleForm from './RoleForm.vue';
 import { RolePermissionPanel } from '../../../components/business/role-permission-panel';
+import { useAuthStore } from '../../../store/auth-store';
 
 /** 状态常量 */
 const STATUS = {
@@ -41,7 +42,9 @@ const STATUS = {
 
 defineOptions({ name: 'MfwRoleList' });
 
+const authStore = useAuthStore();
 const pageScene = ref<MfwPageSceneInstance>();
+const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 搜索模板 */
 const searchTemplate = [
@@ -169,7 +172,12 @@ const actionColumn = {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiRoleFindAll({ params });
+  const result = await new ApiRoleFindAll({ 
+    params: { 
+      appId: appId.value,
+      ...params 
+    } 
+  });
   return {
     list: result.list || [],
     total: result.total || 0,

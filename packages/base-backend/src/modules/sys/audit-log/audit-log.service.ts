@@ -8,6 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { QueryAuditLogDto } from './dto';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
 
 /**
  * 审计日志服务
@@ -58,63 +59,26 @@ export class AuditLogService {
   /**
    * 查询审计日志列表（分页）
    * @param query - 查询参数
-   * @returns 审计日志列表和总数
+   * @returns 分页结果
    */
-  async findAll(query: QueryAuditLogDto) {
-    const {
-      page = 1,
-      pageSize = 10,
-      module,
-      event,
-      operatorId,
-      targetId,
-      startTime,
-      endTime,
-    } = query;
+  async findAll(query: QueryAuditLogDto): Promise<PaginationResult<AuditLog>> {
+    const qb = this.auditLogRepository.createQueryBuilder('auditLog');
 
-    const queryBuilder = this.auditLogRepository.createQueryBuilder('auditLog');
+    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
+    QueryBuilderHelper.applyConditions(qb, [
+      { field: 'auditLog.module', value: query.module, operator: '=' },
+      { field: 'auditLog.event', value: query.event, operator: 'like' },
+      { field: 'auditLog.operatorId', value: query.operatorId, operator: '=' },
+      { field: 'auditLog.targetId', value: query.targetId, operator: '=' },
+      { field: 'auditLog.createAt', value: query.startTime, operator: '>=' },
+      { field: 'auditLog.createAt', value: query.endTime, operator: '<=' },
+    ]);
 
-    // 条件查询
-    if (module) {
-      queryBuilder.andWhere('auditLog.module = :module', { module });
-    }
-
-    if (event) {
-      queryBuilder.andWhere('auditLog.event LIKE :event', {
-        event: `%${event}%`,
-      });
-    }
-
-    if (operatorId) {
-      queryBuilder.andWhere('auditLog.operatorId = :operatorId', { operatorId });
-    }
-
-    if (targetId) {
-      queryBuilder.andWhere('auditLog.targetId = :targetId', { targetId });
-    }
-
-    if (startTime) {
-      queryBuilder.andWhere('auditLog.createAt >= :startTime', { startTime });
-    }
-
-    if (endTime) {
-      queryBuilder.andWhere('auditLog.createAt <= :endTime', { endTime });
-    }
-
-    // 分页和排序
-    const [list, total] = await queryBuilder
-      .orderBy('auditLog.createAt', 'DESC')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
-
-    return {
-      list,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    };
+    // 使用 PaginationHelper 执行分页查询
+    return PaginationHelper.executeQuery(
+      qb.orderBy('auditLog.createAt', 'DESC'),
+      query,
+    );
   }
 
   /**

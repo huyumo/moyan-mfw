@@ -16,9 +16,10 @@ import {
   RolePermissionResponseDto,
 } from './dto/res/role-permission-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
-import { AppTypeService } from '../app-type';
+import { AppType, AppTypeService } from '../app-type';
 import { PermissionTreeNodeDto } from '../permission';
 import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { App } from '../app/entities/app.entity';
 
 /**
  * 角色服务
@@ -32,13 +33,6 @@ export class RoleService {
     private roleRepository: Repository<Role>,
     @InjectRepository(RolePermission)
     private rolePermissionRepository: Repository<RolePermission>,
-    @InjectRepository(UserRole)
-    private userRepository: Repository<UserRole>,
-    @InjectRepository(Permission)
-    private permissionRepository: Repository<Permission>,
-    @InjectRepository(AppTypePermissionEntity)
-    private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
-    private dataSource: DataSource,
     private appTypeService: AppTypeService,
   ) { }
 
@@ -87,18 +81,19 @@ export class RoleService {
    * @returns 分页结果
    */
   async findAll(query: QueryRoleDto): Promise<PaginationResult<Role>> {
-    const qb = this.roleRepository.createQueryBuilder('role');
-
+    const qb = this.roleRepository.createQueryBuilder('role')
+      .innerJoin('sys_apps', 'sa', 'sa.appTypeId = role.appTypeId')
+      .where('(role.isBuiltin = :isBuiltin AND role.appId IS NULL) OR role.appId = :appId', { isBuiltin: 1, appId: query.appId })
+    
     // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
     QueryBuilderHelper.applyConditions(qb, [
       { field: 'role.roleCode', value: query.roleCode, operator: 'like' },
       { field: 'role.roleName', value: query.roleName, operator: 'like' },
       { field: 'role.roleStatus', value: query.roleStatus, operator: '=' },
       { field: 'role.appTypeId', value: query.appTypeId, operator: '=' },
-      { field: 'role.appId', value: query.appId, operator: '=' },
     ]);
 
-    // 使用 PaginationHelper 执行分页查询
+    // 使用 PaginationHelper 执行倒序查询
     return PaginationHelper.executeQuery(
       qb.orderBy('role.sortOrder', 'ASC').addOrderBy('role.createdAt', 'DESC'),
       query,

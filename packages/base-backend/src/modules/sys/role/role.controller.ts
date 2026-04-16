@@ -70,7 +70,7 @@ export class RoleController {
   @Get()
   @ApiOperation({ summary: '查询角色列表', description: '分页查询角色列表' })
   @ApiPaginatedResponse(RoleResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role' })
   async findAll(@Query() query: QueryRoleDto) {
     const result = await this.roleService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -88,7 +88,7 @@ export class RoleController {
     type: RoleResponseDto,
   })
   @ApiResponse({ status: 404, description: '角色不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.roleService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -162,7 +162,7 @@ export class RoleController {
     description: '查询成功',
     type: RolePermissionResponseDto,
   })
-  @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:role' })
   async getRolePermissions(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.roleService.getRolePermissionTree(id);
     return ApiResponseUtil.success(result, '查询成功');

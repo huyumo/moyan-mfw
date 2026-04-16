@@ -19,9 +19,9 @@ export interface RequirePermissionOptions {
   permCode: string;
   /**
    * 权限值（位运算）- 必须使用字符串数组
-   * @example ['查看']、['添加', '编辑']、['删除']
+   * @example ['添加', '编辑']、['删除']
    */
-  permissionValue: PermissionName[];
+  permissionValue?: PermissionName[];
 }
 
 /**
