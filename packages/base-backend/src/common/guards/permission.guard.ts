@@ -147,7 +147,7 @@ export class PermissionGuard implements CanActivate {
     permissionValue: bigint;
   } {
     // 字符串数组转换为 bigint
-    const permissionValue = buildPerValue(options.permissionValue);
+    const permissionValue = buildPerValue(options.permissionValue || []);
 
     return {
       permCode: options.permCode,

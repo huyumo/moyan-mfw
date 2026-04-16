@@ -11,6 +11,7 @@ import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './
 import { RouteNodeDto, PermissionTreeNodeDto } from './dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
 
 /**
  * 权限服务
@@ -109,61 +110,25 @@ export class PermissionService {
   /**
    * 查询权限列表（分页）
    * @param query - 查询参数
-   * @returns 权限列表和总数
+   * @returns 分页结果
    */
-  async findAll(query: QueryPermissionDto) {
-    const {
-      page = 1,
-      pageSize = 10,
-      permName,
-      permCode,
-      permissionType,
-      nodeType,
-      parentId,
-    } = query;
+  async findAll(query: QueryPermissionDto): Promise<PaginationResult<Permission>> {
+    const qb = this.permissionRepository.createQueryBuilder('permission');
 
-    const queryBuilder = this.permissionRepository.createQueryBuilder('permission');
+    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
+    QueryBuilderHelper.applyConditions(qb, [
+      { field: 'permission.permName', value: query.permName, operator: 'like' },
+      { field: 'permission.permCode', value: query.permCode, operator: 'like' },
+      { field: 'permission.permissionType', value: query.permissionType, operator: '=' },
+      { field: 'permission.nodeType', value: query.nodeType, operator: '=' },
+      { field: 'permission.parentId', value: query.parentId, operator: '=' },
+    ]);
 
-    // 条件查询
-    if (permName) {
-      queryBuilder.andWhere('permission.permName LIKE :permName', {
-        permName: `%${permName}%`,
-      });
-    }
-
-    if (permCode) {
-      queryBuilder.andWhere('permission.permCode LIKE :permCode', {
-        permCode: `%${permCode}%`,
-      });
-    }
-
-    if (permissionType !== undefined) {
-      queryBuilder.andWhere('permission.permissionType = :permissionType', { permissionType });
-    }
-
-    if (nodeType !== undefined) {
-      queryBuilder.andWhere('permission.nodeType = :nodeType', { nodeType });
-    }
-
-    if (parentId) {
-      queryBuilder.andWhere('permission.parentId = :parentId', { parentId });
-    }
-
-    // 分页和排序
-    const [list, total] = await queryBuilder
-      .orderBy('permission.sortOrder', 'ASC')
-      .addOrderBy('permission.createdAt', 'DESC')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
-
-    return {
-      list,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    };
+    // 使用 PaginationHelper 执行分页查询
+    return PaginationHelper.executeQuery(
+      qb.orderBy('permission.sortOrder', 'ASC').addOrderBy('permission.createdAt', 'DESC'),
+      query,
+    );
   }
 
   /**

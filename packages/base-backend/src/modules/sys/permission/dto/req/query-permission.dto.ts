@@ -4,14 +4,15 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, IsEnum, IsUUID } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsEnum } from 'class-validator';
 import { PermissionType, NodeType } from '../../entities/permission.entity';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 权限查询参数 DTO
+ * @description 继承自 PaginationQueryDto，自动获得分页参数
  */
-export class QueryPermissionDto {
+export class QueryPermissionDto extends PaginationQueryDto {
   /**
    * 应用类型 ID
    */
@@ -61,22 +62,11 @@ export class QueryPermissionDto {
   parentId?: string;
 
   /**
-   * 当前页码
+   * 排序字段
+   * @default 'sortOrder'
    */
-  @ApiProperty({ description: '当前页码', default: 1, required: false })
+  @ApiProperty({ description: '排序字段', default: 'sortOrder', required: false })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  /**
-   * 每页数量
-   */
-  @ApiProperty({ description: '每页数量', default: 10, required: false })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  pageSize?: number = 10;
+  @IsString()
+  sortField?: string = 'sortOrder';
 }

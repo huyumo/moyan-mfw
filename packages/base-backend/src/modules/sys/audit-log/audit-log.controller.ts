@@ -27,6 +27,7 @@ import { QueryAuditLogDto, AuditLogResponseDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 审计日志控制器
@@ -44,18 +45,7 @@ export class AuditLogController {
    */
   @Get()
   @ApiOperation({ summary: '查询审计日志列表', description: '分页查询审计日志列表' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  @ApiQuery({ name: 'module', required: false, enum: ['AUTH', 'USER', 'ROLE', 'PERMISSION', 'APP', 'APP_TYPE', 'MEMBER', 'SYSTEM'] })
-  @ApiQuery({ name: 'event', required: false, type: String })
-  @ApiQuery({ name: 'operatorId', required: false, type: String })
-  @ApiQuery({ name: 'targetId', required: false, type: String })
-  @ApiQuery({ name: 'startTime', required: false, type: String })
-  @ApiQuery({ name: 'endTime', required: false, type: String })
+  @ApiPaginatedResponse(AuditLogResponseDto)
   @RequirePermission({ permCode: 'pc_root:sys:audit-log', permissionValue: ['查看'] })
   async findAll(@Query() query: QueryAuditLogDto) {
     const result = await this.auditLogService.findAll(query);

@@ -22,8 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, h, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, h, computed } from 'vue';
 import { ElMessage, ElMessageBox, ElTag, ElButton, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import MfwPageScene from '../../../components/page/page-scene';
@@ -36,6 +35,7 @@ import {
 import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
+import { useAuthStore } from '../../../store/auth-store';
 
 /** 状态常量 */
 const STATUS = {
@@ -45,9 +45,9 @@ const STATUS = {
 
 defineOptions({ name: 'MfwMemberList' });
 
-const route = useRoute();
-const appId = ref<string>(route.query.appId as string || '');
+const authStore = useAuthStore();
 const pageScene = ref<MfwPageSceneInstance>();
+const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 表格列 */
 const columns = [
@@ -186,10 +186,6 @@ const handleRemove = async (row: MemberResponseDto) => {
     // 用户取消
   }
 };
-
-onMounted(() => {
-  appId.value = route.query.appId as string || '';
-});
 </script>
 
 <style scoped lang="scss">
