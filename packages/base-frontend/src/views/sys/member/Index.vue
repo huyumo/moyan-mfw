@@ -124,17 +124,15 @@ const actionColumn = {
 };
 
 /** 加载数据 */
-const loadData = async () => {
+const loadData = async (params: Record<string, any>) => {
+  console.log('*****:::',appId.value);
+  
   if (!appId.value) {
     return { list: [], total: 0 };
   }
-  const result = await new ApiMemberGetMembers({
-    params: { appId: appId.value },
+  return await new ApiMemberGetMembers({
+    params: { appId: appId.value, ...params },
   });
-  return {
-    list: result || [],
-    total: result?.length || 0,
-  };
 };
 
 /** 添加成员 */

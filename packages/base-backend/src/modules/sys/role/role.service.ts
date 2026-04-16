@@ -11,13 +11,14 @@ import { RolePermission } from './entities/role-permission.entity';
 import { UserRole } from './entities/user-role.entity';
 import { Permission, PermissionType } from '../permission/entities/permission.entity';
 import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
-import { AssignPermissionsDto, CreateRoleDto, UpdateRoleDto } from './dto';
+import { AssignPermissionsDto, CreateRoleDto, UpdateRoleDto, QueryRoleDto } from './dto';
 import {
   RolePermissionResponseDto,
 } from './dto/res/role-permission-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { AppTypeService } from '../app-type';
 import { PermissionTreeNodeDto } from '../permission';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
 
 /**
  * 角色服务
@@ -83,61 +84,25 @@ export class RoleService {
   /**
    * 查询角色列表（分页）
    * @param query - 查询参数
-   * @returns 角色列表和总数
+   * @returns 分页结果
    */
-  async findAll(query: {
-    page?: number;
-    pageSize?: number;
-    roleCode?: string;
-    roleName?: string;
-    roleStatus?: number;
-    appTypeId?: string;
-    appId?: string;
-  }) {
-    const { page = 1, pageSize = 10, roleCode, roleName, roleStatus, appTypeId, appId } = query;
+  async findAll(query: QueryRoleDto): Promise<PaginationResult<Role>> {
+    const qb = this.roleRepository.createQueryBuilder('role');
 
-    const queryBuilder = this.roleRepository.createQueryBuilder('role');
+    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
+    QueryBuilderHelper.applyConditions(qb, [
+      { field: 'role.roleCode', value: query.roleCode, operator: 'like' },
+      { field: 'role.roleName', value: query.roleName, operator: 'like' },
+      { field: 'role.roleStatus', value: query.roleStatus, operator: '=' },
+      { field: 'role.appTypeId', value: query.appTypeId, operator: '=' },
+      { field: 'role.appId', value: query.appId, operator: '=' },
+    ]);
 
-    // 条件查询
-    if (roleCode) {
-      queryBuilder.andWhere('role.roleCode LIKE :roleCode', {
-        roleCode: `%${roleCode}%`,
-      });
-    }
-
-    if (roleName) {
-      queryBuilder.andWhere('role.roleName LIKE :roleName', {
-        roleName: `%${roleName}%`,
-      });
-    }
-
-    if (roleStatus !== undefined) {
-      queryBuilder.andWhere('role.roleStatus = :roleStatus', { roleStatus });
-    }
-
-    if (appTypeId) {
-      queryBuilder.andWhere('role.appTypeId = :appTypeId', { appTypeId });
-    }
-
-    if (appId) {
-      queryBuilder.andWhere('role.appId = :appId', { appId });
-    }
-
-    // 分页和排序
-    const [list, total] = await queryBuilder
-      .orderBy('role.sortOrder', 'ASC')
-      .addOrderBy('role.createdAt', 'DESC')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
-
-    return {
-      list,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-    };
+    // 使用 PaginationHelper 执行分页查询
+    return PaginationHelper.executeQuery(
+      qb.orderBy('role.sortOrder', 'ASC').addOrderBy('role.createdAt', 'DESC'),
+      query,
+    );
   }
 
   /**
