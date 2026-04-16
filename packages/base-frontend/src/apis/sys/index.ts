@@ -16,6 +16,7 @@ import type {
   UpdateUserDto,
   CreateRoleDto,
   RoleResponseDto,
+  PageResponseDto,
   UpdateRoleDto,
   PermissionTreePayloadDto,
   PermissionTreesDto,
@@ -92,7 +93,7 @@ export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
 /**
  * auth|认证相关接口->退出登录
  */
-export class ApiAuthLogout extends ApiCall<{}, any> {
+export class ApiAuthLogout extends ApiCall<{}, unknown> {
   path = '/api/auth/logout'
   method: MoMethod = 'POST'
   auth = true
@@ -149,7 +150,7 @@ export class ApiAuthCheckAvailability extends ApiCall<
 /**
  * auth|认证相关接口->修改密码
  */
-export class ApiAuthChangePassword extends ApiCall<{}, any> {
+export class ApiAuthChangePassword extends ApiCall<{}, unknown> {
   path = '/api/auth/change-password'
   method: MoMethod = 'POST'
   auth = true
@@ -187,7 +188,7 @@ export class ApiUserFindAll extends ApiCall<
     page?: number //当前页码
     pageSize?: number //每页数量
   },
-  any
+  unknown
 > {
   path = '/api/users'
   method: MoMethod = 'GET'
@@ -224,7 +225,7 @@ export class ApiUserDelete extends ApiCall<
   {
     id: string //用户 ID
   },
-  any
+  unknown
 > {
   path = '/api/users/{id}'
   method: MoMethod = 'DELETE'
@@ -254,7 +255,7 @@ export class ApiUserResetPassword extends ApiCall<
     id: string //用户 ID
     password: string //新密码
   },
-  any
+  unknown
 > {
   path = '/api/users/{id}/reset-password'
   method: MoMethod = 'POST'
@@ -275,14 +276,19 @@ export class ApiRoleCreate extends ApiCall<CreateRoleDto, RoleResponseDto> {
  */
 export class ApiRoleFindAll extends ApiCall<
   {
-    appTypeId: string
-    roleStatus?: number
-    roleName?: string
-    roleCode?: string
-    pageSize?: number
-    page?: number
+    page?: number //当前页码
+    pageSize?: number //每页数量
+    sortField?: string //排序字段
+    sortOrder?: string //排序方向
+    roleCode?: string //角色编码（模糊查询）
+    roleName?: string //角色名称（模糊查询）
+    roleStatus?: number //角色状态
+    appTypeId?: string //应用类型 ID
+    appId?: string //应用 ID
   },
-  any
+  PageResponseDto & {
+    list: Array<RoleResponseDto>
+  }
 > {
   path = '/api/roles'
   method: MoMethod = 'GET'
@@ -319,7 +325,7 @@ export class ApiRoleDelete extends ApiCall<
   {
     id: string //角色 ID
   },
-  any
+  unknown
 > {
   path = '/api/roles/{id}'
   method: MoMethod = 'DELETE'
@@ -331,7 +337,7 @@ export class ApiRoleDelete extends ApiCall<
  */
 export class ApiRoleAssignPermissions extends ApiCall<
   AssignPermissionsDto,
-  any
+  unknown
 > {
   path = '/api/roles/{id}/permissions'
   method: MoMethod = 'POST'
@@ -377,14 +383,8 @@ export class ApiAppTypeFindAll extends ApiCall<
     typeCode?: string //类型编码（模糊查询）
     typeStatus?: number //类型状态
   },
-  {
-    list?: Array<AppTypeResponseDto>
-    total?: number // 总数量
-    page?: number // 当前页码
-    pageSize?: number // 每页数量
-    totalPages?: number // 总页数
-    hasNext?: boolean // 是否有下一页
-    hasPrev?: boolean // 是否有上一页
+  PageResponseDto & {
+    list: Array<AppTypeResponseDto>
   }
 > {
   path = '/api/app-types'
@@ -437,7 +437,7 @@ export class ApiAppTypeDelete extends ApiCall<
   {
     id: string //应用类型 ID
   },
-  any
+  unknown
 > {
   path = '/api/app-types/{id}'
   method: MoMethod = 'DELETE'
@@ -511,7 +511,7 @@ export class ApiPermissionFindAll extends ApiCall<
     page?: number //当前页码
     pageSize?: number //每页数量
   },
-  any
+  unknown
 > {
   path = '/api/permissions'
   method: MoMethod = 'GET'
@@ -579,7 +579,7 @@ export class ApiPermissionDelete extends ApiCall<
   {
     id: string //权限 ID
   },
-  any
+  unknown
 > {
   path = '/api/permissions/{id}'
   method: MoMethod = 'DELETE'
@@ -634,14 +634,8 @@ export class ApiAppFindAll extends ApiCall<
     ownerId?: string //拥有者 ID
     appStatus?: number //应用状态
   },
-  {
-    list?: Array<AppDetailResponseDto>
-    total?: number // 总数量
-    page?: number // 当前页码
-    pageSize?: number // 每页数量
-    totalPages?: number // 总页数
-    hasNext?: boolean // 是否有下一页
-    hasPrev?: boolean // 是否有上一页
+  PageResponseDto & {
+    list: Array<AppDetailResponseDto>
   }
 > {
   path = '/api/apps'
@@ -679,7 +673,7 @@ export class ApiAppDelete extends ApiCall<
   {
     id: string //应用实例 ID
   },
-  any
+  unknown
 > {
   path = '/api/apps/{id}'
   method: MoMethod = 'DELETE'
@@ -719,7 +713,7 @@ export class ApiAppUpdateStatus extends ApiCall<
 /**
  * member|应用成员相关接口->添加应用成员
  */
-export class ApiMemberAddMember extends ApiCall<AddMemberDto, any> {
+export class ApiMemberAddMember extends ApiCall<AddMemberDto, unknown> {
   path = '/api/apps/{appId}/members'
   method: MoMethod = 'POST'
   auth = true
@@ -738,14 +732,8 @@ export class ApiMemberGetMembers extends ApiCall<
     userName?: string //用户名称（模糊查询）
     userAccount?: string //用户账号（模糊查询）
   },
-  {
-    list?: Array<MemberResponseDto>
-    total?: number // 总数量
-    page?: number // 当前页码
-    pageSize?: number // 每页数量
-    totalPages?: number // 总页数
-    hasNext?: boolean // 是否有下一页
-    hasPrev?: boolean // 是否有上一页
+  PageResponseDto & {
+    list: Array<MemberResponseDto>
   }
 > {
   path = '/api/apps/{appId}/members'
@@ -756,7 +744,10 @@ export class ApiMemberGetMembers extends ApiCall<
 /**
  * member|应用成员相关接口->更新成员角色
  */
-export class ApiMemberUpdateRoles extends ApiCall<UpdateMemberRolesDto, any> {
+export class ApiMemberUpdateRoles extends ApiCall<
+  UpdateMemberRolesDto,
+  unknown
+> {
   path = '/api/apps/{appId}/members/{userId}/roles'
   method: MoMethod = 'PUT'
   auth = true
@@ -770,7 +761,7 @@ export class ApiMemberRemoveMember extends ApiCall<
     appId: string //应用 ID
     userId: string //用户 ID
   },
-  any
+  unknown
 > {
   path = '/api/apps/{appId}/members/{userId}'
   method: MoMethod = 'DELETE'
@@ -805,7 +796,7 @@ export class ApiAuditLogFindAll extends ApiCall<
     page?: number //当前页码
     pageSize?: number //每页数量
   },
-  any
+  unknown
 > {
   path = '/api/audit-logs'
   method: MoMethod = 'GET'
@@ -861,7 +852,7 @@ export class ApiAuditLogDeleteBeforeDate extends ApiCall<
   {
     beforeDate: string //日期 (YYYY-MM-DD)
   },
-  any
+  unknown
 > {
   path = '/api/audit-logs/before/{beforeDate}'
   method: MoMethod = 'DELETE'
@@ -871,7 +862,7 @@ export class ApiAuditLogDeleteBeforeDate extends ApiCall<
 /**
  * health|健康检查接口->健康检查
  */
-export class ApiHealthHealthCheck extends ApiCall<{}, any> {
+export class ApiHealthHealthCheck extends ApiCall<{}, unknown> {
   path = '/api/health'
   method: MoMethod = 'GET'
   auth = false
@@ -880,7 +871,7 @@ export class ApiHealthHealthCheck extends ApiCall<{}, any> {
 /**
  * health|健康检查接口->就绪检查
  */
-export class ApiHealthReadyCheck extends ApiCall<{}, any> {
+export class ApiHealthReadyCheck extends ApiCall<{}, unknown> {
   path = '/api/health/ready'
   method: MoMethod = 'GET'
   auth = false
@@ -889,7 +880,7 @@ export class ApiHealthReadyCheck extends ApiCall<{}, any> {
 /**
  * health|健康检查接口->存活检查
  */
-export class ApiHealthLiveCheck extends ApiCall<{}, any> {
+export class ApiHealthLiveCheck extends ApiCall<{}, unknown> {
   path = '/api/health/live'
   method: MoMethod = 'GET'
   auth = false

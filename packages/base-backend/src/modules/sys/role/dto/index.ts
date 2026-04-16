@@ -7,6 +7,7 @@
 export { CreateRoleDto } from './req/create-role.dto';
 export { UpdateRoleDto } from './req/update-role.dto';
 export { AssignPermissionsDto } from './req/assign-permissions.dto';
+export { QueryRoleDto } from './req/query-role.dto';
 
 // Response DTOs
 export { RoleResponseDto } from './res/role-response.dto';

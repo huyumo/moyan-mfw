@@ -28,7 +28,7 @@ export type LoginResponseDto = {
   refreshToken: string // 刷新 Token
   tokenType: string // Token 类型
   expiresIn: number // 过期时间（秒）
-  user: UserSummaryDto // 用户信息
+  user: any // 用户信息
 }
 
 export type UserInfoDto = {
@@ -154,6 +154,15 @@ export type RoleResponseDto = {
   updateAt: string // 更新时间
 }
 
+export type PageResponseDto = {
+  total: number // 总数量
+  page: number // 当前页码
+  pageSize: number // 每页数量
+  totalPages: number // 总页数
+  hasNext: boolean // 是否有下一页
+  hasPrev: boolean // 是否有上一页
+}
+
 export type UpdateRoleDto = {
   roleName?: string // 角色名称
   roleDesc?: string // 角色描述
@@ -174,7 +183,7 @@ export type PermissionTreesDto = {
 }
 
 export type AssignPermissionsDto = {
-  permissionTrees: PermissionTreesDto // 权限树配置
+  permissionTrees: any // 权限树配置
 }
 
 export type RolePermissionTreesResponseDto = {
@@ -184,7 +193,7 @@ export type RolePermissionTreesResponseDto = {
 
 export type RolePermissionResponseDto = {
   roleId: string // 角色 ID
-  permissionTrees: RolePermissionTreesResponseDto // 权限树配置
+  permissionTrees: any // 权限树配置
 }
 
 export type CreateAppTypeDto = {
@@ -217,11 +226,11 @@ export type PermissionTreesResponseDto = {
 
 export type PermissionPoolResponseDto = {
   appTypeId: string // 应用类型 ID
-  permissionTrees: PermissionTreesResponseDto // 权限树配置
+  permissionTrees: any // 权限树配置
 }
 
 export type UpdatePermissionPoolDto = {
-  permissionTrees: PermissionTreesDto // 权限树配置
+  permissionTrees: any // 权限树配置
 }
 
 export type UpdatePermissionPoolResponseDto = {
@@ -363,7 +372,7 @@ export type MemberResponseDto = {
   appId: string // 应用 ID
   userId: string // 用户 ID
   createdAt: string // 创建时间
-  user: MemberUserInfoDto // 用户信息
+  user: any // 用户信息
   roles: Array<MemberRoleInfoDto> // 角色列表
 }
 

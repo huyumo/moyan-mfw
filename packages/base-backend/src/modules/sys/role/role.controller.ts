@@ -26,11 +26,12 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { RoleService } from './role.service';
-import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, RoleResponseDto, RolePermissionResponseDto } from './dto';
+import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, QueryRoleDto, RoleResponseDto, RolePermissionResponseDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 角色控制器
@@ -68,18 +69,9 @@ export class RoleController {
    */
   @Get()
   @ApiOperation({ summary: '查询角色列表', description: '分页查询角色列表' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  @ApiQuery({ name: 'roleCode', required: false, type: String })
-  @ApiQuery({ name: 'roleName', required: false, type: String })
-  @ApiQuery({ name: 'roleStatus', required: false, type: Number })
-  @ApiQuery({ name: 'appTypeId', required: true, type: String })
+  @ApiPaginatedResponse(RoleResponseDto)
   @RequirePermission({ permCode: 'pc_root:sys:role', permissionValue: ['查看'] })
-  async findAll(@Query() query: any) {
+  async findAll(@Query() query: QueryRoleDto) {
     const result = await this.roleService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
   }
