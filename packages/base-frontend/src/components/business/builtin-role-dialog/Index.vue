@@ -71,7 +71,7 @@ const loadRoles = async () => {
       pageSize: 100,
       appTypeId: appTypeId,
     },
-    option:{loading}
+    option: { loading },
   });
   roleList.value = result.list || [];
 };
@@ -105,19 +105,11 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
 
 /** 新增角色 */
 const handleAddAndEditRole = (row?: RoleResponseDto) => {
-  const role: CreateRoleDto = row || {
-    roleName: '111',
-    roleCode: '1111',
-    roleDesc: '2222',
-    appTypeId: appTypeId,
-  };
-
-  
   MfwPopup.open({
     title: '新增内置角色',
     type: 'dialog',
     component: RoleForm,
-    data: { role },
+    data: { id: row?.id, role: row, appTypeId },
     popupProps: {
       size: '500px',
     },
