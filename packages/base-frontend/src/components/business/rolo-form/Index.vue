@@ -11,14 +11,16 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { ApiRoleCreate } from '../../../apis/sys';
+import { ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
 import { CreateRoleDto } from '../../../apis/sys/schemas';
 import { FormItemConfig, MfwFormCard } from '../../form';
 
 defineOptions({ name: 'MfwAddRoleForm' });
 
-const { role } = defineProps<{
-  role: CreateRoleDto;
+const { id, role ,appTypeId} = defineProps<{
+  id?: string;
+  role?: CreateRoleDto;
+  appTypeId: string;
 }>();
 
 const emit = defineEmits<{
@@ -27,8 +29,12 @@ const emit = defineEmits<{
 
 const formRef = ref<FormInstance>();
 
-const formData = reactive(role);
-console.log(formData);
+const formData = reactive(role || {
+  roleName: '',
+  roleCode: '',
+  roleDesc: '',
+  appTypeId: appTypeId,
+});
 const formTemplate: FormItemConfig[] = [
   {
     key: 'roleName',
@@ -70,7 +76,8 @@ const formTemplate: FormItemConfig[] = [
 
 const onConfirm = async () => {
   await formRef.value?.validate();
-  await new ApiRoleCreate({ params: formData, option: { hintSuccess: true, successMsg: '角色创建成功' } });
+  !id&& await new ApiRoleCreate({ params: formData, option: { hintSuccess: true, successMsg: '角色创建成功' } });
+  id&& await new ApiRoleUpdate({ query: { id }, params: formData, option: { hintSuccess: true, successMsg: '角色更新成功' } });
 };
 
 defineExpose({
