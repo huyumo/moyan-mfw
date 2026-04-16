@@ -11,6 +11,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseUUIDPipe,
   UseGuards,
   HttpCode,
@@ -24,11 +25,12 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { MemberService } from './member.service';
-import { AddMemberDto, UpdateMemberRolesDto, MemberResponseDto, AvailableRoleDto } from './dto';
+import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto, MemberResponseDto, AvailableRoleDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 成员控制器
@@ -69,18 +71,14 @@ export class MemberController {
    * 获取应用成员列表
    */
   @Get()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '获取应用成员列表', description: '获取应用的所有成员及其角色信息' })
-  @ApiParam({ name: 'appId', description: '应用 ID' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-    type: [MemberResponseDto],
-  })
-  @ApiResponse({ status: 404, description: '应用不存在' })
+  @ApiOperation({ summary: '获取应用成员列表', description: '分页查询应用成员列表' })
+  @ApiPaginatedResponse(MemberResponseDto)
   @RequirePermission({ permCode: 'pc_root:sys:member', permissionValue: ['查看'] })
-  async getMembers(@Param('appId', ParseUUIDPipe) appId: string) {
-    const result = await this.memberService.getMembers(appId);
+  async getMembers(
+    @Param('appId', ParseUUIDPipe) appId: string,
+    @Query() query: QueryMemberDto,
+  ) {
+    const result = await this.memberService.getMembers(appId, query);
     return ApiResponseUtil.success(result, '查询成功');
   }
 

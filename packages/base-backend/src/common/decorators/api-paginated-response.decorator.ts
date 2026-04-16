@@ -26,28 +26,6 @@ export function ApiPaginatedResponse<T>(dataDto: Type<T>) {
       status: 200,
       description: '查询成功',
       schema: {
-        // allOf: [
-        //   { $ref: '#/components/schemas/ApiResponse' },
-        //   {
-        //     properties: {
-        //       data: {
-        //         type: 'object',
-        //         properties: {
-        //           list: {
-        //             type: 'array',
-        //             items: { $ref: `#/components/schemas/${dataDto.name}` },
-        //           },
-        //           total: { type: 'number', description: '总数量' },
-        //           page: { type: 'number', description: '当前页码' },
-        //           pageSize: { type: 'number', description: '每页数量' },
-        //           totalPages: { type: 'number', description: '总页数' },
-        //           hasNext: { type: 'boolean', description: '是否有下一页' },
-        //           hasPrev: { type: 'boolean', description: '是否有上一页' },
-        //         },
-        //       },
-        //     },
-        //   },
-        // ],
         type: 'object',
         properties: {
           list: {
