@@ -6,9 +6,3 @@
 export { AddMemberDto } from './req/add-member.dto';
 export { UpdateMemberRolesDto } from './req/update-member-roles.dto';
 export { QueryMemberDto } from './req/query-member.dto';
-export {
-  MemberResponseDto,
-  UserInfoDto,
-  RoleInfoDto,
-  AvailableRoleDto,
-} from './res/member-response.dto';

@@ -4,7 +4,7 @@
  */
 
 import { applyDecorators, Type } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiExtraModels, ApiProperty, ApiResponse } from '@nestjs/swagger';
 
 /**
  * 分页响应装饰器
@@ -20,8 +20,14 @@ import { ApiResponse } from '@nestjs/swagger';
  * }
  * ```
  */
+
+
+
+
+
 export function ApiPaginatedResponse<T>(dataDto: Type<T>) {
   return applyDecorators(
+    ApiExtraModels(dataDto),
     ApiResponse({
       status: 200,
       description: '查询成功',
@@ -42,4 +48,7 @@ export function ApiPaginatedResponse<T>(dataDto: Type<T>) {
       },
     }),
   );
+
+
+
 }

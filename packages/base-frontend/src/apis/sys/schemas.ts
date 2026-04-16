@@ -344,6 +344,29 @@ export type AddMemberDto = {
   userId: string // 用户 ID
 }
 
+export type MemberUserInfoDto = {
+  id: string // 用户 ID
+  username: string // 用户名
+  nickname: string // 昵称
+  avatar: string // 头像 URL
+}
+
+export type MemberRoleInfoDto = {
+  roleName: string // 角色名称
+  roleCode: string // 角色编码
+  isBuiltin: number // 是否内置
+  roleId: string // 角色 ID
+}
+
+export type MemberResponseDto = {
+  id: string // 成员 ID
+  appId: string // 应用 ID
+  userId: string // 用户 ID
+  createdAt: string // 创建时间
+  user: MemberUserInfoDto // 用户信息
+  roles: Array<MemberRoleInfoDto> // 角色列表
+}
+
 export type UpdateMemberRolesDto = {
   roleIds: Array<array> // 角色 ID 列表（全量替换）
 }
