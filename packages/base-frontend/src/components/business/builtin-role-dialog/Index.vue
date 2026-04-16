@@ -106,11 +106,13 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
 /** 新增角色 */
 const handleAddAndEditRole = (row?: RoleResponseDto) => {
   const role: CreateRoleDto = row || {
-    roleName: '',
-    roleCode: '',
-    roleDesc: '',
+    roleName: '111',
+    roleCode: '1111',
+    roleDesc: '2222',
     appTypeId: appTypeId,
   };
+
+  
   MfwPopup.open({
     title: '新增内置角色',
     type: 'dialog',

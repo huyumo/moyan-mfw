@@ -5,13 +5,7 @@
  */
 -->
 <template>
-  <MfwFormCard
-    ref="formRef"
-    :model="formData"
-    :template="formTemplate"
-    label-width="100px"
-    label-position="top"
-  />
+  <MfwFormCard ref="formRef" :form-data="formData" :template="formTemplate" label-width="100px" label-position="top" />
 </template>
 
 <script setup lang="ts">
@@ -34,6 +28,7 @@ const emit = defineEmits<{
 const formRef = ref<FormInstance>();
 
 const formData = reactive(role);
+console.log(formData);
 const formTemplate: FormItemConfig[] = [
   {
     key: 'roleName',
@@ -61,6 +56,7 @@ const formTemplate: FormItemConfig[] = [
     label: '角色描述',
     type: 'input',
     component: 'el-input',
+    elProps: { type: 'textarea', rows: 4 },
     rules: [{ max: 200, message: '角色描述不能超过 200 个字符', trigger: 'blur' }],
   },
   {

@@ -1,11 +1,5 @@
 <template>
-  <el-tree
-    :data="refData"
-    show-checkbox
-    node-key="id"
-    :default-checked-keys="checkedKeys"
-    @check="handleCheck"
-  >
+  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" @check="handleCheck">
     <template #default="{ data }">
       <div class="custom-tree-node">
         <div class="custom-tree-node_left">
@@ -63,30 +57,32 @@ watch(
  * @param checkedKeys 已选中的节点ID列表
  * @returns 选中的节点ID列表
  */
-const buildCheckedKeys = (node: PermissionTreeNodeDto[], checkedKeys: TreeKey[] = []) => {
-  checkedKeys = checkedKeys || [];
+const buildCheckedKeys = (node: PermissionTreeNodeDto[]) => {
+  const checkedKeys: TreeKey[] = [];
   node.forEach((item) => {
-    if (item.checked) {
-      checkedKeys.push(item.id);
-    }
     if (item.children) {
-      buildCheckedKeys(item.children, checkedKeys);
+      checkedKeys.push(...buildCheckedKeys(item.children));
+    } else if (item.checked) {
+      console.log(item);
+      checkedKeys.push(item.id);
     }
   });
   return checkedKeys;
 };
 
+const handleCheckedKeys = (checkedKeys: TreeKey[],tree:PermissionTreeNodeDto[]) => {
+  tree.forEach((item) => {
+    if (item.children) {
+      handleCheckedKeys(checkedKeys,item.children)
+    }
+    item.checked = checkedKeys.includes(item.id);
+  });
+};
 
 const handleCheck = (node: PermissionTreeNodeDto, e: any) => {
   //{checkedKeys:TreeKey[],checkedNodes:PermissionTreeNodeDto[],halfCheckedKeys:TreeKey[],halfCheckedNodes:PermissionTreeNodeDto[]}
   const { checkedKeys, checkedNodes, halfCheckedKeys, halfCheckedNodes } = e;
-  checkedNodes.forEach((item: PermissionTreeNodeDto) => {
-    item.checked = checkedKeys.includes(item.id);
-  });
-  halfCheckedNodes.forEach((item: PermissionTreeNodeDto) => {
-    item.checked = halfCheckedKeys.includes(item.id);
-  });
-
+  handleCheckedKeys([...checkedKeys,...halfCheckedKeys],refData.value);
   nextTick(() => {
     emit('update:modelValue', refData.value);
   });
@@ -94,8 +90,8 @@ const handleCheck = (node: PermissionTreeNodeDto, e: any) => {
 
 /** 初始化选中节点的ID列表 */
 const initCheckedKeys = () => {
-  const checkedKeys: TreeKey[] = [];
-  buildCheckedKeys(refData.value, checkedKeys);
+  const checkedKeys: TreeKey[] = buildCheckedKeys(refData.value);
+  console.log(checkedKeys);
   return checkedKeys;
 };
 

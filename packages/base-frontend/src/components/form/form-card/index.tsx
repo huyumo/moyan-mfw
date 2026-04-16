@@ -138,32 +138,32 @@ export default defineComponent({
     initTemplate();
 
     // 刷新组件
-    const refreshComponent = () => {
-      load.value = false;
-      nextTick(() => {
-        nextTick(() => {
-          load.value = true;
-        });
-      });
-    };
+    // const refreshComponent = () => {
+    //   load.value = false;
+    //   nextTick(() => {
+    //     nextTick(() => {
+    //       load.value = true;
+    //     });
+    //   });
+    // };
 
     // 监听 template 变化，重新初始化
-    watch(() => props.template, (newTemplate) => {
-      formTemplate.value = (newTemplate || []).map(item => {
-        const newItem = { ...item };
-        // 深拷贝 elProps，避免多个实例共享同一引用
-        if (item.elProps) {
-          newItem.elProps = JSON.parse(JSON.stringify(item.elProps));
-        }
-        initTemplateItem(newItem);
-        return newItem;
-      });
-      refreshComponent();
-    }, { deep: true });
+    // watch(() => props.template, (newTemplate) => {
+    //   formTemplate.value = (newTemplate || []).map(item => {
+    //     const newItem = { ...item };
+    //     // 深拷贝 elProps，避免多个实例共享同一引用
+    //     if (item.elProps) {
+    //       newItem.elProps = JSON.parse(JSON.stringify(item.elProps));
+    //     }
+    //     initTemplateItem(newItem);
+    //     return newItem;
+    //   });
+    //   // refreshComponent();
+    // }, { deep: true });
 
     // 监听 formData 变化，刷新组件
-    watch(() => props.formData, refreshComponent, { deep: true });
-    watch(() => props.pChange, refreshComponent);
+    // watch(() => props.formData, refreshComponent, { deep: true });
+    // watch(() => props.pChange, refreshComponent);
 
     /**
      * 判断是否显示
@@ -389,6 +389,9 @@ export default defineComponent({
           </ElRow>
         );
       };
+
+      console.log('OOOOOOOOOOOO::',props.formData);
+      
 
       return (
         <ElForm
