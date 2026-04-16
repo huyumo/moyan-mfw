@@ -38,8 +38,6 @@ import type {
   AppDetailResponseDto,
   UpdateAppDto,
   AddMemberDto,
-  RoleInfoDto,
-  MemberResponseDto,
   UpdateMemberRolesDto,
   AvailableRoleDto,
   AuditLogResponseDto,
@@ -729,9 +727,23 @@ export class ApiMemberAddMember extends ApiCall<AddMemberDto, any> {
  */
 export class ApiMemberGetMembers extends ApiCall<
   {
-    appId: string //应用 ID
+    appId: string
+    page?: number //当前页码
+    pageSize?: number //每页数量
+    sortField?: string //排序字段
+    sortOrder?: string //排序方向
+    userName?: string //用户名称（模糊查询）
+    userAccount?: string //用户账号（模糊查询）
   },
-  Array<MemberResponseDto>
+  {
+    list?: Array<MemberResponseDto>
+    total?: number // 总数量
+    page?: number // 当前页码
+    pageSize?: number // 每页数量
+    totalPages?: number // 总页数
+    hasNext?: boolean // 是否有下一页
+    hasPrev?: boolean // 是否有上一页
+  }
 > {
   path = '/api/apps/{appId}/members'
   method: MoMethod = 'GET'

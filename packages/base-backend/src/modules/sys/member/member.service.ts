@@ -15,7 +15,8 @@ import { AppMember } from '../app/entities/app-member.entity';
 import { Role } from '../role/entities/role.entity';
 import { User } from '../user/entities/user.entity';
 import { App } from '../app/entities/app.entity';
-import { AddMemberDto, UpdateMemberRolesDto } from './dto';
+import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from './dto';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
 
 /**
  * 成员服务
@@ -70,54 +71,101 @@ export class MemberService {
   }
 
   /**
-   * 获取应用成员列表
+   * 获取应用成员列表（分页）
    * @param appId - 应用 ID
-   * @returns 成员列表（包含用户信息和角色列表）
+   * @param query - 查询参数
+   * @returns 分页结果
    */
-  async getMembers(appId: string): Promise<any[]> {
+  async getMembers(appId: string, query: QueryMemberDto): Promise<PaginationResult<any>> {
     // 检查应用是否存在
     const app = await this.appRepository.findOne({ where: { id: appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
     }
 
-    // 查询成员列表（包含用户信息）
-    const members = await this.appMemberRepository.find({
-      where: { appId },
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-    });
+    // 构建查询
+    const qb = this.appMemberRepository
+      .createQueryBuilder('member')
+      .leftJoinAndSelect('member.user', 'user')
+      .where('member.appId = :appId', { appId });
 
-    // 为每个成员查询角色列表
-    const memberList = await Promise.all(
-      members.map(async (member) => {
-        // 查询用户在该应用中的角色
-        const queryRunner = this.dataSource.createQueryRunner();
-        const roles = await queryRunner.manager.query(
-          `
-          SELECT r.id as roleId, r.roleName as roleName, r.roleCode as roleCode, r.isBuiltin as isBuiltin
-          FROM sys_roles r
-          INNER JOIN sys_user_role ur ON r.id = ur.roleId
-          WHERE ur.userId = ? AND (r.appId = ? OR r.appTypeId = ?)
-          AND r.isOwner = 0
-          `,
-          [member.userId, appId, app.appTypeId],
-        );
+    // 应用查询条件
+    QueryBuilderHelper.applyConditions(qb, [
+      { field: 'user.userName', value: query.userName, operator: 'like' },
+      { field: 'user.userAccount', value: query.userAccount, operator: 'like' },
+    ]);
 
-        await queryRunner.release();
-
-        return {
-          id: member.id,
-          appId: member.appId,
-          userId: member.userId,
-          createdAt: member.createdAt,
-          user: member.user,
-          roles: roles || [],
-        };
-      }),
+    // 执行分页查询
+    const result = await PaginationHelper.executeQuery(
+      qb.orderBy('member.createdAt', 'DESC'),
+      query,
     );
 
-    return memberList;
+    // 批量查询角色信息
+    const userIds = result.list.map((member) => member.userId);
+    const rolesMap = new Map<string, any[]>();
+
+    if (userIds.length > 0) {
+      const roles = await this.dataSource
+        .createQueryBuilder()
+        .select([
+          'ur.userId',
+          'r.id as roleId',
+          'r.roleName',
+          'r.roleCode',
+          'r.isBuiltin',
+        ])
+        .from('sys_user_role', 'ur')
+        .innerJoin('sys_roles', 'r', 'ur.roleId = r.id')
+        .where('ur.userId IN (:...userIds)', { userIds })
+        .andWhere('(r.appId = :appId OR r.appTypeId = :appTypeId)', {
+          appId,
+          appTypeId: app.appTypeId,
+        })
+        .andWhere('r.isOwner = :isOwner', { isOwner: 0 })
+        .getRawMany();
+
+      for (const role of roles) {
+        const userId = role.userId;
+        if (!rolesMap.has(userId)) {
+          rolesMap.set(userId, []);
+        }
+        const userRoles = rolesMap.get(userId);
+        if (userRoles) {
+          userRoles.push({
+            roleId: role.roleId,
+            roleName: role.roleName,
+            roleCode: role.roleCode,
+            isBuiltin: role.isBuiltin,
+          });
+        }
+      }
+    }
+
+    // 组装最终数据
+    const memberList = result.list.map((member) => ({
+      id: member.id,
+      appId: member.appId,
+      userId: member.userId,
+      createdAt: member.createdAt,
+      user: member.user
+        ? {
+            id: member.user.id,
+            username: member.user.username,
+            nickname: member.user.nickname,
+            phone: member.user.phone,
+            avatar: member.user.avatar,
+          }
+        : null,
+      roles: rolesMap.get(member.userId) || [],
+    }));
+
+    return new PaginationResult(
+      memberList,
+      result.total,
+      result.page,
+      result.pageSize,
+    );
   }
 
   /**
