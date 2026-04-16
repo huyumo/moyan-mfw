@@ -22,7 +22,7 @@
 </template>
 <script setup lang="ts">
 import { computed, PropType } from 'vue';
-import { ElTree, TreeKey } from 'element-plus';
+import { CheckedInfo, ElTree, TreeKey } from 'element-plus';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import { Key } from '@element-plus/icons-vue';
 import { ref, watch, nextTick } from 'vue';
@@ -79,9 +79,8 @@ const handleCheckedKeys = (checkedKeys: TreeKey[],tree:PermissionTreeNodeDto[]) 
   });
 };
 
-const handleCheck = (node: PermissionTreeNodeDto, e: any) => {
-  //{checkedKeys:TreeKey[],checkedNodes:PermissionTreeNodeDto[],halfCheckedKeys:TreeKey[],halfCheckedNodes:PermissionTreeNodeDto[]}
-  const { checkedKeys, checkedNodes, halfCheckedKeys, halfCheckedNodes } = e;
+const handleCheck = (_: PermissionTreeNodeDto, e:CheckedInfo) => {
+  const { checkedKeys,  halfCheckedKeys } = e;
   handleCheckedKeys([...checkedKeys,...halfCheckedKeys],refData.value);
   nextTick(() => {
     emit('update:modelValue', refData.value);
