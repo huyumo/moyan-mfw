@@ -1,3 +1,6 @@
+/**
+ * 数据库字段类型，该文件的类型为自动生成，请勿手动修改
+ */
 export type ObjectId = string
 export type int = number | string
 export type integer = number | string
@@ -5,10 +8,12 @@ export type float = number | string
 export type tinyint = number | string
 export type char = string
 export type varchar = string
-export type json = { [key: string]: any } | Array<{ [key: string]: any }>
+export type json =
+  | { [key: string]: unknown }
+  | Array<{ [key: string]: unknown }>
 export type datetime = Date | string
 export type date = Date | string
-export type array = Array<any>
+export type array = Array<unknown>
 export type text = string
 export type decimal = number | string
 

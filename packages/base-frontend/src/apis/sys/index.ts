@@ -1,3 +1,6 @@
+/**
+ * API 调用类，该文件的API为自动生成，请勿手动修改
+ */
 import { ApiCall } from 'moyan-api'
 import type { MoMethod } from 'moyan-api'
 
@@ -66,46 +69,51 @@ import type {
 /**
  * auth|认证相关接口->用户登录
  */
-export class ApiAuthLogin extends ApiCall<LoginDto, LoginResponseDto> {
-  path = '/api/auth/login'
-  method: MoMethod = 'POST'
-  auth = false
+export class ApiAuthLogin extends ApiCall<
+  {
+    body: LoginDto
+  },
+  LoginResponseDto
+> {
+  readonly path = '/api/auth/login'
+  readonly method: MoMethod = 'POST'
+  readonly auth = false
 }
 
 /**
  * auth|认证相关接口->刷新 Token
  */
 export class ApiAuthRefreshToken extends ApiCall<{}, LoginResponseDto> {
-  path = '/api/auth/refresh'
-  method: MoMethod = 'POST'
-  auth = false
+  readonly path = '/api/auth/refresh'
+  readonly method: MoMethod = 'POST'
+  readonly auth = false
 }
 
 /**
  * auth|认证相关接口->获取当前用户信息
  */
 export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
-  path = '/api/auth/userinfo'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/auth/userinfo'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * auth|认证相关接口->退出登录
  */
 export class ApiAuthLogout extends ApiCall<{}, unknown> {
-  path = '/api/auth/logout'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/auth/logout'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * auth|认证相关接口->获取用户应用列表
  */
 export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
-  path = '/api/auth/apps'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/auth/apps'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -113,22 +121,29 @@ export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
  */
 export class ApiAuthGetUserPermissions extends ApiCall<
   {
-    appId: string //应用实例 ID
+    query: {
+      appId: string //应用实例 ID
+    }
   },
   UserPermissionsResponseDto
 > {
-  path = '/api/auth/permissions'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/auth/permissions'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * auth|认证相关接口->用户注册
  */
-export class ApiAuthRegister extends ApiCall<RegisterDto, LoginResponseDto> {
-  path = '/api/auth/register'
-  method: MoMethod = 'POST'
-  auth = false
+export class ApiAuthRegister extends ApiCall<
+  {
+    body: RegisterDto
+  },
+  LoginResponseDto
+> {
+  readonly path = '/api/auth/register'
+  readonly method: MoMethod = 'POST'
+  readonly auth = false
 }
 
 /**
@@ -136,24 +151,26 @@ export class ApiAuthRegister extends ApiCall<RegisterDto, LoginResponseDto> {
  */
 export class ApiAuthCheckAvailability extends ApiCall<
   {
-    username?: string //用户名
-    email?: string //邮箱
-    phone?: string //手机号
+    query: {
+      username?: string //用户名
+      email?: string //邮箱
+      phone?: string //手机号
+    }
   },
   CheckAvailabilityResponseDto
 > {
-  path = '/api/auth/check-availability'
-  method: MoMethod = 'GET'
-  auth = false
+  readonly path = '/api/auth/check-availability'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**
  * auth|认证相关接口->修改密码
  */
 export class ApiAuthChangePassword extends ApiCall<{}, unknown> {
-  path = '/api/auth/change-password'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/auth/change-password'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -163,18 +180,23 @@ export class ApiAuthSyncPermissions extends ApiCall<
   {},
   UserPermissionsResponseDto
 > {
-  path = '/api/auth/sync-permissions'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/auth/sync-permissions'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * user|用户相关接口->创建用户
  */
-export class ApiUserCreate extends ApiCall<CreateUserDto, UserResponseDto> {
-  path = '/api/users'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiUserCreate extends ApiCall<
+  {
+    body: CreateUserDto
+  },
+  UserResponseDto
+> {
+  readonly path = '/api/users'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -182,17 +204,19 @@ export class ApiUserCreate extends ApiCall<CreateUserDto, UserResponseDto> {
  */
 export class ApiUserFindAll extends ApiCall<
   {
-    username?: string //用户名（模糊查询）
-    phone?: string //手机号
-    userStatus?: number //状态 (1:启用 0:禁用)
-    page?: number //当前页码
-    pageSize?: number //每页数量
+    query: {
+      username?: string //用户名（模糊查询）
+      phone?: string //手机号
+      userStatus?: number //状态 (1:启用 0:禁用)
+      page?: number //当前页码
+      pageSize?: number //每页数量
+    }
   },
   unknown
 > {
-  path = '/api/users'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/users'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -200,22 +224,32 @@ export class ApiUserFindAll extends ApiCall<
  */
 export class ApiUserFindById extends ApiCall<
   {
-    id: string //用户 ID
+    params: {
+      id: string //用户 ID
+    }
   },
   UserResponseDto
 > {
-  path = '/api/users/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/users/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * user|用户相关接口->更新用户
  */
-export class ApiUserUpdate extends ApiCall<UpdateUserDto, UserResponseDto> {
-  path = '/api/users/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
+export class ApiUserUpdate extends ApiCall<
+  {
+    body: UpdateUserDto
+    params: {
+      id: string //用户 ID
+    }
+  },
+  UserResponseDto
+> {
+  readonly path = '/api/users/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -223,13 +257,15 @@ export class ApiUserUpdate extends ApiCall<UpdateUserDto, UserResponseDto> {
  */
 export class ApiUserDelete extends ApiCall<
   {
-    id: string //用户 ID
+    params: {
+      id: string //用户 ID
+    }
   },
   unknown
 > {
-  path = '/api/users/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/users/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
@@ -237,14 +273,18 @@ export class ApiUserDelete extends ApiCall<
  */
 export class ApiUserUpdateStatus extends ApiCall<
   {
-    id: string //用户 ID
-    status: number //状态 (1:启用 0:禁用)
+    params: {
+      id: string //用户 ID
+    }
+    query: {
+      status: number //状态 (1:启用 0:禁用)
+    }
   },
   UserResponseDto
 > {
-  path = '/api/users/{id}/status'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/users/{id}/status'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -252,23 +292,32 @@ export class ApiUserUpdateStatus extends ApiCall<
  */
 export class ApiUserResetPassword extends ApiCall<
   {
-    id: string //用户 ID
-    password: string //新密码
+    params: {
+      id: string //用户 ID
+    }
+    query: {
+      password: string //新密码
+    }
   },
   unknown
 > {
-  path = '/api/users/{id}/reset-password'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/users/{id}/reset-password'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * role|角色相关接口->创建角色
  */
-export class ApiRoleCreate extends ApiCall<CreateRoleDto, RoleResponseDto> {
-  path = '/api/roles'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiRoleCreate extends ApiCall<
+  {
+    body: CreateRoleDto
+  },
+  RoleResponseDto
+> {
+  readonly path = '/api/roles'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -276,23 +325,25 @@ export class ApiRoleCreate extends ApiCall<CreateRoleDto, RoleResponseDto> {
  */
 export class ApiRoleFindAll extends ApiCall<
   {
-    page?: number //当前页码
-    pageSize?: number //每页数量
-    sortField?: string //排序字段
-    sortOrder?: string //排序方向
-    roleCode?: string //角色编码（模糊查询）
-    roleName?: string //角色名称（模糊查询）
-    roleStatus?: number //角色状态
-    appTypeId?: string //应用类型 ID
-    appId?: string //应用 ID
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      roleCode?: string //角色编码（模糊查询）
+      roleName?: string //角色名称（模糊查询）
+      roleStatus?: number //角色状态
+      appTypeId?: string //应用类型 ID
+      appId?: string //应用 ID
+    }
   },
   PageResponseDto & {
     list: Array<RoleResponseDto>
   }
 > {
-  path = '/api/roles'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/roles'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -300,22 +351,32 @@ export class ApiRoleFindAll extends ApiCall<
  */
 export class ApiRoleFindById extends ApiCall<
   {
-    id: string //角色 ID
+    params: {
+      id: string //角色 ID
+    }
   },
   RoleResponseDto
 > {
-  path = '/api/roles/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/roles/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * role|角色相关接口->更新角色
  */
-export class ApiRoleUpdate extends ApiCall<UpdateRoleDto, RoleResponseDto> {
-  path = '/api/roles/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
+export class ApiRoleUpdate extends ApiCall<
+  {
+    body: UpdateRoleDto
+    params: {
+      id: string //角色 ID
+    }
+  },
+  RoleResponseDto
+> {
+  readonly path = '/api/roles/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -323,25 +384,32 @@ export class ApiRoleUpdate extends ApiCall<UpdateRoleDto, RoleResponseDto> {
  */
 export class ApiRoleDelete extends ApiCall<
   {
-    id: string //角色 ID
+    params: {
+      id: string //角色 ID
+    }
   },
   unknown
 > {
-  path = '/api/roles/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/roles/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
  * role|角色相关接口->分配权限
  */
 export class ApiRoleAssignPermissions extends ApiCall<
-  AssignPermissionsDto,
+  {
+    body: AssignPermissionsDto
+    params: {
+      id: string //角色 ID
+    }
+  },
   unknown
 > {
-  path = '/api/roles/{id}/permissions'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/roles/{id}/permissions'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -349,25 +417,29 @@ export class ApiRoleAssignPermissions extends ApiCall<
  */
 export class ApiRoleGetRolePermissions extends ApiCall<
   {
-    id: string //角色 ID
+    params: {
+      id: string //角色 ID
+    }
   },
   RolePermissionResponseDto
 > {
-  path = '/api/roles/{id}/permissions'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/roles/{id}/permissions'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * app-type|应用类型相关接口->创建应用类型
  */
 export class ApiAppTypeCreate extends ApiCall<
-  CreateAppTypeDto,
+  {
+    body: CreateAppTypeDto
+  },
   AppTypeResponseDto
 > {
-  path = '/api/app-types'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/app-types'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -375,21 +447,23 @@ export class ApiAppTypeCreate extends ApiCall<
  */
 export class ApiAppTypeFindAll extends ApiCall<
   {
-    page?: number //当前页码
-    pageSize?: number //每页数量
-    sortField?: string //排序字段
-    sortOrder?: string //排序方向
-    typeName?: string //类型名称（模糊查询）
-    typeCode?: string //类型编码（模糊查询）
-    typeStatus?: number //类型状态
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      typeName?: string //类型名称（模糊查询）
+      typeCode?: string //类型编码（模糊查询）
+      typeStatus?: number //类型状态
+    }
   },
   PageResponseDto & {
     list: Array<AppTypeResponseDto>
   }
 > {
-  path = '/api/app-types'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/app-types'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -399,9 +473,9 @@ export class ApiAppTypeFindAllList extends ApiCall<
   {},
   Array<AppTypeResponseDto>
 > {
-  path = '/api/app-types/all'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/app-types/all'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -409,25 +483,32 @@ export class ApiAppTypeFindAllList extends ApiCall<
  */
 export class ApiAppTypeFindById extends ApiCall<
   {
-    id: string //应用类型 ID
+    params: {
+      id: string //应用类型 ID
+    }
   },
   AppTypeResponseDto
 > {
-  path = '/api/app-types/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/app-types/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * app-type|应用类型相关接口->更新应用类型
  */
 export class ApiAppTypeUpdate extends ApiCall<
-  UpdateAppTypeDto,
+  {
+    body: UpdateAppTypeDto
+    params: {
+      id: string //应用类型 ID
+    }
+  },
   AppTypeResponseDto
 > {
-  path = '/api/app-types/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/app-types/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -435,13 +516,15 @@ export class ApiAppTypeUpdate extends ApiCall<
  */
 export class ApiAppTypeDelete extends ApiCall<
   {
-    id: string //应用类型 ID
+    params: {
+      id: string //应用类型 ID
+    }
   },
   unknown
 > {
-  path = '/api/app-types/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/app-types/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
@@ -449,25 +532,32 @@ export class ApiAppTypeDelete extends ApiCall<
  */
 export class ApiAppTypeGetPermissionPool extends ApiCall<
   {
-    appTypeId: string //应用类型 ID
+    params: {
+      appTypeId: string //应用类型 ID
+    }
   },
   PermissionPoolResponseDto
 > {
-  path = '/api/app-types/{appTypeId}/permission-pool'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/app-types/{appTypeId}/permission-pool'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * app-type|应用类型相关接口->更新权限池配置
  */
 export class ApiAppTypeUpdatePermissionPool extends ApiCall<
-  UpdatePermissionPoolDto,
+  {
+    body: UpdatePermissionPoolDto
+    params: {
+      appTypeId: string //应用类型 ID
+    }
+  },
   UpdatePermissionPoolResponseDto
 > {
-  path = '/api/app-types/{appTypeId}/permission-pool'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/app-types/{appTypeId}/permission-pool'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -475,26 +565,32 @@ export class ApiAppTypeUpdatePermissionPool extends ApiCall<
  */
 export class ApiAppTypeUpdateStatus extends ApiCall<
   {
-    id: string //应用类型 ID
-    status: number //状态 (1:启用 0:禁用)
+    params: {
+      id: string //应用类型 ID
+    }
+    query: {
+      status: number //状态 (1:启用 0:禁用)
+    }
   },
   AppTypeResponseDto
 > {
-  path = '/api/app-types/{id}/status'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/app-types/{id}/status'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
  * permission|权限相关接口->创建权限
  */
 export class ApiPermissionCreate extends ApiCall<
-  CreatePermissionDto,
+  {
+    body: CreatePermissionDto
+  },
   PermissionResponseDto
 > {
-  path = '/api/permissions'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/permissions'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -502,20 +598,26 @@ export class ApiPermissionCreate extends ApiCall<
  */
 export class ApiPermissionFindAll extends ApiCall<
   {
-    appTypeId?: string //应用类型 ID
-    permName?: string //权限名称（模糊查询）
-    permCode?: string //权限编码（模糊查询）
-    permissionType?: number //权限类型
-    nodeType?: number //节点类型
-    parentId?: string //父权限 ID
-    page?: number //当前页码
-    pageSize?: number //每页数量
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      appTypeId?: string //应用类型 ID
+      permName?: string //权限名称（模糊查询）
+      permCode?: string //权限编码（模糊查询）
+      permissionType?: string //权限类型
+      nodeType?: string //节点类型
+      parentId?: string //父权限 ID
+    }
   },
-  unknown
+  PageResponseDto & {
+    list: Array<PermissionResponseDto>
+  }
 > {
-  path = '/api/permissions'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/permissions'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -523,13 +625,15 @@ export class ApiPermissionFindAll extends ApiCall<
  */
 export class ApiPermissionFindAllTree extends ApiCall<
   {
-    permissionType?: string //权限类型：PC/NORMAL
+    query: {
+      permissionType?: string //权限类型：PC/NORMAL
+    }
   },
   Array<PermissionTreeNodeDto>
 > {
-  path = '/api/permissions/tree/all'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/permissions/tree/all'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -537,13 +641,15 @@ export class ApiPermissionFindAllTree extends ApiCall<
  */
 export class ApiPermissionGetPermissionTree extends ApiCall<
   {
-    parentId?: string //父权限 ID，不传则查询根节点
+    query: {
+      parentId?: string //父权限 ID，不传则查询根节点
+    }
   },
   Array<PermissionTreeNodeDto>
 > {
-  path = '/api/permissions/tree'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/permissions/tree'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -551,25 +657,32 @@ export class ApiPermissionGetPermissionTree extends ApiCall<
  */
 export class ApiPermissionFindById extends ApiCall<
   {
-    id: string //权限 ID
+    params: {
+      id: string //权限 ID
+    }
   },
   PermissionResponseDto
 > {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * permission|权限相关接口->更新权限
  */
 export class ApiPermissionUpdate extends ApiCall<
-  UpdatePermissionDto,
+  {
+    body: UpdatePermissionDto
+    params: {
+      id: string //权限 ID
+    }
+  },
   PermissionResponseDto
 > {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -577,46 +690,57 @@ export class ApiPermissionUpdate extends ApiCall<
  */
 export class ApiPermissionDelete extends ApiCall<
   {
-    id: string //权限 ID
+    params: {
+      id: string //权限 ID
+    }
   },
   unknown
 > {
-  path = '/api/permissions/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
  * permission|权限相关接口->批量创建权限
  */
 export class ApiPermissionBatchCreate extends ApiCall<
-  {},
+  {
+    body: Array<CreatePermissionDto>
+  },
   Array<PermissionResponseDto>
 > {
-  path = '/api/permissions/batch'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/permissions/batch'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * permission|权限相关接口->同步路由到权限表
  */
 export class ApiPermissionSyncPermissions extends ApiCall<
-  SyncPermissionDto,
+  {
+    body: SyncPermissionDto
+  },
   Array<PermissionTreeNodeDto>
 > {
-  path = '/api/permissions/sync'
-  method: MoMethod = 'POST'
-  auth = true
+  readonly path = '/api/permissions/sync'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
  * app|应用实例相关接口->创建应用实例
  */
-export class ApiAppCreate extends ApiCall<CreateAppDto, AppDetailResponseDto> {
-  path = '/api/apps'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiAppCreate extends ApiCall<
+  {
+    body: CreateAppDto
+  },
+  AppDetailResponseDto
+> {
+  readonly path = '/api/apps'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -624,23 +748,25 @@ export class ApiAppCreate extends ApiCall<CreateAppDto, AppDetailResponseDto> {
  */
 export class ApiAppFindAll extends ApiCall<
   {
-    page?: number //当前页码
-    pageSize?: number //每页数量
-    sortField?: string //排序字段
-    sortOrder?: string //排序方向
-    appName?: string //应用名称（模糊查询）
-    appCode?: string //应用编码（模糊查询）
-    appTypeId?: string //应用类型 ID
-    ownerId?: string //拥有者 ID
-    appStatus?: number //应用状态
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      appName?: string //应用名称（模糊查询）
+      appCode?: string //应用编码（模糊查询）
+      appTypeId?: string //应用类型 ID
+      ownerId?: string //拥有者 ID
+      appStatus?: number //应用状态
+    }
   },
   PageResponseDto & {
     list: Array<AppDetailResponseDto>
   }
 > {
-  path = '/api/apps'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/apps'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -648,22 +774,32 @@ export class ApiAppFindAll extends ApiCall<
  */
 export class ApiAppFindById extends ApiCall<
   {
-    id: string //应用实例 ID
+    params: {
+      id: string //应用实例 ID
+    }
   },
   AppDetailResponseDto
 > {
-  path = '/api/apps/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/apps/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * app|应用实例相关接口->更新应用实例
  */
-export class ApiAppUpdate extends ApiCall<UpdateAppDto, AppDetailResponseDto> {
-  path = '/api/apps/{id}'
-  method: MoMethod = 'PUT'
-  auth = true
+export class ApiAppUpdate extends ApiCall<
+  {
+    body: UpdateAppDto
+    params: {
+      id: string //应用实例 ID
+    }
+  },
+  AppDetailResponseDto
+> {
+  readonly path = '/api/apps/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -671,13 +807,15 @@ export class ApiAppUpdate extends ApiCall<UpdateAppDto, AppDetailResponseDto> {
  */
 export class ApiAppDelete extends ApiCall<
   {
-    id: string //应用实例 ID
+    params: {
+      id: string //应用实例 ID
+    }
   },
   unknown
 > {
-  path = '/api/apps/{id}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/apps/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
@@ -685,14 +823,18 @@ export class ApiAppDelete extends ApiCall<
  */
 export class ApiAppChangeOwner extends ApiCall<
   {
-    id: string //应用实例 ID
-    ownerId: string //新负责人 ID
+    params: {
+      id: string //应用实例 ID
+    }
+    query: {
+      ownerId: string //新负责人 ID
+    }
   },
   AppDetailResponseDto
 > {
-  path = '/api/apps/{id}/owner'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/apps/{id}/owner'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -700,23 +842,35 @@ export class ApiAppChangeOwner extends ApiCall<
  */
 export class ApiAppUpdateStatus extends ApiCall<
   {
-    id: string //应用实例 ID
-    status: number //状态 (1:启用 0:禁用)
+    params: {
+      id: string //应用实例 ID
+    }
+    query: {
+      status: number //状态 (1:启用 0:禁用)
+    }
   },
   AppDetailResponseDto
 > {
-  path = '/api/apps/{id}/status'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/apps/{id}/status'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
  * member|应用成员相关接口->添加应用成员
  */
-export class ApiMemberAddMember extends ApiCall<AddMemberDto, unknown> {
-  path = '/api/apps/{appId}/members'
-  method: MoMethod = 'POST'
-  auth = true
+export class ApiMemberAddMember extends ApiCall<
+  {
+    body: AddMemberDto
+    params: {
+      appId: string //应用 ID
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/apps/{appId}/members'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }
 
 /**
@@ -724,33 +878,43 @@ export class ApiMemberAddMember extends ApiCall<AddMemberDto, unknown> {
  */
 export class ApiMemberGetMembers extends ApiCall<
   {
-    appId: string
-    page?: number //当前页码
-    pageSize?: number //每页数量
-    sortField?: string //排序字段
-    sortOrder?: string //排序方向
-    userName?: string //用户名称（模糊查询）
-    userAccount?: string //用户账号（模糊查询）
+    params: {
+      appId: string
+    }
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      userName?: string //用户名称（模糊查询）
+      userAccount?: string //用户账号（模糊查询）
+    }
   },
   PageResponseDto & {
     list: Array<MemberResponseDto>
   }
 > {
-  path = '/api/apps/{appId}/members'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/apps/{appId}/members'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
  * member|应用成员相关接口->更新成员角色
  */
 export class ApiMemberUpdateRoles extends ApiCall<
-  UpdateMemberRolesDto,
+  {
+    body: UpdateMemberRolesDto
+    params: {
+      appId: string //应用 ID
+      userId: string //用户 ID
+    }
+  },
   unknown
 > {
-  path = '/api/apps/{appId}/members/{userId}/roles'
-  method: MoMethod = 'PUT'
-  auth = true
+  readonly path = '/api/apps/{appId}/members/{userId}/roles'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
 }
 
 /**
@@ -758,14 +922,16 @@ export class ApiMemberUpdateRoles extends ApiCall<
  */
 export class ApiMemberRemoveMember extends ApiCall<
   {
-    appId: string //应用 ID
-    userId: string //用户 ID
+    params: {
+      appId: string //应用 ID
+      userId: string //用户 ID
+    }
   },
   unknown
 > {
-  path = '/api/apps/{appId}/members/{userId}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/apps/{appId}/members/{userId}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
@@ -773,13 +939,15 @@ export class ApiMemberRemoveMember extends ApiCall<
  */
 export class ApiMemberGetAvailableRoles extends ApiCall<
   {
-    appId: string //应用 ID
+    params: {
+      appId: string //应用 ID
+    }
   },
   Array<AvailableRoleDto>
 > {
-  path = '/api/apps/{appId}/members/available-roles'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/apps/{appId}/members/available-roles'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -787,20 +955,26 @@ export class ApiMemberGetAvailableRoles extends ApiCall<
  */
 export class ApiAuditLogFindAll extends ApiCall<
   {
-    module?: string //所属模块
-    event?: string //事件名称
-    operatorId?: string //操作人 ID
-    targetId?: string //目标 ID
-    startTime?: string //开始时间
-    endTime?: string //结束时间
-    page?: number //当前页码
-    pageSize?: number //每页数量
+    query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      module?: string //所属模块
+      event?: string //事件名称
+      operatorId?: string //操作人 ID
+      targetId?: string //目标 ID
+      startTime?: string //开始时间
+      endTime?: string //结束时间
+    }
   },
-  unknown
+  PageResponseDto & {
+    list: Array<AuditLogResponseDto>
+  }
 > {
-  path = '/api/audit-logs'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/audit-logs'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -808,13 +982,15 @@ export class ApiAuditLogFindAll extends ApiCall<
  */
 export class ApiAuditLogFindById extends ApiCall<
   {
-    id: string //审计日志 ID
+    params: {
+      id: string //审计日志 ID
+    }
   },
   AuditLogResponseDto
 > {
-  path = '/api/audit-logs/{id}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/audit-logs/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -822,13 +998,15 @@ export class ApiAuditLogFindById extends ApiCall<
  */
 export class ApiAuditLogFindByTargetId extends ApiCall<
   {
-    targetId: string //目标 ID
+    params: {
+      targetId: string //目标 ID
+    }
   },
   Array<AuditLogResponseDto>
 > {
-  path = '/api/audit-logs/target/{targetId}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/audit-logs/target/{targetId}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -836,13 +1014,15 @@ export class ApiAuditLogFindByTargetId extends ApiCall<
  */
 export class ApiAuditLogFindByOperatorId extends ApiCall<
   {
-    operatorId: string //操作人 ID
+    params: {
+      operatorId: string //操作人 ID
+    }
   },
   Array<AuditLogResponseDto>
 > {
-  path = '/api/audit-logs/operator/{operatorId}'
-  method: MoMethod = 'GET'
-  auth = true
+  readonly path = '/api/audit-logs/operator/{operatorId}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**
@@ -850,59 +1030,63 @@ export class ApiAuditLogFindByOperatorId extends ApiCall<
  */
 export class ApiAuditLogDeleteBeforeDate extends ApiCall<
   {
-    beforeDate: string //日期 (YYYY-MM-DD)
+    params: {
+      beforeDate: string //日期 (YYYY-MM-DD)
+    }
   },
   unknown
 > {
-  path = '/api/audit-logs/before/{beforeDate}'
-  method: MoMethod = 'DELETE'
-  auth = true
+  readonly path = '/api/audit-logs/before/{beforeDate}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
 }
 
 /**
  * health|健康检查接口->健康检查
  */
 export class ApiHealthHealthCheck extends ApiCall<{}, unknown> {
-  path = '/api/health'
-  method: MoMethod = 'GET'
-  auth = false
+  readonly path = '/api/health'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**
  * health|健康检查接口->就绪检查
  */
 export class ApiHealthReadyCheck extends ApiCall<{}, unknown> {
-  path = '/api/health/ready'
-  method: MoMethod = 'GET'
-  auth = false
+  readonly path = '/api/health/ready'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**
  * health|健康检查接口->存活检查
  */
 export class ApiHealthLiveCheck extends ApiCall<{}, unknown> {
-  path = '/api/health/live'
-  method: MoMethod = 'GET'
-  auth = false
+  readonly path = '/api/health/live'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**
  * 系统初始化->检查系统是否已初始化
  */
 export class ApiInstallGetStatus extends ApiCall<{}, InitStatusResponseDto> {
-  path = '/api/install/status'
-  method: MoMethod = 'GET'
-  auth = false
+  readonly path = '/api/install/status'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**
  * 系统初始化->执行系统初始化
  */
 export class ApiInstallInitialize extends ApiCall<
-  InitRequestDto,
+  {
+    body: InitRequestDto
+  },
   InitResponseDto
 > {
-  path = '/api/install/init'
-  method: MoMethod = 'POST'
-  auth = false
+  readonly path = '/api/install/init'
+  readonly method: MoMethod = 'POST'
+  readonly auth = false
 }
