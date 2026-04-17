@@ -66,13 +66,12 @@ const actionColumn: ActionColumnConfig = {
 const loadRoles = async () => {
   if (!appTypeId) return;
   const result = await new ApiRoleFindAll({
-    params: {
+    query: {
       page: 1,
       pageSize: 100,
       appTypeId: appTypeId,
-    },
-    option: { loading },
-  });
+    }
+  },{loading:loading.value});
   roleList.value = result.list || [];
 };
 
@@ -127,7 +126,7 @@ const handleAddAndEditRole = (row?: RoleResponseDto) => {
 
 /** 删除角色 */
 const handleDeleteRole = async (row: RoleResponseDto) => {
-  await new ApiRoleDelete({ query: { id: row.id } });
+  await new ApiRoleDelete({ params: { id: row.id } });
 };
 
 onMounted(() => {

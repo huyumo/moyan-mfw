@@ -118,8 +118,8 @@ const onConfirm = async () => {
 
   if (isEdit.value) {
     await new ApiRoleUpdate({
-      query: { id: props.data!.id },
-      params: {
+      params: { id: props.data!.id },
+      body: {
         roleName: form.roleName,
         roleDesc: form.roleDesc,
         roleStatus: form.roleStatus,
@@ -127,7 +127,7 @@ const onConfirm = async () => {
     });
   } else {
     await new ApiRoleCreate({
-      params: {
+      body: {
         roleName: form.roleName,
         roleCode: form.roleCode,
         roleDesc: form.roleDesc,

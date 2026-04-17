@@ -46,7 +46,7 @@ export class AuditLogController {
   @Get()
   @ApiOperation({ summary: '查询审计日志列表', description: '分页查询审计日志列表' })
   @ApiPaginatedResponse(AuditLogResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:audit-log', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:audit-log' })
   async findAll(@Query() query: QueryAuditLogDto) {
     const result = await this.auditLogService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -64,7 +64,7 @@ export class AuditLogController {
     type: AuditLogResponseDto,
   })
   @ApiResponse({ status: 404, description: '审计日志不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:audit-log', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:audit-log' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.auditLogService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -81,7 +81,7 @@ export class AuditLogController {
     description: '查询成功',
     type: [AuditLogResponseDto],
   })
-  @RequirePermission({ permCode: 'pc_root:sys:audit-log', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:audit-log' })
   async findByTargetId(@Param('targetId') targetId: string) {
     const result = await this.auditLogService.findByTargetId(targetId);
     return ApiResponseUtil.success(result, '查询成功');
@@ -98,7 +98,7 @@ export class AuditLogController {
     description: '查询成功',
     type: [AuditLogResponseDto],
   })
-  @RequirePermission({ permCode: 'pc_root:sys:audit-log', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:audit-log' })
   async findByOperatorId(@Param('operatorId') operatorId: string) {
     const result = await this.auditLogService.findByOperatorId(operatorId);
     return ApiResponseUtil.success(result, '查询成功');

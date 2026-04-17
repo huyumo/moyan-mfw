@@ -125,6 +125,15 @@ export type UserResponseDto = {
   updateAt: string // 更新时间
 }
 
+export type PageResponseDto = {
+  total: number // 总数量
+  page: number // 当前页码
+  pageSize: number // 每页数量
+  totalPages: number // 总页数
+  hasNext: boolean // 是否有下一页
+  hasPrev: boolean // 是否有上一页
+}
+
 export type UpdateUserDto = {
   nickname?: string // 昵称
   phone?: string // 手机号
@@ -157,15 +166,6 @@ export type RoleResponseDto = {
   sortOrder: number // 排序号
   createdAt: string // 创建时间
   updateAt: string // 更新时间
-}
-
-export type PageResponseDto = {
-  total: number // 总数量
-  page: number // 当前页码
-  pageSize: number // 每页数量
-  totalPages: number // 总页数
-  hasNext: boolean // 是否有下一页
-  hasPrev: boolean // 是否有上一页
 }
 
 export type UpdateRoleDto = {

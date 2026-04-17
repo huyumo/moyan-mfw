@@ -25,6 +25,7 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiExtraModels,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto, QueryUserDto, UserResponseDto } from './dto';
@@ -32,6 +33,7 @@ import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 用户控制器
@@ -68,18 +70,9 @@ export class UserController {
    * 查询用户列表
    */
   @Get()
-  @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '查询用户列表', description: '分页查询用户列表' })
-  @ApiResponse({
-    status: 200,
-    description: '查询成功',
-  })
-  @ApiQuery({ name: 'page', required: false, type: Number })
-  @ApiQuery({ name: 'pageSize', required: false, type: Number })
-  @ApiQuery({ name: 'username', required: false, type: String })
-  @ApiQuery({ name: 'phone', required: false, type: String })
-  @ApiQuery({ name: 'userStatus', required: false, type: Number })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['查看'] })
+  @ApiPaginatedResponse(UserResponseDto)
+  @RequirePermission({ permCode: 'pc_root:sys:user' })
   async findAll(@Query() query: QueryUserDto) {
     const result = await this.userService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -98,7 +91,7 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: '用户不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:user' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.userService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');

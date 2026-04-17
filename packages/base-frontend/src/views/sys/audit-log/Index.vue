@@ -105,7 +105,7 @@ const actionColumn = {
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   const result = await new ApiAuditLogFindAll({
-    params: {
+    query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
       module: params.module as string,

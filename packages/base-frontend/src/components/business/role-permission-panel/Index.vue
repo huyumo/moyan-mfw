@@ -36,7 +36,7 @@ const data = ref<PermissionTreesResponseDto>({
 
 const getTreeData = async () => {
   new ApiRoleGetRolePermissions({
-    query: {
+    params: {
       id: roleId
     }
   }).then(res => {
@@ -50,17 +50,14 @@ onMounted(() => {
 
 const onConfirm = async () => {
   await new ApiRoleAssignPermissions({
-    query: {
-      id: roleId
-    },
-    params: {
+    params: { id: roleId },
+    body: {
       permissionTrees: {
         pcTree: data.value.pcTree,
         normalTree: data.value.normalTree
       }
-    },
-    option: { hintFail: true }
-  })
+    }
+  }, { hintFail: true })
 }
 
 defineExpose({

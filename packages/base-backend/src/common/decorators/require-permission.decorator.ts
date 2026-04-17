@@ -36,15 +36,15 @@ export interface RequirePermissionOptions {
  *
  * @example
  * ```typescript
- * // 方式 1：单个权限
- * @RequirePermission({ permCode: 'system:user-list', permissionValue: ['查看'] })
+ * // 方式 1：单个权限（查看权限不需要指定 permissionValue）
+ * @RequirePermission({ permCode: 'system:user-list' })
  *
  * // 方式 2：组合权限
- * @RequirePermission({ permCode: 'system:user-list', permissionValue: ['查看', '添加', '编辑'] })
+ * @RequirePermission({ permCode: 'system:user-list', permissionValue: ['添加', '编辑'] })
  *
  * // 方式 3：多次注解（OR 逻辑）
- * @RequirePermission({ permCode: 'system:user-list', permissionValue: ['查看'] })
- * @RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+ * @RequirePermission({ permCode: 'system:user-list' })
+ * @RequirePermission({ permCode: 'system:role' })
  * ```
  */
 export const RequirePermission = (options: RequirePermissionOptions) =>

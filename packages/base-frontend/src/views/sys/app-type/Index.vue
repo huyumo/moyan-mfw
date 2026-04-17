@@ -135,7 +135,7 @@ const actionColumn = {
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   const result = await new ApiAppTypeFindAll({
-    params: {
+    query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
       typeName: params.typeName as string,
@@ -153,7 +153,7 @@ const loadData = async (params: Record<string, unknown>) => {
 /** 查看详情 */
 const handleDetail = async (row: AppTypeResponseDto) => {
   try {
-    const apiResult = await new ApiAppTypeFindById({ query: { id: row.id } });
+    const apiResult = await new ApiAppTypeFindById({ params: { id: row.id } });
     // @ts-ignore - API 实际返回 { code, data, message } 结构
     const detailData = apiResult.data || apiResult;
 

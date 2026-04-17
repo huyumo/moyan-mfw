@@ -78,7 +78,7 @@ export class AppTypeController {
   @Get()
   @ApiOperation({ summary: '查询应用类型列表', description: '分页查询应用类型列表' })
   @ApiPaginatedResponse(AppTypeResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
   async findAll(@Query() query: QueryAppTypeDto) {
     const result = await this.appTypeService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -94,7 +94,7 @@ export class AppTypeController {
     description: '查询成功',
     type: [AppTypeResponseDto],
   })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
   async findAllList() {
     const result = await this.appTypeService.findAllList();
     return ApiResponseUtil.success(result, '查询成功');
@@ -112,7 +112,7 @@ export class AppTypeController {
     type: AppTypeResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appTypeService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -130,7 +130,7 @@ export class AppTypeController {
     type: PermissionPoolResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
   async getPermissionPool(@Param('appTypeId', ParseUUIDPipe) appTypeId: string) {
     const result = await this.appTypeService.getPermissionPool(appTypeId);
     return ApiResponseUtil.success(result, '查询成功');

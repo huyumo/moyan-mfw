@@ -140,8 +140,8 @@ const onConfirm = async () => {
   try {
     if (isEdit.value) {
       await new ApiUserUpdate({
-        query: { id: props.data!.id },
-        params: {
+        params: { id: props.data!.id },
+        body: {
           nickname: form.nickname,
           phone: form.phone,
           email: form.email,
@@ -150,7 +150,7 @@ const onConfirm = async () => {
       });
     } else {
       await new ApiUserCreate({
-        params: {
+        body: {
           username: form.username,
           password: form.password,
           nickname: form.nickname,

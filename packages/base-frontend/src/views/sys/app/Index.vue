@@ -169,7 +169,7 @@ const loadAppTypes = async () => {
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   const result = await new ApiAppFindAll({
-    params: {
+    query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
       appName: params.appName as string,

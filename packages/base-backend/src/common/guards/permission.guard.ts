@@ -33,8 +33,8 @@ import { RolePermission } from '../../modules/sys/role/entities/role-permission.
  * @example
  * ```typescript
  * // 在控制器中使用
- * @RequirePermission({ permCode: 'system:user-list', permissionValue: ['查看'] })
- * @RequirePermission({ permCode: 'system:role', permissionValue: ['查看'] })
+ * @RequirePermission({ permCode: 'system:user-list' })
+ * @RequirePermission({ permCode: 'system:role' })
  * @UseGuards(PermissionGuard)
  * async findAll() {}
  * ```

@@ -38,7 +38,7 @@ const data = ref<PermissionTreesResponseDto>({
 
 const getTreeData = async () => {
   new ApiAppTypeGetPermissionPool({
-    query: {
+    params: {
       appTypeId: appTypeId
     }
   }).then(res => {
@@ -53,17 +53,14 @@ onMounted(() => {
 const onConfirm = async () => {
   console.log(data.value)
   await new ApiAppTypeUpdatePermissionPool({
-    query: {
-      appTypeId: appTypeId
-    },
-    params: {
+    params: {      appTypeId: appTypeId    },
+    body: {
       permissionTrees: {
         pcTree: data.value.pcTree,
         normalTree: data.value.normalTree
       }
-    },
-    option: { hintFail: true }
-  })
+    }
+  },{ hintFail: true })
 }
 
 defineExpose({
