@@ -226,8 +226,7 @@ async function submit() {
   }
 
   loading.value = true;
-  try {
-    // 调用真实登录 API
+      // 调用真实登录 API
     await authStore.login({
       username: form.username,
       password: form.password,
@@ -238,6 +237,8 @@ async function submit() {
     // 跳转到目标页面
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     await router.replace(redirect);
+  try {
+
   } catch (error: any) {
     const message = error?.response?.data?.message || error?.message || '登录失败，请检查用户名和密码';
     ElMessage.error(message);

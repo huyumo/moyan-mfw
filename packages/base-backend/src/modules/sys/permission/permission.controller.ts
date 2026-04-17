@@ -24,6 +24,7 @@ import {
   ApiBearerAuth,
   ApiParam,
   ApiQuery,
+  ApiBody,
 } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto } from './dto';
@@ -192,6 +193,7 @@ export class PermissionController {
   @AuditLog({ module: AuditModule.PERMISSION, event: 'BATCH_CREATE_PERMISSIONS', description: '批量创建权限' })
   @RequirePermission({ permCode: 'pc_root:sys:permission-pc', permissionValue: ['添加'] })
   @RequirePermission({ permCode: 'pc_root:sys:permission', permissionValue: ['添加'] })
+  @ApiBody({ type: CreatePermissionDto, isArray: true })
   async batchCreate(@Body() permissions: CreatePermissionDto[]) {
     const result = await this.permissionService.batchCreate(permissions);
     return ApiResponseUtil.success(result, '批量创建成功');

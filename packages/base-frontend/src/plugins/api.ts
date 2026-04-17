@@ -91,7 +91,7 @@ export class MoAxios {
    */
   request(apiEntity: ApiEntity): Promise<any> {
     const responseType =
-      apiEntity.method === 'GET' && apiEntity.option.fileName ? 'blob' : 'json';
+      apiEntity.method === 'GET' && apiEntity.options.fileName ? 'blob' : 'json';
 
     const requestConfig: AxiosRequestConfig = {
       responseType,
@@ -101,17 +101,20 @@ export class MoAxios {
       headers: this.buildHeaders(apiEntity),
     };
 
+    console.log(apiEntity);
+    
+
     // GET 请求参数放 params，其他方法放 data
     if (apiEntity.method === 'GET') {
-      requestConfig.params = apiEntity.params;
+      requestConfig.params = apiEntity.query;
     } else {
-      requestConfig.data = apiEntity.params;
+      requestConfig.data = apiEntity.body;
     }
 
     // 文件下载进度
     if (responseType === 'blob') {
       requestConfig.onDownloadProgress = (e: any) => {
-        apiEntity.option.ext?.onprogress?.(e);
+        apiEntity.options.ext?.onprogress?.(e);
       };
     }
 
@@ -154,12 +157,12 @@ export class MoAxios {
  * 成功事件 - 自动下载文件
  */
 ApiCall.emitter.on(ApiEvents.Success, (apiCall: ApiCall<any, any>) => {
-  if (apiCall.option.fileName && apiCall.method === 'GET') {
+  if (apiCall.options.fileName && apiCall.method === 'GET') {
     const blob = new Blob([apiCall.result]);
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = apiCall.option.fileName;
+    link.download = apiCall.options.fileName;
     link.click();
     window.URL.revokeObjectURL(url);
   }

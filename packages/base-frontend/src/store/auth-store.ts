@@ -148,12 +148,12 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true;
     try {
       const response = await new ApiAuthLogin({
-        params: { username: params.username, password: params.password },
-      });
+        body: { username: params.username, password: params.password },
+      })
 
       // API 返回格式: {code, data: {accessToken, refreshToken, user, ...}, message}
       // moyan-api 可能返回 response.data 或 response.data.data
-      const result = (response as any).data || response;
+      const result = response;
 
       // 保存 Token (API 返回 accessToken)
       saveToken(result.accessToken, result.refreshToken, result.expiresIn);
@@ -172,6 +172,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       return true;
     } catch (error) {
+      console.error(error);
+      
       clearToken();
       throw error;
     } finally {
@@ -292,7 +294,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function loadPermissions(appId: string): Promise<PermissionMenuItem[]> {
     try {
       const response = await new ApiAuthGetUserPermissions({
-        params: { appId },
+        query: { appId },
       });
 
       const menuNodes = response.menuTree || [];
