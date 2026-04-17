@@ -131,7 +131,8 @@ const loadData = async (params: Record<string, any>) => {
     return { list: [], total: 0 };
   }
   return await new ApiMemberGetMembers({
-    params: { appId: appId.value, ...params },
+    params: { appId: appId.value },
+    query: params,
   });
 };
 

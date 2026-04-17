@@ -10,15 +10,12 @@
     <el-divider />
     <div class="permission-actions">
       <el-checkbox-group v-model="selectedActions">
-        <el-checkbox
-          v-for="action in slefPermissionOptions"
-          :key="action.value"
-          :label="action.value"
-          border
-          class="permission-checkbox"
-        >
+        <el-checkbox v-for="action in slefPermissionOptions" :key="action.value" :label="action.value" border
+          class="permission-checkbox">
           <div class="checkbox-content">
-            <el-icon><component :is="action.icon" /></el-icon>
+            <el-icon>
+              <component :is="action.icon" />
+            </el-icon>
             <span>{{ action.label }}</span>
           </div>
         </el-checkbox>
@@ -47,7 +44,7 @@ interface PermissionValueFormProps {
   permissionOptions?: ReturnType<typeof getPermissionOptions>;
 }
 
-const {permissiondData,permissionOptions} = defineProps<PermissionValueFormProps>();
+const { permissiondData, permissionOptions } = defineProps<PermissionValueFormProps>();
 
 // 从 data 中解构属性
 const nodeId = computed(() => permissiondData?.nodeId || '');
@@ -73,10 +70,9 @@ const onConfirm = async () => {
   const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
 
   await new ApiPermissionUpdate({
-    query: { id: nodeId.value },
-    params: { permissionValue: String(newValue) }, // 改为字符串格式
-    option:{hintSuccess:true,successMsg:'操作权限已更新'}
-  });
+    params: { id: nodeId.value },
+    body: { permissionValue: String(newValue) }, // 改为字符串格式
+  }, { hintSuccess: true, successMsg: '操作权限已更新' });
 };
 
 defineExpose({ onConfirm });

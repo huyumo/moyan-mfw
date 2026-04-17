@@ -74,10 +74,10 @@ const formTemplate: FormItemConfig[] = [
   },
 ];
 
-const onConfirm = async () => {
+const onConfirm = async() => {
   await formRef.value?.validate();
-  !id&& await new ApiRoleCreate({ params: formData, option: { hintSuccess: true, successMsg: '角色创建成功' } });
-  id&& await new ApiRoleUpdate({ query: { id }, params: formData, option: { hintSuccess: true, successMsg: '角色更新成功' } });
+  !id&& await new ApiRoleCreate({ body: formData },{ hintSuccess: true, successMsg: '角色创建成功' });
+  id&& await new ApiRoleUpdate({ params: { id }, body: formData },{ hintSuccess: true, successMsg: '角色更新成功' });
 };
 
 defineExpose({

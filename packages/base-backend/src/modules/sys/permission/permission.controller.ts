@@ -91,8 +91,8 @@ export class PermissionController {
     type: [PermissionTreeNodeDto],
   })
   @ApiQuery({ name: 'permissionType', required: false, description: '权限类型：PC/NORMAL', enum: ['PC', 'NORMAL'] })
-  @RequirePermission({ permCode: 'pc_root:sys:permission-pc', permissionValue: ['查看'] })
-  @RequirePermission({ permCode: 'pc_root:sys:permission', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:permission-pc' })
+  @RequirePermission({ permCode: 'pc_root:sys:permission' })
   async findAllTree(@Query('permissionType') permissionType?: string) {
     const result = await this.permissionService.findAllTreeWithChildren(permissionType);
     return ApiResponseUtil.success(result, '查询成功');
@@ -109,8 +109,8 @@ export class PermissionController {
     description: '查询成功',
     type: [PermissionTreeNodeDto],
   })
-  @RequirePermission({ permCode: 'pc_root:sys:permission-pc', permissionValue: ['查看'] })
-  @RequirePermission({ permCode: 'pc_root:sys:permission', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:permission-pc' })
+  @RequirePermission({ permCode: 'pc_root:sys:permission' })
   async getPermissionTree(@Query('parentId') parentId?: string) {
     const result = await this.permissionService.getPermissionTreeWithChildren(parentId);
     return ApiResponseUtil.success(result, '查询成功');
@@ -128,8 +128,8 @@ export class PermissionController {
     type: PermissionResponseDto,
   })
   @ApiResponse({ status: 404, description: '权限不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:permission-pc', permissionValue: ['查看'] })
-  @RequirePermission({ permCode: 'pc_root:sys:permission', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:permission-pc' })
+  @RequirePermission({ permCode: 'pc_root:sys:permission' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.permissionService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');

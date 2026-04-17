@@ -173,7 +173,7 @@ const actionColumn = {
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   const result = await new ApiRoleFindAll({ 
-    params: { 
+    query: { 
       appId: appId.value,
       ...params 
     } 

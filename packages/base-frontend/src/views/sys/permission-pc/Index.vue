@@ -172,7 +172,7 @@ const handleSync = async () => {
 
   try {
     await new ApiPermissionSyncPermissions({
-      params: {
+      body: {
         routes,
       },
     });

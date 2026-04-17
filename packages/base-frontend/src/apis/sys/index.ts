@@ -16,10 +16,10 @@ import type {
   CheckAvailabilityResponseDto,
   CreateUserDto,
   UserResponseDto,
+  PageResponseDto,
   UpdateUserDto,
   CreateRoleDto,
   RoleResponseDto,
-  PageResponseDto,
   UpdateRoleDto,
   PermissionTreePayloadDto,
   PermissionTreesDto,
@@ -205,14 +205,18 @@ export class ApiUserCreate extends ApiCall<
 export class ApiUserFindAll extends ApiCall<
   {
     query: {
+      page?: number //当前页码
+      pageSize?: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
       username?: string //用户名（模糊查询）
       phone?: string //手机号
       userStatus?: number //状态 (1:启用 0:禁用)
-      page?: number //当前页码
-      pageSize?: number //每页数量
     }
   },
-  unknown
+  PageResponseDto & {
+    list: Array<UserResponseDto>
+  }
 > {
   readonly path = '/api/users'
   readonly method: MoMethod = 'GET'

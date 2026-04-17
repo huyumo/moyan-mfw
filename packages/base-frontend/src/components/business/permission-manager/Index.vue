@@ -251,7 +251,7 @@ const loadPermissionTree = async () => {
   try {
     // 统一使用树接口，后端构建树，通过 permissionType 区分
     const result = await new ApiPermissionFindAllTree({
-      params: {
+      query: {
         permissionType: props.permissionType,
       },
     });
@@ -323,9 +323,8 @@ const handleNodeDrop = async (
     // 批量更新排序
     for (let i = 0; i < siblingIds.length; i++) {
       await new ApiPermissionUpdate({
-        query: { id: siblingIds[i] },
-        params: { sortOrder: i },
-        option: { hintSuccess: false },
+        params: { id: siblingIds[i] },
+        body: { sortOrder: i }
       });
     }
     ElMessage.success('排序已保存');
@@ -424,7 +423,7 @@ const handleDelete = async (data: PermissionTreeNodeDto) => {
     await ElMessageBox.confirm(`确定要删除权限「${data.permName}」吗？将同时删除所有子节点。`, '确认删除', {
       type: 'warning',
     });
-    await new ApiPermissionDelete({ query: { id: data.id } });
+    await new ApiPermissionDelete({ params: { id: data.id } });
     ElMessage.success('删除成功');
     loadPermissionTree();
   } catch {

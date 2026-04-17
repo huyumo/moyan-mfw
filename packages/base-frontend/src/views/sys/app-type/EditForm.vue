@@ -110,8 +110,8 @@ const onConfirm = async () => {
   await formRef.value?.validate();
 
   await new ApiAppTypeUpdate({
-    query: { id: props.data!.id },
-    params: {
+    params: { id: props.data!.id },
+    body: {
       typeName: form.typeName,
       icon: form.icon,
       typeDesc: form.typeDesc,

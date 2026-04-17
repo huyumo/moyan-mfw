@@ -161,7 +161,6 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/dashboard',
       iconName: 'DataBoard',
-      permissionValue: buildPerValue(['查看']),
     },
     // 系统管理模块（菜单分组）
     {
@@ -178,7 +177,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/user',
       iconName: 'User',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // 角色管理（页面）
     {
@@ -187,7 +186,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/role',
       iconName: 'UserFilled',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // 应用管理（页面）
     {
@@ -196,7 +195,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/app',
       iconName: 'Application',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // 应用类型管理（只读 + 编辑）
     {
@@ -205,7 +204,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/app-type',
       iconName: 'Grid',
-      permissionValue: buildPerValue(['查看', '编辑']),
+      permissionValue: buildPerValue(['编辑']),
     },
     // 成员管理（添加、编辑、删除成员）
     {
@@ -214,7 +213,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/member',
       iconName: 'Avatar',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // 权限管理（页面）
     {
@@ -223,7 +222,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/permission',
       iconName: 'Lock',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // PC 权限管理（页面）
     {
@@ -232,7 +231,7 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/permission-pc',
       iconName: 'Monitor',
-      permissionValue: buildPerValue(['查看', '添加', '编辑', '删除']),
+      permissionValue: buildPerValue(['添加', '编辑', '删除']),
     },
     // 审计日志（页面）
     {
@@ -241,7 +240,6 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       nodeType: NodeType.PAGE,
       routePath: '/sys/audit-log',
       iconName: 'Document',
-      permissionValue: buildPerValue(['查看']),
     },
   ];
 

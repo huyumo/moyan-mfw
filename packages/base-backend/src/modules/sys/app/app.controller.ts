@@ -70,7 +70,7 @@ export class AppController {
   @Get()
   @ApiOperation({ summary: '查询应用实例列表', description: '分页查询应用实例列表' })
   @ApiPaginatedResponse(AppDetailResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:app', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app' })
   async findAll(@Query() query: QueryAppDto) {
     const result = await this.appService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -88,7 +88,7 @@ export class AppController {
     type: AppDetailResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用实例不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:app', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');

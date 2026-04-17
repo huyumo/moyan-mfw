@@ -38,15 +38,14 @@ const form = reactive({
 
 /** 加载用户列表 */
 const loadUserList = async (params: { keyword?: string; departmentId?: string | number; page?: number; pageSize?: number }) => {
-  const result = await new ApiUserFindAll({
-    params: {
+  return await new ApiUserFindAll({
+    query: {
       username: params.keyword,
       phone: params.keyword,
       pageSize: params.pageSize || 20,
       page: params.page || 1,
     },
   });
-  return { list: result.list || [], total: result.total || 0 };
 };
 
 /** 表单项配置 */
@@ -72,8 +71,8 @@ const onConfirm = async () => {
   await formRef.value?.validate();
 
   await new ApiMemberAddMember({
-    query: { appId: props.data!.appId },
-    params: { userId: form.userId },
+    params: { appId: props.data!.appId },
+    body: { userId: form.userId },
   });
 };
 

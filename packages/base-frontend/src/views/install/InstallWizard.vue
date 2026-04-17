@@ -124,7 +124,7 @@ const handleInit = async () => {
 
   try {
     await new ApiInstallInitialize({
-      params: {
+      body: {
         adminPassword: adminPassword.value,
       },
     });

@@ -4,13 +4,13 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsInt } from 'class-validator';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 用户查询参数 DTO
  */
-export class QueryUserDto {
+export class QueryUserDto extends PaginationQueryDto {
   /**
    * 用户名（模糊查询）
    */
@@ -34,24 +34,4 @@ export class QueryUserDto {
   @IsOptional()
   @IsInt()
   userStatus?: number;
-
-  /**
-   * 当前页码
-   */
-  @ApiProperty({ description: '当前页码', default: 1, required: false })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
-
-  /**
-   * 每页数量
-   */
-  @ApiProperty({ description: '每页数量', default: 10, required: false })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  pageSize?: number = 10;
 }

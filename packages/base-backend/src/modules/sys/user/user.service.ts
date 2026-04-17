@@ -8,9 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { User } from './entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { hashPassword } from '../../../common/utils/encrypt';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
+import { PaginationResult, PaginationHelper, QueryBuilderHelper } from '../../../common';
 
 /**
  * 用户服务
@@ -122,52 +123,23 @@ export class UserService {
   /**
    * 查询用户列表（分页）
    * @param query - 查询参数
-   * @returns 用户列表和总数
+   * @returns 分页结果
    */
-  async findAll(query: {
-    page?: number;
-    pageSize?: number;
-    username?: string;
-    phone?: string;
-    userStatus?: number;
-  }) {
-    const { page = 1, pageSize = 10, username, phone, userStatus } = query;
+  async findAll(query: QueryUserDto): Promise<PaginationResult<User>> {
+    const qb = this.userRepository.createQueryBuilder('user');
 
-    const queryBuilder = this.userRepository.createQueryBuilder('user');
+    // 使用 QueryBuilderHelper 构建查询条件
+    QueryBuilderHelper.applyConditions(qb, [
+      { field: 'user.username', value: query.username, operator: 'like' },
+      { field: 'user.phone', value: query.phone, operator: 'like' },
+      { field: 'user.userStatus', value: query.userStatus, operator: '=' },
+    ]);
 
-    // 条件查询
-    if (username) {
-      queryBuilder.andWhere('user.username LIKE :username', {
-        username: `%${username}%`,
-      });
-    }
-
-    if (phone) {
-      queryBuilder.andWhere('user.phone LIKE :phone', {
-        phone: `%${phone}%`,
-      });
-    }
-
-    if (userStatus !== undefined) {
-      queryBuilder.andWhere('user.userStatus = :userStatus', { userStatus });
-    }
-
-    // 分页和排序
-    const [list, total] = await queryBuilder
-      .orderBy('user.createdAt', 'DESC')
-      .skip((page - 1) * pageSize)
-      .take(pageSize)
-      .getManyAndCount();
-
-    return {
-      list,
-      total,
-      page,
-      pageSize,
-      totalPages: Math.ceil(total / pageSize),
-      hasPrev: page > 1,
-      hasNext: page < Math.ceil(total / pageSize),
-    };
+    // 使用 PaginationHelper 执行分页查询
+    return PaginationHelper.executeQuery(
+      qb.orderBy('user.createdAt', 'DESC'),
+      query,
+    );
   }
 
   /**

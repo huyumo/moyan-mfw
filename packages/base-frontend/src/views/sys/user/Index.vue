@@ -5,16 +5,13 @@
  */
 -->
 <template>
-  <MfwPageScene
-    ref="pageScene"
-    :search-template="searchTemplate"
-    :columns="columns"
-    :action-column="actionColumn"
-    :load-data="loadData"
-  >
+  <MfwPageScene ref="pageScene" :search-template="searchTemplate" :columns="columns" :action-column="actionColumn"
+    :load-data="loadData">
     <template #search-actions="{ loading }">
       <el-button type="primary" :loading="loading" data-testid="user-create-btn" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
+        <el-icon>
+          <Plus />
+        </el-icon>
         新建用户
       </el-button>
     </template>
@@ -150,19 +147,15 @@ const actionColumn = {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiUserFindAll({
-    params: {
+  return await new ApiUserFindAll({
+    query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
       username: params.username as string,
       phone: params.phone as string,
       userStatus: params.userStatus as number,
     },
-  });
-  return {
-    list: result.list || [],
-    total: result.total || 0,
-  };
+  })
 };
 
 /** 新建 */
@@ -200,16 +193,12 @@ const handleEdit = (row: UserResponseDto) => {
 
 /** 状态切换 */
 const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
-  try {
-    const status = enabled ? STATUS.ENABLED : STATUS.DISABLED;
-    await new ApiUserUpdateStatus({
-      params: { id: row.id, status },
-    });
-    ElMessage.success(enabled ? '已启用' : '已禁用');
-    pageScene.value?.refresh();
-  } catch (error: any) {
-    ElMessage.error(error?.response?.data?.message || '状态更新失败');
-  }
+  const status = enabled ? STATUS.ENABLED : STATUS.DISABLED;
+  await new ApiUserUpdateStatus({
+    params: { id: row.id },
+    query: { status }
+  }, { hintSuccess: true, successMsg: () => enabled ? '已启用' : '已禁用', hintFail: true, failMsg: '状态更新失败' });
+  pageScene.value?.refresh();
 };
 
 /** 重置密码 */
@@ -226,9 +215,9 @@ const handleResetPassword = async (row: UserResponseDto) => {
       }
     );
     await new ApiUserResetPassword({
-      params: { id: row.id, password: value },
-    });
-    ElMessage.success('密码重置成功');
+      params: { id: row.id },
+      query: { password: value }
+    },{hintSuccess:true,successMsg:'密码重置成功'});
   } catch {
     // 用户取消
   }
@@ -242,8 +231,7 @@ const handleDelete = async (row: UserResponseDto) => {
       '确认删除',
       { type: 'warning' }
     );
-    await new ApiUserDelete({ params: { id: row.id } });
-    ElMessage.success('删除成功');
+    await new ApiUserDelete({ params: { id: row.id } },{hintSuccess:true,successMsg:'删除成功'});
     pageScene.value?.refresh();
   } catch {
     // 用户取消

@@ -90,7 +90,7 @@ const onConfirm = async () => {
   await formRef.value?.validate();
 
   await new ApiAppTypeCreate({
-    params: {
+    body: {
       typeName: form.typeName,
       typeCode: form.typeCode,
       icon: form.icon,

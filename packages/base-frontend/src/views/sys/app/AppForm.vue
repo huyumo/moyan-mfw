@@ -58,14 +58,14 @@ const form = reactive({
 /** 加载用户列表（用于用户选择器） */
 const loadUserList = async (params: { keyword?: string; departmentId?: string | number; page?: number; pageSize?: number }) => {
   const result = await new ApiUserFindAll({
-    params: {
+    query: {
       username: params.keyword,
       phone: params.keyword,
       pageSize: params.pageSize || 20,
       page: params.page || 1,
     },
   });
-  return { list: result.list || [], total: result.total || 0 };
+  return { list: (result as any).list || [], total: (result as any).total || 0 };
 };
 
 /** 基础表单项配置 */
@@ -194,8 +194,8 @@ const onConfirm = async () => {
 
   if (isEdit.value) {
     await new ApiAppUpdate({
-      query: { id: props.data!.id },
-      params: {
+      params: { id: props.data!.id },
+      body: {
         appName: form.appName,
         appDesc: form.appDesc,
         icon: form.icon,
@@ -205,7 +205,7 @@ const onConfirm = async () => {
     });
   } else {
     await new ApiAppCreate({
-      params: {
+      body: {
         appTypeId: form.appTypeId,
         appName: form.appName,
         appCode: form.appCode,

@@ -176,8 +176,8 @@ const onConfirm = async () => {
   if (isEdit.value) {
     // 编辑
     await new ApiPermissionUpdate({
-      query: { id: form.id },
-      params: {
+      params: { id: form.id },
+      body: {
         permName: form.permName,
         permDesc: form.permDesc,
         showMode: form.showMode,
@@ -188,7 +188,7 @@ const onConfirm = async () => {
   } else {
     // 新建 - 只传最后一段编码，后端会自动拼接
     await new ApiPermissionCreate({
-      params: {
+      body: {
         permName: form.permName,
         permCode: form.permCode,
         nodeType: form.nodeType,

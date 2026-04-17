@@ -172,7 +172,7 @@ async function handleSelectApp(app: AppInstanceItemDto) {
 
     // 2. 加载该应用下的权限菜单
     const permissionsResult = await new ApiAuthGetUserPermissions({
-      params: { appId: app.appId },
+      query: { appId: app.appId },
     })
 
     // 3. 设置权限菜单

@@ -75,7 +75,7 @@ export class MemberController {
   @Get()
   @ApiOperation({ summary: '获取应用成员列表', description: '分页查询应用成员列表' })
   @ApiPaginatedResponse(MemberResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:member', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:member' })
   async getMembers(
     @Param('appId', ParseUUIDPipe) appId: string,
     @Query() query: QueryMemberDto,
@@ -143,7 +143,7 @@ export class MemberController {
     type: [AvailableRoleDto],
   })
   @ApiResponse({ status: 404, description: '应用不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:member', permissionValue: ['查看'] })
+  @RequirePermission({ permCode: 'pc_root:sys:member' })
   async getAvailableRoles(@Param('appId', ParseUUIDPipe) appId: string) {
     const result = await this.memberService.getAvailableRoles(appId);
     return ApiResponseUtil.success(result, '查询成功');
