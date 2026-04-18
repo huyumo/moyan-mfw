@@ -12,6 +12,8 @@ import { AppMemberService } from './service/app-member.service';
 import { AppMemberController } from './controller/app-member.controller';
 import { AppService } from './service/app.service';
 import { AppController } from './controller/app.controller';
+import { User } from '../user';
+import { Role } from '../role';
 
 /**
  * 应用模块
@@ -19,7 +21,7 @@ import { AppController } from './controller/app.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([App, AppMember]),
+    TypeOrmModule.forFeature([App, AppMember, User, Role]),
   ],
   providers: [AppService, AppMemberService],
   controllers: [AppController, AppMemberController],
