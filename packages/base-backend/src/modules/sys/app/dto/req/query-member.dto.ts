@@ -13,18 +13,18 @@ import { PaginationQueryDto } from '../../../../../common';
  */
 export class QueryMemberDto extends PaginationQueryDto {
   /**
-   * 用户名称（模糊查询）
+   * 用户昵称（模糊查询）
    */
-  @ApiProperty({ description: '用户名称（模糊查询）', required: false })
+  @ApiProperty({ description: '用户昵称（模糊查询）', required: false })
   @IsOptional()
   @IsString()
-  userName?: string;
+  nickname?: string;
 
   /**
-   * 用户账号（模糊查询）
+   * 用户名（模糊查询）
    */
-  @ApiProperty({ description: '用户账号（模糊查询）', required: false })
+  @ApiProperty({ description: '用户名（模糊查询）', required: false })
   @IsOptional()
   @IsString()
-  userAccount?: string;
+  username?: string;
 }

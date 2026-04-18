@@ -16,7 +16,7 @@ import { Role } from '../../role/entities/role.entity';
 import { User } from '../../user/entities/user.entity';
 import { App } from '../entities/app.entity';
 import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../../common';
+import { PaginationHelper, PaginationResult } from '../../../../common';
 
 /**
  * 成员服务
@@ -77,94 +77,107 @@ export class AppMemberService {
    * @returns 分页结果
    */
   async getMembers(appId: string, query: QueryMemberDto): Promise<PaginationResult<any>> {
-    // 检查应用是否存在
     const app = await this.appRepository.findOne({ where: { id: appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
     }
 
-    // 构建查询
-    const qb = this.appMemberRepository
-      .createQueryBuilder('member')
-      .leftJoinAndSelect('member.user', 'user')
-      .where('member.appId = :appId', { appId });
+    const offset = (query.page! - 1) * query.pageSize!;
+    const limit = query.pageSize!;
 
-    // 应用查询条件
-    QueryBuilderHelper.applyConditions(qb, [
-      { field: 'user.userName', value: query.userName, operator: 'like' },
-      { field: 'user.userAccount', value: query.userAccount, operator: 'like' },
-    ]);
+    const whereConditions = ['am.appId = ?'];
+    const params: any[] = [appId];
 
-    // 执行分页查询
-    const result = await PaginationHelper.executeQuery(
-      qb.orderBy('member.createdAt', 'DESC'),
-      query,
-    );
-
-    // 批量查询角色信息
-    const userIds = result.list.map((member) => member.userId);
-    const rolesMap = new Map<string, any[]>();
-
-    if (userIds.length > 0) {
-      const roles = await this.dataSource
-        .createQueryBuilder()
-        .select([
-          'ur.userId',
-          'r.id as roleId',
-          'r.roleName',
-          'r.roleCode',
-          'r.isBuiltin',
-        ])
-        .from('sys_user_roles', 'ur')
-        .innerJoin('sys_roles', 'r', 'ur.roleId = r.id')
-        .where('ur.userId IN (:...userIds)', { userIds })
-        .andWhere('(r.appId = :appId OR r.appTypeId = :appTypeId)', {
-          appId,
-          appTypeId: app.appTypeId,
-        })
-        .andWhere('r.isOwner = :isOwner', { isOwner: 0 })
-        .getRawMany();
-
-      for (const role of roles) {
-        const userId = role.userId;
-        if (!rolesMap.has(userId)) {
-          rolesMap.set(userId, []);
-        }
-        const userRoles = rolesMap.get(userId);
-        if (userRoles) {
-          userRoles.push({
-            roleId: role.roleId,
-            roleName: role.roleName,
-            roleCode: role.roleCode,
-            isBuiltin: role.isBuiltin,
-          });
-        }
-      }
+    if (query.nickname) {
+      whereConditions.push('u.nickname LIKE ?');
+      params.push(`%${query.nickname}%`);
     }
 
-    // 组装最终数据
-    const memberList = result.list.map((member) => ({
-      id: member.id,
-      appId: member.appId,
-      userId: member.userId,
-      createdAt: member.createdAt,
-      user: member.user
-        ? {
-            id: member.user.id,
-            username: member.user.username,
-            nickname: member.user.nickname,
-            phone: member.user.phone,
-            avatar: member.user.avatar,
-          }
-        : null,
-      roles: rolesMap.get(member.userId) || [],
+    if (query.username) {
+      whereConditions.push('u.username LIKE ?');
+      params.push(`%${query.username}%`);
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+
+    const dataSql = `
+      SELECT 
+        ANY_VALUE(am.id) as id,
+        ANY_VALUE(am.userId) as userId,
+        ANY_VALUE(am.appId) as appId,
+        ANY_VALUE(am.createdAt) as createdAt,
+        ANY_VALUE(u.id) as userId,
+        ANY_VALUE(u.nickname) as nickname,
+        ANY_VALUE(u.avatar) as avatar,
+        ANY_VALUE(u.email) as email,
+        ANY_VALUE(u.phone) as phone,
+        ANY_VALUE(u.username) as username,
+        ANY_VALUE(a.appCode) as appCode,
+        ANY_VALUE(a.appName) as appName,
+        ANY_VALUE(a.icon) as appIcon,
+        ANY_VALUE(a.ownerId) as ownerId,
+        ANY_VALUE(a.sortOrder) as sortOrder,
+        ANY_VALUE(a.appTypeId) as appTypeId,
+        JSON_ARRAYAGG(
+          JSON_OBJECT(
+            'roleCode', r.roleCode,
+            'roleName', r.roleName,
+            'isBuiltin', r.isBuiltin
+          )
+        ) as roles
+      FROM sys_app_members am
+      INNER JOIN sys_apps a ON a.id = am.appId
+      INNER JOIN sys_users u ON u.id = am.userId
+      LEFT JOIN sys_user_roles ur ON ur.userId = am.userId 
+        AND (ur.roleId IN (
+          SELECT r2.id FROM sys_roles r2 
+          WHERE (r2.appId = ? OR r2.appTypeId = ?) AND r2.isOwner = 0
+        ))
+      LEFT JOIN sys_roles r ON ur.roleId = r.id
+      WHERE ${whereClause}
+      GROUP BY am.userId
+      ORDER BY am.createdAt DESC
+      LIMIT ? OFFSET ?
+    `;
+
+    const countSql = `
+      SELECT COUNT(DISTINCT am.userId) as total
+      FROM sys_app_members am
+      INNER JOIN sys_apps a ON a.id = am.appId
+      INNER JOIN sys_users u ON u.id = am.userId
+      WHERE ${whereClause}
+    `;
+
+    const dataParams = [...params, appId, app.appTypeId, limit, offset];
+    const countParams = [...params];
+
+    const [data, countResult] = await Promise.all([
+      this.dataSource.query(dataSql, dataParams),
+      this.dataSource.query(countSql, countParams),
+    ]);
+
+    const total = countResult[0]?.total || 0;
+
+    const memberList = data.map((row: any) => ({
+      id: row.id,
+      appId: row.appId,
+      userId: row.userId,
+      createdAt: row.createdAt,
+      user: {
+        id: row.userId,
+        username: row.username,
+        nickname: row.nickname,
+        phone: row.phone,
+        avatar: row.avatar,
+      },
+      roles: row.roles || [],
     }));
 
     return new PaginationResult(
       memberList,
-      result.total,
-      result.page,
-      result.pageSize,
+      total,
+      query.page!,
+      query.pageSize!,
     );
   }
 

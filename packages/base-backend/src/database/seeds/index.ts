@@ -575,7 +575,6 @@ async function seedAppMembers(dataSource: DataSource): Promise<void> {
     await dataSource.manager.save(AppMember, {
       appId: systemApp.id,
       userId: adminUser.id,
-      roleId: superAdminRole.id,  // 同时绑定角色
     });
     process.stdout.write(`    ✓ 绑定 admin 用户为 ${systemApp.appName} 的拥有者\n`);
   } else {

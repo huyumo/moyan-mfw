@@ -47,6 +47,9 @@ export {
   PaginationHelper,
 } from './utils/pagination.util';
 export {
+  PaginationX,
+} from './utils/pagination-x.util';
+export {
   QueryBuilderHelper,
   type QueryCondition,
   type ConditionGroup,

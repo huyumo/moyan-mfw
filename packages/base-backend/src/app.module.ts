@@ -34,7 +34,6 @@ import { RoleModule } from './modules/sys/role/role.module';
 import { PermissionModule } from './modules/sys/permission/permission.module';
 import { AppTypeModule } from './modules/sys/app-type/app-type.module';
 import { AppModule as SysAppModule } from './modules/sys/app/app.module';
-import { MemberModule } from './modules/sys/member/member.module';
 import { AuditLogModule } from './modules/sys/audit-log/audit-log.module';
 import { HealthModule } from './modules/health/health.module';
 import { InstallModule } from './modules/sys/install/install.module';
@@ -181,7 +180,6 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     PermissionModule,
     AppTypeModule,
     SysAppModule,
-    MemberModule,
     AuditLogModule,
     HealthModule,
     InstallModule,
