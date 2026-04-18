@@ -433,10 +433,10 @@ export class PermissionService {
 
       if (idsToDelete.length === 0) return;
 
-      // 2. 删除 sys_role_permission 关联（只删除 isAutoSync=1 的权限关联）
+      // 2. 删除 sys_role_permissions 关联（只删除 isAutoSync=1 的权限关联）
       // 使用 FIND_IN_SET 避免 IN 语法对数组参数的限制
       await manager.query(
-        `DELETE FROM sys_role_permission WHERE FIND_IN_SET(permissionId, ?)`,
+        `DELETE FROM sys_role_permissions WHERE FIND_IN_SET(permissionId, ?)`,
         [idsToDelete.join(',')]
       );
 

@@ -25,14 +25,14 @@ import {
   ApiParam,
   ApiExtraModels,
 } from '@nestjs/swagger';
-import { MemberService } from './member.service';
-import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto,  } from './dto';
-import { AuthGuard } from '../../../common/guards/auth.guard';
-import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
-import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
-import { ApiResponseUtil } from '../../../common/types/api.types';
-import { ApiPaginatedResponse } from '../../../common';
-import { AvailableRoleDto, MemberResponseDto } from './dto/res/member-response.dto';
+import { AppMemberService } from '../service/app-member.service';
+import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
+import { AuthGuard } from '../../../../common/guards/auth.guard';
+import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
+import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
+import { ApiResponseUtil } from '../../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../../common';
+import { AvailableAvailableRoleDto, MemberResponseDto } from '../dto/res/member-response.dto';
 
 /**
  * 成员控制器
@@ -42,8 +42,8 @@ import { AvailableRoleDto, MemberResponseDto } from './dto/res/member-response.d
 @ApiBearerAuth('Authorization')
 @UseGuards(AuthGuard)
 @Controller('apps/:appId/members')
-export class MemberController {
-  constructor(private memberService: MemberService) {}
+export class AppMemberController {
+  constructor(private appMemberService: AppMemberService) {}
 
   /**
    * 添加应用成员
@@ -65,7 +65,7 @@ export class MemberController {
     @Param('appId', ParseUUIDPipe) appId: string,
     @Body() addMemberDto: AddMemberDto,
   ) {
-    const result = await this.memberService.addMember(appId, addMemberDto);
+    const result = await this.appMemberService.addMember(appId, addMemberDto);
     return ApiResponseUtil.success(result, '添加成功');
   }
 
@@ -80,7 +80,7 @@ export class MemberController {
     @Param('appId', ParseUUIDPipe) appId: string,
     @Query() query: QueryMemberDto,
   ) {
-    const result = await this.memberService.getMembers(appId, query);
+    const result = await this.appMemberService.getMembers(appId, query);
     return ApiResponseUtil.success(result, '查询成功');
   }
 
@@ -105,7 +105,7 @@ export class MemberController {
     @Param('userId', ParseUUIDPipe) userId: string,
     @Body() updateDto: UpdateMemberRolesDto,
   ) {
-    await this.memberService.updateRoles(appId, userId, updateDto);
+    await this.appMemberService.updateRoles(appId, userId, updateDto);
     return ApiResponseUtil.success(null, '更新成功');
   }
 
@@ -126,7 +126,7 @@ export class MemberController {
     @Param('appId', ParseUUIDPipe) appId: string,
     @Param('userId', ParseUUIDPipe) userId: string,
   ) {
-    await this.memberService.removeMember(appId, userId);
+    await this.appMemberService.removeMember(appId, userId);
     return ApiResponseUtil.success(null, '移除成功');
   }
 
@@ -140,12 +140,12 @@ export class MemberController {
   @ApiResponse({
     status: 200,
     description: '查询成功',
-    type: [AvailableRoleDto],
+    type: [AvailableAvailableRoleDto],
   })
   @ApiResponse({ status: 404, description: '应用不存在' })
   @RequirePermission({ permCode: 'pc_root:sys:member' })
   async getAvailableRoles(@Param('appId', ParseUUIDPipe) appId: string) {
-    const result = await this.memberService.getAvailableRoles(appId);
+    const result = await this.appMemberService.getAvailableRoles(appId);
     return ApiResponseUtil.success(result, '查询成功');
   }
 }

@@ -11,18 +11,18 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
-import { AppMember } from '../app/entities/app-member.entity';
-import { Role } from '../role/entities/role.entity';
-import { User } from '../user/entities/user.entity';
-import { App } from '../app/entities/app.entity';
-import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from './dto';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { AppMember } from '../entities/app-member.entity';
+import { Role } from '../../role/entities/role.entity';
+import { User } from '../../user/entities/user.entity';
+import { App } from '../entities/app.entity';
+import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../../common';
 
 /**
  * 成员服务
  */
 @Injectable()
-export class MemberService {
+export class AppMemberService {
   constructor(
     @InjectRepository(AppMember)
     private appMemberRepository: Repository<AppMember>,
@@ -70,7 +70,7 @@ export class MemberService {
     return this.appMemberRepository.save(member);
   }
 
-  /**
+    /**
    * 获取应用成员列表（分页）
    * @param appId - 应用 ID
    * @param query - 查询参数
@@ -115,7 +115,7 @@ export class MemberService {
           'r.roleCode',
           'r.isBuiltin',
         ])
-        .from('sys_user_role', 'ur')
+        .from('sys_user_roles', 'ur')
         .innerJoin('sys_roles', 'r', 'ur.roleId = r.id')
         .where('ur.userId IN (:...userIds)', { userIds })
         .andWhere('(r.appId = :appId OR r.appTypeId = :appTypeId)', {
@@ -220,7 +220,7 @@ export class MemberService {
       // 删除现有角色关联（排除拥有者角色）
       await queryRunner.manager.query(
         `
-        DELETE ur FROM sys_user_role ur
+        DELETE ur FROM sys_user_roles ur
         INNER JOIN sys_roles r ON ur.roleId = r.id
         WHERE ur.userId = ? AND (r.appId = ? OR r.appTypeId = ?)
         AND r.isOwner = 0
@@ -235,7 +235,7 @@ export class MemberService {
           return [id, userId, roleId, new Date()];
         });
         await queryRunner.manager.query(
-          `INSERT INTO sys_user_role (id, userId, roleId, created_at) VALUES ?`,
+          `INSERT INTO sys_user_roles (id, userId, roleId, created_at) VALUES ?`,
           [insertValues],
         );
       }
@@ -282,7 +282,7 @@ export class MemberService {
     try {
       // 删除角色关联
       await queryRunner.manager.query(
-        `DELETE FROM sys_user_role WHERE userId = ?`,
+        `DELETE FROM sys_user_roles WHERE userId = ?`,
         [userId],
       );
 
@@ -314,7 +314,7 @@ export class MemberService {
     const roles = await this.roleRepository
       .createQueryBuilder('role')
       .where('(role.appId = :appId OR role.appTypeId = :appTypeId)', {
-        appId,
+               appId,
         appTypeId: app.appTypeId,
       })
       .andWhere('role.isOwner = :isOwner', { isOwner: 0 })
