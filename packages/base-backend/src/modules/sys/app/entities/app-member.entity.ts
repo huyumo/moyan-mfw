@@ -50,18 +50,4 @@ export class AppMember extends Base {
   @JoinColumn({ name: 'userId' })
   user: User;
 
-  /**
-   * 角色 ID
-   * @description 可选，用户在应用中的角色，初始可以为空
-   */
-  @Column({ type: 'char', length: 36, comment: '角色 ID - 用户在应用中的角色，可选', nullable: true })
-  @Index()
-  roleId?: string;
-
-  /**
-   * 角色
-   */
-  @ManyToOne(() => Role)
-  @JoinColumn({ name: 'roleId' })
-  role: Role;
 }

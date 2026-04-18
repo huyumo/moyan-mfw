@@ -78,7 +78,7 @@ export class MemberResponseDto {
 /**
  * 可选角色响应 DTO
  */
-export class AvailableRoleDto {
+export class AvailableAvailableRoleDto {
   /**
    * 角色 ID
    */

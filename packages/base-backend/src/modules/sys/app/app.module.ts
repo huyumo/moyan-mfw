@@ -6,8 +6,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from './entities/app.entity';
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
+import { AppMember } from './entities/app-member.entity';
+
+import { AppMemberService } from './service/app-member.service';
+import { AppMemberController } from './controller/app-member.controller';
+import { AppService } from './service/app.service';
+import { AppController } from './controller/app.controller';
 
 /**
  * 应用模块
@@ -15,10 +19,10 @@ import { AppController } from './app.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([App]),
+    TypeOrmModule.forFeature([App, AppMember]),
   ],
-  providers: [AppService],
-  controllers: [AppController],
-  exports: [AppService],
+  providers: [AppService, AppMemberService],
+  controllers: [AppController, AppMemberController],
+  exports: [AppService, AppMemberService],
 })
 export class AppModule {}

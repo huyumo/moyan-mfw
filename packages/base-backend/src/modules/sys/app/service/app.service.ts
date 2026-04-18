@@ -6,10 +6,10 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
-import { App } from './entities/app.entity';
-import { CreateAppDto, UpdateAppDto, QueryAppDto } from './dto';
-import { NotFoundError } from '../../../common/exceptions/not-found.exception';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { App } from '../entities/app.entity';
+import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
+import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
+import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../../common';
 
 /**
  * 应用服务
