@@ -22,8 +22,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { ApiMemberGetAvailableRoles, ApiMemberUpdateRoles } from '../../../apis/sys';
-import type { MemberResponseDto, AvailableRoleDto } from '../../../apis/sys/schemas';
+import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
+import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
 
 /** 状态常量 */
 const STATUS = {
@@ -42,7 +42,7 @@ interface Props {
 const props = defineProps<Props>();
 
 /** 可选角色 */
-const availableRoles = ref<AvailableRoleDto[]>([]);
+const availableRoles = ref<AvailableAvailableRoleDto[]>([]);
 
 /** 选中的角色 ID */
 const selectedRoleIds = ref<string[]>([]);
@@ -50,7 +50,7 @@ const selectedRoleIds = ref<string[]>([]);
 /** 加载可选角色 */
 const loadAvailableRoles = async () => {
   if (!props.data?.appId) return;
-  const result = await new ApiMemberGetAvailableRoles({
+  const result = await new ApiAppMemberGetAvailableRoles({
     params: { appId: props.data.appId },
   });
   availableRoles.value = result || [];
@@ -70,7 +70,7 @@ onMounted(async () => {
 const onConfirm = async () => {
   if (!props.data) return;
 
-  await new ApiMemberUpdateRoles({
+  await new ApiAppMemberUpdateRoles({
     params: {
       appId: props.data.appId,
       userId: props.data.member.userId,
