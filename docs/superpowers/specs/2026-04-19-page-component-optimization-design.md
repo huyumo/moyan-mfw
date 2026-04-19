@@ -4,72 +4,128 @@
 
 本设计文档描述了页面组件的优化方案，旨在解决以下问题：
 
-1. SearchPanel 组件需要独立导出，供卡片列表等其他组件复用
-2. 搜索面板按钮区域需要右对齐
-3. 页面标题和面包屑重复显示，需要调整为互斥显示
-4. 刷新按钮位置需要优化，右对齐以按钮形式展示
+1. SearchPanel 需要作为独立组件复用（支持卡片列表页面）
+2. 搜索面板按钮需要右对齐
+3. 页面标题与面包屑重复显示，需要互斥控制
+4. 刷新按钮位置需要优化（右对齐，按钮形式）
 
 ## 设计目标
 
-- SearchPanel 独立导出，可被多种列表组件复用
-- 搜索面板按钮区域右对齐，布局清晰
-- 页面标题和面包屑互斥显示，通过全局配置统一风格
-- 刷新按钮在头部右侧，以按钮形式展示，SearchPanel 存在时不显示
+- SearchPanel 独立化：可被 MfwListPage 和 MfwCardListPage 共用
+- 搜索面板按钮右对齐：查询/重置按钮放在筛选面板右侧
+- 标题/面包屑互斥：通过 headerMode prop 控制
+- 刷新按钮优化：右对齐，以按钮形式展示
+- 新增卡片列表组件：支持表格和卡片两种渲染模式
 
-## 架构设计
-
-### 文件结构变更
+## 组件架构
 
 ```
 src/components/page/
-├── search-panel/           # 新建独立目录
-│   ├── index.tsx           # SearchPanel 组件
-│   ├── types.ts            # 类型定义
-│   ├── style.scss          # 样式
-│   └── mod.ts              # 导出模块
-├── list-page/
-│   ├── index.tsx           # 导入并使用 SearchPanel
-│   ├── types.ts            # 类型定义
-│   ├── style.scss          # 样式
-│   └── mod.ts              # 导出模块
 ├── page-wrapper/
-│   ├── index.tsx           # 重构头部布局
-│   ├── types.ts            # 新增 headerMode 相关类型
-│   ├── style.scss          # 调整头部样式
-│   └── mod.ts              # 导出模块
-└── index.ts                # 更新导出
-
-src/store/layout-store.ts   # 新增 headerMode 配置项
+│   ├── index.tsx           # 修改：headerMode prop，刷新按钮位置
+│   ├── types.ts             # 修改：添加 headerMode 类型
+│   └── style.scss           # 修改：调整布局样式
+├── search-panel/
+│   ├── index.tsx            # 新建：独立筛选面板组件
+│   ├── types.ts             # 新建：类型定义
+│   ├── style.scss           # 新建：样式（按钮右对齐）
+│   └── mod.ts               # 新建：导出模块
+├── list-page/
+│   ├── index.tsx            # 修改：使用 SearchPanel 组件
+│   ├── SearchPanel.tsx      # 删除：移至 search-panel 目录
+│   ├── SearchPanel.scss     # 删除：移至 search-panel 目录
+│   └── ...                  # 其他文件保持
+├── card-list-page/
+│   ├── index.tsx            # 新建：卡片列表页面组件
+│   ├── types.ts             # 新建：类型定义
+│   ├── style.scss           # 新建：样式
+│   └── mod.ts               # 新建：导出模块
+└── index.ts                 # 修改：导出新组件
 ```
 
-### 组件层级关系
+## MfwPageWrapper 修改设计
 
-```
-MfwPageWrapper
-├── 头部区域（标题或面包屑 + 刷新按钮）
-├── toolbar 插槽
-├── 内容区
-│   └── MfwListPage / MfwCardList / 其他组件
-│       └── SearchPanel（可选）
-└── footer 插槽
+### 新增 Props
+
+```typescript
+interface MfwPageWrapperProps {
+  // ... 现有 props 保持不变
+  
+  /** 头部显示模式 */
+  headerMode?: 'breadcrumb' | 'title';
+  // - 'breadcrumb': 显示面包屑，不显示标题（默认）
+  // - 'title': 显示标题，不显示面包屑
+}
 ```
 
-## SearchPanel 独立组件设计
+### 布局调整
 
-### 目录结构
+**headerMode='breadcrumb'（默认）：**
+```
+┌─────────────────────────────────────────────────┐
+│ 面包屑: 首页 / 用户管理              [刷新按钮] │
+├─────────────────────────────────────────────────┤
+│ 内容区                                           │
+└─────────────────────────────────────────────────┘
+```
 
+**headerMode='title'：**
 ```
-src/components/page/search-panel/
-├── index.tsx           # SearchPanel 组件实现
-├── types.ts            # 类型定义
-├── style.scss          # 样式（按钮右对齐）
-└── mod.ts              # 导出模块
+┌─────────────────────────────────────────────────┐
+│ 页面标题: 用户管理                   [刷新按钮] │
+├─────────────────────────────────────────────────┤
+│ 内容区                                           │
+└─────────────────────────────────────────────────┘
 ```
+
+### 刷新按钮样式
+
+- 类型：`type="default"`（非 link 类型）
+- 位置：头部栏右侧
+- 图标：Refresh
+- 文本："刷新"
+
+### 样式修改
+
+```scss
+.mfw-page-wrapper {
+  // ... 现有样式
+  
+  &__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--mfw-page-padding);
+    padding-bottom: 8px;
+  }
+  
+  &__header-left {
+    flex: 1;
+    min-width: 0;  // 防止内容溢出
+  }
+  
+  &__header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  &__refresh-btn {
+    // 独立按钮样式
+  }
+}
+```
+
+## MfwSearchPanel 设计（独立组件）
+
+### 位置
+
+`src/components/page/search-panel/`
 
 ### Props 定义
 
 ```typescript
-interface SearchPanelProps {
+interface MfwSearchPanelProps {
   /** 搜索表单模板 */
   searchTemplate?: SearchTemplateItem[];
   /** 筛选触发模式 */
@@ -89,17 +145,30 @@ interface SearchPanelProps {
 }
 ```
 
+### Emits 定义
+
+```typescript
+interface MfwSearchPanelEmits {
+  /** 搜索事件 */
+  (e: 'search', formData: Record<string, any>): void;
+  /** 重置事件 */
+  (e: 'reset'): void;
+  /** 表单变化事件 */
+  (e: 'change', key: string, value: any, formData: Record<string, any>): void;
+}
+```
+
 ### Slots 定义
 
 | 插槽名 | 位置 | 用途 |
 |--------|------|------|
-| `search-actions` | 按钮区域左侧 | 自定义操作按钮（如新建） |
+| `search-actions` | 按钮区左侧 | 自定义操作按钮（如新建） |
 | `search-extra` | 面板底部 | 额外内容 |
 
 ### 暴露实例
 
 ```typescript
-interface SearchPanelInstance {
+interface MfwSearchPanelInstance {
   reset: () => void;
   getFormValues: () => Record<string, any>;
   setFormValues: (values: Record<string, any>) => void;
@@ -107,260 +176,279 @@ interface SearchPanelInstance {
 }
 ```
 
-### 按钮布局设计
+### 布局设计
 
-**布局结构：**
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  [表单项区域]                                                │
-│  [表单项1]  [表单项2]  [表单项3]  [表单项4]  ...              │
-├─────────────────────────────────────────────────────────────┤
-│  [search-actions 插槽]              [展开] [查询] [重置]    │
+│ [表单项1] [表单项2] [表单项3]     [自定义按钮] [展开] [查询] [重置] │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**样式设计：**
+- 表单项：左对齐，使用栅格布局
+- 自定义按钮插槽：在按钮组左侧
+- 展开/收起按钮：在查询按钮左侧
+- 查询/重置按钮：右对齐
+
+### 样式设计
+
 ```scss
 .search-panel {
-  &__actions-row {
+  padding: 16px;
+  background: var(--el-bg-color);
+  border: 1px solid var(--el-border-color);
+  border-radius: 8px;
+  
+  &__form {
     display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  
+  &__actions {
+    display: flex;
+    align-items: center;
     justify-content: flex-end;  // 右对齐
-    align-items: center;
     gap: 8px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--el-border-color-lighter);
+    margin-left: auto;
+    flex-shrink: 0;
   }
-
-  &__actions-left {
-    display: flex;
-    gap: 8px;
-    margin-right: auto;  // 左侧插槽占据左侧空间
-  }
-
-  &__actions-right {
-    display: flex;
-    gap: 8px;
-  }
-}
-```
-
-## layoutStore 全局配置设计
-
-### 新增配置项
-
-```typescript
-interface LayoutStyleConfig {
-  // ... 现有配置项
   
-  /** 页面头部显示模式 */
-  headerMode: 'title' | 'breadcrumb';
+  &__expand-btn {
+    color: var(--el-color-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
 }
 ```
 
-**默认值：** `'breadcrumb'`
+## MfwListPage 修改设计
 
-**配置说明：**
-- `'title'`：显示页面标题（如"用户管理"）
-- `'breadcrumb'`：显示面包屑导航（如"首页 / 系统管理 / 用户管理"）
+### 改动内容
 
-### SettingsPanel 配置选项
+1. 移除内嵌的 SearchPanel 组件（`SearchPanel.tsx`、`SearchPanel.scss`）
+2. 导入并使用独立的 `MfwSearchPanel` 组件
+3. 保持现有 Props 和 API 兼容
 
-在设置面板中添加头部模式选项：
+### 修改后的结构
 
-```typescript
-const headerModeOptions = [
-  { label: '显示标题', value: 'title' },
-  { label: '显示面包屑', value: 'breadcrumb' }
-];
+```tsx
+// MfwListPage 使用 MfwSearchPanel
+<MfwSearchPanel
+  ref="searchPanelRef"
+  :search-template="searchTemplate"
+  :search-trigger="searchTrigger"
+  :loading="loading"
+  @search="handleSearch"
+  @reset="handleReset"
+>
+  <template #search-actions="{ loading }">
+    <slot name="search-actions" :loading="loading" />
+  </template>
+</MfwSearchPanel>
 ```
 
-## MfwPageWrapper 重构设计
+## MfwCardListPage 设计（新建）
 
-### Props 变更
+### Props 定义
 
 ```typescript
-interface MfwPageWrapperProps {
-  /** 是否显示面包屑（已废弃，使用 headerMode） */
-  showBreadcrumb?: boolean;
-  /** 是否显示页面标题（已废弃，使用 headerMode） */
-  showTitle?: boolean;
-  /** 是否显示刷新按钮 */
-  showRefresh?: boolean;
-  /** 自定义页面标题 */
-  title?: string;
-  /** 自定义面包屑 */
-  breadcrumb?: BreadcrumbItem[];
-  /** 内容区 padding */
-  padding?: string | number;
-  /** 是否显示边框 */
-  bordered?: boolean;
-  /** 背景色 */
-  background?: string;
-  /** 头部显示模式（覆盖全局配置） */
-  headerMode?: 'title' | 'breadcrumb' | 'none';
+interface MfwCardListPageProps {
+  /** 搜索表单模板 */
+  searchTemplate?: SearchTemplateItem[];
+  /** 数据加载函数 */
+  loadData?: (params: LoadParams) => Promise<TableData>;
+  /** 筛选触发模式 */
+  searchTrigger?: 'change' | 'submit';
+  /** 是否显示筛选面板 */
+  showSearch?: boolean;
+  /** 是否显示分页 */
+  showPagination?: boolean;
+  /** 每页条数 */
+  pageSize?: number;
+  /** 每页条数选项 */
+  pageSizeOptions?: number[];
+  
+  /** 渲染模式 */
+  renderMode?: 'table' | 'card';
+  // - 'table': 使用 MfwTableList 渲染（默认）
+  // - 'card': 使用卡片布局渲染
+  
+  /** 卡片渲染函数（renderMode='card' 时使用） */
+  cardRender?: (item: any, index: number) => VNode;
+  
+  /** 卡片栅格配置 */
+  cardGrid?: {
+    cols?: number;      // 每行卡片数
+    gap?: number;       // 卡片间距
+  };
+  
+  /** 空数据提示文本 */
+  emptyText?: string;
 }
 ```
 
-### 头部布局设计
+### Slots 定义
 
-**布局结构：**
-```
-┌─────────────────────────────────────────────────────────────┐
-│  [标题/面包屑]                              [刷新按钮]       │
-├─────────────────────────────────────────────────────────────┤
-│  [toolbar 插槽]                                              │
-├─────────────────────────────────────────────────────────────┤
-│  [内容区]                                                    │
-└─────────────────────────────────────────────────────────────┘
+| 插槽名 | 位置 | 用途 |
+|--------|------|------|
+| `default` | 底部 | 额外内容 |
+| `search-actions` | 筛选按钮区 | 自定义操作按钮 |
+| `card-item` | 卡片区域 | 自定义卡片渲染（覆盖 cardRender） |
+| `empty` | 空数据 | 自定义空数据展示 |
+
+### Emits 定义
+
+```typescript
+interface MfwCardListPageEmits {
+  (e: 'search', formData: Record<string, any>): void;
+  (e: 'reset'): void;
+  (e: 'page-change', page: number, pageSize: number): void;
+}
 ```
 
-**头部样式设计：**
+### 暴露实例
+
+```typescript
+interface MfwCardListPageInstance {
+  refresh: () => Promise<void>;
+  resetSearch: () => void;
+  setLoading: (loading: boolean) => void;
+  getSearchParams: () => Record<string, any>;
+}
+```
+
+### 布局设计
+
+**renderMode='table'：**
+```
+┌─────────────────────────────────────────┐
+│ MfwSearchPanel                           │
+├─────────────────────────────────────────┤
+│ MfwTableList                             │
+├─────────────────────────────────────────┤
+│ 分页                                     │
+└─────────────────────────────────────────┘
+```
+
+**renderMode='card'：**
+```
+┌─────────────────────────────────────────┐
+│ MfwSearchPanel                           │
+├─────────────────────────────────────────┤
+│ ┌─────┐ ┌─────┐ ┌─────┐ ┌─────┐       │
+│ │卡片1│ │卡片2│ │卡片3│ │卡片4│       │
+│ └─────┐ └─────┐ └─────┐ └─────┐       │
+│ │卡片5│ │卡片6│ │卡片7│ │卡片8│       │
+│ └─────┘ └─────┘ └─────┘ └─────┘       │
+├─────────────────────────────────────────┤
+│ 分页                                     │
+└─────────────────────────────────────────┘
+```
+
+### 样式设计
+
 ```scss
-.mfw-page-wrapper {
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    padding-bottom: 8px;
-  }
-
-  &__header-left {
-    flex: 1;
-    min-width: 0;  // 防止内容溢出
-  }
-
-  &__header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  &__title {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--el-text-color-primary);
-  }
-
-  &__breadcrumb-wrap {
-    padding: 0 16px;
-    padding-bottom: 12px;
-  }
-
-  &__refresh-btn {
-    // 刷新按钮样式
-  }
-}
-```
-
-### 刷新按钮逻辑
-
-**显示条件：**
-1. `showRefresh` prop 为 `true`（默认）
-2. 页面内没有 SearchPanel（由使用者控制）
-
-**使用示例：**
-```vue
-<!-- 有 SearchPanel 的页面，不显示刷新按钮 -->
-<MfwPageWrapper :show-refresh="false">
-  <MfwListPage>
-    <template #search-actions>
-      <el-button type="primary">新建</el-button>
-    </template>
-  </MfwListPage>
-</MfwPageWrapper>
-
-<!-- 没有 SearchPanel 的页面，显示刷新按钮 -->
-<MfwPageWrapper>
-  <UserDetailForm />
-</MfwPageWrapper>
-```
-
-## MfwListPage 变更设计
-
-### 导入 SearchPanel
-
-```typescript
-import SearchPanel from '../search-panel';
-```
-
-### Props 变更
-
-```typescript
-interface MfwListPageProps {
-  // ... 现有 props
+.mfw-card-list-page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   
-  /** 是否显示刷新按钮（传递给 MfwPageWrapper） */
-  showPageRefresh?: boolean;
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(var(--card-cols, 4), 1fr);
+    gap: var(--card-gap, 16px);
+  }
+  
+  &__card {
+    background: var(--el-bg-color);
+    border: 1px solid var(--el-border-color);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  &__pagination {
+    display: flex;
+    justify-content: flex-end;
+  }
 }
 ```
 
-### 使用示例
+## 使用示例
+
+### MfwPageWrapper 使用
 
 ```vue
-<template>
-  <MfwPageWrapper :show-refresh="showPageRefresh">
-    <MfwListPage
-      :search-template="searchTemplate"
-      :columns="columns"
-      :load-data="loadData"
-    >
-      <template #search-actions>
-        <el-button type="primary">新建</el-button>
-      </template>
-    </MfwListPage>
-  </MfwPageWrapper>
-</template>
+<!-- 显示面包屑（默认） -->
+<MfwPageWrapper>
+  <MfwListPage ... />
+</MfwPageWrapper>
+
+<!-- 显示标题 -->
+<MfwPageWrapper header-mode="title">
+  <MfwCardListPage ... />
+</MfwPageWrapper>
 ```
 
-## MfwCardList 组件设计（示例）
-
-展示 SearchPanel 的复用能力：
+### MfwSearchPanel 独立使用
 
 ```vue
-<template>
-  <MfwPageWrapper :show-refresh="false">
-    <SearchPanel
-      :search-template="searchTemplate"
-      :loading="loading"
-      @search="handleSearch"
-    >
-      <template #search-actions>
-        <el-button type="primary">新建卡片</el-button>
-      </template>
-    </SearchPanel>
-    
-    <div class="card-list">
-      <el-card v-for="item in data" :key="item.id">
-        <!-- 卡片内容 -->
-      </el-card>
-    </div>
-  </MfwPageWrapper>
-</template>
+<MfwSearchPanel
+  :search-template="searchTemplate"
+  :loading="loading"
+  @search="handleSearch"
+>
+  <template #search-actions>
+    <el-button type="primary">新建</el-button>
+  </template>
+</MfwSearchPanel>
+```
+
+### MfwCardListPage 使用
+
+```vue
+<!-- 表格模式 -->
+<MfwCardListPage
+  :search-template="searchTemplate"
+  :load-data="loadData"
+  :columns="columns"
+/>
+
+<!-- 卡片模式 -->
+<MfwCardListPage
+  render-mode="card"
+  :search-template="searchTemplate"
+  :load-data="loadData"
+  :card-render="renderCard"
+>
+  <template #card-item="{ item, index }">
+    <div class="custom-card">{{ item.name }}</div>
+  </template>
+</MfwCardListPage>
 ```
 
 ## 迁移计划
 
-1. 创建 `search-panel` 独立目录
-2. 移动 SearchPanel 相关文件到独立目录
-3. 更新 `list-page` 导入 SearchPanel
-4. 更新 `layout-store` 添加 `headerMode` 配置
-5. 重构 `MfwPageWrapper` 头部布局
-6. 更新 `page/index.ts` 导出 SearchPanel
-7. 更新现有业务页面使用新 API
+1. 创建 `search-panel` 目录和组件
+2. 修改 `MfwPageWrapper` 添加 headerMode
+3. 修改 `MfwListPage` 使用独立 SearchPanel
+4. 创建 `MfwCardListPage` 组件
+5. 更新导出文件
+6. 删除 `list-page/SearchPanel.tsx` 和 `SearchPanel.scss`
 
 ## 兼容性考虑
 
-- `showBreadcrumb` 和 `showTitle` props 保留但标记为废弃
-- 现有页面可逐步迁移到新的 `headerMode` 配置
-- SearchPanel 保持现有 API，仅调整布局样式
+- `MfwListPage` 保持现有 API 兼容
+- `MfwPageWrapper` 默认行为保持不变（显示面包屑）
+- 现有使用 `list-page/SearchPanel` 的代码需要更新导入路径
 
 ## 测试要点
 
-1. SearchPanel 独立导出和复用能力
-2. 搜索面板按钮右对齐布局
-3. headerMode 配置切换（标题/面包屑）
-4. 刷新按钮显示/隐藏逻辑
-5. 全局配置持久化
-6. 响应式布局适配
+1. headerMode 切换正确性
+2. 刷新按钮位置和样式
+3. SearchPanel 按钮右对齐
+4. MfwCardListPage 表格/卡片模式切换
+5. 分页功能
+6. 筛选触发模式
