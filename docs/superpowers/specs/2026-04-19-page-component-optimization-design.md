@@ -61,6 +61,7 @@ interface MfwPageWrapperProps {
 ### 布局调整
 
 **headerMode='breadcrumb'（默认）：**
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ 面包屑: 首页 / 用户管理              [刷新按钮] │
@@ -70,6 +71,7 @@ interface MfwPageWrapperProps {
 ```
 
 **headerMode='title'：**
+
 ```
 ┌─────────────────────────────────────────────────┐
 │ 页面标题: 用户管理                   [刷新按钮] │
@@ -160,10 +162,10 @@ interface MfwSearchPanelEmits {
 
 ### Slots 定义
 
-| 插槽名 | 位置 | 用途 |
-|--------|------|------|
+| 插槽名              | 位置    | 用途           |
+| ---------------- | ----- | ------------ |
 | `search-actions` | 按钮区左侧 | 自定义操作按钮（如新建） |
-| `search-extra` | 面板底部 | 额外内容 |
+| `search-extra`   | 面板底部  | 额外内容         |
 
 ### 暴露实例
 
@@ -291,12 +293,12 @@ interface MfwCardListPageProps {
 
 ### Slots 定义
 
-| 插槽名 | 位置 | 用途 |
-|--------|------|------|
-| `default` | 底部 | 额外内容 |
-| `search-actions` | 筛选按钮区 | 自定义操作按钮 |
-| `card-item` | 卡片区域 | 自定义卡片渲染（覆盖 cardRender） |
-| `empty` | 空数据 | 自定义空数据展示 |
+| 插槽名              | 位置    | 用途                     |
+| ---------------- | ----- | ---------------------- |
+| `default`        | 底部    | 额外内容                   |
+| `search-actions` | 筛选按钮区 | 自定义操作按钮                |
+| `card-item`      | 卡片区域  | 自定义卡片渲染（覆盖 cardRender） |
+| `empty`          | 空数据   | 自定义空数据展示               |
 
 ### Emits 定义
 
@@ -322,6 +324,7 @@ interface MfwCardListPageInstance {
 ### 布局设计
 
 **renderMode='table'：**
+
 ```
 ┌─────────────────────────────────────────┐
 │ MfwSearchPanel                           │
@@ -333,6 +336,7 @@ interface MfwCardListPageInstance {
 ```
 
 **renderMode='card'：**
+
 ```
 ┌─────────────────────────────────────────┐
 │ MfwSearchPanel                           │
@@ -452,3 +456,4 @@ interface MfwCardListPageInstance {
 4. MfwCardListPage 表格/卡片模式切换
 5. 分页功能
 6. 筛选触发模式
+
