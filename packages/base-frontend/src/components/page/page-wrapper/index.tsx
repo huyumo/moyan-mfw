@@ -5,7 +5,7 @@
 
 import './style.scss';
 
-import { defineComponent, computed, ref, type PropType } from 'vue';
+import { defineComponent, computed, ref, provide, type PropType } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElSpace } from 'element-plus';
 import { Refresh } from '@element-plus/icons-vue';
@@ -63,6 +63,9 @@ export default defineComponent({
     const route = useRoute();
     const router = useRouter();
     const isRefreshing = ref(false);
+    
+    const hasSearchPanel = ref(false);
+    provide('mfw-page-has-search-panel', hasSearchPanel);
 
     const pageTitle = computed(() => {
       if (props.title) return props.title;
@@ -133,7 +136,7 @@ export default defineComponent({
 
     // 渲染刷新按钮
     const renderRefreshButton = () => (
-      props.showRefresh && (
+      props.showRefresh && !hasSearchPanel.value && (
         <ElButton
           loading={isRefreshing.value}
           onClick={handleRefresh}

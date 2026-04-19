@@ -11,7 +11,9 @@ import {
   computed,
   reactive,
   watch,
-  type PropType
+  inject,
+  type PropType,
+  type Ref
 } from 'vue';
 import {
   ElForm,
@@ -90,6 +92,9 @@ export default defineComponent({
   setup(props, { emit, expose, slots }) {
     const formRef = ref<FormInstance>();
     const expanded = ref(false);
+    
+    const hasSearchPanel = inject<Ref<boolean>>('mfw-page-has-search-panel', ref(false));
+    hasSearchPanel.value = true;
 
     // 表单数据
     const formData = reactive<Record<string, any>>({});
