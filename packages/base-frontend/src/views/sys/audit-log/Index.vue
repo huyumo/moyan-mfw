@@ -28,7 +28,7 @@ import AuditLogDetail from './AuditLogDetail.vue';
 
 defineOptions({ name: 'MfwAuditLogList' });
 
-const pageScene = ref<MfwPageSceneInstance>();
+const listPage = ref<MfwListPageInstance>();
 
 /** 搜索模板 */
 const searchTemplate = [
