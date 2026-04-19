@@ -174,6 +174,8 @@ const actionColumn = {
 const loadData = async (params: Record<string, unknown>) => {
   const result = await new ApiRoleFindAll({ 
     query: { 
+      page: params.page as number || 1,
+      pageSize: params.pageSize as number || 20,
       appId: appId.value,
       ...params 
     } 

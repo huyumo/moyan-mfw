@@ -88,8 +88,6 @@ export class AppMemberService {
       .eq('am.appId', appId)
       .like('u.nickname', nickname)
       .like('u.username', username)
-      .addParam('appId', appId)
-      .addParam('appTypeId', app.appTypeId);
 
     const pager = new PaginationX(this.dataSource, query);
     return await pager
@@ -127,10 +125,6 @@ export class AppMemberService {
             INNER JOIN sys_apps a ON a.id = am.appId
             INNER JOIN sys_users u ON u.id = am.userId
             LEFT JOIN sys_user_roles ur ON ur.userId = am.userId 
-              AND (ur.roleId IN (
-                SELECT r2.id FROM sys_roles r2 
-                WHERE (r2.appId = :appId OR r2.appTypeId = :appTypeId) AND r2.isOwner = 0
-              ))
             LEFT JOIN sys_roles r ON ur.roleId = r.id
             ${whereClause}
             GROUP BY am.userId
@@ -140,6 +134,7 @@ export class AppMemberService {
         `;
       })
       .select('*')
+      .printSql()
       .defaultOrderBy('createdAt DESC')
       .getData();
   }

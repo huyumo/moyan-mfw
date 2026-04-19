@@ -18,7 +18,7 @@
 import { ref, reactive } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
-import { ApiMemberAddMember, ApiUserFindAll } from '../../../apis/sys';
+import { ApiAppMemberAddMember, ApiUserFindAll } from '../../../apis/sys';
 import MfwUserPicker from '../../../components/picker/user-picker';
 
 /** Props */
@@ -70,7 +70,7 @@ const rules = {};
 const onConfirm = async () => {
   await formRef.value?.validate();
 
-  await new ApiMemberAddMember({
+  await new ApiAppMemberAddMember({
     params: { appId: props.data!.appId },
     body: { userId: form.userId },
   });

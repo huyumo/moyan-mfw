@@ -29,8 +29,8 @@ import MfwPageScene from '../../../components/page/page-scene';
 import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
 import { MfwPopup } from '../../../components/feedback';
 import {
-  ApiMemberGetMembers,
-  ApiMemberRemoveMember,
+  ApiAppMemberGetMembers,
+  ApiAppMemberRemoveMember,
 } from '../../../apis/sys';
 import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
@@ -52,31 +52,31 @@ const appId = computed(() => authStore.currentApp?.appId || '');
 /** 表格列 */
 const columns = [
   {
-    prop: 'user',
+    prop: 'avatar',
     label: '头像',
     width: 80,
     render: ({ row }: { row: MemberResponseDto }) => h(ElAvatar, {
       size: 40,
-      src: row.user?.avatar,
-    }, () => row.user?.nickname?.charAt(0) || row.user?.username?.charAt(0) || '?'),
+      src: row.avatar,
+    }, () => row.nickname?.charAt(0) || row.username?.charAt(0) || '?'),
   },
   {
-    prop: 'user.nickname',
+    prop: 'nickname',
     label: '昵称',
     minWidth: 120,
-    render: ({ row }: { row: MemberResponseDto }) => row.user?.nickname || '-',
+    render: ({ row }: { row: MemberResponseDto }) => row.nickname || '-',
   },
   {
-    prop: 'user.username',
+    prop: 'username',
     label: '用户名',
     minWidth: 120,
-    render: ({ row }: { row: MemberResponseDto }) => row.user?.username || '-',
+    render: ({ row }: { row: MemberResponseDto }) => row.username || '-',
   },
   {
-    prop: 'user.phone',
+    prop: 'phone',
     label: '手机号',
     minWidth: 120,
-    render: ({ row }: { row: MemberResponseDto }) => (row.user as any)?.phone || '-',
+    render: ({ row }: { row: MemberResponseDto }) => row.phone || '-',
   },
   {
     prop: 'roles',
@@ -130,9 +130,13 @@ const loadData = async (params: Record<string, any>) => {
   if (!appId.value) {
     return { list: [], total: 0 };
   }
-  return await new ApiMemberGetMembers({
+  return await new ApiAppMemberGetMembers({
     params: { appId: appId.value },
-    query: params,
+    query: {
+      page: params.page || 1,
+      pageSize: params.pageSize || 20,
+      ...params,
+    },
   });
 };
 
@@ -174,11 +178,11 @@ const handleEditRoles = (row: MemberResponseDto) => {
 const handleRemove = async (row: MemberResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `确定要将「${row.user?.nickname || row.user?.username}」从应用中移除吗？`,
+      `确定要将「${row.nickname || row.username}」从应用中移除吗？`,
       '确认移除',
       { type: 'warning' }
     );
-    await new ApiMemberRemoveMember({
+    await new ApiAppMemberRemoveMember({
       params: { appId: appId.value, userId: row.userId },
     });
     ElMessage.success('移除成功');

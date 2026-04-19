@@ -42,11 +42,10 @@ import type {
   AppDetailResponseDto,
   UpdateAppDto,
   AddMemberDto,
-  MemberUserInfoDto,
   MemberRoleInfoDto,
   MemberResponseDto,
   UpdateMemberRolesDto,
-  AvailableRoleDto,
+  AvailableAvailableRoleDto,
   AuditLogResponseDto,
   InitStatusResponseDto,
   InitRequestDto,
@@ -205,8 +204,8 @@ export class ApiUserCreate extends ApiCall<
 export class ApiUserFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       username?: string //用户名（模糊查询）
@@ -330,8 +329,8 @@ export class ApiRoleCreate extends ApiCall<
 export class ApiRoleFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       roleCode?: string //角色编码（模糊查询）
@@ -452,8 +451,8 @@ export class ApiAppTypeCreate extends ApiCall<
 export class ApiAppTypeFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       typeName?: string //类型名称（模糊查询）
@@ -603,8 +602,8 @@ export class ApiPermissionCreate extends ApiCall<
 export class ApiPermissionFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       appTypeId?: string //应用类型 ID
@@ -753,8 +752,8 @@ export class ApiAppCreate extends ApiCall<
 export class ApiAppFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       appName?: string //应用名称（模糊查询）
@@ -863,7 +862,7 @@ export class ApiAppUpdateStatus extends ApiCall<
 /**
  * member|应用成员相关接口->添加应用成员
  */
-export class ApiMemberAddMember extends ApiCall<
+export class ApiAppMemberAddMember extends ApiCall<
   {
     body: AddMemberDto
     params: {
@@ -880,18 +879,18 @@ export class ApiMemberAddMember extends ApiCall<
 /**
  * member|应用成员相关接口->获取应用成员列表
  */
-export class ApiMemberGetMembers extends ApiCall<
+export class ApiAppMemberGetMembers extends ApiCall<
   {
     params: {
       appId: string
     }
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
-      userName?: string //用户名称（模糊查询）
-      userAccount?: string //用户账号（模糊查询）
+      nickname?: string //用户昵称（模糊查询）
+      username?: string //用户名（模糊查询）
     }
   },
   PageResponseDto & {
@@ -906,7 +905,7 @@ export class ApiMemberGetMembers extends ApiCall<
 /**
  * member|应用成员相关接口->更新成员角色
  */
-export class ApiMemberUpdateRoles extends ApiCall<
+export class ApiAppMemberUpdateRoles extends ApiCall<
   {
     body: UpdateMemberRolesDto
     params: {
@@ -924,7 +923,7 @@ export class ApiMemberUpdateRoles extends ApiCall<
 /**
  * member|应用成员相关接口->移除应用成员
  */
-export class ApiMemberRemoveMember extends ApiCall<
+export class ApiAppMemberRemoveMember extends ApiCall<
   {
     params: {
       appId: string //应用 ID
@@ -941,13 +940,13 @@ export class ApiMemberRemoveMember extends ApiCall<
 /**
  * member|应用成员相关接口->获取可选角色列表
  */
-export class ApiMemberGetAvailableRoles extends ApiCall<
+export class ApiAppMemberGetAvailableRoles extends ApiCall<
   {
     params: {
       appId: string //应用 ID
     }
   },
-  Array<AvailableRoleDto>
+  Array<AvailableAvailableRoleDto>
 > {
   readonly path = '/api/apps/{appId}/members/available-roles'
   readonly method: MoMethod = 'GET'
@@ -960,8 +959,8 @@ export class ApiMemberGetAvailableRoles extends ApiCall<
 export class ApiAuditLogFindAll extends ApiCall<
   {
     query: {
-      page?: number //当前页码
-      pageSize?: number //每页数量
+      page: number //页码
+      pageSize: number //每页数量
       sortField?: string //排序字段
       sortOrder?: string //排序方向
       module?: string //所属模块
