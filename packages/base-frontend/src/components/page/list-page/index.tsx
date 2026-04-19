@@ -20,6 +20,7 @@ import {
   computed,
   watch,
   onMounted,
+  inject,
   h,
   type PropType
 } from 'vue';
@@ -141,6 +142,11 @@ export default defineComponent({
   setup(props, { emit, expose, slots }) {
     const searchPanelRef = ref<MfwSearchPanelInstance>();
     const tableRef = ref<any>();
+    
+    const refreshContext = inject<{ registerRefresh: (callback: () => void | Promise<void>) => void }>(
+      'mfw-page-refresh-context',
+      { registerRefresh: () => {} }
+    );
 
     // 分页配置
     const pagination = ref<PaginationConfig>({
@@ -200,6 +206,8 @@ export default defineComponent({
     const refresh = async () => {
       await loadTableData();
     };
+    
+    refreshContext.registerRefresh(refresh);
 
     /**
      * 重置搜索条件
