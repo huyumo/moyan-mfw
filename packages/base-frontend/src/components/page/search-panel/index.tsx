@@ -139,14 +139,26 @@ export default defineComponent({
       expanded.value = !expanded.value;
     };
 
+    // 过滤空值
+    const filterEmptyValues = (data: Record<string, any>): Record<string, any> => {
+      const result: Record<string, any> = {};
+      Object.keys(data).forEach(key => {
+        const value = data[key];
+        if (value !== undefined && value !== null && value !== '' && 
+            !(Array.isArray(value) && value.length === 0)) {
+          result[key] = value;
+        }
+      });
+      return result;
+    };
+
     // 触发搜索
     const doSearch = () => {
-      emit('search', { ...formData });
+      emit('search', filterEmptyValues(formData));
     };
 
     // 重置表单
     const reset = () => {
-      // 重置为默认值
       props.searchTemplate.forEach(item => {
         if (item.defaultValue !== undefined) {
           formData[item.key] = item.defaultValue;
@@ -164,9 +176,9 @@ export default defineComponent({
       emit('reset');
     };
 
-    // 获取表单值
+    // 获取表单值（过滤空值）
     const getFormValues = () => {
-      return { ...formData };
+      return filterEmptyValues(formData);
     };
 
     // 设置表单值
