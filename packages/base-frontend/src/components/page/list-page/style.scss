@@ -1,0 +1,494 @@
+/**
+ * @fileoverview MfwListPage 列表页面组件样式
+ * @description 提供筛选面板、表格区域、分页区域的完整布局
+ * @features
+ *   - 筛选面板支持展开/收起
+ *   - 简洁现代的表格风格
+ *   - 分页区域右对齐
+ *   - 暗色模式支持（通过 Element Plus CSS 变量自动适配）
+ *   - 响应式布局（移动端适配）
+ *   - BEM 命名规范
+ *   - CSS 变量便于主题定制
+ */
+
+.mfw-list-page {
+  // ============================================
+  // CSS 变量定义 - 便于主题定制
+  // ============================================
+  --mfw-list-page-padding: 16px;
+  --mfw-list-page-padding-sm: 12px;
+  --mfw-list-page-bg: var(--el-bg-color);
+  --mfw-list-page-border-color: var(--el-border-color-light);
+  --mfw-list-page-border-radius: 8px;
+  --mfw-list-page-gap: 16px;
+  --mfw-list-page-gap-sm: 12px;
+  --mfw-list-page-search-bg: var(--el-bg-color);
+  --mfw-list-page-search-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --mfw-list-page-transition: 0.3s ease;
+
+  // ============================================
+  // 主容器
+  // ============================================
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--mfw-list-page-bg);
+  overflow: hidden;
+  gap: var(--mfw-list-page-gap);
+
+  // ============================================
+  // 筛选面板区域
+  // ============================================
+  &__search {
+    flex-shrink: 0;
+    background: var(--mfw-list-page-search-bg);
+    border-radius: var(--mfw-list-page-border-radius);
+    box-shadow: var(--mfw-list-page-search-shadow);
+    padding: var(--mfw-list-page-padding);
+    transition: all var(--mfw-list-page-transition);
+    position: relative;
+
+    // 收起状态
+    &--collapsed {
+      .mfw-list-page__search-form {
+        max-height: 48px; // 约一行高度
+        overflow: hidden;
+      }
+    }
+  }
+
+  // 筛选表单区域
+  &__search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mfw-list-page-gap-sm);
+    align-items: flex-start;
+    transition: max-height var(--mfw-list-page-transition);
+
+    // Element Plus 表单项适配
+    .el-form-item {
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    // 表单项标签
+    .el-form-item__label {
+      font-weight: 500;
+    }
+
+    // 日期范围选择器宽度适配
+    .el-date-editor--daterange {
+      width: 260px;
+    }
+
+    // 下拉选择器默认宽度
+    .el-select {
+      width: 180px;
+    }
+
+    // 输入框默认宽度
+    .el-input {
+      width: 180px;
+    }
+  }
+
+  // 筛选按钮区域
+  &__search-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--mfw-list-page-gap-sm);
+    margin-top: var(--mfw-list-page-gap-sm);
+    padding-top: var(--mfw-list-page-gap-sm);
+    border-top: 1px solid var(--mfw-list-page-border-color);
+
+    // 按钮组间距
+    .el-button + .el-button {
+      margin-left: 0;
+    }
+  }
+
+  // 展开/收起按钮
+  &__expand-btn {
+    position: absolute;
+    right: var(--mfw-list-page-padding);
+    bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--el-color-primary);
+    font-size: 13px;
+    user-select: none;
+    transition: color var(--mfw-list-page-transition);
+
+    &:hover {
+      color: var(--el-color-primary-light-3);
+    }
+
+    // 展开图标旋转动画
+    .el-icon {
+      transition: transform var(--mfw-list-page-transition);
+    }
+
+    // 展开状态图标旋转
+    &--expanded {
+      .el-icon {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // ============================================
+  // 表格区域
+  // ============================================
+  &__table {
+    flex: 1;
+    min-height: 0; // 允许 flex 子项收缩
+    background: var(--mfw-list-page-bg);
+    border-radius: var(--mfw-list-page-border-radius);
+    box-shadow: var(--mfw-list-page-search-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    // Element Plus 表格适配
+    .el-table {
+      flex: 1;
+      border-radius: var(--mfw-list-page-border-radius) var(--mfw-list-page-border-radius) 0 0;
+
+      // 表头样式
+      .el-table__header-wrapper {
+        .el-table__header {
+          th {
+            background-color: var(--el-fill-color-light);
+            font-weight: 600;
+            color: var(--el-text-color-primary);
+          }
+        }
+      }
+
+      // 行悬停效果
+      .el-table__row {
+        transition: background-color 0.2s ease;
+      }
+
+      // 斑马纹样式增强
+      &--striped {
+        .el-table__row--striped {
+          background-color: var(--el-fill-color-lighter);
+        }
+      }
+    }
+
+    // 表格工具栏区域（如有）
+    .mfw-list-page__table-toolbar {
+      padding: var(--mfw-list-page-padding);
+      padding-bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--mfw-list-page-gap-sm);
+      flex-shrink: 0;
+    }
+
+    // 表格内容区域
+    .mfw-list-page__table-content {
+      flex: 1;
+      overflow: hidden;
+    }
+  }
+
+  // ============================================
+  // 分页区域
+  // ============================================
+  &__pagination {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end; // 右对齐
+    padding: var(--mfw-list-page-padding);
+    padding-top: var(--mfw-list-page-gap-sm);
+    background: var(--mfw-list-page-bg);
+    border-radius: 0 0 var(--mfw-list-page-border-radius) var(--mfw-list-page-border-radius);
+
+    // Element Plus 分页适配
+    .el-pagination {
+      // 分页信息文字
+      .el-pagination__total,
+      .el-pagination__jump {
+        color: var(--el-text-color-regular);
+      }
+
+      // 分页大小选择器
+      .el-pagination__sizes {
+        .el-select {
+          .el-input__wrapper {
+            border-radius: var(--el-border-radius-base);
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // 空状态区域
+  // ============================================
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px var(--mfw-list-page-padding);
+    color: var(--el-text-color-secondary);
+
+    .el-empty {
+      padding: 0;
+
+      .el-empty__description {
+        margin-top: 12px;
+      }
+    }
+  }
+
+  // ============================================
+  // 加载状态
+  // ============================================
+  &__loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 10;
+
+    // 暗色模式加载遮罩
+    @media (prefers-color-scheme: dark) {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+  }
+
+  // ============================================
+  // 修饰符 - 无阴影模式
+  // ============================================
+  &--flat {
+    --mfw-list-page-search-shadow: none;
+
+    .mfw-list-page__search,
+    .mfw-list-page__table {
+      border: 1px solid var(--mfw-list-page-border-color);
+    }
+  }
+
+  // ============================================
+  // 修饰符 - 紧凑模式
+  // ============================================
+  &--compact {
+    --mfw-list-page-padding: 12px;
+    --mfw-list-page-gap: 12px;
+    --mfw-list-page-gap-sm: 8px;
+
+    .mfw-list-page__search-form {
+      .el-form-item--small {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  // ============================================
+  // 修饰符 - 无边框模式
+  // ============================================
+  &--borderless {
+    --mfw-list-page-border-radius: 0;
+    --mfw-list-page-search-shadow: none;
+
+    .mfw-list-page__search,
+    .mfw-list-page__table {
+      box-shadow: none;
+    }
+  }
+
+  // ============================================
+  // 响应式布局 - 平板适配
+  // ============================================
+  @media (max-width: 1024px) {
+    --mfw-list-page-padding: var(--mfw-list-page-padding-sm);
+    --mfw-list-page-gap: var(--mfw-list-page-gap-sm);
+
+    &__search-form {
+      // 表单项宽度自适应
+      .el-select,
+      .el-input {
+        width: 160px;
+      }
+
+      .el-date-editor--daterange {
+        width: 240px;
+      }
+    }
+
+    &__search-actions {
+      flex-wrap: wrap;
+    }
+  }
+
+  // ============================================
+  // 响应式布局 - 移动端适配
+  // ============================================
+  @media (max-width: 768px) {
+    --mfw-list-page-padding: 12px;
+    --mfw-list-page-gap: 12px;
+    --mfw-list-page-gap-sm: 8px;
+
+    &__search {
+      padding: var(--mfw-list-page-padding);
+    }
+
+    &__search-form {
+      flex-direction: column;
+      gap: var(--mfw-list-page-gap-sm);
+
+      // 移动端表单项全宽
+      .el-form-item {
+        width: 100%;
+        margin-right: 0;
+      }
+
+      .el-select,
+      .el-input,
+      .el-date-editor--daterange {
+        width: 100%;
+      }
+
+      // 表单项标签在上方
+      .el-form-item__content {
+        flex: 1;
+      }
+    }
+
+    &__search-actions {
+      flex-direction: column;
+      align-items: stretch;
+
+      .el-button {
+        width: 100%;
+      }
+    }
+
+    &__expand-btn {
+      position: static;
+      justify-content: center;
+      margin-top: var(--mfw-list-page-gap-sm);
+      padding-top: var(--mfw-list-page-gap-sm);
+      border-top: 1px solid var(--mfw-list-page-border-color);
+    }
+
+    &__pagination {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--mfw-list-page-gap-sm);
+
+      // 分页组件移动端适配
+      .el-pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--mfw-list-page-gap-sm);
+
+        .el-pagination__sizes,
+        .el-pagination__jump {
+          margin-left: 0;
+        }
+      }
+    }
+
+    &__table {
+      .el-table {
+        // 移动端表格横向滚动
+        .el-table__body-wrapper {
+          overflow-x: auto;
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // 响应式布局 - 小屏移动端适配
+  // ============================================
+  @media (max-width: 480px) {
+    &__pagination {
+      .el-pagination {
+        // 简化分页显示
+        .el-pagination__sizes,
+        .el-pagination__jump {
+          display: none;
+        }
+
+        .el-pager {
+          li {
+            min-width: 28px;
+            height: 28px;
+            line-height: 28px;
+          }
+        }
+      }
+    }
+  }
+
+  // ============================================
+  // 暗色模式增强
+  // ============================================
+  @media (prefers-color-scheme: dark) {
+    --mfw-list-page-search-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+
+    &__search,
+    &__table {
+      // 暗色模式下增强边框
+      border: 1px solid var(--el-border-color-darker);
+    }
+
+    &__search-actions {
+      border-top-color: var(--el-border-color-darker);
+    }
+  }
+
+  // ============================================
+  // 减少动画偏好支持
+  // ============================================
+  @media (prefers-reduced-motion: reduce) {
+    --mfw-list-page-transition: none;
+
+    * {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  // ============================================
+  // 打印样式
+  // ============================================
+  @media print {
+    --mfw-list-page-search-shadow: none;
+
+    &__search {
+      display: none;
+    }
+
+    &__pagination {
+      display: none;
+    }
+
+    &__table {
+      box-shadow: none;
+      border: 1px solid #ddd;
+
+      .el-table {
+        border-radius: 0;
+      }
+    }
+  }
+}
