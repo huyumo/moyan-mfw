@@ -103,6 +103,32 @@
   }
 
   // ============================================
+  // 头部行布局
+  // ============================================
+  &__header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--mfw-page-padding);
+    padding-bottom: 8px;
+  }
+
+  &__header-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__refresh-btn {
+    // 独立按钮样式
+  }
+
+  // ============================================
   // 工具栏区域
   // ============================================
   &__toolbar {
