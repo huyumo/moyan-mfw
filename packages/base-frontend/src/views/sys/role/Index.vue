@@ -5,20 +5,22 @@
  */
 -->
 <template>
-  <MfwPageScene
-    ref="pageScene"
-    :search-template="searchTemplate"
-    :columns="columns"
-    :action-column="actionColumn"
-    :load-data="loadData"
-  >
-    <template #search-actions="{ loading }">
-      <el-button type="primary" :loading="loading" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新建角色
-      </el-button>
-    </template>
-  </MfwPageScene>
+  <MfwPageWrapper>
+    <MfwListPage
+      ref="listPage"
+      :search-template="searchTemplate"
+      :columns="columns"
+      :action-column="actionColumn"
+      :load-data="loadData"
+    >
+      <template #search-actions="{ loading }">
+        <el-button type="primary" :loading="loading" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新建角色
+        </el-button>
+      </template>
+    </MfwListPage>
+  </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
@@ -213,7 +215,7 @@ const handleEdit = (row: RoleResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('更新成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });
@@ -243,7 +245,7 @@ const handleDelete = async (row: RoleResponseDto) => {
     await ElMessageBox.confirm(`确定要删除角色「${row.roleName}」吗？`, '确认删除', { type: 'warning' });
     await new ApiRoleDelete({ params: { id: row.id } });
     ElMessage.success('删除成功');
-    pageScene.value?.refresh();
+    listPage.value?.refresh();
   } catch {
     // 用户取消
   }
