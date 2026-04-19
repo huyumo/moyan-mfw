@@ -131,4 +131,12 @@ const {
 
 <style scoped lang="scss">
 @use '../styles/admin-layout-settings';
+
+.mfw-admin-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--el-bg-color-page);
+}
 </style>
