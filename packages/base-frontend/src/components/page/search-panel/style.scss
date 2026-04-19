@@ -1,0 +1,80 @@
+/**
+ * @fileoverview MfwSearchPanel 筛选面板样式
+ */
+
+.search-panel {
+  --search-panel-padding: 16px;
+  --search-panel-bg: var(--el-bg-color);
+  --search-panel-border: var(--el-border-color);
+  --search-panel-radius: 8px;
+  --search-panel-item-width: 240px;
+
+  padding: var(--search-panel-padding);
+  background: var(--search-panel-bg);
+  border: 1px solid var(--search-panel-border);
+  border-radius: var(--search-panel-radius);
+
+  &__form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 16px;
+
+    .el-form-item {
+      margin-bottom: 0;
+      width: var(--search-panel-item-width);
+    }
+
+    .el-input,
+    .el-select,
+    .el-date-editor {
+      width: 100%;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &__expand-btn {
+    color: var(--el-color-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+
+    &:hover {
+      color: var(--el-color-primary-light-3);
+    }
+  }
+
+  &__extra {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--el-border-color-lighter);
+  }
+
+  @media (max-width: 768px) {
+    --search-panel-padding: 12px;
+    --search-panel-item-width: 100%;
+
+    &__form {
+      .el-form-item {
+        width: 100%;
+      }
+    }
+
+    &__actions {
+      width: 100%;
+      justify-content: flex-end;
+      margin-top: 12px;
+      margin-left: 0;
+    }
+  }
+}
