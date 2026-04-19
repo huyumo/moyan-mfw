@@ -4,6 +4,9 @@
  */
 
 import { DataSource } from 'typeorm';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsInt, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 import { WhereBuilder, executeRawSql } from './sql.util';
 
 /**
@@ -35,6 +38,32 @@ interface PagerReq {
   page: number;
   pageSize: number;
   sortField?: string;
+  sortOrder?: 'ASC' | 'DESC';
+}
+
+/**
+ * 分页查询参数 DTO
+ */
+export class PaginationQueryDto {
+  @ApiProperty({ description: '页码', default: 1, example: 1 })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  page: number = 1;
+
+  @ApiProperty({ description: '每页数量', default: 10, example: 10 })
+  @IsOptional()
+  @IsInt()
+  @Type(() => Number)
+  pageSize: number = 10;
+
+  @ApiProperty({ description: '排序字段', required: false })
+  @IsOptional()
+  @IsString()
+  sortField?: string;
+
+  @ApiProperty({ description: '排序方向', required: false, enum: ['ASC', 'DESC'] })
+  @IsOptional()
   sortOrder?: 'ASC' | 'DESC';
 }
 
@@ -366,9 +395,9 @@ export class PaginationX<T extends PagerReq> {
    * @param beforeProcessor - 执行 SQL 之前的中间件
    */
   async getData(
-    dataProcessor?: (result: unknown[], pager?: PaginationX<T>) => Promise<any>,
+    dataProcessor?: (result: unknown[], pager?: PaginationX<T>) => Promise<PaginationResult<T>>,
     beforeProcessor?: (sqls: Array<SqlArrayItem>) => Array<SqlArrayItem>
-  ): Promise<any> {
+  ): Promise<PaginationResult<T>> {
     await this.runSql(beforeProcessor);
 
     const totalResult = this.getResultByTag('total', true);
@@ -396,16 +425,15 @@ export class PaginationX<T extends PagerReq> {
     this.pipeFunction && (await this.pipeFunction(this, this.results));
     if (dataProcessor) {
       return await dataProcessor(this.pageData.list, this);
-    } else {
-      return this.pageData;
-    }
+    } 
+    return new PaginationResult<T>(this.pageData.list as T[], this.pageData.total, this.pageData.page, this.pageData.pageSize);
   }
 
   /**
    * 获取执行结果
    * @param done - SQL 处理函数
    */
-  async exec(done?: (sqls: Array<SqlArrayItem>) => Array<SqlArrayItem>): Promise<this> {
+  private async exec(done?: (sqls: Array<SqlArrayItem>) => Array<SqlArrayItem>): Promise<this> {
     await this.runSql(done);
     return this;
   }
@@ -428,6 +456,26 @@ export class PaginationX<T extends PagerReq> {
       return null;
     }
     return null;
+  }
+}
+
+/**
+ * 分页结果类
+ */
+export class PaginationResult<T> {
+  list: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  [key: string]: any;
+
+  constructor(list: T[], total: number, page: number, pageSize: number) {
+    this.list = list;
+    this.total = total;
+    this.page = page;
+    this.pageSize = pageSize;
+    this.totalPages = Math.ceil(total / pageSize);
   }
 }
 
@@ -596,3 +644,5 @@ export class PaginationX<T extends PagerReq> {
  * const result = await pager.getData();
  * ```
  */
+
+

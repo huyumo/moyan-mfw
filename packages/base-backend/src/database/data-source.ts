@@ -4,11 +4,11 @@
  */
 
 import { config } from 'dotenv';
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
 import databaseConfig from '../config/database.config';
 
 // 加载 .env 文件
 config({ path: '.env' });
 
 // 导出 DataSource 实例供 CLI 使用
-export const dataSource = new DataSource(databaseConfig);
+export const dataSource = new DataSource(databaseConfig() as DataSourceOptions);

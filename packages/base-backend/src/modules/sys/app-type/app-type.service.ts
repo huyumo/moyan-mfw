@@ -16,7 +16,7 @@ import {
   UpdatePermissionPoolResponseDto,
 } from './dto/res/permission-pool-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { PermissionTreeNodeDto } from '../permission';
 
 /**
@@ -78,21 +78,24 @@ export class AppTypeService {
    * @param query - 查询参数
    * @returns 分页结果
    */
-  async findAll(query: QueryAppTypeDto): Promise<PaginationResult<AppType>> {
-    const qb = this.appTypeRepository.createQueryBuilder('appType');
+  async findAll(query: QueryAppTypeDto): Promise<PaginationResult<any>> {
+    const { typeName, typeCode, typeStatus } = query;
+    const whereBuilder = new WhereBuilder();
+    whereBuilder
+      .like('appType.typeName', typeName)
+      .like('appType.typeCode', typeCode)
+      .eq('appType.typeStatus', typeStatus);
 
-    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
-    QueryBuilderHelper.applyConditions(qb, [
-      { field: 'appType.typeName', value: query.typeName, operator: 'like' },
-      { field: 'appType.typeCode', value: query.typeCode, operator: 'like' },
-      { field: 'appType.typeStatus', value: query.typeStatus, operator: '=' },
-    ]);
-
-    // 使用 PaginationHelper 执行分页查询
-    return PaginationHelper.executeQuery(
-      qb.orderBy('appType.sortOrder', 'ASC'),
-      query,
-    );
+    const pager = new PaginationX(this.dataSource, query);
+    return await pager
+      .where('main', whereBuilder)
+      .sql(({ select, wheres, orderBy, limit }) => {
+        const whereClause = wheres?.main || '';
+        return `SELECT ${select} FROM sys_app_types appType ${whereClause} ${orderBy} ${limit}`;
+      })
+      .select('appType.*')
+      .defaultOrderBy('appType.sortOrder ASC')
+      .getData();
   }
 
   /**

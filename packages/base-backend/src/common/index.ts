@@ -42,13 +42,11 @@ export { ApiPaginatedResponse } from './decorators/api-paginated-response.decora
 // Utils
 export { hashPassword, verifyPassword } from './utils/encrypt';
 export {
-  PaginationQueryDto,
-  PaginationResult,
-  PaginationHelper,
-} from './utils/pagination.util';
-export {
   PaginationX,
+  PaginationResult,
+  PaginationQueryDto
 } from './utils/pagination-x.util';
+export { executeRawSql,WhereBuilder } from './utils/sql.util';
 export {
   QueryBuilderHelper,
   type QueryCondition,
