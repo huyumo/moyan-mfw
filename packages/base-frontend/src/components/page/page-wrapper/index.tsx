@@ -48,6 +48,10 @@ export default defineComponent({
     },
     background: {
       type: String as PropType<MfwPageWrapperProps['background']>
+    },
+    headerMode: {
+      type: String as PropType<'breadcrumb' | 'title'>,
+      default: 'breadcrumb'
     }
   },
 
@@ -127,6 +131,33 @@ export default defineComponent({
       getBreadcrumb: () => breadcrumbItems.value
     });
 
+    // 渲染刷新按钮
+    const renderRefreshButton = () => (
+      props.showRefresh && (
+        <ElButton
+          loading={isRefreshing.value}
+          onClick={handleRefresh}
+        >
+          <ElIcon><Refresh /></ElIcon>
+          刷新
+        </ElButton>
+      )
+    );
+
+    // 渲染面包屑
+    const renderBreadcrumb = () => (
+      <ElBreadcrumb class="mfw-page-wrapper__breadcrumb" separator="/">
+        {breadcrumbItems.value.map((item) => (
+          <ElBreadcrumbItem
+            key={item.path || item.title}
+            to={item.path && item.clickable ? { path: item.path } : undefined}
+          >
+            {item.title}
+          </ElBreadcrumbItem>
+        ))}
+      </ElBreadcrumb>
+    );
+
     return () => (
       <div
         class={[
@@ -140,46 +171,33 @@ export default defineComponent({
             {slots.header()}
           </div>
         ) : (
-          props.showTitle && pageTitle.value && (
-            <div class="mfw-page-wrapper__header">
-              <div class="mfw-page-wrapper__title-wrap">
-                <h1 class="mfw-page-wrapper__title">{pageTitle.value}</h1>
-                {props.showRefresh && (
-                  <ElButton
-                    link
-                    type="primary"
-                    loading={isRefreshing.value}
-                    onClick={handleRefresh}
-                  >
-                    <ElIcon><Refresh /></ElIcon>
-                    刷新
-                  </ElButton>
-                )}
+          // 根据 headerMode 渲染不同的头部布局
+          props.headerMode === 'breadcrumb' ? (
+            // breadcrumb 模式：面包屑 + 刷新按钮
+            props.showBreadcrumb && breadcrumbItems.value.length > 0 && (
+              <div class="mfw-page-wrapper__header-row">
+                <div class="mfw-page-wrapper__header-left">
+                  {slots.breadcrumb ? slots.breadcrumb() : renderBreadcrumb()}
+                </div>
+                <div class="mfw-page-wrapper__header-right">
+                  {renderRefreshButton()}
+                  {slots['header-extra']?.()}
+                </div>
               </div>
-              {slots['header-extra']?.()}
-            </div>
-          )
-        )}
-
-        {slots.breadcrumb ? (
-          <div class="mfw-page-wrapper__breadcrumb-wrap">
-            {slots.breadcrumb()}
-          </div>
-        ) : (
-          props.showBreadcrumb && breadcrumbItems.value.length > 0 && (
-            <div class="mfw-page-wrapper__breadcrumb-wrap">
-              <ElBreadcrumb class="mfw-page-wrapper__breadcrumb" separator="/">
-                {breadcrumbItems.value.map((item, index) => (
-                  <ElBreadcrumbItem
-                    key={item.path || item.title}
-                    to={item.path && item.clickable ? { path: item.path } : undefined}
-                  >
-                    {item.title}
-                  </ElBreadcrumbItem>
-                ))}
-              </ElBreadcrumb>
-              {slots['breadcrumb-extra']?.()}
-            </div>
+            )
+          ) : (
+            // title 模式：标题 + 刷新按钮
+            props.showTitle && pageTitle.value && (
+              <div class="mfw-page-wrapper__header-row">
+                <div class="mfw-page-wrapper__header-left">
+                  <h1 class="mfw-page-wrapper__title">{pageTitle.value}</h1>
+                </div>
+                <div class="mfw-page-wrapper__header-right">
+                  {renderRefreshButton()}
+                  {slots['header-extra']?.()}
+                </div>
+              </div>
+            )
           )
         )}
 
