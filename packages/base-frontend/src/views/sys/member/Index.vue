@@ -153,7 +153,7 @@ const handleAdd = () => {
     on: {
       confirm: () => {
         ElMessage.success('添加成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });

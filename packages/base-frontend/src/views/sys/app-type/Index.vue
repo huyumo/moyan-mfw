@@ -18,8 +18,8 @@
 import { ref, h } from 'vue';
 import { ElMessage, ElTag, ElButton, ElTooltip } from 'element-plus';
 import { View, Edit, Key, User } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPageWrapper, MfwListPage } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';

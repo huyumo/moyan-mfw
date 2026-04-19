@@ -16,7 +16,7 @@ import {
   ElTableColumn,
   ElSkeleton
 } from 'element-plus';
-import type { MfwTableListProps, MfwTableListEmits, MfwTableListInstance, TableColumnConfig } from './types';
+import type { MfwTableListProps, MfwTableListEmits, MfwTableListInstance, TableColumnConfig, ActionColumnConfig } from './types';
 
 export default defineComponent({
   name: 'MfwTableList',
@@ -24,12 +24,12 @@ export default defineComponent({
   props: {
     /** 表格数据 */
     data: {
-      type: Array as PropType<MfwTableListProps['data']>,
+      type: Array as PropType<any[]>,
       default: () => []
     },
     /** 列配置 */
     columns: {
-      type: Array as PropType<MfwTableListProps['columns']>,
+      type: Array as PropType<TableColumnConfig[]>,
       default: () => []
     },
     /** 是否加载中 */
@@ -59,11 +59,11 @@ export default defineComponent({
     },
     /** 操作列配置 */
     actionColumn: {
-      type: Object as PropType<MfwTableListProps['actionColumn']>
+      type: Object as PropType<ActionColumnConfig>
     },
     /** Element Plus Table Props */
     elProps: {
-      type: Object as PropType<Partial<MfwTableListProps>>,
+      type: Object as PropType<Record<string, any>>,
       default: () => ({})
     }
   },

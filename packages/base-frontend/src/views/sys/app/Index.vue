@@ -216,7 +216,7 @@ const handleEdit = (row: AppDetailResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('更新成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });

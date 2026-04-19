@@ -25,8 +25,8 @@
 import { ref, h, computed } from 'vue';
 import { ElMessage, ElMessageBox, ElTag, ElButton, ElTooltip } from 'element-plus';
 import { Plus, Edit, Delete, Key } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPageWrapper, MfwListPage } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
