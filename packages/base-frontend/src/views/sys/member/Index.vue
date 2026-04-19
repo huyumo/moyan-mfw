@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <MfwPageWrapper>
+  <MfwPageWrapper @refresh="handleRefresh">
     <MfwListPage
       ref="listPage"
       :show-search="false"
@@ -140,6 +140,11 @@ const loadData = async (params: Record<string, any>) => {
       ...params,
     },
   });
+};
+
+/** 刷新列表 */
+const handleRefresh = () => {
+  listPage.value?.refresh();
 };
 
 /** 添加成员 */

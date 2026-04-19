@@ -66,6 +66,12 @@ export default defineComponent({
     
     const hasSearchPanel = ref(false);
     provide('mfw-page-has-search-panel', hasSearchPanel);
+    
+    const refreshCallbacks = ref<(() => void | Promise<void>)[]>([]);
+    const registerRefresh = (callback: () => void | Promise<void>) => {
+      refreshCallbacks.value.push(callback);
+    };
+    provide('mfw-page-refresh-context', { registerRefresh });
 
     const pageTitle = computed(() => {
       if (props.title) return props.title;
@@ -114,10 +120,13 @@ export default defineComponent({
       }
     };
 
-    const handleRefresh = () => {
+    const handleRefresh = async () => {
       if (isRefreshing.value) return;
       isRefreshing.value = true;
       emit('refresh');
+      for (const callback of refreshCallbacks.value) {
+        await callback();
+      }
       setTimeout(() => {
         isRefreshing.value = false;
       }, 500);
