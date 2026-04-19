@@ -21,8 +21,8 @@
 import { ref, h } from 'vue';
 import { ElButton } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPageWrapper, MfwListPage } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { ApiAuditLogFindAll, ApiAuditLogFindById } from '../../../apis/sys';
 import type { AuditLogResponseDto } from '../../../apis/sys/schemas';

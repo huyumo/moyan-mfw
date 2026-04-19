@@ -43,7 +43,7 @@ const STATUS = {
 defineOptions({ name: 'MfwRoleList' });
 
 const authStore = useAuthStore();
-const pageScene = ref<MfwPageSceneInstance>();
+const listPage = ref<MfwListPageInstance>();
 const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 搜索模板 */
@@ -231,7 +231,7 @@ const handlePermission = (row: RoleResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('权限分配成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });

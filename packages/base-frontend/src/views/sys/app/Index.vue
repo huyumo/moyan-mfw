@@ -5,20 +5,22 @@
  */
 -->
 <template>
-  <MfwPageScene
-    ref="pageScene"
-    :search-template="searchTemplate"
-    :columns="columns"
-    :action-column="actionColumn"
-    :load-data="loadData"
-  >
-    <template #search-actions="{ loading }">
-      <el-button type="primary" :loading="loading" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新建应用
-      </el-button>
-    </template>
-  </MfwPageScene>
+  <MfwPageWrapper>
+    <MfwListPage
+      ref="listPage"
+      :search-template="searchTemplate"
+      :columns="columns"
+      :action-column="actionColumn"
+      :load-data="loadData"
+    >
+      <template #search-actions="{ loading }">
+        <el-button type="primary" :loading="loading" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新建应用
+        </el-button>
+      </template>
+    </MfwListPage>
+  </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
@@ -26,8 +28,8 @@ import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox, ElTag, ElButton } from 'element-plus';
 import { Plus, View, Edit, Delete, User } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPageWrapper, MfwListPage } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import {
   ApiAppFindAll,
@@ -46,7 +48,7 @@ const STATUS = {
 defineOptions({ name: 'MfwAppList' });
 
 const router = useRouter();
-const pageScene = ref<MfwPageSceneInstance>();
+const listPage = ref<MfwListPageInstance>();
 
 /** 应用类型列表（用于搜索模板） */
 const appTypeList = ref<AppTypeResponseDto[]>([]);
@@ -237,7 +239,7 @@ const handleDelete = async (row: AppDetailResponseDto) => {
     );
     await new ApiAppDelete({ params: { id: row.id } });
     ElMessage.success('删除成功');
-    pageScene.value?.refresh();
+    listPage.value?.refresh();
   } catch {
     // 用户取消
   }

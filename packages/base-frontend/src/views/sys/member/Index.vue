@@ -27,8 +27,8 @@
 import { ref, h, computed } from 'vue';
 import { ElMessage, ElMessageBox, ElTag, ElButton, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import { MfwPageWrapper, MfwListPage } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import {
   ApiAppMemberGetMembers,
@@ -48,7 +48,7 @@ const STATUS = {
 defineOptions({ name: 'MfwMemberList' });
 
 const authStore = useAuthStore();
-const pageScene = ref<MfwPageSceneInstance>();
+const listPage = ref<MfwListPageInstance>();
 const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 表格列 */
@@ -170,7 +170,7 @@ const handleEditRoles = (row: MemberResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('角色分配成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });
