@@ -188,7 +188,7 @@ const handleRemove = async (row: MemberResponseDto) => {
       params: { appId: appId.value, userId: row.userId },
     });
     ElMessage.success('移除成功');
-    pageScene.value?.refresh();
+    listPage.value?.refresh();
   } catch {
     // 用户取消
   }

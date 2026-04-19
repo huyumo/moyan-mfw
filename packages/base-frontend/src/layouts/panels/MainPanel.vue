@@ -23,7 +23,7 @@
     <TabsPanel
       v-if="showTabs"
       v-model="activeTabPath"
-      :visited-tabs="visitedTabs"
+      :visited-tabs="visitedTabs ?? []"
       @tab-remove="emit('tab-remove', $event)"
       @tab-command="emit('tab-command', $event)"
     />
@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { ArrowRight, HomeFilled } from '@element-plus/icons-vue';
 import TabsPanel from './TabsPanel.vue';
 import type { PageTabItem } from '../../types/layout-types';
