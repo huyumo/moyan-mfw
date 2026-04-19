@@ -536,7 +536,7 @@ export default defineComponent({
           // 表格
           h(MfwTableList, {
             ref: tableRef,
-            data: tableData.value,
+            data: tableData.value || [],
             columns: props.columns,
             actionColumn: props.actionColumn,
             loading: loading.value,
