@@ -5,14 +5,16 @@
  */
 -->
 <template>
-  <MfwPageScene
-    ref="pageScene"
-    :search-template="searchTemplate"
-    :columns="columns"
-    :action-column="actionColumn"
-    :load-data="loadData"
-    :show-search="true"
-  />
+  <MfwPageWrapper>
+    <MfwListPage
+      ref="listPage"
+      :search-template="searchTemplate"
+      :columns="columns"
+      :action-column="actionColumn"
+      :load-data="loadData"
+      :show-search="true"
+    />
+  </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
