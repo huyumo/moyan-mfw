@@ -4,6 +4,8 @@
 
 export * from './page-wrapper/mod';
 export * from './list-page/mod';
+export * from './search-panel/mod';
+export * from './card-list-page/mod';
 
 // 向后兼容：MfwPageScene 指向 MfwListPage
 export { MfwListPage as MfwPageScene } from './list-page/mod';
