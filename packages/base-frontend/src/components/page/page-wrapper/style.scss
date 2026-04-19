@@ -1,0 +1,266 @@
+/**
+ * @fileoverview MfwPageWrapper 页面包装器组件样式
+ * @description 提供页面布局容器，支持标题、面包屑、工具栏、内容区和底部区域
+ * @features
+ *   - 现代简洁风格
+ *   - 暗色模式支持（通过 Element Plus CSS 变量自动适配）
+ *   - 响应式布局（移动端适配）
+ *   - BEM 命名规范
+ *   - CSS 变量便于主题定制
+ */
+
+.mfw-page-wrapper {
+  // ============================================
+  // CSS 变量定义 - 便于主题定制
+  // ============================================
+  --mfw-page-padding: 16px;
+  --mfw-page-padding-sm: 12px;
+  --mfw-page-bg: var(--el-bg-color);
+  --mfw-page-border-color: var(--el-border-color);
+  --mfw-page-border-radius: 8px;
+  --mfw-page-title-size: 18px;
+  --mfw-page-title-size-sm: 16px;
+  --mfw-page-title-weight: 600;
+  --mfw-page-title-color: var(--el-text-color-primary);
+  --mfw-page-gap: 12px;
+  --mfw-page-gap-sm: 8px;
+  --mfw-page-header-padding-bottom: 8px;
+  --mfw-page-breadcrumb-padding-bottom: 12px;
+  --mfw-page-toolbar-padding-bottom: 12px;
+
+  // ============================================
+  // 主容器
+  // ============================================
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--mfw-page-bg);
+  overflow: hidden;
+
+  // ============================================
+  // 标题区域
+  // ============================================
+  &__header {
+    padding: var(--mfw-page-padding);
+    padding-bottom: var(--mfw-page-header-padding-bottom);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mfw-page-gap);
+    flex-shrink: 0;
+  }
+
+  &__title-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--mfw-page-gap);
+    flex: 1;
+    min-width: 0; // 防止内容溢出
+  }
+
+  &__title {
+    font-size: var(--mfw-page-title-size);
+    font-weight: var(--mfw-page-title-weight);
+    color: var(--mfw-page-title-color);
+    line-height: 1.4;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__header-extra {
+    display: flex;
+    align-items: center;
+    gap: var(--mfw-page-gap-sm);
+    flex-shrink: 0;
+  }
+
+  // ============================================
+  // 面包屑区域
+  // ============================================
+  &__breadcrumb-wrap {
+    padding: 0 var(--mfw-page-padding);
+    padding-bottom: var(--mfw-page-breadcrumb-padding-bottom);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mfw-page-gap);
+    flex-shrink: 0;
+  }
+
+  &__breadcrumb {
+    flex: 1;
+    min-width: 0; // 防止内容溢出
+  }
+
+  &__breadcrumb-extra {
+    display: flex;
+    align-items: center;
+    gap: var(--mfw-page-gap-sm);
+    flex-shrink: 0;
+  }
+
+  // ============================================
+  // 工具栏区域
+  // ============================================
+  &__toolbar {
+    padding: 0 var(--mfw-page-padding);
+    padding-bottom: var(--mfw-page-toolbar-padding-bottom);
+    flex-shrink: 0;
+  }
+
+  // ============================================
+  // 内容区域
+  // ============================================
+  &__content {
+    flex: 1;
+    padding: var(--mfw-page-padding);
+    overflow: auto;
+    min-height: 0; // 允许 flex 子项收缩
+
+    // 平滑滚动
+    scroll-behavior: smooth;
+
+    // 自定义滚动条（可选，增强视觉体验）
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: var(--el-border-color-darker);
+      border-radius: 3px;
+
+      &:hover {
+        background-color: var(--el-text-color-secondary);
+      }
+    }
+
+    &::-webkit-scrollbar-track {
+      background-color: transparent;
+    }
+  }
+
+  // ============================================
+  // 底部区域
+  // ============================================
+  &__footer {
+    padding: var(--mfw-page-padding);
+    padding-top: 0;
+    flex-shrink: 0;
+  }
+
+  // ============================================
+  // 修饰符 - 边框模式
+  // ============================================
+  &--bordered {
+    border: 1px solid var(--mfw-page-border-color);
+    border-radius: var(--mfw-page-border-radius);
+    margin: var(--mfw-page-padding);
+    box-sizing: border-box;
+
+    // 边框模式下调整内部 padding
+    .mfw-page-wrapper__header {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .mfw-page-wrapper__breadcrumb-wrap,
+    .mfw-page-wrapper__toolbar {
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    .mfw-page-wrapper__content {
+      padding: 0;
+    }
+
+    .mfw-page-wrapper__footer {
+      padding-left: 0;
+      padding-right: 0;
+    }
+  }
+
+  // ============================================
+  // 修饰符 - 无内边距模式
+  // ============================================
+  &--no-padding {
+    .mfw-page-wrapper__content {
+      padding: 0;
+    }
+  }
+
+  // ============================================
+  // 修饰符 - 紧凑模式
+  // ============================================
+  &--compact {
+    --mfw-page-padding: 12px;
+    --mfw-page-title-size: 16px;
+    --mfw-page-gap: 8px;
+  }
+
+  // ============================================
+  // 响应式布局 - 移动端适配
+  // ============================================
+  @media (max-width: 768px) {
+    --mfw-page-padding: var(--mfw-page-padding-sm);
+    --mfw-page-title-size: var(--mfw-page-title-size-sm);
+
+    &__header {
+      flex-wrap: wrap;
+      padding-bottom: 4px;
+    }
+
+    &__title-wrap {
+      width: 100%;
+    }
+
+    &__header-extra {
+      width: 100%;
+      justify-content: flex-end;
+      padding-top: 4px;
+    }
+
+    &__breadcrumb-wrap {
+      flex-wrap: wrap;
+      padding-bottom: 8px;
+    }
+
+    &__breadcrumb {
+      width: 100%;
+    }
+
+    &__breadcrumb-extra {
+      width: 100%;
+      justify-content: flex-end;
+      padding-top: 4px;
+    }
+
+    &__toolbar {
+      padding-bottom: 8px;
+    }
+
+    &__content {
+      padding: var(--mfw-page-padding-sm);
+    }
+  }
+
+  // ============================================
+  // 暗色模式增强（可选，Element Plus 已自动处理）
+  // ============================================
+  // 如需额外的暗色模式样式覆盖，可在此添加
+  // @media (prefers-color-scheme: dark) {
+  //   // 暗色模式特定样式
+  // }
+
+  // ============================================
+  // 减少动画偏好支持
+  // ============================================
+  @media (prefers-reduced-motion: reduce) {
+    &__content {
+      scroll-behavior: auto;
+    }
+  }
+}
