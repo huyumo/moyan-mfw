@@ -41,7 +41,7 @@
       transition: color 0.2s, background-color 0.2s;
 
       &:hover {
-        background-color: var(--el-fill-color-light, #f5f7fa);
+        background-color: rgba(64, 158, 255, 0.08);
       }
 
       &.is-disabled {
@@ -55,9 +55,15 @@
         --el-button-active-link-text-color: var(--el-color-danger-dark-2, #c45656);
 
         &:hover {
-          background-color: var(--el-color-danger-light-9, #fef0f0);
+          background-color: rgba(245, 108, 108, 0.08);
         }
       }
+    }
+  }
+
+  .el-table__row:hover {
+    td:last-child {
+      background-color: inherit;
     }
   }
 }
