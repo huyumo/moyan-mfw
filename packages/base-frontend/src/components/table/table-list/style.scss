@@ -1,8 +1,63 @@
 /**
  * @fileoverview MfwTableList 样式
+ * @design 轻量容器 + 主题变量驱动 + 操作列增强
  */
 
 .mfw-table-list {
-  background-color: var(--el-bg-color);
-  border-radius: var(--el-border-radius-base);
+  height: 100%;
+
+  .el-table {
+    --el-table-header-text-color: var(--el-text-color-primary, #303133);
+    --el-table-header-font-weight: 600;
+    --el-table-border-color: var(--el-border-color-lighter, #ebeef5);
+
+    th.el-table__cell {
+      font-size: 13px;
+    }
+
+    .el-table__row {
+      transition: background-color 0.15s ease;
+    }
+
+    .el-table__cell:focus-visible {
+      outline: 2px solid var(--el-color-primary, #409eff);
+      outline-offset: -2px;
+    }
+  }
+
+  .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .el-button.is-link {
+      --el-button-text-color: var(--el-color-primary, #409eff);
+      --el-button-hover-link-text-color: var(--el-color-primary-light-3, #66b1ff);
+      --el-button-active-link-text-color: var(--el-color-primary-dark-2, #337ecc);
+      padding: 4px 8px;
+      border-radius: var(--mfw-radius-sm, 4px);
+      font-size: 13px;
+      font-weight: 500;
+      transition: color 0.2s, background-color 0.2s;
+
+      &:hover {
+        background-color: var(--el-fill-color-light, #f5f7fa);
+      }
+
+      &.is-disabled {
+        --el-button-text-color: var(--el-disabled-text-color, #c0c4cc);
+        background-color: transparent;
+      }
+
+      &.el-button--danger {
+        --el-button-text-color: var(--el-color-danger, #f56c6c);
+        --el-button-hover-link-text-color: var(--el-color-danger-light-3, #f89898);
+        --el-button-active-link-text-color: var(--el-color-danger-dark-2, #c45656);
+
+        &:hover {
+          background-color: var(--el-color-danger-light-9, #fef0f0);
+        }
+      }
+    }
+  }
 }

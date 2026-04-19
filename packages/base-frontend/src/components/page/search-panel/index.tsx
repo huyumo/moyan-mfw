@@ -385,10 +385,8 @@ export default defineComponent({
 
       return (
         <div class="search-panel__actions">
-          <ElFormItem label=" ">
-            {defaultButtons}
-            {slots['search-actions']?.({ loading: props.loading })}
-          </ElFormItem>
+          {defaultButtons}
+          {slots['search-actions']?.({ loading: props.loading })}
         </div>
       );
     };
@@ -405,11 +403,11 @@ export default defineComponent({
             model={formData}
             inline
             class="search-panel__form"
-            labelWidth="auto"
+            labelWidth="80px"
           >
             {visibleItems.value.map(renderFormItem)}
-            {renderActions()}
           </ElForm>
+          {renderActions()}
           {slots['search-extra'] && (
             <div class="search-panel__extra">
               {slots['search-extra']()}

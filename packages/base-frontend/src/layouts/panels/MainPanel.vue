@@ -6,19 +6,6 @@
 -->
 <template>
   <main class="mfw-admin-main-panel">
-    <!-- 面包屑 -->
-    <div v-if="showBreadcrumb" class="mfw-admin-breadcrumb">
-      <el-breadcrumb :separator-icon="ArrowRight">
-        <el-breadcrumb-item :to="homePath">
-          <el-icon><HomeFilled /></el-icon>
-          首页
-        </el-breadcrumb-item>
-        <el-breadcrumb-item v-if="currentTitle">
-          {{ currentTitle }}
-        </el-breadcrumb-item>
-      </el-breadcrumb>
-    </div>
-
     <!-- 标签栏 -->
     <TabsPanel
       v-if="showTabs"

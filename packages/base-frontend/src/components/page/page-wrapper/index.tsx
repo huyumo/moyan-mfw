@@ -114,12 +114,6 @@ export default defineComponent({
       return items;
     });
 
-    const handleBreadcrumbClick = (item: BreadcrumbItem) => {
-      if (item.path && item.clickable) {
-        router.push(item.path);
-      }
-    };
-
     const handleRefresh = async () => {
       if (isRefreshing.value) return;
       isRefreshing.value = true;
