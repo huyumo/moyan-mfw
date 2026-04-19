@@ -24,28 +24,11 @@ import {
   type PropType
 } from 'vue';
 import {
-  ElForm,
-  ElFormItem,
-  ElInput,
-  ElSelect,
-  ElOption,
-  ElDatePicker,
-  ElTreeSelect,
-  ElRadioGroup,
-  ElRadio,
-  ElCheckboxGroup,
-  ElCheckbox,
-  ElButton,
-  ElIcon,
   ElPagination,
-  ElEmpty,
-  type FormInstance
+  ElEmpty
 } from 'element-plus';
-import {
-  Search,
-  RefreshLeft
-} from '@element-plus/icons-vue';
 import MfwTableList from '../../table/table-list/index';
+import { MfwSearchPanel } from '../search-panel';
 import type {
   MfwListPageProps,
   MfwListPageEmits,
@@ -56,6 +39,7 @@ import type {
   PaginationConfig,
   TableState
 } from './types';
+import type { MfwSearchPanelInstance } from '../search-panel/types';
 
 export default defineComponent({
   name: 'MfwListPage',
@@ -155,11 +139,8 @@ export default defineComponent({
   },
 
   setup(props, { emit, expose, slots }) {
-    const searchFormRef = ref<FormInstance>();
+    const searchPanelRef = ref<MfwSearchPanelInstance>();
     const tableRef = ref<any>();
-
-    // 搜索表单数据
-    const searchForm = ref<Record<string, any>>({});
 
     // 分页配置
     const pagination = ref<PaginationConfig>({
@@ -185,22 +166,6 @@ export default defineComponent({
     const tableData = computed(() => tableState.value.data);
 
     /**
-     * 初始化搜索表单默认值
-     */
-    const initSearchForm = () => {
-      searchForm.value = {};
-      props.searchTemplate.forEach((item: SearchTemplateItem) => {
-        if (item.defaultValue !== undefined) {
-          searchForm.value[item.key] = item.defaultValue;
-        } else if (item.type === 'checkbox-group') {
-          searchForm.value[item.key] = [];
-        } else {
-          searchForm.value[item.key] = undefined;
-        }
-      });
-    };
-
-    /**
      * 加载表格数据
      */
     const loadTableData = async () => {
@@ -208,8 +173,9 @@ export default defineComponent({
 
       tableState.value.loading = true;
       try {
+        const searchParams = searchPanelRef.value?.getFormValues() || {};
         const params = {
-          ...searchForm.value,
+          ...searchParams,
           page: pagination.value.currentPage,
           pageSize: pagination.value.pageSize,
           sortProp: tableState.value.sortProp,
@@ -239,8 +205,7 @@ export default defineComponent({
      * 重置搜索条件
      */
     const resetSearch = () => {
-      searchFormRef.value?.resetFields();
-      initSearchForm();
+      searchPanelRef.value?.reset();
       pagination.value.currentPage = 1;
       emit('reset');
       loadTableData();
@@ -272,20 +237,16 @@ export default defineComponent({
      * 获取当前搜索条件
      */
     const getSearchParams = () => {
-      return { ...searchForm.value };
+      return searchPanelRef.value?.getFormValues() || {};
     };
 
     /**
      * 处理搜索
      */
-    const handleSearch = () => {
-      searchFormRef.value?.validate((valid: boolean) => {
-        if (valid) {
-          pagination.value.currentPage = 1;
-          emit('search', searchForm.value);
-          loadTableData();
-        }
-      });
+    const handleSearch = (formData: Record<string, any>) => {
+      pagination.value.currentPage = 1;
+      emit('search', formData);
+      loadTableData();
     };
 
     /**
@@ -321,115 +282,6 @@ export default defineComponent({
       emit('selection-change', selection);
     };
 
-    /**
-     * 处理表单项值变化（change 模式下立即触发搜索）
-     */
-    const handleFormItemChange = (key: string, value: any, immediate?: boolean) => {
-      searchForm.value[key] = value;
-      if (props.searchTrigger === 'change' && immediate) {
-        handleSearch();
-      }
-    };
-
-    /**
-     * 渲染搜索表单项
-     */
-    const renderSearchItem = (item: SearchTemplateItem) => {
-      const placeholder = item.placeholder || `请输入${item.label}`;
-      const disabled = loading.value;
-
-      switch (item.type) {
-        case 'input':
-          return h(ElInput, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            placeholder,
-            disabled,
-            clearable: true,
-            onKeyup: (e: KeyboardEvent) => { if (e.key === 'Enter') handleSearch(); }
-          });
-
-        case 'select':
-          return h(ElSelect, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            placeholder: item.placeholder || `请选择${item.label}`,
-            disabled,
-            clearable: true,
-            ...item.elProps
-          }, {
-            default: () => (item.elProps?.options || []).map((opt: any) =>
-              h(ElOption, { key: opt.value, label: opt.label, value: opt.value })
-            )
-          });
-
-        case 'date-picker':
-          return h(ElDatePicker, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            type: 'date',
-            placeholder: item.placeholder || '选择日期',
-            disabled,
-            valueFormat: 'YYYY-MM-DD',
-            ...item.elProps
-          });
-
-        case 'date-range':
-          return h(ElDatePicker, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            type: 'daterange',
-            startPlaceholder: (item.placeholder || '开始日期/结束日期').split('/')[0],
-            endPlaceholder: (item.placeholder || '开始日期/结束日期').split('/')[1] || '结束日期',
-            disabled,
-            valueFormat: 'YYYY-MM-DD',
-            ...item.elProps
-          });
-
-        case 'tree-select':
-          return h(ElTreeSelect, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            placeholder: item.placeholder || `请选择${item.label}`,
-            disabled,
-            clearable: true,
-            ...item.elProps
-          });
-
-        case 'radio-group':
-          return h(ElRadioGroup, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            disabled,
-            ...item.elProps
-          }, {
-            default: () => (item.elProps?.options || []).map((opt: any) =>
-              h(ElRadio, { key: opt.value, label: opt.value }, { default: () => opt.label })
-            )
-          });
-
-        case 'checkbox-group':
-          return h(ElCheckboxGroup, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            disabled,
-            ...item.elProps
-          }, {
-            default: () => (item.elProps?.options || []).map((opt: any) =>
-              h(ElCheckbox, { key: opt.value, label: opt.value }, { default: () => opt.label })
-            )
-          });
-
-        default:
-          return h(ElInput, {
-            modelValue: searchForm.value[item.key],
-            'onUpdate:modelValue': (val: any) => handleFormItemChange(item.key, val, item.immediate),
-            placeholder,
-            disabled
-          });
-      }
-    };
-
     // 暴露实例方法
     expose<MfwListPageInstance>({
       refresh,
@@ -442,7 +294,6 @@ export default defineComponent({
 
     // 初始化
     onMounted(() => {
-      initSearchForm();
       if (props.loadData) {
         loadTableData();
       }
@@ -473,56 +324,18 @@ export default defineComponent({
         }
 
         return h('div', { class: 'mfw-list-page__search' }, [
-          h(ElForm, {
-            ref: searchFormRef,
-            model: searchForm.value,
-            inline: true,
-            class: 'mfw-list-page__search-form'
+          h(MfwSearchPanel, {
+            ref: searchPanelRef,
+            searchTemplate: props.searchTemplate,
+            searchTrigger: props.searchTrigger,
+            loading: loading.value,
+            onSearch: handleSearch,
+            onReset: handleReset
           }, {
-            default: () => [
-              // 搜索表单项
-              ...props.searchTemplate.map((item: SearchTemplateItem) =>
-                h(ElFormItem, {
-                  key: item.key,
-                  label: item.label,
-                  prop: item.key,
-                  rules: item.required ? [{ required: true, message: `请输入${item.label}`, trigger: 'blur' as const }] : []
-                }, {
-                  default: () => renderSearchItem(item)
-                })
-              ),
-
-              // 搜索操作按钮
-              h(ElFormItem, {}, {
-                default: () => h('div', { class: 'mfw-list-page__search-actions' }, [
-                  h(ElButton, {
-                    type: 'primary',
-                    loading: loading.value,
-                    onClick: handleSearch
-                  }, {
-                    default: () => [
-                      h(ElIcon, {}, { default: () => h(Search) }),
-                      ' 搜索'
-                    ]
-                  }),
-
-                  h(ElButton, {
-                    onClick: handleReset
-                  }, {
-                    default: () => [
-                      h(ElIcon, {}, { default: () => h(RefreshLeft) }),
-                      ' 重置'
-                    ]
-                  }),
-
-                  // 自定义搜索操作插槽
-                  slots['search-actions']?.({ loading: loading.value })
-                ])
-              }),
-
-              // 筛选面板底部插槽
-              slots['search-extra']?.()
-            ]
+            'search-actions': slots['search-actions']
+              ? (searchSlotProps: { loading: boolean }) => slots['search-actions']?.(searchSlotProps)
+              : undefined,
+            'search-extra': slots['search-extra']
           })
         ]);
       };
