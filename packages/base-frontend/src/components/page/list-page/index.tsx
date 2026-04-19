@@ -205,7 +205,6 @@ export default defineComponent({
      * 重置搜索条件
      */
     const resetSearch = () => {
-      searchPanelRef.value?.reset();
       pagination.value.currentPage = 1;
       emit('reset');
       loadTableData();
