@@ -78,21 +78,38 @@
   }
 
   // ============================================
-  // 面包屑区域
+  // 面包屑区域 - 轻量化处理
   // ============================================
   &__breadcrumb-wrap {
     padding: 0 var(--mfw-page-padding);
-    padding-bottom: var(--mfw-page-breadcrumb-padding-bottom);
+    padding-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--mfw-page-gap);
     flex-shrink: 0;
+
+    .el-breadcrumb {
+      font-size: 13px;
+
+      .el-breadcrumb__inner {
+        color: var(--el-text-color-secondary, #909399);
+
+        &.is-link:hover {
+          color: var(--el-color-primary, #409eff);
+        }
+      }
+
+      .el-breadcrumb__separator {
+        color: var(--el-text-color-placeholder, #c0c4cc);
+        margin: 0 4px;
+      }
+    }
   }
 
   &__breadcrumb {
     flex: 1;
-    min-width: 0; // 防止内容溢出
+    min-width: 0;
   }
 
   &__breadcrumb-extra {

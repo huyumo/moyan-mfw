@@ -6,6 +6,12 @@
 -->
 <template>
   <MfwPageWrapper>
+    <template #header-extra>
+        <el-button type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          添加成员
+        </el-button>
+      </template>
     <MfwListPage
       ref="listPage"
       :show-search="false"
@@ -13,12 +19,6 @@
       :action-column="actionColumn"
       :load-data="loadData"
     >
-      <template #search-actions="{ loading }">
-        <el-button type="primary" :loading="loading" @click="handleAdd">
-          <el-icon><Plus /></el-icon>
-          添加成员
-        </el-button>
-      </template>
     </MfwListPage>
   </MfwPageWrapper>
 </template>
