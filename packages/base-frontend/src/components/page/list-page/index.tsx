@@ -28,7 +28,7 @@ import {
   ElEmpty
 } from 'element-plus';
 import MfwTableList from '../../table/table-list/index';
-import { MfwSearchPanel } from '../search-panel';
+import MfwSearchPanel from '../search-panel';
 import type {
   MfwListPageProps,
   MfwListPageEmits,
