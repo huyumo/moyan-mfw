@@ -210,6 +210,7 @@ export default defineComponent({
             ref={tableRef}
             data={tableData.value || []}
             loading={loading.value}
+            elProps={{ emptyText: props.emptyText }}
             v-slots={{
               default: slots.empty
             }}
