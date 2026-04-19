@@ -358,18 +358,6 @@ export default defineComponent({
 
     // 渲染操作按钮
     const renderActions = () => {
-      // 如果有自定义插槽，使用插槽
-      if (slots['search-actions']) {
-        return (
-          <div class="search-panel__actions">
-            <ElFormItem label=" ">
-              {slots['search-actions']({ loading: props.loading })}
-            </ElFormItem>
-          </div>
-        );
-      }
-
-      // 默认按钮
       const defaultButtons = (
         <>
           {props.showSearchButton && (
@@ -397,6 +385,7 @@ export default defineComponent({
         <div class="search-panel__actions">
           <ElFormItem label=" ">
             {defaultButtons}
+            {slots['search-actions']?.({ loading: props.loading })}
           </ElFormItem>
         </div>
       );
