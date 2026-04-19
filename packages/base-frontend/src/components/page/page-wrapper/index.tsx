@@ -5,16 +5,25 @@
 
 import './style.scss';
 
-import { defineComponent, computed, ref, provide, type PropType } from 'vue';
+import { defineComponent, computed, ref, shallowRef, provide, inject, type PropType, type Ref, type ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElSpace } from 'element-plus';
-import { Refresh } from '@element-plus/icons-vue';
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElTooltip } from 'element-plus';
+import { Refresh, Search, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import type {
   MfwPageWrapperProps,
   MfwPageWrapperEmits,
   MfwPageWrapperInstance,
   BreadcrumbItem
 } from './types';
+
+interface SearchPanelContext {
+  doSearch: () => void;
+  reset: () => void;
+  toggleExpand: () => void;
+  expanded: Ref<boolean>;
+  showExpandButton: ComputedRef<boolean>;
+  loading: ComputedRef<boolean>;
+}
 
 export default defineComponent({
   name: 'MfwPageWrapper',
@@ -66,6 +75,9 @@ export default defineComponent({
     
     const hasSearchPanel = ref(false);
     provide('mfw-page-has-search-panel', hasSearchPanel);
+    
+    const searchPanelContextRef = shallowRef<SearchPanelContext | null>(null);
+    provide('mfw-search-panel-context-ref', searchPanelContextRef);
     
     const refreshCallbacks = ref<(() => void | Promise<void>)[]>([]);
     const registerRefresh = (callback: () => void | Promise<void>) => {
@@ -145,10 +157,45 @@ export default defineComponent({
           onClick={handleRefresh}
         >
           <ElIcon><Refresh /></ElIcon>
-          刷新
         </ElButton>
       )
     );
+
+    // 渲染筛选面板操作按钮
+    const renderSearchPanelActions = () => {
+      const ctx = searchPanelContextRef.value;
+      if (!hasSearchPanel.value || !ctx) return null;
+
+      return (
+        <>
+          <ElTooltip content="查询" placement="top">
+            <ElButton
+              type="primary"
+              icon={Search}
+              loading={ctx.loading.value}
+              onClick={ctx.doSearch}
+              circle
+            />
+          </ElTooltip>
+          <ElTooltip content="重置" placement="top">
+            <ElButton
+              icon={Refresh}
+              onClick={ctx.reset}
+              circle
+            />
+          </ElTooltip>
+          {ctx.showExpandButton.value && (
+            <ElTooltip content={ctx.expanded.value ? '收起' : '展开'} placement="top">
+              <ElButton
+                icon={ctx.expanded.value ? ArrowUp : ArrowDown}
+                onClick={ctx.toggleExpand}
+                circle
+              />
+            </ElTooltip>
+          )}
+        </>
+      );
+    };
 
     // 渲染面包屑
     const renderBreadcrumb = () => (
@@ -179,26 +226,28 @@ export default defineComponent({
         ) : (
           // 根据 headerMode 渲染不同的头部布局
           props.headerMode === 'breadcrumb' ? (
-            // breadcrumb 模式：面包屑 + 刷新按钮
+            // breadcrumb 模式：面包屑 + 操作按钮
             props.showBreadcrumb && breadcrumbItems.value.length > 0 && (
               <div class="mfw-page-wrapper__header-row">
                 <div class="mfw-page-wrapper__header-left">
                   {slots.breadcrumb ? slots.breadcrumb() : renderBreadcrumb()}
                 </div>
                 <div class="mfw-page-wrapper__header-right">
-                  {renderRefreshButton()}
                   {slots['header-extra']?.()}
+                  {renderSearchPanelActions()}
+                  {renderRefreshButton()}
                 </div>
               </div>
             )
           ) : (
-            // title 模式：标题 + 刷新按钮
+            // title 模式：标题 + 操作按钮
             props.showTitle && pageTitle.value && (
               <div class="mfw-page-wrapper__header-row">
                 <div class="mfw-page-wrapper__header-left">
                   <h1 class="mfw-page-wrapper__title">{pageTitle.value}</h1>
                 </div>
                 <div class="mfw-page-wrapper__header-right">
+                  {renderSearchPanelActions()}
                   {renderRefreshButton()}
                   {slots['header-extra']?.()}
                 </div>

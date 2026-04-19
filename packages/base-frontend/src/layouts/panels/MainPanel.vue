@@ -76,6 +76,6 @@ const activeTabPath = computed({
 .mfw-admin-content-area {
   flex: 1;
   overflow: auto;
-  padding: 16px;
+  padding: 0;
 }
 </style>

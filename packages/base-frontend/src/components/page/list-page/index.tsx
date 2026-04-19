@@ -339,9 +339,6 @@ export default defineComponent({
             onSearch: handleSearch,
             onReset: handleReset
           }, {
-            'search-actions': slots['search-actions']
-              ? (searchSlotProps: { loading: boolean }) => slots['search-actions']?.(searchSlotProps)
-              : undefined,
             'search-extra': slots['search-extra']
           })
         ]);

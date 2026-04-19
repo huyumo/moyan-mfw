@@ -1,85 +1,58 @@
 /**
  * @fileoverview MfwListPage 列表页面组件样式
- * @design Swiss Modernism 2.0 - 单层边框、数学化间距、Z轴层次
  */
 
 .mfw-list-page {
+  // 使用框架 CSS 变量
+  --mfw-bg: var(--el-bg-color);
+  --mfw-border-color: var(--el-border-color);
+  --mfw-text-primary: var(--el-text-color-primary);
+
   width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  background: var(--mfw-bg);
 
   &__search {
-    margin-bottom: 24px;
-    flex-shrink: 0;
-  }
+    margin-bottom: 16px;
+    background: var(--el-bg-color);
+    border-radius: 4px;
+    &-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
 
-  &__table {
-    flex: 1;
-    min-height: 0;
-    position: relative;
-    z-index: 0;
-    border: 1px solid var(--el-border-color-lighter, #ebeef5);
-    border-radius: var(--mfw-radius-md, 8px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    transition: box-shadow 0.25s ease;
+      .el-form-item {
+        margin-bottom: 12px;
+      }
 
-    &:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
-    }
-
-    .mfw-table-list {
-      height: 100%;
-
-      .el-table {
-        --el-table-border-color: var(--el-border-color-lighter, #ebeef5);
-        --el-table-header-bg-color: var(--el-fill-color-light, #f5f7fa);
-        --el-table-row-hover-bg-color: var(--el-fill-color-lighter, #fafafa);
+      .el-input,
+      .el-select,
+      .el-date-picker {
+        width: 240px;
       }
     }
 
-    &:first-child {
-      margin-top: 8px;
+    &-actions {
+      display: flex;
+      gap: 8px;
+    }
+  }
+
+  &__table {
+    background: var(--el-bg-color);
+    border-radius: 4px;
+
+    .mfw-table-list {
+      border-radius: 4px;
+      overflow: hidden;
     }
   }
 
   &__pagination {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
-    padding-top: 16px;
-    flex-shrink: 0;
-
-    .el-pagination {
-      --el-pagination-button-bg-color: var(--el-fill-color-blank, #fff);
-      --el-pagination-text-color: var(--el-text-color-primary, #303133);
-      --el-pagination-button-color: var(--el-text-color-regular, #606266);
-      --el-pagination-hover-color: var(--el-color-primary, #409eff);
-      --el-pagination-bg-color: var(--el-fill-color-blank, #fff);
-      --el-border-radius: var(--mfw-radius-md, 6px);
-      --el-font-size: 13px;
-
-      .btn-prev,
-      .btn-next,
-      .el-pager li {
-        &:focus-visible {
-          outline: 2px solid var(--el-color-primary, #409eff);
-          outline-offset: 2px;
-        }
-      }
-
-      .el-select {
-        &:focus-within {
-          .el-input__wrapper {
-            box-shadow: 0 0 0 1px var(--el-color-primary, #409eff) inset;
-          }
-        }
-      }
-
-      .el-input__inner:focus {
-        caret-color: var(--el-color-primary, #409eff);
-      }
-    }
+    padding: 16px;
+    background: var(--el-bg-color);
+    border-radius: 4px;
+    margin-top: 16px;
   }
 }
