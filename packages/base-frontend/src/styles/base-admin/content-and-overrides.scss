@@ -146,10 +146,6 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--mfw-text-color, #1f2a37);
-
-    .el-icon {
-      color: var(--mfw-primary-color, #2f6ef6);
-    }
   }
 }
 
@@ -234,8 +230,8 @@
 
       /* 子菜单背景 */
       .el-sub-menu .el-menu {
-        background: rgba(0, 0, 0, 0.2);
-
+        // background: rgba(0, 0, 0, 0.0);
+        background: transparent;
         .el-menu-item {
           color: #cbd5e1 !important;
 

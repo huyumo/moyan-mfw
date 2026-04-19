@@ -16,7 +16,7 @@ import {
   ElTableColumn,
   ElSkeleton
 } from 'element-plus';
-import type { MfwTableListProps, MfwTableListEmits, MfwTableListInstance, TableColumnConfig, ActionColumnConfig } from './types';
+import type {  MfwTableListInstance, TableColumnConfig, ActionColumnConfig } from './types';
 
 export default defineComponent({
   name: 'MfwTableList',

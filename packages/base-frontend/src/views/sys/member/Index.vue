@@ -98,7 +98,7 @@ const columns = [
   {
     prop: 'createdAt',
     label: '加入时间',
-    width: 180,
+    minWidth: 180,
     render: ({ row }: { row: MemberResponseDto }) => row.createdAt || '-',
   },
 ];
@@ -107,7 +107,7 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 150,
+  width: 250,
   fixed: 'right' as const,
   render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'action-buttons' }, [
     h(ElButton, {

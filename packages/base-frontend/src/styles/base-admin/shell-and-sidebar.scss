@@ -17,7 +17,7 @@
 
   &.is-compact {
     .mfw-admin-sidebar {
-      width: 84px;
+      width: 64px;
     }
 
     .mfw-admin-sidebar-footer span {
@@ -251,8 +251,15 @@
   .el-menu-item,
   .el-sub-menu__title {
     border-radius: var(--mfw-radius-lg, 12px);
-    margin-bottom: 6px;
-    gap: 8px;
+    margin-bottom: 2px;
+    height: 44px;
+    line-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 16px;
+    padding-right: 16px;
+    transition: padding 0.22s ease, justify-content 0.22s ease;
   }
 
   .el-menu-item.is-active {
@@ -262,6 +269,7 @@
 
   .el-tag {
     margin-left: auto;
+    transition: opacity 0.22s ease;
   }
 }
 
@@ -270,6 +278,12 @@
   .el-menu-item,
   .el-sub-menu__title {
     justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .el-tag {
+    opacity: 0;
   }
 }
 

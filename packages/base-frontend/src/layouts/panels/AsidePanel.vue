@@ -17,7 +17,7 @@
 
     <div class="mfw-admin-sidebar-footer">
       <slot name="sidebar-footer">
-        <span>框架托管布局模式</span>
+        <span></span>
       </slot>
     </div>
   </aside>
