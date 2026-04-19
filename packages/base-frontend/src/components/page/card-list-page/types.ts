@@ -5,6 +5,9 @@
 import type { VNode } from 'vue';
 import type { SearchTemplateItem, LoadParams, TableData } from '../list-page/types';
 
+// 重新导出共享类型
+export type { SearchTemplateItem, LoadParams, TableData };
+
 /** 卡片栅格配置 */
 export interface CardGridConfig {
   /** 每行卡片数 */
