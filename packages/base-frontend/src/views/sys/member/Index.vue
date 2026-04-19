@@ -5,20 +5,22 @@
  */
 -->
 <template>
-  <MfwPageScene
-    ref="pageScene"
-    :show-search="false"
-    :columns="columns"
-    :action-column="actionColumn"
-    :load-data="loadData"
-  >
-    <template #search-actions="{ loading }">
-      <el-button type="primary" :loading="loading" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        添加成员
-      </el-button>
-    </template>
-  </MfwPageScene>
+  <MfwPageWrapper>
+    <MfwListPage
+      ref="listPage"
+      :show-search="false"
+      :columns="columns"
+      :action-column="actionColumn"
+      :load-data="loadData"
+    >
+      <template #search-actions="{ loading }">
+        <el-button type="primary" :loading="loading" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          添加成员
+        </el-button>
+      </template>
+    </MfwListPage>
+  </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">

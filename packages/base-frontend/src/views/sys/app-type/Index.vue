@@ -227,7 +227,7 @@ const handleEdit = (row: AppTypeResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('保存成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });

@@ -196,7 +196,7 @@ const handleAdd = () => {
     on: {
       confirm: () => {
         ElMessage.success('创建成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });
