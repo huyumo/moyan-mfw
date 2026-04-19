@@ -209,7 +209,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  eq(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  eq(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -222,7 +222,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  neq(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  neq(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -235,7 +235,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  gt(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  gt(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -248,7 +248,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  gte(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  gte(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -261,7 +261,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  lt(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  lt(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -274,7 +274,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  lte(field: string, value: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  lte(field: string, value?: any, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -287,7 +287,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  like(field: string, value: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  like(field: string, value?: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -300,7 +300,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  likeLeft(field: string, value: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  likeLeft(field: string, value?: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -313,7 +313,7 @@ export class WhereBuilder {
    * @param value - 值
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  likeRight(field: string, value: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  likeRight(field: string, value?: string, logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (value === undefined) {
       return this;
     }
@@ -326,7 +326,7 @@ export class WhereBuilder {
    * @param values - 值数组
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  in(field: string, values: any[], logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  in(field: string, values?: any[], logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (!values || values.length === 0) {
       return this;
     }
@@ -353,7 +353,7 @@ export class WhereBuilder {
    * @param values - 值数组
    * @param logicalOperator - 逻辑连接符（AND/OR）
    */
-  notIn(field: string, values: any[], logicalOperator: 'AND' | 'OR' = 'AND'): this {
+  notIn(field: string, values?: any[], logicalOperator: 'AND' | 'OR' = 'AND'): this {
     if (!values || values.length === 0) {
       return this;
     }
@@ -490,6 +490,16 @@ export class WhereBuilder {
     this.conditions = [];
     this.params = {};
     this.paramIndex = 0;
+    return this;
+  }
+
+  /**
+   * 手动添加参数（用于 SQL 中需要额外参数的场景）
+   * @param name - 参数名
+   * @param value - 参数值
+   */
+  addParam(name: string, value: any): this {
+    this.params[name] = value;
     return this;
   }
 

@@ -61,11 +61,81 @@ export class MemberResponseDto {
   createdAt: Date;
 
   /**
-   * 用户信息
+   * 用户昵称
    */
-  @ApiProperty({ description: '用户信息', type: MemberUserInfoDto })
+  @ApiProperty({ description: '用户昵称' })
   @Expose()
-  user?: UserInfoDto;
+  nickname: string;
+
+  /**
+   * 用户头像
+   */
+  @ApiProperty({ description: '用户头像' })
+  @Expose()
+  avatar: string;
+
+  /**
+   * 用户邮箱
+   */
+  @ApiProperty({ description: '用户邮箱' })
+  @Expose()
+  email: string;
+
+  /**
+   * 用户手机号
+   */
+  @ApiProperty({ description: '用户手机号' })
+  @Expose()
+  phone: string;
+
+  /**
+   * 用户名
+   */
+  @ApiProperty({ description: '用户名' })
+  @Expose()
+  username: string;
+
+  /**
+   * 应用编码
+   */
+  @ApiProperty({ description: '应用编码' })
+  @Expose()
+  appCode: string;
+
+  /**
+   * 应用名称
+   */
+  @ApiProperty({ description: '应用名称' })
+  @Expose()
+  appName: string;
+
+  /**
+   * 应用图标
+   */
+  @ApiProperty({ description: '应用图标' })
+  @Expose()
+  appIcon: string;
+
+  /**
+   * 拥有者 ID
+   */
+  @ApiProperty({ description: '拥有者 ID' })
+  @Expose()
+  ownerId: string;
+
+  /**
+   * 排序序号
+   */
+  @ApiProperty({ description: '排序序号' })
+  @Expose()
+  sortOrder: number;
+
+  /**
+   * 应用类型 ID
+   */
+  @ApiProperty({ description: '应用类型 ID' })
+  @Expose()
+  appTypeId: string;
 
   /**
    * 角色列表

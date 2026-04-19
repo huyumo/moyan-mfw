@@ -9,7 +9,7 @@ import { Repository, DataSource } from 'typeorm';
 import { App } from '../entities/app.entity';
 import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
 import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
 
 /**
  * 应用服务
@@ -66,23 +66,26 @@ export class AppService {
    * @param query - 查询参数
    * @returns 分页结果
    */
-  async findAll(query: QueryAppDto): Promise<PaginationResult<App>> {
-    const qb = this.appRepository.createQueryBuilder('app');
+  async findAll(query: QueryAppDto): Promise<PaginationResult<any>> {
+    const { appName, appCode, appTypeId, ownerId, appStatus } = query;
+    const whereBuilder = new WhereBuilder();
+    whereBuilder
+      .like('app.appName', appName)
+      .like('app.appCode', appCode)
+      .eq('app.appTypeId', appTypeId)
+      .eq('app.ownerId', ownerId)
+      .eq('app.appStatus', appStatus);
 
-    // 使用 QueryBuilderHelper 构建查询条件
-    QueryBuilderHelper.applyConditions(qb, [
-      { field: 'app.appName', value: query.appName, operator: 'like' },
-      { field: 'app.appCode', value: query.appCode, operator: 'like' },
-      { field: 'app.appTypeId', value: query.appTypeId, operator: '=' },
-      { field: 'app.ownerId', value: query.ownerId, operator: '=' },
-      { field: 'app.appStatus', value: query.appStatus, operator: '=' },
-    ]);
-
-    // 使用 PaginationHelper 执行分页查询
-    return PaginationHelper.executeQuery(
-      qb.orderBy('app.sortOrder', 'ASC').addOrderBy('app.createdAt', 'DESC'),
-      query,
-    );
+    const pager = new PaginationX(this.dataSource, query);
+    return await pager
+      .where('main', whereBuilder)
+      .sql(({ select, wheres, orderBy, limit }) => {
+        const whereClause = wheres?.main || '';
+        return `SELECT ${select} FROM sys_apps app ${whereClause} ${orderBy} ${limit}`;
+      })
+      .select('app.*')
+      .defaultOrderBy('app.sortOrder ASC, app.createdAt DESC')
+      .getData();
   }
 
   /**

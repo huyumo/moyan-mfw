@@ -5,10 +5,10 @@
 
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { QueryAuditLogDto } from './dto';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 
 /**
  * 审计日志服务
@@ -18,6 +18,7 @@ export class AuditLogService {
   constructor(
     @InjectRepository(AuditLog)
     private auditLogRepository: Repository<AuditLog>,
+    private dataSource: DataSource,
   ) {}
 
   /**
@@ -61,24 +62,27 @@ export class AuditLogService {
    * @param query - 查询参数
    * @returns 分页结果
    */
-  async findAll(query: QueryAuditLogDto): Promise<PaginationResult<AuditLog>> {
-    const qb = this.auditLogRepository.createQueryBuilder('auditLog');
+  async findAll(query: QueryAuditLogDto): Promise<PaginationResult<any>> {
+    const { module, event, operatorId, targetId, startTime, endTime } = query;
+    const whereBuilder = new WhereBuilder();
+    whereBuilder
+      .eq('auditLog.module', module)
+      .like('auditLog.event', event)
+      .eq('auditLog.operatorId', operatorId)
+      .eq('auditLog.targetId', targetId)
+      .gte('auditLog.createAt', startTime)
+      .lte('auditLog.createAt', endTime);
 
-    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
-    QueryBuilderHelper.applyConditions(qb, [
-      { field: 'auditLog.module', value: query.module, operator: '=' },
-      { field: 'auditLog.event', value: query.event, operator: 'like' },
-      { field: 'auditLog.operatorId', value: query.operatorId, operator: '=' },
-      { field: 'auditLog.targetId', value: query.targetId, operator: '=' },
-      { field: 'auditLog.createAt', value: query.startTime, operator: '>=' },
-      { field: 'auditLog.createAt', value: query.endTime, operator: '<=' },
-    ]);
-
-    // 使用 PaginationHelper 执行分页查询
-    return PaginationHelper.executeQuery(
-      qb.orderBy('auditLog.createAt', 'DESC'),
-      query,
-    );
+    const pager = new PaginationX(this.dataSource, query);
+    return await pager
+      .where('main', whereBuilder)
+      .sql(({ select, wheres, orderBy, limit }) => {
+        const whereClause = wheres?.main || '';
+        return `SELECT ${select} FROM sys_audit_logs auditLog ${whereClause} ${orderBy} ${limit}`;
+      })
+      .select('auditLog.*')
+      .defaultOrderBy('auditLog.createAt DESC')
+      .getData();
   }
 
   /**

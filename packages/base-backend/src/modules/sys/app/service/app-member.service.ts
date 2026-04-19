@@ -16,7 +16,7 @@ import { Role } from '../../role/entities/role.entity';
 import { User } from '../../user/entities/user.entity';
 import { App } from '../entities/app.entity';
 import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
-import { PaginationHelper, PaginationResult } from '../../../../common';
+import { PaginationX, WhereBuilder, PaginationResult } from '../../../../common';
 
 /**
  * 成员服务
@@ -70,115 +70,78 @@ export class AppMemberService {
     return this.appMemberRepository.save(member);
   }
 
-    /**
+  /**
    * 获取应用成员列表（分页）
    * @param appId - 应用 ID
    * @param query - 查询参数
    * @returns 分页结果
    */
   async getMembers(appId: string, query: QueryMemberDto): Promise<PaginationResult<any>> {
+    const { nickname, username } = query;
     const app = await this.appRepository.findOne({ where: { id: appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
     }
 
-    const offset = (query.page! - 1) * query.pageSize!;
-    const limit = query.pageSize!;
+    const whereBuilder = new WhereBuilder();
+    whereBuilder
+      .eq('am.appId', appId)
+      .like('u.nickname', nickname)
+      .like('u.username', username)
+      .addParam('appId', appId)
+      .addParam('appTypeId', app.appTypeId);
 
-    const whereConditions = ['am.appId = ?'];
-    const params: any[] = [appId];
-
-    if (query.nickname) {
-      whereConditions.push('u.nickname LIKE ?');
-      params.push(`%${query.nickname}%`);
-    }
-
-    if (query.username) {
-      whereConditions.push('u.username LIKE ?');
-      params.push(`%${query.username}%`);
-    }
-
-    const whereClause = whereConditions.join(' AND ');
-
-    const dataSql = `
-      SELECT 
-        ANY_VALUE(am.id) as id,
-        ANY_VALUE(am.userId) as userId,
-        ANY_VALUE(am.appId) as appId,
-        ANY_VALUE(am.createdAt) as createdAt,
-        ANY_VALUE(u.id) as userId,
-        ANY_VALUE(u.nickname) as nickname,
-        ANY_VALUE(u.avatar) as avatar,
-        ANY_VALUE(u.email) as email,
-        ANY_VALUE(u.phone) as phone,
-        ANY_VALUE(u.username) as username,
-        ANY_VALUE(a.appCode) as appCode,
-        ANY_VALUE(a.appName) as appName,
-        ANY_VALUE(a.icon) as appIcon,
-        ANY_VALUE(a.ownerId) as ownerId,
-        ANY_VALUE(a.sortOrder) as sortOrder,
-        ANY_VALUE(a.appTypeId) as appTypeId,
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'roleCode', r.roleCode,
-            'roleName', r.roleName,
-            'isBuiltin', r.isBuiltin
-          )
-        ) as roles
-      FROM sys_app_members am
-      INNER JOIN sys_apps a ON a.id = am.appId
-      INNER JOIN sys_users u ON u.id = am.userId
-      LEFT JOIN sys_user_roles ur ON ur.userId = am.userId 
-        AND (ur.roleId IN (
-          SELECT r2.id FROM sys_roles r2 
-          WHERE (r2.appId = ? OR r2.appTypeId = ?) AND r2.isOwner = 0
-        ))
-      LEFT JOIN sys_roles r ON ur.roleId = r.id
-      WHERE ${whereClause}
-      GROUP BY am.userId
-      ORDER BY am.createdAt DESC
-      LIMIT ? OFFSET ?
-    `;
-
-    const countSql = `
-      SELECT COUNT(DISTINCT am.userId) as total
-      FROM sys_app_members am
-      INNER JOIN sys_apps a ON a.id = am.appId
-      INNER JOIN sys_users u ON u.id = am.userId
-      WHERE ${whereClause}
-    `;
-
-    const dataParams = [...params, appId, app.appTypeId, limit, offset];
-    const countParams = [...params];
-
-    const [data, countResult] = await Promise.all([
-      this.dataSource.query(dataSql, dataParams),
-      this.dataSource.query(countSql, countParams),
-    ]);
-
-    const total = countResult[0]?.total || 0;
-
-    const memberList = data.map((row: any) => ({
-      id: row.id,
-      appId: row.appId,
-      userId: row.userId,
-      createdAt: row.createdAt,
-      user: {
-        id: row.userId,
-        username: row.username,
-        nickname: row.nickname,
-        phone: row.phone,
-        avatar: row.avatar,
-      },
-      roles: row.roles || [],
-    }));
-
-    return new PaginationResult(
-      memberList,
-      total,
-      query.page!,
-      query.pageSize!,
-    );
+    const pager = new PaginationX(this.dataSource, query);
+    return await pager
+      .where('main', whereBuilder)
+      .sql(({ select, wheres, orderBy, limit }) => {
+        const whereClause = wheres?.main || '';
+        return `
+          SELECT 
+            ${select}
+          FROM (
+            SELECT 
+              am.id,
+              am.userId,
+              am.appId,
+              am.createdAt,
+              u.nickname,
+              u.avatar,
+              u.email,
+              u.phone,
+              u.username,
+              a.appCode,
+              a.appName,
+              a.icon as appIcon,
+              a.ownerId,
+              a.sortOrder,
+              a.appTypeId,
+              JSON_ARRAYAGG(
+                JSON_OBJECT(
+                  'roleCode', r.roleCode,
+                  'roleName', r.roleName,
+                  'isBuiltin', r.isBuiltin
+                )
+              ) as roles
+            FROM sys_app_members am
+            INNER JOIN sys_apps a ON a.id = am.appId
+            INNER JOIN sys_users u ON u.id = am.userId
+            LEFT JOIN sys_user_roles ur ON ur.userId = am.userId 
+              AND (ur.roleId IN (
+                SELECT r2.id FROM sys_roles r2 
+                WHERE (r2.appId = :appId OR r2.appTypeId = :appTypeId) AND r2.isOwner = 0
+              ))
+            LEFT JOIN sys_roles r ON ur.roleId = r.id
+            ${whereClause}
+            GROUP BY am.userId
+          ) AS sub
+          ${orderBy}
+          ${limit}
+        `;
+      })
+      .select('*')
+      .defaultOrderBy('createdAt DESC')
+      .getData();
   }
 
   /**

@@ -11,7 +11,7 @@ import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './
 import { RouteNodeDto, PermissionTreeNodeDto } from './dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
-import { PaginationHelper, PaginationResult, QueryBuilderHelper } from '../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 
 /**
  * 权限服务
@@ -112,23 +112,26 @@ export class PermissionService {
    * @param query - 查询参数
    * @returns 分页结果
    */
-  async findAll(query: QueryPermissionDto): Promise<PaginationResult<Permission>> {
-    const qb = this.permissionRepository.createQueryBuilder('permission');
+  async findAll(query: QueryPermissionDto): Promise<PaginationResult<any>> {
+    const { permName, permCode, permissionType, nodeType, parentId } = query;
+    const whereBuilder = new WhereBuilder();
+    whereBuilder
+      .like('permission.permName', permName)
+      .like('permission.permCode', permCode)
+      .eq('permission.permissionType', permissionType)
+      .eq('permission.nodeType', nodeType)
+      .eq('permission.parentId', parentId);
 
-    // 使用 QueryBuilderHelper 构建查询条件（支持 10+ 条件不臃肿）
-    QueryBuilderHelper.applyConditions(qb, [
-      { field: 'permission.permName', value: query.permName, operator: 'like' },
-      { field: 'permission.permCode', value: query.permCode, operator: 'like' },
-      { field: 'permission.permissionType', value: query.permissionType, operator: '=' },
-      { field: 'permission.nodeType', value: query.nodeType, operator: '=' },
-      { field: 'permission.parentId', value: query.parentId, operator: '=' },
-    ]);
-
-    // 使用 PaginationHelper 执行分页查询
-    return PaginationHelper.executeQuery(
-      qb.orderBy('permission.sortOrder', 'ASC').addOrderBy('permission.createdAt', 'DESC'),
-      query,
-    );
+    const pager = new PaginationX(this.dataSource, query);
+    return await pager
+      .where('main', whereBuilder)
+      .sql(({ select, wheres, orderBy, limit }) => {
+        const whereClause = wheres?.main || '';
+        return `SELECT ${select} FROM sys_permissions permission ${whereClause} ${orderBy} ${limit}`;
+      })
+      .select('permission.*')
+      .defaultOrderBy('permission.sortOrder ASC, permission.createdAt DESC')
+      .getData();
   }
 
   /**
