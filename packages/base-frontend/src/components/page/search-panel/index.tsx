@@ -31,6 +31,7 @@ import {
   ElCheckbox,
   ElButton,
   ElIcon,
+  ElTooltip,
   type FormInstance
 } from 'element-plus';
 import { Search, Refresh, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
@@ -361,22 +362,23 @@ export default defineComponent({
       const defaultButtons = (
         <>
           {props.showSearchButton && (
-            <ElButton type="primary" icon={Search} loading={props.loading} onClick={doSearch}>
-              查询
-            </ElButton>
+            <ElTooltip content="查询" placement="top">
+              <ElButton type="primary" icon={Search} loading={props.loading} onClick={doSearch} circle />
+            </ElTooltip>
           )}
           {props.showResetButton && (
-            <ElButton icon={Refresh} onClick={reset}>
-              重置
-            </ElButton>
+            <ElTooltip content="重置" placement="top">
+              <ElButton icon={Refresh} onClick={reset} circle />
+            </ElTooltip>
           )}
           {showExpandButton.value && (
-            <span class="search-panel__expand-btn" onClick={toggleExpand}>
-              {expanded.value ? '收起' : '展开'}
-              <ElIcon>
-                {expanded.value ? <ArrowUp /> : <ArrowDown />}
-              </ElIcon>
-            </span>
+            <ElTooltip content={expanded.value ? '收起' : '展开'} placement="top">
+              <span class="search-panel__expand-btn" onClick={toggleExpand}>
+                <ElIcon>
+                  {expanded.value ? <ArrowUp /> : <ArrowDown />}
+                </ElIcon>
+              </span>
+            </ElTooltip>
           )}
         </>
       );

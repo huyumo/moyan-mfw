@@ -39,6 +39,14 @@
     gap: 8px;
     margin-left: auto;
     flex-shrink: 0;
+
+    .el-form-item {
+      margin-bottom: 0;
+    }
+
+    .el-button {
+      padding: 8px;
+    }
   }
 
   &__expand-btn {
@@ -46,11 +54,15 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
-    font-size: 13px;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transition: all 0.3s;
 
     &:hover {
       color: var(--el-color-primary-light-3);
+      background-color: var(--el-color-primary-light-9);
     }
   }
 
