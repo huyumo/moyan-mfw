@@ -68,15 +68,27 @@ export default defineComponent({
     });
 
     const breadcrumbItems = computed<BreadcrumbItem[]>(() => {
+      // 优先级：props.breadcrumb > route.meta.breadcrumb > 自动生成
       if (props.breadcrumb) return props.breadcrumb;
 
+      const metaBreadcrumb = route.meta?.breadcrumb as BreadcrumbItem[] | undefined;
+      if (metaBreadcrumb) return metaBreadcrumb;
+
       const items: BreadcrumbItem[] = [];
+
+      // 添加首页
+      items.push({
+        path: '/dashboard',
+        title: '首页',
+        clickable: true
+      });
+
       const matched = route.matched.filter(r => r.meta?.title);
 
       if (matched.length > 0) {
         matched.forEach((r, index) => {
           const title = typeof r.meta?.title === 'string' ? r.meta.title : '';
-          if (title) {
+          if (title && title !== '首页') {
             items.push({
               path: index < matched.length - 1 ? r.path : undefined,
               title,
