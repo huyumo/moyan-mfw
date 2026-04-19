@@ -20,6 +20,8 @@ export interface MfwPageWrapperProps {
   showBreadcrumb?: boolean;
   /** 是否显示页面标题 */
   showTitle?: boolean;
+  /** 头部显示模式 */
+  headerMode?: 'breadcrumb' | 'title';
   /** 是否显示刷新按钮 */
   showRefresh?: boolean;
   /** 自定义页面标题（覆盖自动生成） */
