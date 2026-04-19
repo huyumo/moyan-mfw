@@ -107,7 +107,7 @@ export default defineComponent({
       }
     };
 
-    const handleRefresh = async () => {
+    const handleRefresh = () => {
       if (isRefreshing.value) return;
       isRefreshing.value = true;
       emit('refresh');
@@ -171,7 +171,7 @@ export default defineComponent({
               <ElBreadcrumb class="mfw-page-wrapper__breadcrumb" separator="/">
                 {breadcrumbItems.value.map((item, index) => (
                   <ElBreadcrumbItem
-                    key={index}
+                    key={item.path || item.title}
                     to={item.path && item.clickable ? { path: item.path } : undefined}
                   >
                     {item.title}
@@ -183,21 +183,27 @@ export default defineComponent({
           )
         )}
 
-        {slots.toolbar?.() && (
-          <div class="mfw-page-wrapper__toolbar">
-            {slots.toolbar()}
-          </div>
-        )}
+        {(() => {
+          const toolbarContent = slots.toolbar?.();
+          return toolbarContent && (
+            <div class="mfw-page-wrapper__toolbar">
+              {toolbarContent}
+            </div>
+          );
+        })()}
 
         <div class="mfw-page-wrapper__content" style={contentStyle.value}>
           {slots.default?.()}
         </div>
 
-        {slots.footer?.() && (
-          <div class="mfw-page-wrapper__footer">
-            {slots.footer()}
-          </div>
-        )}
+        {(() => {
+          const footerContent = slots.footer?.();
+          return footerContent && (
+            <div class="mfw-page-wrapper__footer">
+              {footerContent}
+            </div>
+          );
+        })()}
       </div>
     );
   }
