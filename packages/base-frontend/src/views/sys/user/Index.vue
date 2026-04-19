@@ -5,25 +5,28 @@
  */
 -->
 <template>
-  <MfwPageScene ref="pageScene" :search-template="searchTemplate" :columns="columns" :action-column="actionColumn"
-    :load-data="loadData">
-    <template #search-actions="{ loading }">
-      <el-button type="primary" :loading="loading" data-testid="user-create-btn" @click="handleAdd">
-        <el-icon>
-          <Plus />
-        </el-icon>
-        新建用户
-      </el-button>
-    </template>
-  </MfwPageScene>
+  <MfwPageWrapper>
+    <MfwListPage ref="listPage" :search-template="searchTemplate" :columns="columns" :action-column="actionColumn"
+      :load-data="loadData">
+      <template #search-actions="{ loading }">
+        <el-button type="primary" :loading="loading" data-testid="user-create-btn" @click="handleAdd">
+          <el-icon>
+            <Plus />
+          </el-icon>
+          新建用户
+        </el-button>
+      </template>
+    </MfwListPage>
+  </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
 import { ElMessage, ElMessageBox, ElTag, ElButton, ElSwitch } from 'element-plus';
 import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
-import MfwPageScene from '../../../components/page/page-scene';
-import type { MfwPageSceneInstance } from '../../../components/page/page-scene/types';
+import MfwPageWrapper from '../../../components/page/page-wrapper';
+import MfwListPage from '../../../components/page/list-page';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import {
   ApiUserFindAll,
@@ -56,7 +59,7 @@ const GENDER_TEXT = {
 
 defineOptions({ name: 'MfwUserList' });
 
-const pageScene = ref<MfwPageSceneInstance>();
+const listPage = ref<MfwListPageInstance>();
 
 /** 搜索模板 */
 const searchTemplate = [
@@ -168,7 +171,7 @@ const handleAdd = () => {
     on: {
       confirm: () => {
         ElMessage.success('创建成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });
@@ -185,7 +188,7 @@ const handleEdit = (row: UserResponseDto) => {
     on: {
       confirm: () => {
         ElMessage.success('更新成功');
-        pageScene.value?.refresh();
+        listPage.value?.refresh();
       },
     },
   });
@@ -198,7 +201,7 @@ const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
     params: { id: row.id },
     query: { status }
   }, { hintSuccess: true, successMsg: () => enabled ? '已启用' : '已禁用', hintFail: true, failMsg: '状态更新失败' });
-  pageScene.value?.refresh();
+  listPage.value?.refresh();
 };
 
 /** 重置密码 */
@@ -232,7 +235,7 @@ const handleDelete = async (row: UserResponseDto) => {
       { type: 'warning' }
     );
     await new ApiUserDelete({ params: { id: row.id } },{hintSuccess:true,successMsg:'删除成功'});
-    pageScene.value?.refresh();
+    listPage.value?.refresh();
   } catch {
     // 用户取消
   }
