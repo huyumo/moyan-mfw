@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <MfwPageWrapper :show-breadcrumb="false">
+  <MfwPageWrapper :show-breadcrumb="false" :show-title="false">
     <MfwListPage
       ref="listPage"
       :search-template="searchTemplate"
