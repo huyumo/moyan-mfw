@@ -5,7 +5,7 @@
 -->
 <template>
   <div class="mfw-admin-tabs-wrap">
-    <el-tabs v-model="activeTabPath" type="card" class="mfw-admin-tabs" @tab-remove="emit('tab-remove', $event)">
+    <el-tabs v-model="activeTabPath"  type="card" class="mfw-admin-tabs" @tab-remove="emit('tab-remove', $event)">
       <el-tab-pane v-for="tab in visitedTabs" :key="tab.key" :name="tab.fullPath" :closable="tab.closable">
         <template #label>
           <span class="mfw-admin-tab-label">{{ tab.title }}</span>
@@ -13,9 +13,9 @@
       </el-tab-pane>
     </el-tabs>
     <el-dropdown trigger="click" @command="emit('tab-command', $event)">
-      <button class="tab-action-btn" type="button" aria-label="标签页操作菜单">
-        <el-icon :size="18"><Menu /></el-icon>
-      </button>
+        <el-icon :size="18" class="tab-action-btn" type="button">
+          <MoreFilled />
+        </el-icon>
       <template #dropdown>
         <el-dropdown-menu>
           <el-dropdown-item command="closeCurrent">关闭当前</el-dropdown-item>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { Menu } from '@element-plus/icons-vue';
+import { MoreFilled } from '@element-plus/icons-vue';
 import { computed } from 'vue';
 import type { PageTabItem } from '../../types/layout-types';
 
@@ -55,3 +55,10 @@ const activeTabPath = computed({
   set: (value: string) => emit('update:modelValue', value),
 });
 </script>
+<style scoped lang="scss">
+.tab-action-btn {
+  cursor: pointer;
+  transform: rotate(90deg) scale(0.8);
+  color: #909399;
+}
+</style>

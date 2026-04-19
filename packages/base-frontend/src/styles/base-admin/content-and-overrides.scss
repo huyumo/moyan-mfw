@@ -16,11 +16,8 @@
 }
 
 .mfw-admin-tabs-wrap {
-  margin-top: 12px;
-  border: 1px solid var(--mfw-border-color, #d8e1ec);
-  border-radius: var(--mfw-radius-lg, 10px);
   background: var(--mfw-surface-bg, #fff);
-  padding: 6px 10px;
+  padding: 0px 10px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -77,6 +74,13 @@
   &--round {
     border-radius: var(--mfw-radius-full, 9999px) !important;
   }
+}
+
+/**
+ * 统一按钮间距 - 使用 gap 替代 margin-left
+ */
+.el-button + .el-button {
+  margin-left: 0;
 }
 
 /**

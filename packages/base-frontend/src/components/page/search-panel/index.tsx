@@ -13,7 +13,8 @@ import {
   watch,
   inject,
   type PropType,
-  type Ref
+  type Ref,
+  type ComputedRef
 } from 'vue';
 import {
   ElForm,
@@ -29,12 +30,8 @@ import {
   ElCheckboxGroup,
   ElCheckboxButton,
   ElCheckbox,
-  ElButton,
-  ElIcon,
-  ElTooltip,
   type FormInstance
 } from 'element-plus';
-import { Search, Refresh, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import type {
   MfwSearchPanelProps,
   MfwSearchPanelInstance,
@@ -75,16 +72,6 @@ export default defineComponent({
     itemSpan: {
       type: Number,
       default: 6
-    },
-    /** 是否显示查询按钮 */
-    showSearchButton: {
-      type: Boolean,
-      default: true
-    },
-    /** 是否显示重置按钮 */
-    showResetButton: {
-      type: Boolean,
-      default: true
     }
   },
 
@@ -96,6 +83,22 @@ export default defineComponent({
     
     const hasSearchPanel = inject<Ref<boolean>>('mfw-page-has-search-panel', ref(false));
     hasSearchPanel.value = true;
+
+    const searchPanelContextRef = inject<Ref<{
+      doSearch: () => void;
+      reset: () => void;
+      toggleExpand: () => void;
+      expanded: Ref<boolean>;
+      showExpandButton: ComputedRef<boolean>;
+      loading: ComputedRef<boolean>;
+    } | null>>('mfw-search-panel-context-ref', ref(null) as Ref<{
+      doSearch: () => void;
+      reset: () => void;
+      toggleExpand: () => void;
+      expanded: Ref<boolean>;
+      showExpandButton: ComputedRef<boolean>;
+      loading: ComputedRef<boolean>;
+    } | null>);
 
     // 表单数据
     const formData = reactive<Record<string, any>>({});
@@ -180,6 +183,15 @@ export default defineComponent({
       });
       formRef.value?.clearValidate();
       emit('reset');
+    };
+
+    searchPanelContextRef.value = {
+      doSearch,
+      reset,
+      toggleExpand,
+      expanded,
+      showExpandButton,
+      loading: computed(() => props.loading)
     };
 
     // 获取表单值（过滤空值）
@@ -357,40 +369,6 @@ export default defineComponent({
       );
     };
 
-    // 渲染操作按钮
-    const renderActions = () => {
-      const defaultButtons = (
-        <>
-          {props.showSearchButton && (
-            <ElTooltip content="查询" placement="top">
-              <ElButton type="primary" icon={Search} loading={props.loading} onClick={doSearch} circle />
-            </ElTooltip>
-          )}
-          {props.showResetButton && (
-            <ElTooltip content="重置" placement="top">
-              <ElButton icon={Refresh} onClick={reset} circle />
-            </ElTooltip>
-          )}
-          {showExpandButton.value && (
-            <ElTooltip content={expanded.value ? '收起' : '展开'} placement="top">
-              <span class="search-panel__expand-btn" onClick={toggleExpand}>
-                <ElIcon>
-                  {expanded.value ? <ArrowUp /> : <ArrowDown />}
-                </ElIcon>
-              </span>
-            </ElTooltip>
-          )}
-        </>
-      );
-
-      return (
-        <div class="search-panel__actions">
-          {defaultButtons}
-          {slots['search-actions']?.({ loading: props.loading })}
-        </div>
-      );
-    };
-
     return () => {
       if (!props.showSearch) {
         return null;
@@ -407,7 +385,6 @@ export default defineComponent({
           >
             {visibleItems.value.map(renderFormItem)}
           </ElForm>
-          {renderActions()}
           {slots['search-extra'] && (
             <div class="search-panel__extra">
               {slots['search-extra']()}
