@@ -27,21 +27,6 @@ export function useAdminLayout(): any {
     { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
     { label: '\u53cc\u680f\u83dc\u5355', value: 'dual' },
   ];
-  const shellVars = computed<Record<string, string>>(() => ({
-    '--mfw-app-bg': layoutStore.activeThemeTokens.appBackground,
-    '--mfw-surface-bg': layoutStore.activeThemeTokens.surfaceBackground,
-    '--mfw-border-color': layoutStore.activeThemeTokens.borderColor,
-    '--mfw-text-color': layoutStore.activeThemeTokens.textColor,
-    '--mfw-muted-text-color': layoutStore.activeThemeTokens.mutedTextColor,
-    '--mfw-primary-color': layoutStore.activeThemeTokens.primaryColor,
-    '--mfw-header-gradient': layoutStore.activeThemeTokens.headerGradient,
-    '--mfw-header-text-color': layoutStore.activeThemeTokens.headerTextColor,
-    '--mfw-card-shadow': layoutStore.activeThemeTokens.cardShadow,
-    '--mfw-sidebar-width': `${layoutStore.styleConfig.sidebarWidth}px`,
-    '--mfw-header-height': `${layoutStore.styleConfig.headerHeight}px`,
-    '--mfw-content-max-width': `${layoutStore.styleConfig.contentMaxWidth}px`,
-    '--mfw-card-radius': `${layoutStore.styleConfig.cardRadius}px`,
-  }));
   const shellClasses = computed(() => ({
     'is-compact': layoutStore.styleConfig.compact && layoutStore.showSidebar,
     'layout-mode-sidebar': layoutStore.styleConfig.layoutMode === 'sidebar',
@@ -260,7 +245,6 @@ export function useAdminLayout(): any {
     resetConfirmVisible,
     isMobile,
     layoutModeOptions,
-    shellVars,
     shellClasses,
     currentTitle,
     topLevelMenus,
