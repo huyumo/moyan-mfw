@@ -3,7 +3,7 @@
  * @fileoverview 鐢啫鐪€圭懓娅掔紒鍕閵? */
 -->
 <template>
-  <div class="mfw-admin-shell" :style="shellVars" :class="shellClasses">
+  <div class="mfw-admin-shell" :class="shellClasses">
     <HeaderPanel
       :fixed-header="layoutStore.styleConfig.fixedHeader"
       :show-sidebar="layoutStore.showSidebar"
@@ -103,7 +103,6 @@ const {
   resetConfirmVisible,
   isMobile,
   layoutModeOptions,
-  shellVars,
   shellClasses,
   currentTitle,
   topLevelMenus,
