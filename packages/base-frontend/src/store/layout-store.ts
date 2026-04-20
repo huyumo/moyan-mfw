@@ -34,7 +34,6 @@ import {
   registerThemes,
   resetToDefaults,
   setActiveTopMenuKey,
-  setDarkMode,
   setLayoutExtensions,
   setLoginExtensions,
   setLayoutMode,
@@ -107,7 +106,7 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
       const activeTheme = state.themes[this.activeThemeKey];
       const tokens = activeTheme ? activeTheme.tokens : defaultThemeRegistry[defaultThemeKey].tokens;
       if (isThemePalette(tokens)) {
-        return state.styleConfig.isDark ? tokens.dark : tokens.light;
+        return tokens.light;
       }
       return tokens;
     },
@@ -138,10 +137,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
 
     setLayoutMode(mode: LayoutMode) {
       setLayoutMode(this as unknown as LayoutPreferenceActionContext, mode);
-    },
-
-    setDarkMode(enabled: boolean) {
-      setDarkMode(this as unknown as LayoutPreferenceActionContext, enabled);
     },
 
     toggleCompact(force?: boolean) {

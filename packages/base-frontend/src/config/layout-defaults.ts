@@ -111,11 +111,6 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   fixedHeader: true,
   showBreadcrumb: true,
   showTabs: true,
-  colorScheme: 'light',
-  isDark: false,
-  darkSidebar: false,
-  darkSidebarChildren: false,
-  darkHeader: false,
   cardRadius: 8,
 };
 

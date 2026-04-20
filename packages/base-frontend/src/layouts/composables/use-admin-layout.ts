@@ -2,14 +2,13 @@
  * @fileoverview 布局组合逻辑。
  */
 import { ElMessage } from 'element-plus';
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
 import { ApiAuthLogout } from '../../apis/sys';
 import { useLayoutStore } from '../../store/layout-store';
 import { useAuthStore } from '../../store/auth-store';
 import { resetRouteGuard } from '../../router/guard';
 import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
-import { createSystemColorSchemeBridge } from './system-color-scheme-bridge';
 /**
  * 布局组合逻辑入口。
  */
@@ -23,8 +22,6 @@ export function useAdminLayout(): any {
   const settingsSnapshot = ref<LayoutStyleConfig | null>(null);
   const skipSettingsRollback = ref(false);
   const isMobile = computed(() => windowWidth.value < 768);
-  const { systemPrefersDark, syncSystemColorScheme, startSystemColorSchemeWatch, stopSystemColorSchemeWatch } =
-    createSystemColorSchemeBridge(layoutStore);
   const layoutModeOptions: Array<{ label: string; value: LayoutMode }> = [
     { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
     { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
@@ -44,14 +41,9 @@ export function useAdminLayout(): any {
     '--mfw-header-height': `${layoutStore.styleConfig.headerHeight}px`,
     '--mfw-content-max-width': `${layoutStore.styleConfig.contentMaxWidth}px`,
     '--mfw-card-radius': `${layoutStore.styleConfig.cardRadius}px`,
-    '--mfw-color-scheme': layoutStore.styleConfig.isDark ? 'dark' : 'light',
   }));
   const shellClasses = computed(() => ({
     'is-compact': layoutStore.styleConfig.compact && layoutStore.showSidebar,
-    'is-dark': layoutStore.styleConfig.isDark,
-    'has-dark-sidebar': layoutStore.styleConfig.darkSidebar,
-    'has-dark-sidebar-children': layoutStore.styleConfig.darkSidebarChildren,
-    'has-dark-header': layoutStore.styleConfig.darkHeader,
     'layout-mode-sidebar': layoutStore.styleConfig.layoutMode === 'sidebar',
     'layout-mode-top': layoutStore.styleConfig.layoutMode === 'top',
     'layout-mode-dual': layoutStore.styleConfig.layoutMode === 'dual',
@@ -253,34 +245,20 @@ export function useAdminLayout(): any {
       settingsSnapshot.value = null;
     },
   );
-  watch(
-    () => layoutStore.styleConfig.colorScheme,
-    (mode) => {
-      if (mode === 'system') {
-        syncSystemColorScheme();
-      }
-    },
-  );
   onMounted(() => {
     const savedConfig = typeof window !== 'undefined' ? window.localStorage.getItem('mfw:layout:config') : null;
     if (savedConfig) {
       try {
         layoutStore.patchStyleConfig(JSON.parse(savedConfig), { persist: true });
       } catch {
-        // 忽略无效的本地快照。
       }
     }
-    startSystemColorSchemeWatch();
-  });
-  onBeforeUnmount(() => {
-    stopSystemColorSchemeWatch();
   });
   return {
     layoutStore,
     mobileMenuOpen,
     resetConfirmVisible,
     isMobile,
-    systemPrefersDark,
     layoutModeOptions,
     shellVars,
     shellClasses,

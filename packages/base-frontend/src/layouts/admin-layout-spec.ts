@@ -16,13 +16,8 @@ vi.mock('./composables/use-admin-layout', () => ({
       styleConfig: {
         fixedHeader: true,
         compact: false,
-        isDark: false,
-        darkSidebar: false,
-        darkSidebarChildren: false,
-        darkHeader: false,
         showBreadcrumb: true,
         showTabs: true,
-        colorScheme: 'light',
       },
       showSidebar: true,
       navigation: {
@@ -36,13 +31,11 @@ vi.mock('./composables/use-admin-layout', () => ({
       themeOptions: [{ key: 'default', label: 'default' }],
       visitedTabs: [],
       toggleCompact: vi.fn(),
-      setDarkMode: vi.fn(),
       toggleSettingsPanel: vi.fn(),
     },
     mobileMenuOpen: ref(false),
     resetConfirmVisible: ref(false),
     isMobile: ref(false),
-    systemPrefersDark: ref(false),
     layoutModeOptions: [
       { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
       { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },

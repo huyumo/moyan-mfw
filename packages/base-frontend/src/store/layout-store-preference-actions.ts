@@ -56,13 +56,6 @@ export function setLayoutMode(store: LayoutPreferenceActionContext, mode: Layout
 }
 
 /** 偏好操作实现。 */
-export function setDarkMode(store: LayoutPreferenceActionContext, enabled: boolean): void {
-  store.styleConfig.colorScheme = enabled ? 'dark' : 'light';
-  store.styleConfig.isDark = enabled;
-  store.persistPreferences();
-}
-
-/** 偏好操作实现。 */
 export function toggleCompact(store: LayoutPreferenceActionContext, force?: boolean): void {
   store.styleConfig.compact = typeof force === 'boolean' ? force : !store.styleConfig.compact;
   store.persistPreferences();

@@ -17,4 +17,3 @@ export { default as UserPanel } from './panels/UserPanel.vue';
 
 // 布局组合式函数
 export * from './composables/use-admin-layout';
-export * from './composables/system-color-scheme-bridge';

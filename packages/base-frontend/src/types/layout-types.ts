@@ -11,9 +11,6 @@ export type { ThemePack, ThemeRegistry, ThemeTokenInput, ThemeTokenPalette, Them
 /** 布局模式定义。 */
 export type LayoutMode = 'sidebar' | 'top' | 'dual';
 
-/** 色彩模式定义。 */
-export type ColorSchemeMode = 'light' | 'dark' | 'system';
-
 /** 布局样式配置。 */
 export interface LayoutStyleConfig {
   theme: string;
@@ -25,11 +22,6 @@ export interface LayoutStyleConfig {
   fixedHeader: boolean;
   showBreadcrumb: boolean;
   showTabs: boolean;
-  colorScheme: ColorSchemeMode;
-  isDark: boolean;
-  darkSidebar: boolean;
-  darkSidebarChildren: boolean;
-  darkHeader: boolean;
   cardRadius: number;
 }
 

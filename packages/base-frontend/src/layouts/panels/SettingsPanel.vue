@@ -18,69 +18,6 @@
           <el-tab-pane :label="text.appearance" name="appearance">
             <div class="mfw-admin-settings-group">
               <div class="mfw-admin-settings-group-title">
-                <el-icon><Sunny /></el-icon><span>{{ text.colorMode }}</span>
-              </div>
-              <div class="mfw-admin-scheme-selector">
-                <button
-                  class="mfw-admin-scheme-btn mfw-admin-scheme-btn--light"
-                  :class="{ 'is-active': currentColorScheme === 'light' }"
-                  type="button"
-                  @click="setColorScheme('light')"
-                >
-                  <span class="mfw-admin-scheme-preview" aria-hidden="true"></span>
-                  <span class="mfw-admin-scheme-meta"
-                    ><el-icon><Sunny /></el-icon><span class="mfw-admin-scheme-mode">{{ text.lightMode }}</span></span
-                  >
-                </button>
-                <button
-                  class="mfw-admin-scheme-btn mfw-admin-scheme-btn--dark"
-                  :class="{ 'is-active': currentColorScheme === 'dark' }"
-                  type="button"
-                  @click="setColorScheme('dark')"
-                >
-                  <span class="mfw-admin-scheme-preview" aria-hidden="true"></span>
-                  <span class="mfw-admin-scheme-meta"
-                    ><el-icon><Moon /></el-icon><span class="mfw-admin-scheme-mode">{{ text.darkMode }}</span></span
-                  >
-                </button>
-                <button
-                  class="mfw-admin-scheme-btn mfw-admin-scheme-btn--system"
-                  :class="{
-                    'is-active': currentColorScheme === 'system',
-                    'is-system-dark': systemPrefersDark,
-                  }"
-                  type="button"
-                  @click="setColorScheme('system')"
-                >
-                  <span class="mfw-admin-scheme-preview" aria-hidden="true"></span>
-                  <span class="mfw-admin-scheme-meta"
-                    ><el-icon><Monitor /></el-icon
-                    ><span class="mfw-admin-scheme-mode">{{ text.systemMode }}</span></span
-                  >
-                </button>
-              </div>
-            </div>
-            <div class="mfw-admin-settings-group">
-              <div class="mfw-admin-settings-group-title">
-                <el-icon><Operation /></el-icon><span>{{ text.darkAreas }}</span>
-              </div>
-              <div class="mfw-admin-switch-list">
-                <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">{{ text.darkSidebar }}</span
-                  ><el-switch v-model="draftStyleConfig.darkSidebar" />
-                </div>
-                <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">{{ text.darkSidebarChildren }}</span>
-                  <el-switch v-model="draftStyleConfig.darkSidebarChildren" :disabled="!draftStyleConfig.darkSidebar" />
-                </div>
-                <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">{{ text.darkHeader }}</span
-                  ><el-switch v-model="draftStyleConfig.darkHeader" />
-                </div>
-              </div>
-            </div>
-            <div class="mfw-admin-settings-group">
-              <div class="mfw-admin-settings-group-title">
                 <el-icon><Setting /></el-icon><span>{{ text.builtInThemes }}</span>
               </div>
               <div class="mfw-admin-theme-selector">
@@ -183,23 +120,17 @@
 import {
   Check,
   Expand,
-  Lightning,
   Menu,
-  Monitor,
-  Moon,
-  Operation,
   RefreshLeft,
   Setting,
-  Sunny,
 } from '@element-plus/icons-vue';
 import { computed, reactive, ref, watch, type PropType } from 'vue';
 import LayoutModeIcon from '../components/layout/LayoutModeIcon.vue';
-import type { ColorSchemeMode, LayoutMode, LayoutStyleConfig, ThemeOption } from '../../types/layout-types';
+import type { LayoutMode, LayoutStyleConfig, ThemeOption } from '../../types/layout-types';
 import { settingsPanelText as text } from './settings-panel-text';
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   isMobile: { type: Boolean, required: true },
-  systemPrefersDark: { type: Boolean, required: true },
   layoutModeOptions: { type: Array as PropType<Array<{ label: string; value: LayoutMode }>>, required: true },
   themeOptions: { type: Array as PropType<ThemeOption[]>, required: true },
   styleConfig: { type: Object as PropType<LayoutStyleConfig>, required: true },
@@ -217,9 +148,6 @@ const syncingDraft = ref(false);
 const openingSnapshot = ref<LayoutStyleConfig | null>(null);
 const draftStyleConfig = reactive<LayoutStyleConfig>({ ...props.styleConfig });
 const showSidebarInDraft = computed(() => draftStyleConfig.layoutMode !== 'top');
-const currentColorScheme = computed<ColorSchemeMode>(
-  () => draftStyleConfig.colorScheme ?? (draftStyleConfig.isDark ? 'dark' : 'light'),
-);
 const hasUnsavedChanges = computed(() =>
   openingSnapshot.value ? JSON.stringify(draftStyleConfig) !== JSON.stringify(openingSnapshot.value) : false,
 );
@@ -237,23 +165,12 @@ watch(
     activeTab.value = 'appearance';
     openingSnapshot.value = { ...props.styleConfig };
     syncingDraft.value = true;
-    Object.assign(draftStyleConfig, props.styleConfig, {
-      colorScheme: props.styleConfig.colorScheme ?? (props.styleConfig.isDark ? 'dark' : 'light'),
-    });
+    Object.assign(draftStyleConfig, props.styleConfig);
     queueMicrotask(() => {
       syncingDraft.value = false;
     });
   },
   { immediate: true },
-);
-
-watch(
-  () => props.systemPrefersDark,
-  (isDark) => {
-    if (currentColorScheme.value === 'system') {
-      draftStyleConfig.isDark = isDark;
-    }
-  },
 );
 
 watch(
@@ -267,10 +184,6 @@ watch(
   { deep: true },
 );
 
-function setColorScheme(mode: ColorSchemeMode) {
-  draftStyleConfig.colorScheme = mode;
-  draftStyleConfig.isDark = mode === 'system' ? props.systemPrefersDark : mode === 'dark';
-}
 function handleSaveSettings() {
   emit('save-settings', { ...draftStyleConfig });
 }

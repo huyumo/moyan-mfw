@@ -35,11 +35,6 @@ const styleConfig: LayoutStyleConfig = {
   fixedHeader: true,
   showBreadcrumb: true,
   showTabs: true,
-  colorScheme: 'light',
-  isDark: false,
-  darkSidebar: false,
-  darkSidebarChildren: false,
-  darkHeader: false,
   cardRadius: 12,
 };
 
@@ -48,7 +43,6 @@ function createWrapper() {
     props: {
       modelValue: true,
       isMobile: false,
-      systemPrefersDark: false,
       layoutModeOptions: [
         { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
         { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
