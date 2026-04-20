@@ -10,9 +10,15 @@ interface ViewTransition {
   skipTransition(): void;
 }
 
+interface ViewTransitionOptions {
+  update: () => void | Promise<void>;
+  types?: string[];
+}
+
 declare global {
   interface Document {
     startViewTransition(callback: () => void | Promise<void>): ViewTransition;
+    startViewTransition(options: ViewTransitionOptions): ViewTransition;
   }
 }
 
