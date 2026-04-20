@@ -1,10 +1,27 @@
 /**
- * @fileoverview 閻犱礁澧介悿鍡涙閵忊剝绶查柛妤佹礀閸樻挸霉鐎ｎ厾妲搁柕? */
+ * @fileoverview 偏好设置面板组件测试。
+ */
 
 import { mount } from '@vue/test-utils';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 import SettingsPanel from './SettingsPanel.vue';
 import type { LayoutStyleConfig } from '../../types/layout-types';
+
+vi.mock('../../composables/use-color-mode', () => ({
+  useColorMode: () => ({
+    isDark: { value: false },
+    colorMode: { value: 'system' },
+    setColorMode: vi.fn(),
+  }),
+}));
+
+vi.mock('../../composables/use-theme-switch', () => ({
+  useThemeSwitch: () => ({
+    setTheme: vi.fn(),
+    availableThemes: { value: [] },
+  }),
+}));
 
 const ElDrawerStub = {
   props: {
@@ -40,18 +57,20 @@ const styleConfig: LayoutStyleConfig = {
 };
 
 function createWrapper() {
+  setActivePinia(createPinia());
+
   return mount(SettingsPanel, {
     props: {
       modelValue: true,
       isMobile: false,
       layoutModeOptions: [
-        { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
-        { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
-        { label: '\u53cc\u680f\u83dc\u5355', value: 'dual' },
+        { label: '侧边栏', value: 'sidebar' },
+        { label: '顶部菜单', value: 'top' },
+        { label: '双栏菜单', value: 'dual' },
       ],
       themeOptions: [
-        { key: 'default', label: '\u9ed8\u8ba4' },
-        { key: 'sunset', label: '\u843d\u65e5\u6a59' },
+        { name: 'default', label: '默认', colors: { primary: '#409eff', success: '#67c23a', warning: '#e6a23c', danger: '#f56c6c', info: '#909399' } },
+        { name: 'sunset', label: '落日橙', colors: { primary: '#e6a23c', success: '#67c23a', warning: '#e6a23c', danger: '#f56c6c', info: '#909399' } },
       ],
       styleConfig,
       getThemeColor: () => '#2f6ef6',
