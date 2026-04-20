@@ -48,6 +48,12 @@ export function useThemeSwitch() {
     const root = document.documentElement;
 
     Object.entries(colors).forEach(([key, value]) => {
+      if (key === 'gradient') {
+        root.style.setProperty('--el-color-primary-gradient', value);
+        root.style.setProperty('--mfw-gradient-primary', value);
+        return;
+      }
+
       root.style.setProperty(`--el-color-${key}`, value);
 
       LIGHT_LEVELS.forEach((level) => {
@@ -60,6 +66,9 @@ export function useThemeSwitch() {
         root.style.setProperty(`--el-color-${key}-dark-${level}`, darkColor);
       });
     });
+
+    const hasGradient = colors.gradient;
+    root.classList.toggle('mfw-theme-gradient', Boolean(hasGradient));
   };
 
   const setTheme = (themeName: string) => {

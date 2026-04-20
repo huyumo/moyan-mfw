@@ -123,7 +123,7 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 250,
+  width: 280,
   fixed: 'right' as const,
   render: ({ row }: { row: AppDetailResponseDto }) => h('div', { class: 'action-buttons' }, [
     h(ElButton, {
