@@ -8,13 +8,11 @@ import './styles/base-admin.scss';
 import { createPinia, type Pinia } from 'pinia';
 import { createApp, type App, type ComponentPublicInstance } from 'vue';
 import type { Router } from 'vue-router';
-import { defaultThemeKey } from './config/layout-defaults';
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
   LoginExtensionComponents,
   LayoutStyleConfig,
-  ThemeRegistry,
 } from './types/layout-types';
 import BaseAdminRoot from './layouts/components/base/BaseAdminRoot.vue';
 import { createBaseAdminRouter, type CreateBaseAdminRouterOptions, buildBasePackageRoutes } from './router';
@@ -32,12 +30,6 @@ export interface BaseAdminBootstrapOptions extends CreateBaseAdminRouterOptions 
   layout?: Partial<LayoutStyleConfig>;
   /** 导航配置 */
   navigation?: Partial<AdminNavigationConfig>;
-  /** 主题注册表 */
-  themes?: ThemeRegistry;
-  /** 默认主题键 */
-  defaultTheme?: string;
-  /** 是否启用主题切换 */
-  enableThemeSwitch?: boolean;
   /** 布局扩展组件 */
   layoutExtensions?: LayoutExtensionComponents;
   /** 登录页扩展组件 */
@@ -79,12 +71,6 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
 
   const layoutStore = useLayoutStore(pinia);
 
-  if (options.themes) {
-    layoutStore.registerThemes(options.themes);
-  }
-
-  layoutStore.setThemeSwitchEnabled(options.enableThemeSwitch ?? true);
-  layoutStore.setTheme(options.defaultTheme ?? defaultThemeKey);
   layoutStore.setLayoutExtensions(options.layoutExtensions);
   layoutStore.setLoginExtensions(options.loginExtensions);
 
