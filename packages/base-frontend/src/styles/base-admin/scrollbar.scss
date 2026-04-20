@@ -13,15 +13,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 15%, transparent);
-  border-radius: var(--mfw-radius-md, 6px);
+  background: color-mix(in srgb, var(--el-text-color-primary) 15%, transparent);
+  border-radius: 6px;
 
   &:hover {
-    background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 25%, transparent);
+    background: color-mix(in srgb, var(--el-text-color-primary) 25%, transparent);
   }
 
   &:active {
-    background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 35%, transparent);
+    background: color-mix(in srgb, var(--el-text-color-primary) 35%, transparent);
   }
 }
 
@@ -32,12 +32,12 @@
 
     .el-scrollbar__thumb {
       width: 6px;
-      background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 15%, transparent);
-      border-radius: var(--mfw-radius-md, 6px);
+      background: color-mix(in srgb, var(--el-text-color-primary) 15%, transparent);
+      border-radius: 6px;
 
       &:hover,
       &:active {
-        background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 25%, transparent);
+        background: color-mix(in srgb, var(--el-text-color-primary) 25%, transparent);
       }
     }
   }
@@ -47,12 +47,12 @@
 
     .el-scrollbar__thumb {
       height: 6px;
-      background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 15%, transparent);
-      border-radius: var(--mfw-radius-md, 6px);
+      background: color-mix(in srgb, var(--el-text-color-primary) 15%, transparent);
+      border-radius: 6px;
 
       &:hover,
       &:active {
-        background: color-mix(in srgb, var(--mfw-text-color, #1f2a37) 25%, transparent);
+        background: color-mix(in srgb, var(--el-text-color-primary) 25%, transparent);
       }
     }
   }
@@ -107,8 +107,8 @@
   }
 }
 
-/* 暗色模式下的滚动条 */
-.mfw-admin-shell.is-dark {
+/* 暗色模式下的滚动条 - 使用 Element Plus 暗黑模式 */
+html.dark {
   ::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, white 25%, transparent);
 
