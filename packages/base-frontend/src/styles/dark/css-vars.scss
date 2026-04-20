@@ -5,41 +5,47 @@
   animation-timing-function: ease-in-out;
 }
 
-/* 圆形擦除过渡动画 - 从中心向外扩展 */
-// @keyframes reveal-from-center {
-//   from {
-//     clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
-//   }
-//   to {
-//     clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
-//   }
-// }
-
-/* 旧状态：反向播放（从完整到消失） */
-::view-transition-old(root) {
-  animation-name: reveal-from-center-reverse;
+/* ========================================
+   白天 → 暗黑（DOM 更新后 html 有 .dark 类）
+   效果：圆形缩小，露出暗黑背景
+   ======================================== */
+html.dark::view-transition-old(root) {
+  animation-name: reveal-shrink;
 }
 
-/* 新状态：正向播放（从出现到完整） */
-::view-transition-new(root) {
-  animation-name: reveal-from-center;
+html.dark::view-transition-new(root) {
+  animation: none;
 }
 
-@keyframes reveal-from-center {
-  from {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
-  }
-  to {
-    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
-  }
+/* ========================================
+   暗黑 → 白天（DOM 更新后 html 没有 .dark 类）
+   效果：圆形放大，覆盖暗黑背景
+   ======================================== */
+html:not(.dark)::view-transition-old(root) {
+  animation: none;
 }
 
-@keyframes reveal-from-center-reverse {
+html:not(.dark)::view-transition-new(root) {
+  animation-name: reveal-expand;
+}
+
+/* 圆形缩小动画（从大到小） */
+@keyframes reveal-shrink {
   from {
     clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
   }
   to {
     clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+}
+
+/* 圆形放大动画（从小到大） */
+@keyframes reveal-expand {
+  from {
+    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+  to {
+    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
   }
 }
 
