@@ -6,26 +6,26 @@
 }
 
 /* ========================================
-   白天 → 暗黑（DOM 更新后 html 有 .dark 类）
+   白天 → 暗黑（transition type: light-to-dark）
    效果：圆形缩小，露出暗黑背景
    ======================================== */
-html.dark::view-transition-old(root) {
+:active-view-transition-type(light-to-dark)::view-transition-old(root) {
   animation-name: reveal-shrink;
 }
 
-html.dark::view-transition-new(root) {
+:active-view-transition-type(light-to-dark)::view-transition-new(root) {
   animation: none;
 }
 
 /* ========================================
-   暗黑 → 白天（DOM 更新后 html 没有 .dark 类）
+   暗黑 → 白天（transition type: dark-to-light）
    效果：圆形放大，覆盖暗黑背景
    ======================================== */
-html:not(.dark)::view-transition-old(root) {
+:active-view-transition-type(dark-to-light)::view-transition-old(root) {
   animation: none;
 }
 
-html:not(.dark)::view-transition-new(root) {
+:active-view-transition-type(dark-to-light)::view-transition-new(root) {
   animation-name: reveal-expand;
 }
 

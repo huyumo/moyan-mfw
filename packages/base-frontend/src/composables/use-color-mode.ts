@@ -32,8 +32,13 @@ function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
  * 如果浏览器不支持 View Transitions，则直接执行回调。
  * @param callback - 要执行的 DOM 更新回调
  * @param event - 可选的触发事件，用于设置动画起始位置
+ * @param transitionType - 过渡类型，用于 CSS 选择器匹配
  */
-function withViewTransition(callback: () => void, event?: MouseEvent | TouchEvent) {
+function withViewTransition(
+  callback: () => void,
+  event?: MouseEvent | TouchEvent,
+  transitionType?: 'light-to-dark' | 'dark-to-light'
+) {
   setViewTransitionOrigin(event);
 
   if (!document.startViewTransition) {
@@ -41,7 +46,14 @@ function withViewTransition(callback: () => void, event?: MouseEvent | TouchEven
     return;
   }
 
-  document.startViewTransition(callback);
+  if (transitionType && document.startViewTransition.length > 1) {
+    document.startViewTransition({
+      update: callback,
+      types: [transitionType],
+    });
+  } else {
+    document.startViewTransition(callback);
+  }
 }
 
 /**
@@ -72,9 +84,12 @@ export function useColorMode() {
    * @param event - 触发事件，用于确定动画起始位置
    */
   const toggleDark = (event?: MouseEvent | TouchEvent) => {
+    const currentIsDark = isDark.value;
+    const transitionType = currentIsDark ? 'dark-to-light' : 'light-to-dark';
+
     withViewTransition(() => {
       isDark.value = !isDark.value;
-    }, event);
+    }, event, transitionType);
   };
 
   /**
@@ -90,6 +105,15 @@ export function useColorMode() {
   const setColorMode = (mode: ColorMode, event?: MouseEvent | TouchEvent) => {
     layoutStore.styleConfig.colorMode = mode;
 
+    const targetIsDark =
+      mode === 'dark' || (mode === 'system' && prefersDark.value);
+    const currentIsDark = isDark.value;
+    const transitionType = targetIsDark === currentIsDark
+      ? undefined
+      : targetIsDark
+        ? 'light-to-dark'
+        : 'dark-to-light';
+
     withViewTransition(() => {
       if (mode === 'system') {
         isDark.value = prefersDark.value;
@@ -98,7 +122,7 @@ export function useColorMode() {
       } else {
         isDark.value = false;
       }
-    }, event);
+    }, event, transitionType);
   };
 
   /**
