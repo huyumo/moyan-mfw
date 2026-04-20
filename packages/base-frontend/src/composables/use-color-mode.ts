@@ -29,10 +29,10 @@ function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
 
 /**
  * 使用 View Transitions API 执行带动画的 DOM 更新。
- * 如果浏览器不支持 View Transitions，则直接执行回调。
+ * 使用 View Transition Types 来区分动画方向（Chrome 125+）。
  * @param callback - 要执行的 DOM 更新回调
  * @param event - 可选的触发事件，用于设置动画起始位置
- * @param transitionType - 过渡类型，用于 CSS 选择器匹配
+ * @param transitionType - 过渡类型，用于控制动画方向
  */
 function withViewTransition(
   callback: () => void,
@@ -46,7 +46,7 @@ function withViewTransition(
     return;
   }
 
-  if (transitionType && document.startViewTransition.length > 1) {
+  if (transitionType) {
     document.startViewTransition({
       update: callback,
       types: [transitionType],
