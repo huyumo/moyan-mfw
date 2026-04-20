@@ -1,0 +1,12 @@
+{
+  "name": "default",
+  "label": "默认蓝",
+  "description": "Element Plus 默认主题色",
+  "colors": {
+    "primary": "#409eff",
+    "success": "#67c23a",
+    "warning": "#e6a23c",
+    "danger": "#f56c6c",
+    "info": "#909399"
+  }
+}

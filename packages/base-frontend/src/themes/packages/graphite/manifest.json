@@ -1,0 +1,12 @@
+{
+  "name": "graphite",
+  "label": "石墨灰",
+  "description": "专业石墨灰色主题",
+  "colors": {
+    "primary": "#5a5a5a",
+    "success": "#4a9c6d",
+    "warning": "#c9a227",
+    "danger": "#c45656",
+    "info": "#73767a"
+  }
+}

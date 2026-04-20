@@ -1,0 +1,12 @@
+{
+  "name": "ocean",
+  "label": "海洋绿",
+  "description": "清新海洋绿色主题",
+  "colors": {
+    "primary": "#00a8cc",
+    "success": "#52c41a",
+    "warning": "#faad14",
+    "danger": "#ff4d4f",
+    "info": "#8c8c8c"
+  }
+}
