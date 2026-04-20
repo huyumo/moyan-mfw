@@ -1,0 +1,12 @@
+{
+  "name": "tech",
+  "label": "科技紫",
+  "description": "紫色科技 + 金色价值，适合 Web3、区块链、创新科技类后台",
+  "colors": {
+    "primary": "#8B5CF6",
+    "success": "#10B981",
+    "warning": "#FBBF24",
+    "danger": "#F43F5E",
+    "info": "#6366F1"
+  }
+}

@@ -8,6 +8,7 @@ import { ApiAuthLogout } from '../../apis/sys';
 import { useLayoutStore } from '../../store/layout-store';
 import { useAuthStore } from '../../store/auth-store';
 import { resetRouteGuard } from '../../router/guard';
+import { getAvailableThemes, themeRegistry } from '../../themes';
 import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
 /**
  * 布局组合逻辑入口。
@@ -23,10 +24,11 @@ export function useAdminLayout(): any {
   const skipSettingsRollback = ref(false);
   const isMobile = computed(() => windowWidth.value < 768);
   const layoutModeOptions: Array<{ label: string; value: LayoutMode }> = [
-    { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
-    { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
-    { label: '\u53cc\u680f\u83dc\u5355', value: 'dual' },
+    { label: '侧边栏', value: 'sidebar' },
+    { label: '顶部菜单', value: 'top' },
+    { label: '双栏菜单', value: 'dual' },
   ];
+  const themeOptions = computed(() => getAvailableThemes());
   const shellClasses = computed(() => ({
     'is-compact': layoutStore.styleConfig.compact && layoutStore.showSidebar,
     'layout-mode-sidebar': layoutStore.styleConfig.layoutMode === 'sidebar',
@@ -187,12 +189,11 @@ export function useAdminLayout(): any {
     ElMessage.success('\u504f\u597d\u8bbe\u7f6e\u5df2\u4fdd\u5b58');
   }
   function getThemeColor(themeKey: string): string {
-    const theme = layoutStore.themes[themeKey];
+    const theme = themeRegistry[themeKey];
     if (!theme) {
       return 'var(--el-color-primary)';
     }
-    const tokens = theme.tokens;
-    return 'light' in tokens ? tokens.light.primaryColor : tokens.primaryColor;
+    return theme.colors.primary;
   }
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {
@@ -245,6 +246,7 @@ export function useAdminLayout(): any {
     resetConfirmVisible,
     isMobile,
     layoutModeOptions,
+    themeOptions,
     shellClasses,
     currentTitle,
     topLevelMenus,

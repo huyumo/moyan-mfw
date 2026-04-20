@@ -1,0 +1,12 @@
+{
+  "name": "fintech",
+  "label": "金融科技",
+  "description": "金色信任 + 紫色科技，适合金融、数据分析类后台",
+  "colors": {
+    "primary": "#F59E0B",
+    "success": "#22C55E",
+    "warning": "#FBBF24",
+    "danger": "#EF4444",
+    "info": "#8B5CF6"
+  }
+}

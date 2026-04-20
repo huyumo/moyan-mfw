@@ -1,0 +1,120 @@
+.mfw-detail-panel {
+  background: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
+}
+
+.mfw-detail-panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.mfw-detail-panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.mfw-detail-panel-loading,
+.mfw-detail-panel-empty {
+  padding: 24px;
+}
+
+.mfw-detail-item-content {
+  min-height: 24px;
+  line-height: 24px;
+  color: var(--el-text-color-regular);
+}
+
+.mfw-detail-item-content:hover {
+  color: var(--el-color-primary);
+}
+
+.mfw-user-format {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mfw-user-clickable {
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.mfw-user-clickable:hover {
+  opacity: 0.8;
+}
+
+.mfw-user-avatar {
+  flex-shrink: 0;
+}
+
+.mfw-user-name {
+  font-size: 14px;
+  color: var(--el-text-color-primary);
+}
+
+.mfw-user-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mfw-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mfw-user-dept,
+.mfw-user-position {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+.mfw-user-empty {
+  color: var(--el-text-color-placeholder);
+}
+
+.mfw-user-popover-content {
+  padding: 8px 0;
+}
+
+.mfw-user-popover-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  margin-bottom: 12px;
+}
+
+.mfw-user-popover-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mfw-user-popover-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.mfw-user-popover-dept,
+.mfw-user-popover-position {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
+.mfw-user-popover-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.mfw-user-popover-email,
+.mfw-user-popover-phone {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+}
