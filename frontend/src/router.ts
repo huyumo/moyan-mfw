@@ -23,7 +23,7 @@ const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
  * 创建业务路由配置
  */
 export function createBusinessRoutes(): RouteRecordRaw[] {
-  return buildRoutesFromConfigs(allConfigs);
+  return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
 }
 
 /**
