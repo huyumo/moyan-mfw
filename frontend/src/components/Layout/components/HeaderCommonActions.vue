@@ -49,6 +49,7 @@
 
 <script setup lang="ts">
 import { useLayoutStore } from 'moyan-mfw-base-frontend/store/layout-store';
+import { useColorMode } from 'moyan-mfw-base-frontend/composables';
 import {
   Bell,
   Document,
@@ -64,17 +65,9 @@ import {
 import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted } from 'vue';
 
-/**
- * 初始化布局状态仓库。
- * 用于控制布局样式配置抽屉的显示与隐藏。
- */
 const layoutStore = useLayoutStore();
 const router = useRouter();
-
-/**
- * 主题状态
- */
-const isDark = ref(layoutStore.styleConfig.isDark);
+const { isDark, toggleDark } = useColorMode();
 
 /**
  * 全屏状态
@@ -101,8 +94,7 @@ const navigateTo = (path: string) => {
  * 切换主题
  */
 const toggleTheme = () => {
-  isDark.value = !isDark.value;
-  layoutStore.setDarkMode(isDark.value);
+  toggleDark();
 };
 
 /**
@@ -122,16 +114,12 @@ const toggleFullscreen = async () => {
  * 切换语言
  */
 const toggleLanguage = () => {
-  // TODO: 实现语言切换逻辑
-  console.log('Toggle language');
 };
 
 /**
  * 打开搜索
  */
 const openSearch = () => {
-  // TODO: 实现搜索面板
-  console.log('Open search');
 };
 
 /**
@@ -173,11 +161,6 @@ onUnmounted(() => {
         <el-icon :size="22">
           <component :is="isFullscreen ? RefreshLeft : FullScreen" />
         </el-icon>
-      </div>
-
-      <!-- 语言切换 -->
-      <div class="action-icon-btn" @click="toggleLanguage">
-        <el-icon :size="22"><Switch /></el-icon>
       </div>
 
       <!-- 消息通知 -->
