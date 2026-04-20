@@ -14,12 +14,10 @@
       :top-level-menus="topLevelMenus"
       :active-top-menu-key="activeTopMenuKey"
       :top-nav="layoutStore.navigation.topNav"
-      :is-dark="layoutStore.styleConfig.isDark"
       :layout-extensions="layoutStore.layoutExtensions"
       @toggle-mobile-menu="toggleMobileMenu"
       @toggle-compact="layoutStore.toggleCompact()"
       @top-menu-click="handleTopMenuClick"
-      @toggle-dark-mode="layoutStore.setDarkMode(!layoutStore.styleConfig.isDark)"
       @open-settings="layoutStore.toggleSettingsPanel(true)"
       @user-command="handleUserCommand"
     >
@@ -64,7 +62,6 @@
     <SettingsPanel
       v-model="layoutStore.settingsPanelOpen"
       :is-mobile="isMobile"
-      :system-prefers-dark="systemPrefersDark"
       :layout-mode-options="layoutModeOptions"
       :theme-options="layoutStore.themeOptions"
       :style-config="layoutStore.styleConfig"
@@ -105,7 +102,6 @@ const {
   mobileMenuOpen,
   resetConfirmVisible,
   isMobile,
-  systemPrefersDark,
   layoutModeOptions,
   shellVars,
   shellClasses,

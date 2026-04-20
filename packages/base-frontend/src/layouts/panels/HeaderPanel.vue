@@ -39,18 +39,7 @@
     <div class="mfw-admin-header-actions">
       <slot name="header-common">
         <component :is="layoutExtensions.headerCommon" v-if="layoutExtensions.headerCommon" />
-        <template v-else>
-          <el-tooltip :content="isDark ? 'Switch to light mode' : 'Switch to dark mode'" placement="bottom">
-            <el-button
-              text
-              :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-              @click="emit('toggle-dark-mode')"
-            >
-              <el-icon><component :is="isDark ? Sunny : Moon" /></el-icon>
-            </el-button>
-          </el-tooltip>
-          <el-button text aria-label="Open layout settings" @click="emit('open-settings')">Layout</el-button>
-        </template>
+        <el-button v-else text aria-label="Open layout settings" @click="emit('open-settings')">Layout</el-button>
       </slot>
 
       <UserPanel :layout-extensions="layoutExtensions" @user-command="emit('user-command', $event)">
@@ -66,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { Expand, Fold, Menu, Moon, Sunny } from '@element-plus/icons-vue';
+import { Expand, Fold, Menu } from '@element-plus/icons-vue';
 import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../types/layout-types';
 import NavigationPanel from './NavigationPanel.vue';
 import UserPanel from './UserPanel.vue';
@@ -90,8 +79,6 @@ defineProps<{
   activeTopMenuKey: string;
   /** 头部导航 */
   topNav: TopNavItem[];
-  /** 是否深色模式 */
-  isDark: boolean;
   /** 布局扩展组件 */
   layoutExtensions: LayoutExtensionComponents;
 }>();
@@ -103,8 +90,6 @@ const emit = defineEmits<{
   (e: 'toggle-compact'): void;
   /** 顶级菜单点击 */
   (e: 'top-menu-click', menu: SideMenuItem): void;
-  /** 切换深色模式 */
-  (e: 'toggle-dark-mode'): void;
   /** 打开设置 */
   (e: 'open-settings'): void;
   /** 用户命令 */
