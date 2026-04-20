@@ -77,6 +77,24 @@ function resolveIsDark(mode: ColorMode, prefersDark: boolean): boolean {
   return mode === 'dark';
 }
 
+let systemDarkWatcherInstalled = false;
+
+function ensureSystemDarkWatcher() {
+  if (systemDarkWatcherInstalled) return;
+  systemDarkWatcherInstalled = true;
+
+  const layoutStore = useLayoutStore();
+  const prefersDark = usePreferredDark();
+
+  watch(prefersDark, (newValue) => {
+    if (layoutStore.styleConfig.colorMode === 'system') {
+      withViewTransition(() => {
+        applyDarkMode(newValue);
+      });
+    }
+  });
+}
+
 export function useColorMode() {
   const layoutStore = useLayoutStore();
   const prefersDark = usePreferredDark();
@@ -95,9 +113,11 @@ export function useColorMode() {
     isDark.value = resolved;
     applyDarkMode(resolved);
     initialized.value = true;
+    ensureSystemDarkWatcher();
   };
 
-  const setColorMode = (mode: ColorMode) => {
+  const setColorMode = (mode: ColorMode, options?: { persist?: boolean }) => {
+    const shouldPersist = options?.persist !== false;
     layoutStore.styleConfig.colorMode = mode;
 
     const resolved = resolveIsDark(mode, prefersDark.value);
@@ -106,6 +126,7 @@ export function useColorMode() {
       isDark.value = resolved;
       applyDarkMode(resolved);
       initialized.value = true;
+      ensureSystemDarkWatcher();
     } else {
       withViewTransition(() => {
         isDark.value = resolved;
@@ -113,7 +134,9 @@ export function useColorMode() {
       });
     }
 
-    layoutStore.persistPreferences();
+    if (shouldPersist) {
+      layoutStore.persistPreferences();
+    }
   };
 
   const toggleDark = () => {
@@ -128,15 +151,6 @@ export function useColorMode() {
     layoutStore.styleConfig.colorMode = newMode;
     layoutStore.persistPreferences();
   };
-
-  watch(prefersDark, (newValue) => {
-    if (layoutStore.styleConfig.colorMode === 'system' && initialized.value) {
-      withViewTransition(() => {
-        isDark.value = newValue;
-        applyDarkMode(newValue);
-      });
-    }
-  });
 
   return {
     isDark,

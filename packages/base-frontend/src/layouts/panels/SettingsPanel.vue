@@ -50,6 +50,9 @@
               <el-form-item :label="text.cardRadius"
                 ><el-slider v-model="draftStyleConfig.cardRadius" :min="6" :max="24" show-input
               /></el-form-item>
+              <el-form-item :label="text.buttonRadius"
+                ><el-slider v-model="draftStyleConfig.buttonRadius" :min="0" :max="20" show-input
+              /></el-form-item>
             </div>
           </el-tab-pane>
           <el-tab-pane :label="text.appearance" name="appearance">
@@ -153,7 +156,6 @@ import type { ThemePackage } from '../../types/theme-types';
 import { settingsPanelText as text } from './settings-panel-text';
 import { useColorMode, useThemeSwitch } from '../../composables';
 
-// 颜色模式和主题切换
 const { isDark, colorMode, setColorMode } = useColorMode();
 const { setTheme, availableThemes } = useThemeSwitch();
 const props = defineProps({
@@ -223,19 +225,13 @@ function handleThemeSelect(themeName: string) {
 
 function handleDarkModeToggle(value: boolean) {
   const newMode = value ? 'dark' : 'light';
-  setColorMode(newMode);
+  setColorMode(newMode, { persist: false });
   draftStyleConfig.colorMode = newMode;
-  if (openingSnapshot.value) {
-    openingSnapshot.value.colorMode = newMode;
-  }
 }
 
 function handleFollowSystemToggle(value: boolean) {
   const newMode = value ? 'system' : 'light';
-  setColorMode(newMode);
+  setColorMode(newMode, { persist: false });
   draftStyleConfig.colorMode = newMode;
-  if (openingSnapshot.value) {
-    openingSnapshot.value.colorMode = newMode;
-  }
 }
 </script>

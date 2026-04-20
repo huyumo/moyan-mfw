@@ -18,6 +18,7 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   showBreadcrumb: true,
   showTabs: true,
   cardRadius: 8,
+  buttonRadius: 6,
   colorMode: 'system',
   themePackage: 'default',
 };

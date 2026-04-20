@@ -20,6 +20,7 @@ export interface LayoutStyleConfig {
   showBreadcrumb: boolean;
   showTabs: boolean;
   cardRadius: number;
+  buttonRadius: number;
   colorMode: ColorMode;
   themePackage: string;
 }

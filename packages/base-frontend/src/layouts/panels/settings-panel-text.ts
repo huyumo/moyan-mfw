@@ -16,6 +16,7 @@ export const settingsPanelText = {
   headerHeight: '\u9876\u680f\u9ad8\u5ea6',
   contentMaxWidth: '\u5185\u5bb9\u6700\u5927\u5bbd\u5ea6',
   cardRadius: '\u5361\u7247\u5706\u89d2',
+  buttonRadius: '\u6309\u94ae\u5706\u89d2',
   builtInShortcut: '\u5185\u7f6e\u5feb\u6377\u952e',
   shortcutSearch: '\u6253\u5f00\u641c\u7d22\u9762\u677f',
   shortcutFullscreen: '\u5207\u6362\u5168\u5c4f',

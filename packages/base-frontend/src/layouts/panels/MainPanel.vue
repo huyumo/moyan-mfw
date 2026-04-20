@@ -6,7 +6,14 @@
 -->
 <template>
   <main class="mfw-admin-main-panel">
-    <!-- 标签栏 -->
+    <div v-if="showBreadcrumb && breadcrumbItems.length > 1" class="mfw-admin-breadcrumb-wrap">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item v-for="item in breadcrumbItems" :key="item.path" :to="item.to">
+          {{ item.title }}
+        </el-breadcrumb-item>
+      </el-breadcrumb>
+    </div>
+
     <TabsPanel
       v-if="showTabs"
       v-model="activeTabPath"
@@ -15,7 +22,6 @@
       @tab-command="emit('tab-command', $event)"
     />
 
-    <!-- 主内容区域 -->
     <div class="mfw-admin-content-area">
       <slot />
     </div>
@@ -24,37 +30,64 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowRight, HomeFilled } from '@element-plus/icons-vue';
+import { useRoute } from 'vue-router';
 import TabsPanel from './TabsPanel.vue';
 import type { PageTabItem } from '../../types/layout-types';
 
+interface BreadcrumbEntry {
+  path: string;
+  title: string;
+  to?: string;
+}
+
 const props = defineProps<{
-  /** 当前激活标签路径 */
   modelValue: string;
-  /** 是否显示面包屑 */
   showBreadcrumb?: boolean;
-  /** 首页路径 */
   homePath?: string;
-  /** 当前页面标题 */
   currentTitle?: string;
-  /** 是否显示标签栏 */
   showTabs?: boolean;
-  /** 已访问标签列表 */
   visitedTabs?: PageTabItem[];
 }>();
 
 const emit = defineEmits<{
-  /** 更新激活标签 */
   (e: 'update:modelValue', value: string): void;
-  /** 移除标签 */
   (e: 'tab-remove', value: string | number): void;
-  /** 执行标签命令 */
   (e: 'tab-command', command: string | number | object): void;
 }>();
+
+const route = useRoute();
 
 const activeTabPath = computed({
   get: () => props.modelValue,
   set: (value: string) => emit('update:modelValue', value),
+});
+
+const breadcrumbItems = computed<BreadcrumbEntry[]>(() => {
+  const items: BreadcrumbEntry[] = [];
+  const homePath = props.homePath || '/dashboard';
+
+  items.push({
+    path: homePath,
+    title: '首页',
+    to: homePath,
+  });
+
+  const matched = route.matched.filter(
+    (r) => r.meta?.title && r.path !== homePath,
+  );
+
+  for (const record of matched) {
+    const title = typeof record.meta.title === 'string' ? record.meta.title : '';
+    if (title) {
+      items.push({
+        path: record.path,
+        title,
+        to: record.path,
+      });
+    }
+  }
+
+  return items;
 });
 </script>
 
@@ -67,10 +100,11 @@ const activeTabPath = computed({
   background: var(--el-bg-color-page);
 }
 
-.mfw-admin-breadcrumb {
-  padding: 12px 16px;
+.mfw-admin-breadcrumb-wrap {
+  padding: 10px 16px;
   background: var(--el-bg-color);
   border-bottom: 1px solid var(--el-border-color-light);
+  flex-shrink: 0;
 }
 
 .mfw-admin-content-area {
