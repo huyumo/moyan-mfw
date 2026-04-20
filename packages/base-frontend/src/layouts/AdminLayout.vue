@@ -84,11 +84,13 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
 import SettingsPanel from './panels/SettingsPanel.vue';
 import { useAdminLayout } from './composables/use-admin-layout';
+import { useColorMode, useThemeSwitch } from '../composables';
 
 const dialogText = {
   title: '\u6062\u590d\u9ed8\u8ba4\u8bbe\u7f6e',
@@ -122,6 +124,15 @@ const {
   handleSaveSettings,
   getThemeColor,
 } = useAdminLayout();
+
+// 初始化颜色模式和主题
+const { initColorMode } = useColorMode();
+const { initTheme } = useThemeSwitch();
+
+onMounted(() => {
+  initColorMode();
+  initTheme();
+});
 </script>
 
 <style scoped lang="scss">

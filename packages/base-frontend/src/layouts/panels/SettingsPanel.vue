@@ -52,6 +52,47 @@
               /></el-form-item>
             </div>
           </el-tab-pane>
+          <el-tab-pane :label="text.appearance" name="appearance">
+            <div class="mfw-admin-settings-group">
+              <div class="mfw-admin-settings-group-title">
+                <el-icon><Sunny /></el-icon><span>{{ text.themeSelection }}</span>
+              </div>
+              <div class="mfw-admin-theme-grid">
+                <button
+                  v-for="theme in themeOptions"
+                  :key="theme.name"
+                  class="mfw-admin-theme-card"
+                  :class="{ 'is-active': draftStyleConfig.themePackage === theme.name }"
+                  type="button"
+                  @click="handleThemeSelect(theme.name)"
+                >
+                  <div class="mfw-admin-theme-preview" :style="{ background: getThemeColor(theme.name) }"></div>
+                  <div class="mfw-admin-theme-name">{{ theme.label }}</div>
+                </button>
+              </div>
+            </div>
+            <div class="mfw-admin-settings-group">
+              <div class="mfw-admin-settings-group-title">
+                <el-icon><Moon /></el-icon><span>{{ text.colorMode }}</span>
+              </div>
+              <div class="mfw-admin-switch-list">
+                <div class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">{{ text.darkMode }}</span>
+                  <el-switch
+                    :model-value="colorMode === 'dark'"
+                    @change="handleDarkModeToggle"
+                  />
+                </div>
+                <div class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">{{ text.followSystem }}</span>
+                  <el-switch
+                    :model-value="colorMode === 'system'"
+                    @change="handleFollowSystemToggle"
+                  />
+                </div>
+              </div>
+            </div>
+          </el-tab-pane>
           <el-tab-pane :label="text.general" name="general">
             <div class="mfw-admin-settings-group">
               <div class="mfw-admin-settings-group-title">
@@ -100,18 +141,28 @@ import {
   Check,
   Expand,
   Menu,
+  Moon,
   RefreshLeft,
   Setting,
+  Sunny,
 } from '@element-plus/icons-vue';
 import { computed, reactive, ref, watch, type PropType } from 'vue';
 import LayoutModeIcon from '../components/layout/LayoutModeIcon.vue';
 import type { LayoutMode, LayoutStyleConfig } from '../../types/layout-types';
+import type { ThemePackage } from '../../types/theme-types';
 import { settingsPanelText as text } from './settings-panel-text';
+import { useColorMode, useThemeSwitch } from '../../composables';
+
+// 颜色模式和主题切换
+const { isDark, colorMode, setColorMode } = useColorMode();
+const { setTheme, availableThemes } = useThemeSwitch();
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   isMobile: { type: Boolean, required: true },
   layoutModeOptions: { type: Array as PropType<Array<{ label: string; value: LayoutMode }>>, required: true },
+  themeOptions: { type: Array as PropType<ThemePackage[]>, default: () => [] },
   styleConfig: { type: Object as PropType<LayoutStyleConfig>, required: true },
+  getThemeColor: { type: Function as PropType<(themeName: string) => string>, default: () => '#409eff' },
 });
 
 const emit = defineEmits<{
@@ -163,5 +214,30 @@ watch(
 
 function handleSaveSettings() {
   emit('save-settings', { ...draftStyleConfig });
+}
+
+function handleThemeSelect(themeName: string) {
+  draftStyleConfig.themePackage = themeName;
+  setTheme(themeName);
+}
+
+function handleDarkModeToggle(value: boolean) {
+  if (value) {
+    setColorMode('dark');
+    draftStyleConfig.colorMode = 'dark';
+  } else {
+    setColorMode('light');
+    draftStyleConfig.colorMode = 'light';
+  }
+}
+
+function handleFollowSystemToggle(value: boolean) {
+  if (value) {
+    setColorMode('system');
+    draftStyleConfig.colorMode = 'system';
+  } else {
+    setColorMode('light');
+    draftStyleConfig.colorMode = 'light';
+  }
 }
 </script>
