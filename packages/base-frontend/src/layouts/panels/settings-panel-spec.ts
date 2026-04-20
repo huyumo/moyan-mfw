@@ -26,7 +26,6 @@ const passthroughStub = {
 };
 
 const styleConfig: LayoutStyleConfig = {
-  theme: 'default',
   layoutMode: 'sidebar',
   sidebarWidth: 236,
   headerHeight: 64,
@@ -36,6 +35,8 @@ const styleConfig: LayoutStyleConfig = {
   showBreadcrumb: true,
   showTabs: true,
   cardRadius: 12,
+  colorMode: 'system',
+  themePackage: 'default',
 };
 
 function createWrapper() {
