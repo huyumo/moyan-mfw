@@ -37,12 +37,6 @@
     />
 
     <div class="mfw-admin-header-actions">
-      <el-button
-        :icon="isDark ? Sunny : Moon"
-        circle
-        aria-label="Toggle dark mode"
-        @click="toggleDark()"
-      />
       <slot name="header-common">
         <component :is="layoutExtensions.headerCommon" v-if="layoutExtensions.headerCommon" />
         <el-button v-else text aria-label="Open layout settings" @click="emit('open-settings')">Layout</el-button>
@@ -61,13 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { Expand, Fold, Menu, Moon, Sunny } from '@element-plus/icons-vue';
+import { Expand, Fold, Menu } from '@element-plus/icons-vue';
 import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../types/layout-types';
 import NavigationPanel from './NavigationPanel.vue';
 import UserPanel from './UserPanel.vue';
-import { useColorMode } from '../../composables';
-
-const { isDark, toggleDark } = useColorMode();
 
 defineProps<{
   /** 是否固定头部 */
