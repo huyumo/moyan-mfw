@@ -32,13 +32,8 @@ function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
  * 如果浏览器不支持 View Transitions，则直接执行回调。
  * @param callback - 要执行的 DOM 更新回调
  * @param event - 可选的触发事件，用于设置动画起始位置
- * @param targetMode - 目标模式，用于设置动画方向
  */
-function withViewTransition(
-  callback: () => void,
-  event?: MouseEvent | TouchEvent,
-  targetMode?: 'light' | 'dark'
-) {
+function withViewTransition(callback: () => void, event?: MouseEvent | TouchEvent) {
   setViewTransitionOrigin(event);
 
   if (!document.startViewTransition) {
@@ -46,17 +41,7 @@ function withViewTransition(
     return;
   }
 
-  if (targetMode) {
-    document.documentElement.classList.add(
-      targetMode === 'dark' ? 'transition-to-dark' : 'transition-to-light'
-    );
-  }
-
-  const transition = document.startViewTransition(callback);
-
-  transition.finished.finally(() => {
-    document.documentElement.classList.remove('transition-to-dark', 'transition-to-light');
-  });
+  document.startViewTransition(callback);
 }
 
 /**
@@ -87,10 +72,9 @@ export function useColorMode() {
    * @param event - 触发事件，用于确定动画起始位置
    */
   const toggleDark = (event?: MouseEvent | TouchEvent) => {
-    const targetMode = isDark.value ? 'light' : 'dark';
     withViewTransition(() => {
       isDark.value = !isDark.value;
-    }, event, targetMode);
+    }, event);
   };
 
   /**
@@ -106,13 +90,6 @@ export function useColorMode() {
   const setColorMode = (mode: ColorMode, event?: MouseEvent | TouchEvent) => {
     layoutStore.styleConfig.colorMode = mode;
 
-    let targetMode: 'light' | 'dark' | undefined;
-    if (mode === 'dark') {
-      targetMode = 'dark';
-    } else if (mode === 'light') {
-      targetMode = 'light';
-    }
-
     withViewTransition(() => {
       if (mode === 'system') {
         isDark.value = prefersDark.value;
@@ -121,7 +98,7 @@ export function useColorMode() {
       } else {
         isDark.value = false;
       }
-    }, event, targetMode);
+    }, event);
   };
 
   /**

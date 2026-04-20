@@ -1,42 +1,18 @@
 /* View Transitions API - 暗黑模式切换动画 */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 3s;
+  animation-duration: 1s;
   animation-timing-function: ease-in-out;
 }
 
-/* 默认动画：新视图放大覆盖旧视图 */
+/* 旧状态：反向播放（从完整到消失） */
 ::view-transition-old(root) {
-  animation: none;
+  animation-name: reveal-from-center-reverse;
 }
 
+/* 新状态：正向播放（从出现到完整） */
 ::view-transition-new(root) {
   animation-name: reveal-from-center;
-}
-
-/* 白天→暗黑：旧视图（白天）缩小消失，新视图（暗黑）完全可见 */
-html.transition-to-dark {
-  &::view-transition-old(root) {
-    animation-name: reveal-from-center-reverse;
-    z-index: 1;
-  }
-
-  &::view-transition-new(root) {
-    animation: none;
-    opacity: 1;
-    z-index: 0;
-  }
-}
-
-/* 暗黑→白天：新视图（白天）放大覆盖 */
-html.transition-to-light {
-  &::view-transition-old(root) {
-    animation: none;
-  }
-
-  &::view-transition-new(root) {
-    animation-name: reveal-from-center;
-  }
 }
 
 @keyframes reveal-from-center {
@@ -59,8 +35,8 @@ html.transition-to-light {
 
 html {
   transition:
-    background-color 3s ease,
-    color 3s ease;
+    background-color 1s ease,
+    color 1s ease;
 }
 
 html.dark {
