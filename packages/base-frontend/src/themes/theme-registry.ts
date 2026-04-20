@@ -5,6 +5,8 @@ import fintechTheme from './packages/fintech/manifest.json';
 import techTheme from './packages/tech/manifest.json';
 import luxuryTheme from './packages/luxury/manifest.json';
 import natureTheme from './packages/nature/manifest.json';
+import auroraTheme from './packages/aurora/manifest.json';
+import sunsetTheme from './packages/sunset/manifest.json';
 
 import type { ThemeRegistry } from '../types/theme-types';
 
@@ -16,6 +18,8 @@ export const themeRegistry: ThemeRegistry = {
   tech: techTheme,
   luxury: luxuryTheme,
   nature: natureTheme,
+  aurora: auroraTheme,
+  sunset: sunsetTheme,
 };
 
 export const defaultThemeKey = 'default';

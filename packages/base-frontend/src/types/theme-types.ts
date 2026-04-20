@@ -4,6 +4,7 @@ export interface ThemeColors {
   warning: string;
   danger: string;
   info: string;
+  gradient?: string;
 }
 
 export interface ThemePackage {
