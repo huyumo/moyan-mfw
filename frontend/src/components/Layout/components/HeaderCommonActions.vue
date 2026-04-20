@@ -93,8 +93,8 @@ const navigateTo = (path: string) => {
 /**
  * 切换主题
  */
-const toggleTheme = (event: MouseEvent) => {
-  toggleDark(event);
+const toggleTheme = () => {
+  toggleDark();
 };
 
 /**
@@ -150,7 +150,7 @@ onUnmounted(() => {
       </div>
 
       <!-- 主题切换 -->
-      <div class="action-icon-btn" @click="toggleTheme($event)">
+      <div class="action-icon-btn" @click="toggleTheme">
         <el-icon :size="22">
           <component :is="isDark ? Sunny : Moon" />
         </el-icon>

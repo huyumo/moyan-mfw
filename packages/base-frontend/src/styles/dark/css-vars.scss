@@ -1,42 +1,28 @@
 /* View Transitions API - 暗黑模式切换动画 */
+/* 参考 Element Plus 官网实现：通过 JavaScript 动态控制动画方向 */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 1s;
-  animation-timing-function: ease-in-out;
+  animation: none;
+  mix-blend-mode: normal;
 }
 
-/* 旧状态：反向播放（从完整到消失） */
+/* 默认层级：新状态在上，旧状态在下 */
 ::view-transition-old(root) {
-  animation-name: reveal-from-center-reverse;
+  z-index: 1;
 }
 
-/* 新状态：正向播放（从出现到完整） */
 ::view-transition-new(root) {
-  animation-name: reveal-from-center;
+  z-index: 2147483646;
 }
 
-@keyframes reveal-from-center {
-  from {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
-  }
-  to {
-    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
-  }
+/* 暗黑模式下反转层级：旧状态在上，新状态在下 */
+/* 这样切换到亮色模式时，旧状态（暗黑）会从大圆缩小消失 */
+html.dark::view-transition-old(root) {
+  z-index: 2147483646;
 }
 
-@keyframes reveal-from-center-reverse {
-  from {
-    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
-  }
-  to {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
-  }
-}
-
-html {
-  transition:
-    background-color 1s ease,
-    color 1s ease;
+html.dark::view-transition-new(root) {
+  z-index: 1;
 }
 
 html.dark {

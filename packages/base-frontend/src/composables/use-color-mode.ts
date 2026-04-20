@@ -10,38 +10,50 @@ import { useLayoutStore } from '../store/layout-store';
 import type { ColorMode } from '../types/color-mode-types';
 
 /**
- * 设置动画起始位置（用于圆形擦除效果）。
- * @param event - 鼠标/触摸事件
+ * 计算圆形动画的结束半径。
+ * 以右上角为圆心，计算覆盖整个屏幕所需的最大半径。
  */
-function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
-  if (!event) {
-    document.documentElement.style.removeProperty('--view-x');
-    document.documentElement.style.removeProperty('--view-y');
-    return;
-  }
-
-  const x = 'clientX' in event ? event.clientX : event.touches?.[0]?.clientX ?? window.innerWidth / 2;
-  const y = 'clientY' in event ? event.clientY : event.touches?.[0]?.clientY ?? window.innerHeight / 2;
-
-  document.documentElement.style.setProperty('--view-x', `${x}px`);
-  document.documentElement.style.setProperty('--view-y', `${y}px`);
+function calculateEndRadius(): number {
+  const { innerWidth, innerHeight } = window;
+  return Math.hypot(innerWidth, innerHeight);
 }
 
 /**
  * 使用 View Transitions API 执行带动画的 DOM 更新。
- * 如果浏览器不支持 View Transitions，则直接执行回调。
+ * 圆心固定在右上角（top: 0, right: 0），确保动画效果一致。
+ * - 切换到暗黑模式：新状态从小圆放大覆盖
+ * - 切换到亮色模式：旧状态从大圆缩小消失
  * @param callback - 要执行的 DOM 更新回调
- * @param event - 可选的触发事件，用于设置动画起始位置
  */
-function withViewTransition(callback: () => void, event?: MouseEvent | TouchEvent) {
-  setViewTransitionOrigin(event);
-
+function withViewTransition(callback: () => void) {
   if (!document.startViewTransition) {
     callback();
     return;
   }
 
-  document.startViewTransition(callback);
+  const x = window.innerWidth;
+  const y = 0;
+  const endRadius = calculateEndRadius();
+
+  const transition = document.startViewTransition(callback);
+
+  transition.ready.then(() => {
+    const isDark = document.documentElement.classList.contains('dark');
+    const clipPathFrom = `circle(0px at ${x}px ${y}px)`;
+    const clipPathTo = `circle(${endRadius}px at ${x}px ${y}px)`;
+
+    document.documentElement.animate(
+      {
+        clipPath: isDark ? [clipPathTo, clipPathFrom] : [clipPathFrom, clipPathTo]
+      },
+      {
+        duration: 450,
+        easing: 'ease-in',
+        fill: 'forwards',
+        pseudoElement: isDark ? '::view-transition-old(root)' : '::view-transition-new(root)'
+      }
+    );
+  });
 }
 
 /**
@@ -69,12 +81,22 @@ export function useColorMode() {
 
   /**
    * 切换暗色模式（带过渡动画）。
-   * @param event - 触发事件，用于确定动画起始位置
+   * 同时更新 colorMode 并持久化。
    */
-  const toggleDark = (event?: MouseEvent | TouchEvent) => {
+  const toggleDark = () => {
+    const currentMode = layoutStore.styleConfig.colorMode;
+    const newIsDark = !isDark.value;
+
     withViewTransition(() => {
-      isDark.value = !isDark.value;
-    }, event);
+      isDark.value = newIsDark;
+    });
+
+    if (currentMode === 'system') {
+      layoutStore.styleConfig.colorMode = newIsDark ? 'dark' : 'light';
+    } else {
+      layoutStore.styleConfig.colorMode = newIsDark ? 'dark' : 'light';
+    }
+    layoutStore.persistPreferences();
   };
 
   /**
@@ -84,10 +106,10 @@ export function useColorMode() {
 
   /**
    * 设置颜色模式（带过渡动画）。
+   * 同时持久化到 localStorage。
    * @param mode - 目标颜色模式
-   * @param event - 触发事件，用于确定动画起始位置
    */
-  const setColorMode = (mode: ColorMode, event?: MouseEvent | TouchEvent) => {
+  const setColorMode = (mode: ColorMode) => {
     layoutStore.styleConfig.colorMode = mode;
 
     withViewTransition(() => {
@@ -98,7 +120,9 @@ export function useColorMode() {
       } else {
         isDark.value = false;
       }
-    }, event);
+    });
+
+    layoutStore.persistPreferences();
   };
 
   /**

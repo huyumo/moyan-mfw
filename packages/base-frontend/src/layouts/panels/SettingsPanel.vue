@@ -222,22 +222,20 @@ function handleThemeSelect(themeName: string) {
 }
 
 function handleDarkModeToggle(value: boolean) {
-  if (value) {
-    setColorMode('dark');
-    draftStyleConfig.colorMode = 'dark';
-  } else {
-    setColorMode('light');
-    draftStyleConfig.colorMode = 'light';
+  const newMode = value ? 'dark' : 'light';
+  setColorMode(newMode);
+  draftStyleConfig.colorMode = newMode;
+  if (openingSnapshot.value) {
+    openingSnapshot.value.colorMode = newMode;
   }
 }
 
 function handleFollowSystemToggle(value: boolean) {
-  if (value) {
-    setColorMode('system');
-    draftStyleConfig.colorMode = 'system';
-  } else {
-    setColorMode('light');
-    draftStyleConfig.colorMode = 'light';
+  const newMode = value ? 'system' : 'light';
+  setColorMode(newMode);
+  draftStyleConfig.colorMode = newMode;
+  if (openingSnapshot.value) {
+    openingSnapshot.value.colorMode = newMode;
   }
 }
 </script>
