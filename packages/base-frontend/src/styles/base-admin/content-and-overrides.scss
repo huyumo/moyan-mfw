@@ -195,3 +195,38 @@
     justify-content: flex-start;
   }
 }
+
+/* ========================================
+   暗黑模式样式覆盖
+   ======================================== */
+
+html.dark {
+  /* 顶栏样式覆盖 */
+  .mfw-admin-header {
+    background: #0f172a;
+    border-bottom-color: #334155;
+  }
+
+  /* 侧边栏样式覆盖 */
+  .mfw-admin-sidebar {
+    background: #1e293b;
+    border-right-color: #334155;
+  }
+
+  /* 卡片样式覆盖 */
+  .el-card {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  /* 面包屑样式覆盖 */
+  .mfw-admin-breadcrumb-wrap {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  /* 标签页样式覆盖 */
+  .mfw-admin-tabs-wrap {
+    background: #1e293b;
+  }
+}
