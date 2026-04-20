@@ -18,6 +18,8 @@ vi.mock('./composables/use-admin-layout', () => ({
         compact: false,
         showBreadcrumb: true,
         showTabs: true,
+        colorMode: 'system',
+        themePackage: 'default',
       },
       showSidebar: true,
       navigation: {
@@ -77,7 +79,7 @@ describe('AdminLayout', () => {
             template: `
               <div>
                 <button class="settings-preview" @click="$emit('preview-change', { layoutMode: 'top' })">preview</button>
-                <button class="settings-save" @click="$emit('save-settings', { theme: 'sunset' })">save</button>
+                <button class="settings-save" @click="$emit('save-settings', { themePackage: 'sunset' })">save</button>
               </div>
             `,
           },
@@ -94,6 +96,6 @@ describe('AdminLayout', () => {
     expect(handlePreviewChange).toHaveBeenCalledTimes(1);
     expect(handlePreviewChange).toHaveBeenCalledWith({ layoutMode: 'top' });
     expect(handleSaveSettings).toHaveBeenCalledTimes(1);
-    expect(handleSaveSettings).toHaveBeenCalledWith({ theme: 'sunset' });
+    expect(handleSaveSettings).toHaveBeenCalledWith({ themePackage: 'sunset' });
   });
 });
