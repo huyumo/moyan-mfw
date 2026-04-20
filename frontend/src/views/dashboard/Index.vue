@@ -29,10 +29,11 @@
   h1 {
     font-size: 28px;
     margin-bottom: 8px;
+    color: var(--el-text-color-primary);
   }
 
   .subtitle {
-    color: #666;
+    color: var(--el-text-color-secondary);
     margin-bottom: 24px;
   }
 
@@ -43,27 +44,28 @@
   }
 
   .card {
-    background: #fff;
+    background: var(--el-bg-color);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--el-box-shadow-light);
+    border: 1px solid var(--el-border-color-lighter);
 
     .card-label {
       font-size: 14px;
-      color: #666;
+      color: var(--el-text-color-secondary);
       margin-bottom: 12px;
     }
 
     .card-value {
       font-size: 36px;
       font-weight: 600;
-      color: #333;
+      color: var(--el-text-color-primary);
       margin-bottom: 8px;
     }
 
     .card-detail {
       font-size: 13px;
-      color: #999;
+      color: var(--el-text-color-secondary);
     }
   }
 }
