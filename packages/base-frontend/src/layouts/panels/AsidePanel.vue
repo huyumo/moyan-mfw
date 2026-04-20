@@ -10,7 +10,7 @@
     :class="{ 'is-mobile-open': mobileMenuOpen, 'is-hidden': !showSidebar }"
   >
     <el-scrollbar class="mfw-admin-sidebar-scroll">
-      <el-menu :default-active="activeMenuPath" router class="mfw-admin-menu" :collapse="compact">
+      <el-menu :default-active="activeMenuPath" router class="mfw-admin-menu">
         <MenuTreeNode v-for="menu in displayedSideMenus" :key="menu.key" :item="menu" />
       </el-menu>
     </el-scrollbar>

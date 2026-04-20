@@ -1,7 +1,7 @@
 <template>
   <section class="mfw-dashboard">
     <h1>管理后台演示首页</h1>
-    <p class="subtitle">用于演示布局、路由与样式能力的基础设施页面。</p>
+    <span class="subtitle">用于演示布局、路由与样式能力的基础设施页面。</span>
 
     <div class="cards">
       <div class="card">
@@ -34,7 +34,6 @@
 
   .subtitle {
     color: var(--el-text-color-secondary);
-    margin-bottom: 24px;
   }
 
   .cards {
