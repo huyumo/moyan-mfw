@@ -4,6 +4,7 @@
 
 import { mount } from '@vue/test-utils';
 import { computed, ref } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
 import { describe, expect, it, vi } from 'vitest';
 import AdminLayout from './AdminLayout.vue';
 
@@ -30,7 +31,7 @@ vi.mock('./composables/use-admin-layout', () => ({
       },
       layoutExtensions: {},
       settingsPanelOpen: true,
-      themeOptions: [{ key: 'default', label: 'default' }],
+      themeOptions: [{ name: 'default', label: 'default', colors: { primary: '#409eff', success: '#67c23a', warning: '#e6a23c', danger: '#f56c6c', info: '#909399' } }],
       visitedTabs: [],
       toggleCompact: vi.fn(),
       toggleSettingsPanel: vi.fn(),
@@ -39,11 +40,11 @@ vi.mock('./composables/use-admin-layout', () => ({
     resetConfirmVisible: ref(false),
     isMobile: ref(false),
     layoutModeOptions: [
-      { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
-      { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
+      { label: '侧边栏', value: 'sidebar' },
+      { label: '顶部菜单', value: 'top' },
     ],
     shellClasses: computed(() => ({})),
-    currentTitle: computed(() => '\u9996\u9875'),
+    currentTitle: computed(() => '首页'),
     topLevelMenus: computed(() => []),
     activeTopMenuKey: computed(() => ''),
     showPrimaryTopMenus: computed(() => false),
@@ -66,8 +67,18 @@ vi.mock('./composables/use-admin-layout', () => ({
   }),
 }));
 
+vi.mock('./composables/use-color-mode', () => ({
+  useColorMode: () => ({
+    isDark: { value: false },
+    colorMode: { value: 'system' },
+    setColorMode: vi.fn(),
+  }),
+}));
+
 describe('AdminLayout', () => {
   it('forwards preview and save events from SettingsPanel', async () => {
+    setActivePinia(createPinia());
+
     const wrapper = mount(AdminLayout, {
       global: {
         stubs: {
