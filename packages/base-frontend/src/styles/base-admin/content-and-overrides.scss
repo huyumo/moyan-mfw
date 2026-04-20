@@ -46,7 +46,7 @@
 }
 
 .mfw-admin-content-inner {
-  width: min(100%, 1360px);
+  width: min(100%, var(--mfw-content-max-width));
   margin-top: 14px;
   flex: 1;
   min-height: 0;
@@ -69,7 +69,7 @@
  * 统一按钮圆角
  */
 .el-button {
-  border-radius: 6px !important;
+  border-radius: var(--mfw-button-radius) !important;
 
   &--round {
     border-radius: 9999px !important;
@@ -80,7 +80,7 @@
  * 统一卡片圆角
  */
 .el-card {
-  border-radius: 8px !important;
+  border-radius: var(--mfw-card-radius) !important;
 }
 
 /**

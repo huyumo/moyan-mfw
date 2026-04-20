@@ -10,6 +10,31 @@ import { useAuthStore } from '../../store/auth-store';
 import { resetRouteGuard } from '../../router/guard';
 import { getAvailableThemes, themeRegistry } from '../../themes';
 import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
+
+type CssVarMapping = {
+  cssVar: string;
+  configKey: keyof LayoutStyleConfig;
+  unit: string;
+};
+
+const CSS_VAR_MAPPINGS: CssVarMapping[] = [
+  { cssVar: '--mfw-sidebar-width', configKey: 'sidebarWidth', unit: 'px' },
+  { cssVar: '--mfw-header-height', configKey: 'headerHeight', unit: 'px' },
+  { cssVar: '--mfw-content-max-width', configKey: 'contentMaxWidth', unit: 'px' },
+  { cssVar: '--mfw-card-radius', configKey: 'cardRadius', unit: 'px' },
+  { cssVar: '--mfw-button-radius', configKey: 'buttonRadius', unit: 'px' },
+];
+
+function syncCssVars(config: LayoutStyleConfig) {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  for (const mapping of CSS_VAR_MAPPINGS) {
+    const value = config[mapping.configKey];
+    if (typeof value === 'number') {
+      root.style.setProperty(mapping.cssVar, `${value}${mapping.unit}`);
+    }
+  }
+}
 /**
  * 布局组合逻辑入口。
  */
@@ -227,15 +252,26 @@ export function useAdminLayout(): any {
       }
       if (settingsSnapshot.value) {
         layoutStore.patchStyleConfig(settingsSnapshot.value, { persist: false });
+        syncCssVars(settingsSnapshot.value);
       }
       settingsSnapshot.value = null;
     },
   );
+  watch(
+    () => layoutStore.styleConfig,
+    (config) => {
+      syncCssVars(config);
+    },
+    { deep: true, immediate: true },
+  );
   onMounted(() => {
+    syncCssVars(layoutStore.styleConfig);
     const savedConfig = typeof window !== 'undefined' ? window.localStorage.getItem('mfw:layout:config') : null;
     if (savedConfig) {
       try {
-        layoutStore.patchStyleConfig(JSON.parse(savedConfig), { persist: true });
+        const parsed = JSON.parse(savedConfig);
+        layoutStore.patchStyleConfig(parsed, { persist: true });
+        syncCssVars(layoutStore.styleConfig);
       } catch {
       }
     }

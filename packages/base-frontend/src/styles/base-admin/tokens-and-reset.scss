@@ -4,6 +4,11 @@ $breakpoint-sm: 720px;
 
 :root {
   color-scheme: light;
+  --mfw-sidebar-width: 236px;
+  --mfw-header-height: 64px;
+  --mfw-content-max-width: 1360px;
+  --mfw-card-radius: 8px;
+  --mfw-button-radius: 6px;
 }
 
 *,

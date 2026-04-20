@@ -52,6 +52,7 @@ const styleConfig: LayoutStyleConfig = {
   showBreadcrumb: true,
   showTabs: true,
   cardRadius: 12,
+  buttonRadius: 6,
   colorMode: 'system',
   themePackage: 'default',
 };
