@@ -14,14 +14,17 @@
   animation-name: reveal-from-center;
 }
 
-/* 白天→暗黑：旧视图（白天）缩小消失 */
+/* 白天→暗黑：旧视图（白天）缩小消失，新视图（暗黑）完全可见 */
 html.transition-to-dark {
   &::view-transition-old(root) {
     animation-name: reveal-from-center-reverse;
+    z-index: 1;
   }
 
   &::view-transition-new(root) {
     animation: none;
+    opacity: 1;
+    z-index: 0;
   }
 }
 
