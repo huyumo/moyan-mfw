@@ -1,0 +1,12 @@
+{
+  "name": "luxury",
+  "label": "奢华金",
+  "description": "高级黑 + 金色点缀，适合高端品牌、奢侈品、VIP管理后台",
+  "colors": {
+    "primary": "#CA8A04",
+    "success": "#4ADE80",
+    "warning": "#FBBF24",
+    "danger": "#F87171",
+    "info": "#A8A29E"
+  }
+}

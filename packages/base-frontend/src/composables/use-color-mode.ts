@@ -9,23 +9,19 @@ import { watch, computed } from 'vue';
 import { useLayoutStore } from '../store/layout-store';
 import type { ColorMode } from '../types/color-mode-types';
 
-/**
- * 计算圆形动画的结束半径。
- * 以右上角为圆心，计算覆盖整个屏幕所需的最大半径。
- */
+let transitionInProgress = false;
+
 function calculateEndRadius(): number {
   const { innerWidth, innerHeight } = window;
   return Math.hypot(innerWidth, innerHeight);
 }
 
-/**
- * 使用 View Transitions API 执行带动画的 DOM 更新。
- * 圆心固定在右上角（top: 0, right: 0），确保动画效果一致。
- * - 切换到暗黑模式：新状态从小圆放大覆盖
- * - 切换到亮色模式：旧状态从大圆缩小消失
- * @param callback - 要执行的 DOM 更新回调
- */
 function withViewTransition(callback: () => void) {
+  if (transitionInProgress) {
+    callback();
+    return;
+  }
+
   if (!document.startViewTransition) {
     callback();
     return;
@@ -35,25 +31,33 @@ function withViewTransition(callback: () => void) {
   const y = 0;
   const endRadius = calculateEndRadius();
 
+  transitionInProgress = true;
   const transition = document.startViewTransition(callback);
 
-  transition.ready.then(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    const clipPathFrom = `circle(0px at ${x}px ${y}px)`;
-    const clipPathTo = `circle(${endRadius}px at ${x}px ${y}px)`;
+  transition.ready
+    .then(() => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const clipPathFrom = `circle(0px at ${x}px ${y}px)`;
+      const clipPathTo = `circle(${endRadius}px at ${x}px ${y}px)`;
 
-    document.documentElement.animate(
-      {
-        clipPath: isDark ? [clipPathTo, clipPathFrom] : [clipPathFrom, clipPathTo]
-      },
-      {
-        duration: 450,
-        easing: 'ease-in',
-        fill: 'forwards',
-        pseudoElement: isDark ? '::view-transition-old(root)' : '::view-transition-new(root)'
-      }
-    );
-  });
+      document.documentElement.animate(
+        {
+          clipPath: isDark ? [clipPathTo, clipPathFrom] : [clipPathFrom, clipPathTo]
+        },
+        {
+          duration: 450,
+          easing: 'ease-in',
+          fill: 'forwards',
+          pseudoElement: isDark ? '::view-transition-old(root)' : '::view-transition-new(root)'
+        }
+      );
+    })
+    .catch(() => {})
+    .finally(() => {
+      transitionInProgress = false;
+    });
+
+  transition.finished.catch(() => {});
 }
 
 /**
@@ -127,13 +131,18 @@ export function useColorMode() {
 
   /**
    * 监听系统偏好变化。
-   * 当颜色模式为 system 时，自动同步系统偏好。
+   * 当颜色模式为 system 时，自动同步系统偏好并持久化。
    */
-  watch(prefersDark, (newValue) => {
+  watch(prefersDark, (newValue, oldValue) => {
     if (layoutStore.styleConfig.colorMode === 'system') {
+      if (oldValue === undefined) {
+        isDark.value = newValue;
+        return;
+      }
       withViewTransition(() => {
         isDark.value = newValue;
       });
+      layoutStore.persistPreferences();
     }
   });
 

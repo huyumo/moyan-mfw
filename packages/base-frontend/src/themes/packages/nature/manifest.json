@@ -1,0 +1,12 @@
+{
+  "name": "nature",
+  "label": "自然绿",
+  "description": "自然绿 + 太阳金，适合环保、能源、健康类后台",
+  "colors": {
+    "primary": "#059669",
+    "success": "#22C55E",
+    "warning": "#FBBF24",
+    "danger": "#EF4444",
+    "info": "#14B8A6"
+  }
+}

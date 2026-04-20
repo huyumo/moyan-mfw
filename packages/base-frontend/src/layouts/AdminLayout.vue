@@ -63,7 +63,7 @@
       v-model="layoutStore.settingsPanelOpen"
       :is-mobile="isMobile"
       :layout-mode-options="layoutModeOptions"
-      :theme-options="layoutStore.themeOptions"
+      :theme-options="themeOptions"
       :style-config="layoutStore.styleConfig"
       :get-theme-color="getThemeColor"
       @preview-change="handlePreviewChange"
@@ -105,6 +105,7 @@ const {
   resetConfirmVisible,
   isMobile,
   layoutModeOptions,
+  themeOptions,
   shellClasses,
   currentTitle,
   topLevelMenus,
