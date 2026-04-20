@@ -10,32 +10,11 @@ import { useLayoutStore } from '../store/layout-store';
 import type { ColorMode } from '../types/color-mode-types';
 
 /**
- * 设置动画起始位置（用于圆形擦除效果）。
- * @param event - 鼠标/触摸事件
- */
-function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
-  if (!event) {
-    document.documentElement.style.removeProperty('--view-x');
-    document.documentElement.style.removeProperty('--view-y');
-    return;
-  }
-
-  const x = 'clientX' in event ? event.clientX : event.touches?.[0]?.clientX ?? window.innerWidth / 2;
-  const y = 'clientY' in event ? event.clientY : event.touches?.[0]?.clientY ?? window.innerHeight / 2;
-
-  document.documentElement.style.setProperty('--view-x', `${x}px`);
-  document.documentElement.style.setProperty('--view-y', `${y}px`);
-}
-
-/**
  * 使用 View Transitions API 执行带动画的 DOM 更新。
  * 如果浏览器不支持 View Transitions，则直接执行回调。
  * @param callback - 要执行的 DOM 更新回调
- * @param event - 可选的触发事件，用于设置动画起始位置
  */
-function withViewTransition(callback: () => void, event?: MouseEvent | TouchEvent) {
-  setViewTransitionOrigin(event);
-
+function withViewTransition(callback: () => void) {
   if (!document.startViewTransition) {
     callback();
     return;
@@ -69,12 +48,11 @@ export function useColorMode() {
 
   /**
    * 切换暗色模式（带过渡动画）。
-   * @param event - 触发事件，用于确定动画起始位置
    */
-  const toggleDark = (event?: MouseEvent | TouchEvent) => {
+  const toggleDark = () => {
     withViewTransition(() => {
       isDark.value = !isDark.value;
-    }, event);
+    });
   };
 
   /**
@@ -85,9 +63,8 @@ export function useColorMode() {
   /**
    * 设置颜色模式（带过渡动画）。
    * @param mode - 目标颜色模式
-   * @param event - 触发事件，用于确定动画起始位置
    */
-  const setColorMode = (mode: ColorMode, event?: MouseEvent | TouchEvent) => {
+  const setColorMode = (mode: ColorMode) => {
     layoutStore.styleConfig.colorMode = mode;
 
     withViewTransition(() => {
@@ -98,7 +75,7 @@ export function useColorMode() {
       } else {
         isDark.value = false;
       }
-    }, event);
+    });
   };
 
   /**
