@@ -4,19 +4,17 @@
 
 import { createBaseAdminApp } from 'moyan-mfw-base-frontend';
 import { HeaderAvatarPanel, HeaderCommonActions } from './components/Layout';
-import { businessThemes } from './themes';
 import { businessRoutes } from './router';
 
 // 创建并启动管理后台应用
 const admin = createBaseAdminApp({
   title: '墨焱前端演示',
   routes: businessRoutes,
-  themes: businessThemes,
-  defaultTheme: 'sunset',
   layout: {
     layoutMode: 'dual',
     showTabs: true,
-    isDark: false,
+    colorMode: 'system',
+    themePackage: 'default',
   },
   navigation: {
     brandName: '墨焱管理后台',
