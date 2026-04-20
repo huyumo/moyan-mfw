@@ -1,12 +1,27 @@
 /**
  * @fileoverview 颜色模式切换组合式函数。
  * 基于 VueUse useDark 实现，支持 light/dark/system 三种模式。
+ * 使用 View Transitions API 实现平滑过渡动画。
  */
 
 import { useDark, usePreferredDark, useToggle } from '@vueuse/core';
 import { watch, computed } from 'vue';
 import { useLayoutStore } from '../store/layout-store';
 import type { ColorMode } from '../types/color-mode-types';
+
+/**
+ * 使用 View Transitions API 执行带动画的 DOM 更新。
+ * 如果浏览器不支持 View Transitions，则直接执行回调。
+ * @param callback - 要执行的 DOM 更新回调
+ */
+function withViewTransition(callback: () => void) {
+  if (!document.startViewTransition) {
+    callback();
+    return;
+  }
+
+  document.startViewTransition(callback);
+}
 
 /**
  * 颜色模式切换组合式函数。
@@ -32,9 +47,13 @@ export function useColorMode() {
   const prefersDark = usePreferredDark();
 
   /**
-   * 切换暗色模式。
+   * 切换暗色模式（带过渡动画）。
    */
-  const toggleDark = useToggle(isDark);
+  const toggleDark = () => {
+    withViewTransition(() => {
+      isDark.value = !isDark.value;
+    });
+  };
 
   /**
    * 当前颜色模式。
@@ -42,19 +61,21 @@ export function useColorMode() {
   const colorMode = computed<ColorMode>(() => layoutStore.styleConfig.colorMode);
 
   /**
-   * 设置颜色模式。
+   * 设置颜色模式（带过渡动画）。
    * @param mode - 目标颜色模式
    */
   const setColorMode = (mode: ColorMode) => {
     layoutStore.styleConfig.colorMode = mode;
 
-    if (mode === 'system') {
-      isDark.value = prefersDark.value;
-    } else if (mode === 'dark') {
-      isDark.value = true;
-    } else {
-      isDark.value = false;
-    }
+    withViewTransition(() => {
+      if (mode === 'system') {
+        isDark.value = prefersDark.value;
+      } else if (mode === 'dark') {
+        isDark.value = true;
+      } else {
+        isDark.value = false;
+      }
+    });
   };
 
   /**
@@ -63,7 +84,9 @@ export function useColorMode() {
    */
   watch(prefersDark, (newValue) => {
     if (layoutStore.styleConfig.colorMode === 'system') {
-      isDark.value = newValue;
+      withViewTransition(() => {
+        isDark.value = newValue;
+      });
     }
   });
 
