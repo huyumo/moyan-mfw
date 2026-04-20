@@ -51,17 +51,38 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
 }
 
 /**
+ * 合并基包路由和业务路由，业务路由优先覆盖同名路由
+ * @param baseRoutes 基包路由
+ * @param businessRoutes 业务路由
+ * @returns 合并后的路由数组
+ */
+function mergeRoutes(baseRoutes: RouteRecordRaw[], businessRoutes: RouteRecordRaw[]): RouteRecordRaw[] {
+  const routeMap = new Map<string, RouteRecordRaw>();
+
+  for (const route of baseRoutes) {
+    const key = route.path.replace(/^\//, '');
+    routeMap.set(key, route);
+  }
+
+  for (const route of businessRoutes) {
+    const key = route.path.replace(/^\//, '');
+    routeMap.set(key, route);
+  }
+
+  return Array.from(routeMap.values());
+}
+
+/**
  * 创建后台路由实例并注册全局守卫。
  * @param options 路由创建参数。
  * @returns 可直接挂载到应用的路由实例。
  */
 export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
-  // 始终获取基包自己的路由（sys 模块等）
   const basePackageRoutes = buildBasePackageRoutes();
 
-  // 合并基包路由和业务路由
   const businessRoutes = options.routes || [];
-  const allChildren = [...basePackageRoutes, ...businessRoutes];
+
+  const mergedChildren = mergeRoutes(basePackageRoutes, businessRoutes);
 
   const finalRoutes = [
     {
@@ -98,7 +119,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
           meta: { requiresAuth: true },
         },
         // 注入合并后的路由
-        ...allChildren.map((route) => {
+        ...mergedChildren.map((route) => {
           const newPath = route.path.replace(/^\//, '');
 
           // 如果 redirect 是字符串且带前导/，需要转换为相对路径
