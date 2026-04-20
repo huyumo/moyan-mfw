@@ -8,12 +8,11 @@ import type {
   LoginExtensionComponents,
   LayoutStyleConfig,
   PageTabItem,
-  ThemeRegistry,
 } from '../types/layout-types';
 
 /**
  * 应用项类型定义。
- * TODO: 重新设计 API 类型系统
+ * TODO-TASK-2026-04-20-001: 重新设计 API 类型系统
  */
 export interface AppItem {
   /** 应用 ID */
@@ -65,10 +64,6 @@ export interface LayoutState {
   navigation: AdminNavigationConfig;
   /** 设置面板状态 */
   settingsPanelOpen: boolean;
-  /** 主题注册表 */
-  themes: ThemeRegistry;
-  /** 主题切换开关 */
-  enableThemeSwitch: boolean;
   /** 当前激活顶部菜单键 */
   activeTopMenuKey: string;
   /** 访问过的标签页 */
@@ -109,18 +104,12 @@ export interface LayoutPreferenceActionContext extends LayoutTabActionContext {
   navigation: AdminNavigationConfig;
   /** 设置面板状态 */
   settingsPanelOpen: boolean;
-  /** 主题注册表 */
-  themes: ThemeRegistry;
-  /** 主题切换开关 */
-  enableThemeSwitch: boolean;
   /** 当前激活顶部菜单键 */
   activeTopMenuKey: string;
   /** 布局扩展组件 */
   layoutExtensions: LayoutExtensionComponents;
   /** 登录扩展组件 */
   loginExtensions: LoginExtensionComponents;
-  /** 当前激活主题键 */
-  activeThemeKey: string;
   /** 当前应用 */
   currentApp: AppItem | null;
   /** 用户可访问应用列表 */

@@ -6,8 +6,6 @@ import type {
   LayoutStyleConfig,
   PageTabItem,
   SideMenuItem,
-  ThemeTokenPalette,
-  ThemeTokens,
 } from '../types/layout-types';
 import { LAYOUT_PREFERENCES_STORAGE_KEY, type LayoutPersistedState } from './layout-store-model';
 
@@ -91,13 +89,6 @@ export function normalizePersistedTabs(tabs: PageTabItem[] | undefined, homePath
     }
     return tab;
   });
-}
-
-/**
- * 判断主题令牌是否为亮暗调色板。
- */
-export function isThemePalette(tokens: ThemeTokens | ThemeTokenPalette): tokens is ThemeTokenPalette {
-  return 'light' in tokens && 'dark' in tokens;
 }
 
 /**

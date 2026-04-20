@@ -7,8 +7,6 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import {
   defaultLayoutStyleConfig,
   defaultNavigationConfig,
-  defaultThemeKey,
-  defaultThemeRegistry,
 } from '../config/layout-defaults';
 import type {
   AdminNavigationConfig,
@@ -16,14 +14,10 @@ import type {
   LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
-  ThemeOption,
-  ThemeRegistry,
-  ThemeTokens,
 } from '../types/layout-types';
 import { type LayoutPreferenceActionContext, type LayoutState } from './layout-store-model';
 import {
   cloneMenus,
-  isThemePalette,
   mergeStyleConfig,
   normalizePersistedTabs,
   readPersistedState,
@@ -31,15 +25,12 @@ import {
 import {
   patchStyleConfig,
   persistPreferences,
-  registerThemes,
   resetToDefaults,
   setActiveTopMenuKey,
   setLayoutExtensions,
   setLoginExtensions,
   setLayoutMode,
   setNavigation,
-  setTheme,
-  setThemeSwitchEnabled,
   syncActiveTopMenuByPath,
   toggleCompact,
   toggleSettingsPanel,
@@ -76,8 +67,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
         sideMenu: cloneMenus(defaultNavigationConfig.sideMenu),
       },
       settingsPanelOpen: false,
-      themes: { ...defaultThemeRegistry },
-      enableThemeSwitch: true,
       activeTopMenuKey: persisted.activeTopMenuKey || defaultNavigationConfig.sideMenu[0]?.key || '',
       visitedTabs,
       activeTabPath,
@@ -89,35 +78,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
   },
 
   getters: {
-    /**
-     * 当前主题键。
-     */
-    activeThemeKey(state): string {
-      if (state.themes[state.styleConfig.theme]) {
-        return state.styleConfig.theme;
-      }
-      return defaultThemeKey;
-    },
-
-    /**
-     * 当前主题令牌。
-     */
-    activeThemeTokens(state): ThemeTokens {
-      const activeTheme = state.themes[this.activeThemeKey];
-      const tokens = activeTheme ? activeTheme.tokens : defaultThemeRegistry[defaultThemeKey].tokens;
-      if (isThemePalette(tokens)) {
-        return tokens.light;
-      }
-      return tokens;
-    },
-
-    /**
-     * 主题选项列表。
-     */
-    themeOptions(state): ThemeOption[] {
-      return Object.entries(state.themes).map(([key, pack]) => ({ key, label: pack.label }));
-    },
-
     /**
      * 是否显示侧边栏。
      */
@@ -149,18 +109,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
 
     toggleSettingsPanel(force?: boolean) {
       toggleSettingsPanel(this as unknown as LayoutPreferenceActionContext, force);
-    },
-
-    registerThemes(payload: ThemeRegistry) {
-      registerThemes(this as unknown as LayoutPreferenceActionContext, payload);
-    },
-
-    setTheme(themeKey: string) {
-      setTheme(this as unknown as LayoutPreferenceActionContext, themeKey);
-    },
-
-    setThemeSwitchEnabled(enabled: boolean) {
-      setThemeSwitchEnabled(this as unknown as LayoutPreferenceActionContext, enabled);
     },
 
     setActiveTopMenuKey(key: string) {

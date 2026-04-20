@@ -15,27 +15,6 @@
       <div class="mfw-admin-settings-subtitle">{{ text.subtitle }}</div>
       <el-scrollbar class="mfw-admin-settings-scroll">
         <el-tabs v-model="activeTab" class="mfw-admin-settings-tabs">
-          <el-tab-pane :label="text.appearance" name="appearance">
-            <div class="mfw-admin-settings-group">
-              <div class="mfw-admin-settings-group-title">
-                <el-icon><Setting /></el-icon><span>{{ text.builtInThemes }}</span>
-              </div>
-              <div class="mfw-admin-theme-selector">
-                <button
-                  v-for="theme in themeOptions"
-                  :key="theme.key"
-                  class="mfw-admin-theme-card"
-                  :class="{ 'is-active': draftStyleConfig.theme === theme.key, 'is-theme': true }"
-                  :style="{ '--theme-color': getThemeColor(theme.key) }"
-                  type="button"
-                  @click="draftStyleConfig.theme = theme.key"
-                >
-                  <span class="mfw-admin-theme-preview" :style="{ backgroundColor: getThemeColor(theme.key) }"></span>
-                  <span class="mfw-admin-theme-label">{{ theme.label }}</span>
-                </button>
-              </div>
-            </div>
-          </el-tab-pane>
           <el-tab-pane :label="text.layout" name="layout">
             <div class="mfw-admin-settings-group">
               <div class="mfw-admin-settings-group-title">
@@ -126,15 +105,13 @@ import {
 } from '@element-plus/icons-vue';
 import { computed, reactive, ref, watch, type PropType } from 'vue';
 import LayoutModeIcon from '../components/layout/LayoutModeIcon.vue';
-import type { LayoutMode, LayoutStyleConfig, ThemeOption } from '../../types/layout-types';
+import type { LayoutMode, LayoutStyleConfig } from '../../types/layout-types';
 import { settingsPanelText as text } from './settings-panel-text';
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
   isMobile: { type: Boolean, required: true },
   layoutModeOptions: { type: Array as PropType<Array<{ label: string; value: LayoutMode }>>, required: true },
-  themeOptions: { type: Array as PropType<ThemeOption[]>, required: true },
   styleConfig: { type: Object as PropType<LayoutStyleConfig>, required: true },
-  getThemeColor: { type: Function as PropType<(themeKey: string) => string>, required: true },
 });
 
 const emit = defineEmits<{
@@ -143,7 +120,7 @@ const emit = defineEmits<{
   (e: 'save-settings', payload: LayoutStyleConfig): void;
   (e: 'reset-defaults'): void;
 }>();
-const activeTab = ref('appearance');
+const activeTab = ref('layout');
 const syncingDraft = ref(false);
 const openingSnapshot = ref<LayoutStyleConfig | null>(null);
 const draftStyleConfig = reactive<LayoutStyleConfig>({ ...props.styleConfig });
@@ -162,7 +139,7 @@ watch(
     if (!isOpen) {
       return;
     }
-    activeTab.value = 'appearance';
+    activeTab.value = 'layout';
     openingSnapshot.value = { ...props.styleConfig };
     syncingDraft.value = true;
     Object.assign(draftStyleConfig, props.styleConfig);

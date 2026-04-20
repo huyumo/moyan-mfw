@@ -4,16 +4,13 @@
 
 import type { Component } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
-import type { ThemeOption } from './layout-theme-types';
-
-export type { ThemePack, ThemeRegistry, ThemeTokenInput, ThemeTokenPalette, ThemeTokens } from './layout-theme-types';
+import type { ColorMode } from './color-mode-types';
 
 /** 布局模式定义。 */
 export type LayoutMode = 'sidebar' | 'top' | 'dual';
 
 /** 布局样式配置。 */
 export interface LayoutStyleConfig {
-  theme: string;
   layoutMode: LayoutMode;
   sidebarWidth: number;
   headerHeight: number;
@@ -23,6 +20,8 @@ export interface LayoutStyleConfig {
   showBreadcrumb: boolean;
   showTabs: boolean;
   cardRadius: number;
+  colorMode: ColorMode;
+  themePackage: string;
 }
 
 /** 顶部导航项。 */
@@ -88,6 +87,3 @@ export interface LoginExtensionComponents {
   aside?: ExtensionComponentInput;
   footer?: ExtensionComponentInput;
 }
-
-/** 主题选项类型。 */
-export type { ThemeOption };

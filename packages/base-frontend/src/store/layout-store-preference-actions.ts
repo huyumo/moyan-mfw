@@ -4,13 +4,13 @@
 
 import { markRaw } from 'vue';
 import { defaultLayoutStyleConfig } from '../config/layout-defaults';
+import type { ColorMode } from '../types/color-mode-types';
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
   LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
-  ThemeRegistry,
 } from '../types/layout-types';
 import { containsPathInMenu, createHomeTab, cloneMenus } from './layout-store-utils';
 import {
@@ -91,30 +91,9 @@ export function toggleSettingsPanel(store: LayoutPreferenceActionContext, force?
 }
 
 /** 偏好操作实现。 */
-export function registerThemes(store: LayoutPreferenceActionContext, payload: ThemeRegistry): void {
-  store.themes = {
-    ...store.themes,
-    ...payload,
-  };
-
-  if (!store.themes[store.styleConfig.theme]) {
-    store.styleConfig.theme = store.activeThemeKey;
-  }
+export function setColorMode(store: LayoutPreferenceActionContext, mode: ColorMode): void {
+  store.styleConfig.colorMode = mode;
   store.persistPreferences();
-}
-
-/** 偏好操作实现。 */
-export function setTheme(store: LayoutPreferenceActionContext, themeKey: string): void {
-  if (!store.themes[themeKey]) {
-    return;
-  }
-  store.styleConfig.theme = themeKey;
-  store.persistPreferences();
-}
-
-/** 偏好操作实现。 */
-export function setThemeSwitchEnabled(store: LayoutPreferenceActionContext, enabled: boolean): void {
-  store.enableThemeSwitch = enabled;
 }
 
 /** 偏好操作实现。 */
