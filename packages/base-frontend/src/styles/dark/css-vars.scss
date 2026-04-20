@@ -15,6 +15,7 @@
 
 :active-view-transition-type(light-to-dark)::view-transition-new(root) {
   animation: none;
+  opacity: 1;
 }
 
 /* ========================================
@@ -23,6 +24,7 @@
    ======================================== */
 :active-view-transition-type(dark-to-light)::view-transition-old(root) {
   animation: none;
+  opacity: 0;
 }
 
 :active-view-transition-type(dark-to-light)::view-transition-new(root) {
