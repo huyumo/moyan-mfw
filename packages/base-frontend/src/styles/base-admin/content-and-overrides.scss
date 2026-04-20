@@ -205,28 +205,62 @@ html.dark {
   .mfw-admin-header {
     background: #0f172a;
     border-bottom-color: #334155;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
   }
 
   /* 侧边栏样式覆盖 */
   .mfw-admin-sidebar {
     background: #1e293b;
     border-right-color: #334155;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
   }
 
   /* 卡片样式覆盖 */
   .el-card {
     background: #1e293b;
     border-color: #334155;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
   }
 
   /* 面包屑样式覆盖 */
   .mfw-admin-breadcrumb-wrap {
     background: #1e293b;
     border-color: #334155;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
   }
 
   /* 标签页样式覆盖 */
   .mfw-admin-tabs-wrap {
     background: #1e293b;
+    transition: background-color 0.3s ease;
   }
+}
+
+/* 暗黑模式过渡动画 - 全局元素 */
+.mfw-admin-shell,
+.mfw-admin-header,
+.mfw-admin-sidebar,
+.mfw-admin-content,
+.mfw-admin-breadcrumb-wrap,
+.mfw-admin-tabs-wrap,
+.el-card,
+.mfw-dashboard-card,
+.mfw-login-panel,
+.mfw-exception-card,
+.mfw-login-page,
+.mfw-exception-page {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }

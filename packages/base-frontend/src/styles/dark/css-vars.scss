@@ -1,3 +1,9 @@
+html {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
 html.dark {
   --el-bg-color: #1a1a2e;
   --el-bg-color-page: #16213e;
