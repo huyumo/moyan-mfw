@@ -40,7 +40,6 @@ vi.mock('./composables/use-admin-layout', () => ({
       { label: '\u4fa7\u8fb9\u680f', value: 'sidebar' },
       { label: '\u9876\u90e8\u83dc\u5355', value: 'top' },
     ],
-    shellVars: computed(() => ({})),
     shellClasses: computed(() => ({})),
     currentTitle: computed(() => '\u9996\u9875'),
     topLevelMenus: computed(() => []),

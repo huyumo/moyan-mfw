@@ -189,7 +189,7 @@ export function useAdminLayout(): any {
   function getThemeColor(themeKey: string): string {
     const theme = layoutStore.themes[themeKey];
     if (!theme) {
-      return 'var(--mfw-primary-color, #2f6ef6)';
+      return 'var(--el-color-primary)';
     }
     const tokens = theme.tokens;
     return 'light' in tokens ? tokens.light.primaryColor : tokens.primaryColor;
