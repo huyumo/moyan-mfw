@@ -29,15 +29,15 @@ function setViewTransitionOrigin(event?: MouseEvent | TouchEvent) {
 
 /**
  * 使用 View Transitions API 执行带动画的 DOM 更新。
- * 使用 View Transition Types 来区分动画方向（Chrome 125+）。
+ * 如果浏览器不支持 View Transitions，则直接执行回调。
  * @param callback - 要执行的 DOM 更新回调
  * @param event - 可选的触发事件，用于设置动画起始位置
- * @param transitionType - 过渡类型，用于控制动画方向
+ * @param targetMode - 目标模式，用于设置动画方向
  */
 function withViewTransition(
   callback: () => void,
   event?: MouseEvent | TouchEvent,
-  transitionType?: 'light-to-dark' | 'dark-to-light'
+  targetMode?: 'light' | 'dark'
 ) {
   setViewTransitionOrigin(event);
 
@@ -46,14 +46,17 @@ function withViewTransition(
     return;
   }
 
-  if (transitionType) {
-    document.startViewTransition({
-      update: callback,
-      types: [transitionType],
-    });
-  } else {
-    document.startViewTransition(callback);
+  if (targetMode) {
+    document.documentElement.classList.add(
+      targetMode === 'dark' ? 'transition-to-dark' : 'transition-to-light'
+    );
   }
+
+  const transition = document.startViewTransition(callback);
+
+  transition.finished.finally(() => {
+    document.documentElement.classList.remove('transition-to-dark', 'transition-to-light');
+  });
 }
 
 /**
@@ -84,12 +87,10 @@ export function useColorMode() {
    * @param event - 触发事件，用于确定动画起始位置
    */
   const toggleDark = (event?: MouseEvent | TouchEvent) => {
-    const currentIsDark = isDark.value;
-    const transitionType = currentIsDark ? 'dark-to-light' : 'light-to-dark';
-
+    const targetMode = isDark.value ? 'light' : 'dark';
     withViewTransition(() => {
       isDark.value = !isDark.value;
-    }, event, transitionType);
+    }, event, targetMode);
   };
 
   /**
@@ -105,14 +106,12 @@ export function useColorMode() {
   const setColorMode = (mode: ColorMode, event?: MouseEvent | TouchEvent) => {
     layoutStore.styleConfig.colorMode = mode;
 
-    const targetIsDark =
-      mode === 'dark' || (mode === 'system' && prefersDark.value);
-    const currentIsDark = isDark.value;
-    const transitionType = targetIsDark === currentIsDark
-      ? undefined
-      : targetIsDark
-        ? 'light-to-dark'
-        : 'dark-to-light';
+    let targetMode: 'light' | 'dark' | undefined;
+    if (mode === 'dark') {
+      targetMode = 'dark';
+    } else if (mode === 'light') {
+      targetMode = 'light';
+    }
 
     withViewTransition(() => {
       if (mode === 'system') {
@@ -122,7 +121,7 @@ export function useColorMode() {
       } else {
         isDark.value = false;
       }
-    }, event, transitionType);
+    }, event, targetMode);
   };
 
   /**

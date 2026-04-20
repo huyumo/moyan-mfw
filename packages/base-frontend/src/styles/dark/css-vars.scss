@@ -1,56 +1,56 @@
 /* View Transitions API - 暗黑模式切换动画 */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none;  /* 禁用默认淡入淡出动画 */
+  animation-duration: 3s;
+  animation-timing-function: ease-in-out;
 }
 
-/* ========================================
-   白天 → 暗黑（transition type: light-to-dark）
-   效果：圆形缩小，露出暗黑背景
-   
-   old（白天）：做圆形缩小动画，从完整到消失
-   new（暗黑）：静止作为背景，完全可见
-   ======================================== */
-:active-view-transition-type(light-to-dark)::view-transition-old(root) {
-  animation: reveal-shrink 3s ease-in-out;
+/* 默认动画：新视图放大覆盖旧视图 */
+::view-transition-old(root) {
+  animation: none;
 }
 
-:active-view-transition-type(light-to-dark)::view-transition-new(root) {
-  opacity: 1;  /* 暗黑背景完全可见 */
+::view-transition-new(root) {
+  animation-name: reveal-from-center;
 }
 
-/* ========================================
-   暗黑 → 白天（transition type: dark-to-light）
-   效果：圆形放大，覆盖暗黑背景
-   
-   old（暗黑）：静止作为背景，完全可见
-   new（白天）：做圆形放大动画，从出现到完整
-   ======================================== */
-:active-view-transition-type(dark-to-light)::view-transition-old(root) {
-  opacity: 1;  /* 暗黑背景完全可见 */
-}
-
-:active-view-transition-type(dark-to-light)::view-transition-new(root) {
-  animation: reveal-expand 3s ease-in-out;
-}
-
-/* 圆形缩小动画（从大到小） */
-@keyframes reveal-shrink {
-  from {
-    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
+/* 白天→暗黑：旧视图（白天）缩小消失 */
+html.transition-to-dark {
+  &::view-transition-old(root) {
+    animation-name: reveal-from-center-reverse;
   }
-  to {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+
+  &::view-transition-new(root) {
+    animation: none;
   }
 }
 
-/* 圆形放大动画（从小到大） */
-@keyframes reveal-expand {
+/* 暗黑→白天：新视图（白天）放大覆盖 */
+html.transition-to-light {
+  &::view-transition-old(root) {
+    animation: none;
+  }
+
+  &::view-transition-new(root) {
+    animation-name: reveal-from-center;
+  }
+}
+
+@keyframes reveal-from-center {
   from {
     clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
   }
   to {
     clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+}
+
+@keyframes reveal-from-center-reverse {
+  from {
+    clip-path: circle(250% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+  to {
+    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
   }
 }
 
