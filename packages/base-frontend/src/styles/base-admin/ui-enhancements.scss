@@ -1,0 +1,352 @@
+/**
+ * @fileoverview UI 增强样式 - Soft UI Evolution 风格
+ * @description 柔和阴影、玻璃态卡片、按钮效果、背景渐变
+ * 基于 Element Plus CSS 变量系统，支持亮色/暗色模式
+ * WCAG AA+ 无障碍兼容
+ */
+
+/* ============================================
+   1. 背景渐变 + 网格纹理
+   ============================================ */
+
+.mfw-admin-shell {
+  position: relative;
+  min-height: 100vh;
+  background: var(--el-bg-color-page);
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--el-color-primary) 5%, transparent) 0%, transparent 45%),
+      radial-gradient(ellipse at 85% 95%, color-mix(in srgb, var(--el-color-success) 3%, transparent) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--el-fill-color-light) 2%, transparent) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.mfw-admin-content {
+  position: relative;
+  z-index: 1;
+}
+
+.mfw-grid-texture {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 1px 1px, var(--el-border-color-lighter) 1px, transparent 0);
+    background-size: 20px 20px;
+    pointer-events: none;
+    opacity: 0.35;
+  }
+}
+
+html.dark .mfw-admin-shell::before {
+  background:
+    radial-gradient(ellipse at 15% 5%, color-mix(in srgb, var(--el-color-primary) 8%, transparent) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 95%, color-mix(in srgb, var(--el-color-success) 5%, transparent) 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 50%, color-mix(in srgb, var(--el-fill-color-light) 3%, transparent) 0%, transparent 60%);
+}
+
+html.dark .mfw-grid-texture::after {
+  opacity: 0.2;
+}
+
+/* ============================================
+   2. 卡片/面板 - 柔和阴影（紧凑）
+   ============================================ */
+
+.mfw-soft-card {
+  background: color-mix(in srgb, var(--el-bg-color) 88%, transparent);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 2px 4px rgba(15, 23, 42, 0.04);
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.04),
+      0 4px 8px rgba(15, 23, 42, 0.05);
+  }
+}
+
+html.dark .mfw-soft-card {
+  background: color-mix(in srgb, var(--el-bg-color) 78%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.16);
+
+  &:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.16),
+      0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.mfw-admin-settings-group {
+  background: color-mix(in srgb, var(--el-bg-color) 90%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+html.dark .mfw-admin-settings-group {
+  background: color-mix(in srgb, var(--el-bg-color) 80%, transparent);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.16);
+}
+
+.mfw-floating-card {
+  background: var(--el-bg-color);
+  border-radius: 10px;
+  border: 1px solid var(--el-border-color-lighter);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 2px 4px rgba(15, 23, 42, 0.04);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 2px 4px rgba(15, 23, 42, 0.04),
+      0 4px 8px rgba(15, 23, 42, 0.06);
+  }
+}
+
+html.dark .mfw-floating-card {
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.16);
+
+  &:hover {
+    box-shadow:
+      0 2px 4px rgba(0, 0, 0, 0.16),
+      0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.mfw-admin-theme-card,
+.mfw-admin-layout-mode-card {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.99);
+  }
+}
+
+/* ============================================
+   3. 按钮 - 微妙阴影
+   ============================================ */
+
+.el-button {
+  transition:
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.el-button--primary:hover:not(:disabled) {
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--el-color-primary) 12%, transparent);
+}
+
+.el-button--primary:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.el-button--success:hover:not(:disabled) {
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--el-color-success) 12%, transparent);
+}
+
+.el-button--success:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.el-button--warning:hover:not(:disabled) {
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--el-color-warning) 12%, transparent);
+}
+
+.el-button--warning:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.el-button--danger:hover:not(:disabled) {
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--el-color-danger) 12%, transparent);
+}
+
+.el-button--danger:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.el-button--info:hover:not(:disabled) {
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--el-color-info) 12%, transparent);
+}
+
+.el-button--info:active:not(:disabled) {
+  box-shadow: none;
+}
+
+.mfw-btn-ripple {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 10%, transparent 10%);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  &:active::after {
+    animation: mfw-ripple 0.5s ease-out;
+  }
+}
+
+@keyframes mfw-ripple {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   4. 加载动画
+   ============================================ */
+
+.mfw-pulse-loader {
+  animation: mfw-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes mfw-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.96);
+  }
+}
+
+.mfw-gradient-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    var(--el-color-primary),
+    var(--el-color-primary-light-5),
+    transparent
+  );
+  animation: mfw-spin 1s linear infinite;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    background: var(--el-bg-color);
+    border-radius: 50%;
+  }
+}
+
+@keyframes mfw-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================
+   5. Drawer/弹窗
+   ============================================ */
+
+.mfw-admin-settings-drawer .el-drawer__body {
+  background: color-mix(in srgb, var(--el-bg-color-page) 92%, transparent);
+}
+
+.el-drawer {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.el-dialog {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+/* ============================================
+   6. 滚动条
+   ============================================ */
+
+.mfw-admin-sidebar-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--el-color-primary) 25%, var(--el-fill-color-light));
+  border-radius: 4px;
+
+  &:hover {
+    background: color-mix(in srgb, var(--el-color-primary) 40%, var(--el-fill-color-light));
+  }
+}
+
+/* ============================================
+   7. Focus 状态（无障碍）
+   ============================================ */
+
+.mfw-soft-card:focus-visible,
+.mfw-floating-card:focus-visible,
+.mfw-btn-ripple:focus-visible {
+  outline: 2px solid var(--el-color-primary);
+  outline-offset: 3px;
+}
+
+/* ============================================
+   8. prefers-reduced-motion（无障碍）
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .mfw-soft-card:hover,
+  .mfw-floating-card:hover,
+  .mfw-admin-theme-card:hover,
+  .mfw-admin-layout-mode-card:hover {
+    transform: none;
+  }
+}

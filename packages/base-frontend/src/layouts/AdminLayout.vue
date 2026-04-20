@@ -126,12 +126,12 @@ const {
   getThemeColor,
 } = useAdminLayout();
 
-// 初始化颜色模式和主题
 const { initColorMode } = useColorMode();
 const { initTheme } = useThemeSwitch();
 
+initColorMode();
+
 onMounted(() => {
-  initColorMode();
   initTheme();
 });
 </script>
