@@ -1,45 +1,55 @@
 /* View Transitions API - 暗黑模式切换动画 */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 1s;
+  animation-duration: 0.4s;
   animation-timing-function: ease-in-out;
 }
 
-/* 圆形擦除过渡动画 - 从中心向外扩展 */
-@keyframes reveal-from-center {
+/* 亮度渐变过渡 - 类似 macOS 效果 */
+@keyframes dark-mode-fade-in {
   from {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(1);
   }
   to {
-    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(1);
   }
 }
 
-/* 旧状态：反向播放（从完整到消失） */
-::view-transition-old(root) {
-  animation-name: reveal-from-center-reverse;
-}
-
-/* 新状态：正向播放（从出现到完整） */
-::view-transition-new(root) {
-  animation-name: reveal-from-center;
-}
-
-@keyframes reveal-from-center {
+@keyframes dark-mode-fade-out {
   from {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(1);
   }
   to {
-    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(0.6);
   }
 }
 
-@keyframes reveal-from-center-reverse {
+/* 新状态（暗色）：从较亮状态渐入 */
+html.dark::view-transition-new(root) {
+  animation-name: dark-mode-brightness-in;
+}
+
+/* 旧状态（亮色）：渐出时变暗 */
+html:not(.dark)::view-transition-new(root),
+html.dark::view-transition-old(root) {
+  animation-name: dark-mode-brightness-out;
+}
+
+@keyframes dark-mode-brightness-in {
   from {
-    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(1.2);
   }
   to {
-    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+    filter: brightness(1);
+  }
+}
+
+@keyframes dark-mode-brightness-out {
+  from {
+    filter: brightness(1);
+  }
+  to {
+    filter: brightness(0.7);
   }
 }
 
