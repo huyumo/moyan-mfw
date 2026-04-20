@@ -1,41 +1,52 @@
 /* View Transitions API - 暗黑模式切换动画 */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation-duration: 0.3s;
-  animation-timing-function: ease;
+  animation-duration: 1s;
+  animation-timing-function: ease-in-out;
 }
 
-/* 暗黑模式切换时的淡入淡出效果 */
+/* 圆形擦除过渡动画 - 从中心向外扩展 */
+@keyframes reveal-from-center {
+  from {
+    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+  to {
+    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
+  }
+}
+
+/* 旧状态：反向播放（从完整到消失） */
 ::view-transition-old(root) {
-  animation-name: fade-out;
+  animation-name: reveal-from-center-reverse;
 }
 
+/* 新状态：正向播放（从出现到完整） */
 ::view-transition-new(root) {
-  animation-name: fade-in;
+  animation-name: reveal-from-center;
 }
 
-@keyframes fade-in {
+@keyframes reveal-from-center {
   from {
-    opacity: 0;
+    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
   }
   to {
-    opacity: 1;
+    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
   }
 }
 
-@keyframes fade-out {
+@keyframes reveal-from-center-reverse {
   from {
-    opacity: 1;
+    clip-path: circle(150% at var(--view-x, 50%) var(--view-y, 50%));
   }
   to {
-    opacity: 0;
+    clip-path: circle(0% at var(--view-x, 50%) var(--view-y, 50%));
   }
 }
 
 html {
   transition:
-    background-color 0.3s ease,
-    color 0.3s ease;
+    background-color 1s ease,
+    color 1s ease;
 }
 
 html.dark {
