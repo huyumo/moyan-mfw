@@ -1,0 +1,128 @@
+/**
+ * @fileoverview 渐变主题样式
+ * @description 当启用渐变主题时，将渐变应用到 header 等背景元素
+ */
+
+.mfw-theme-gradient {
+  .mfw-admin-header {
+    background: var(--mfw-gradient-primary);
+  }
+
+  .mfw-admin-brand-logo {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.16));
+  }
+
+  .mfw-admin-menu-toggle,
+  .mfw-admin-collapse-toggle {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.16));
+  }
+
+  .mfw-admin-avatar-trigger {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+    border-color: rgba(255, 255, 255, 0.36);
+  }
+
+  .mfw-admin-primary-link:hover,
+  .mfw-admin-primary-link.is-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.12));
+  }
+
+  .mfw-admin-top-link:hover,
+  .mfw-admin-top-link.router-link-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.12));
+  }
+
+  .mfw-admin-menu {
+    .el-menu-item,
+    .el-sub-menu__title {
+      &:hover {
+        background-color: color-mix(in srgb, var(--el-color-primary) 8%, var(--el-bg-color) 92%);
+      }
+    }
+
+    .el-menu-item.is-active {
+      background: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color) 86%);
+      color: var(--el-color-primary);
+      font-weight: 600;
+    }
+
+    .el-sub-menu.is-active > .el-sub-menu__title {
+      background-color: color-mix(in srgb, var(--el-color-primary) 6%, var(--el-bg-color) 94%);
+      color: var(--el-color-primary);
+    }
+  }
+
+  .el-tree {
+    .el-tree-node__content {
+      &:hover {
+        background-color: color-mix(in srgb, var(--el-color-primary) 8%, var(--el-bg-color) 92%);
+      }
+    }
+
+    .el-tree-node.is-current > .el-tree-node__content {
+      background-color: color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color) 86%);
+      color: var(--el-color-primary);
+      font-weight: 600;
+    }
+  }
+
+  .mfw-admin-theme-card.is-active {
+    border-color: var(--el-color-primary);
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--el-color-primary) 8%, var(--el-bg-color)) 0%, 
+      color-mix(in srgb, var(--el-color-primary) 14%, var(--el-bg-color)) 100%
+    );
+  }
+
+  .mfw-admin-layout-mode-card.is-active {
+    border-color: var(--el-color-primary);
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--el-color-primary-light-9) 50%, var(--el-bg-color)) 0%, 
+      color-mix(in srgb, var(--el-color-primary-light-9) 70%, var(--el-bg-color)) 100%
+    );
+  }
+
+  .mfw-admin-switch-item:hover {
+    background: linear-gradient(135deg, 
+      color-mix(in srgb, var(--el-color-primary-light-9) 30%, var(--el-bg-color-page)) 0%, 
+      color-mix(in srgb, var(--el-color-primary-light-9) 15%, var(--el-bg-color-page)) 100%
+    );
+    border-color: var(--el-color-primary-light-5);
+  }
+}
+
+html.dark.mfw-theme-gradient {
+  .mfw-admin-header {
+    background: var(--mfw-gradient-primary);
+    filter: brightness(0.55) saturate(0.85);
+  }
+
+  .mfw-admin-brand-logo {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  }
+
+  .mfw-admin-menu-toggle,
+  .mfw-admin-collapse-toggle {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.08));
+  }
+
+  .mfw-admin-avatar-trigger {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .mfw-admin-primary-link:hover,
+  .mfw-admin-primary-link.is-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  }
+
+  .mfw-admin-top-link:hover,
+  .mfw-admin-top-link.router-link-active {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+  }
+
+  .mfw-admin-menu .el-menu-item.is-active {
+    background: color-mix(in srgb, var(--el-color-primary) 15%, var(--el-bg-color) 85%);
+    color: #ffffff;
+  }
+}
