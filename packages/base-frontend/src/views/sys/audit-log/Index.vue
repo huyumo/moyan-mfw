@@ -139,6 +139,6 @@ const handleViewDetail = async (row: AuditLogResponseDto) => {
 <style scoped lang="scss">
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 0px;
 }
 </style>

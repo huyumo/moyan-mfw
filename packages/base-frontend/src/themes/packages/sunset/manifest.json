@@ -1,0 +1,13 @@
+{
+  "name": "sunset",
+  "label": "落日橙",
+  "description": "橙红渐变主题，温暖活力",
+  "colors": {
+    "primary": "#f97316",
+    "success": "#22c55e",
+    "warning": "#eab308",
+    "danger": "#dc2626",
+    "info": "#78716c",
+    "gradient": "linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #dc2626 100%)"
+  }
+}

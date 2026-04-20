@@ -28,13 +28,13 @@
   .action-buttons {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0px;
 
     .el-button.is-link {
       --el-button-text-color: var(--el-color-primary, #409eff);
       --el-button-hover-link-text-color: var(--el-color-primary-light-3, #66b1ff);
       --el-button-active-link-text-color: var(--el-color-primary-dark-2, #337ecc);
-      padding: 4px 8px;
+      padding: 4px 4px;
       border-radius: var(--mfw-radius-sm, 4px);
       font-size: 13px;
       font-weight: 500;

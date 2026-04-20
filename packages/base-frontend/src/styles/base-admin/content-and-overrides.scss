@@ -77,13 +77,6 @@
 }
 
 /**
- * 统一按钮间距 - 使用 gap 替代 margin-left
- */
-.el-button + .el-button {
-  margin-left: 0;
-}
-
-/**
  * 统一卡片圆角
  */
 .el-card {

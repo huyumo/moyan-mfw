@@ -58,4 +58,30 @@ html.dark {
 
   --el-mask-color: rgba(0, 0, 0, 0.8);
   --el-mask-color-extra-light: rgba(0, 0, 0, 0.3);
+
+  --el-menu-bg-color: var(--el-bg-color);
+  --el-menu-hover-bg-color: #262640;
+  --el-menu-text-color: var(--el-text-color-primary);
+  --el-menu-active-color: var(--el-color-primary);
+  --el-menu-item-hover-fill: #262640;
+  --el-menu-item-active-bg-color: color-mix(in srgb, var(--el-color-primary) 12%, var(--el-bg-color) 88%);
+  --el-menu-item-active-text-color: #ffffff;
+
+  --el-tree-node-hover-bg-color: #262640;
+  --el-tree-node-active-bg-color: color-mix(in srgb, var(--el-color-primary) 10%, var(--el-bg-color) 90%);
+  --el-tree-node-active-text-color: #ffffff;
+
+  --el-button-hover-bg-color: #262640;
+  --el-button-hover-border-color: #475569;
+  --el-button-active-bg-color: #1e293b;
+  --el-button-active-border-color: #334155;
+  --el-button-disabled-bg-color: #1e293b;
+  --el-button-disabled-border-color: #334155;
+  --el-button-disabled-text-color: rgba(255, 255, 255, 0.5);
+
+  --el-button-danger-hover-bg-color: color-mix(in srgb, var(--el-color-danger) 15%, var(--el-bg-color) 85%);
+  --el-button-danger-hover-border-color: var(--el-color-danger-light-3);
+  --el-button-danger-hover-text-color: #ffffff;
+  --el-button-danger-active-bg-color: color-mix(in srgb, var(--el-color-danger) 20%, var(--el-bg-color) 80%);
+  --el-button-danger-active-text-color: #ffffff;
 }

@@ -511,9 +511,9 @@ defineExpose({
       gap: 8px;
       margin-bottom: 12px;
       color: var(--el-text-color-regular);
-
+      font-size: 13px;
       .el-icon {
-        font-size: 16px;
+        font-size: 14px;
         color: var(--el-color-primary);
       }
     }

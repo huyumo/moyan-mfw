@@ -193,7 +193,7 @@ export function useAdminLayout(): any {
     if (!theme) {
       return 'var(--el-color-primary)';
     }
-    return theme.colors.primary;
+    return theme.colors.gradient || theme.colors.primary;
   }
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', () => {

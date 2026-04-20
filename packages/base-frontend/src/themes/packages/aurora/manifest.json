@@ -1,0 +1,13 @@
+{
+  "name": "aurora",
+  "label": "极光紫",
+  "description": "蓝紫渐变主题，神秘优雅",
+  "colors": {
+    "primary": "#7c3aed",
+    "success": "#10b981",
+    "warning": "#f59e0b",
+    "danger": "#ef4444",
+    "info": "#6b7280",
+    "gradient": "linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ec4899 100%)"
+  }
+}

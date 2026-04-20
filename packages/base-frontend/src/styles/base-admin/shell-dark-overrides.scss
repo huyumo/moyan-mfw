@@ -1,0 +1,120 @@
+/**
+ * @fileoverview 暗黑模式组件样式覆盖
+ * @description 解决暗黑模式下菜单、按钮、树等组件 hover/active 状态的颜色对比度问题
+ * WCAG AA+ 无障碍兼容
+ */
+
+html.dark {
+  .mfw-admin-sidebar {
+    background: var(--el-bg-color);
+    border-right-color: var(--el-border-color);
+  }
+
+  .mfw-admin-menu {
+    background: transparent;
+
+    .el-menu-item,
+    .el-sub-menu__title {
+      color: var(--el-text-color-primary);
+
+      &:hover {
+        background-color: var(--el-menu-hover-bg-color);
+      }
+    }
+
+    .el-menu-item.is-active {
+      background: var(--el-menu-item-active-bg-color);
+      color: var(--el-menu-item-active-text-color);
+      font-weight: 600;
+    }
+
+    .el-sub-menu.is-active > .el-sub-menu__title {
+      background-color: var(--el-menu-hover-bg-color);
+      color: var(--el-color-primary-light-3);
+    }
+  }
+
+  .mfw-admin-sidebar-footer {
+    border-top-color: var(--el-border-color);
+    color: var(--el-text-color-secondary);
+  }
+
+  .el-tree {
+    background: transparent;
+
+    .el-tree-node__content {
+      &:hover {
+        background-color: var(--el-tree-node-hover-bg-color);
+      }
+    }
+
+    .el-tree-node.is-current > .el-tree-node__content {
+      background-color: var(--el-tree-node-active-bg-color);
+      color: var(--el-tree-node-active-text-color);
+      font-weight: 600;
+    }
+  }
+
+  .el-button {
+    &:hover {
+      background-color: var(--el-button-hover-bg-color);
+      border-color: var(--el-button-hover-border-color);
+    }
+
+    &:active {
+      background-color: var(--el-button-active-bg-color);
+      border-color: var(--el-button-active-border-color);
+    }
+
+    &.is-disabled {
+      background-color: var(--el-button-disabled-bg-color);
+      border-color: var(--el-button-disabled-border-color);
+      color: var(--el-button-disabled-text-color);
+    }
+  }
+
+  .el-button--danger {
+    &.is-plain {
+      &:hover {
+        background-color: var(--el-button-danger-hover-bg-color);
+        border-color: var(--el-button-danger-hover-border-color);
+        color: var(--el-button-danger-hover-text-color);
+      }
+
+      &:active {
+        background-color: var(--el-button-danger-active-bg-color);
+        color: var(--el-button-danger-active-text-color);
+      }
+    }
+
+    &:not(.is-plain) {
+      --el-button-text-color: #ffffff;
+      --el-button-bg-color: color-mix(in srgb, var(--el-color-danger) 25%, var(--el-bg-color) 75%);
+      --el-button-border-color: color-mix(in srgb, var(--el-color-danger) 40%, transparent);
+      background-color: var(--el-button-bg-color);
+      border-color: var(--el-button-border-color);
+      color: var(--el-button-text-color);
+
+      &:hover:not(:disabled) {
+        --el-button-hover-bg-color: color-mix(in srgb, var(--el-color-danger) 35%, var(--el-bg-color) 65%);
+        --el-button-hover-border-color: color-mix(in srgb, var(--el-color-danger) 55%, transparent);
+        background-color: var(--el-button-hover-bg-color);
+        border-color: var(--el-button-hover-border-color);
+      }
+
+      &:active:not(:disabled) {
+        --el-button-active-bg-color: color-mix(in srgb, var(--el-color-danger) 45%, var(--el-bg-color) 55%);
+        --el-button-active-border-color: color-mix(in srgb, var(--el-color-danger) 65%, transparent);
+        background-color: var(--el-button-active-bg-color);
+        border-color: var(--el-button-active-border-color);
+      }
+    }
+  }
+}
+
+html.dark .mfw-admin-shell.is-compact .mfw-admin-menu {
+  .el-sub-menu.is-active > .el-sub-menu__title {
+    background-color: var(--el-menu-hover-bg-color);
+    color: var(--el-color-primary-light-3);
+  }
+}
