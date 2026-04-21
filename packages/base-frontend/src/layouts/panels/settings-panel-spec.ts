@@ -11,7 +11,7 @@ import type { LayoutStyleConfig } from '../../types/layout-types';
 vi.mock('../../composables/use-color-mode', () => ({
   useColorMode: () => ({
     isDark: { value: false },
-    colorMode: { value: 'system' },
+    colorMode: { value: 'light' },
     setColorMode: vi.fn(),
   }),
 }));
@@ -53,7 +53,7 @@ const styleConfig: LayoutStyleConfig = {
   showTabs: true,
   cardRadius: 12,
   buttonRadius: 6,
-  colorMode: 'system',
+  colorMode: 'light',
   themePackage: 'default',
 };
 

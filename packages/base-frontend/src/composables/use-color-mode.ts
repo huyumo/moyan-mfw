@@ -1,12 +1,12 @@
 /**
  * @fileoverview 颜色模式切换组合式函数。
- * 基于 VueUse useDark 实现，支持 light/dark/system 三种模式。
+ * 基于 VueUse useDark 实现，支持 light/dark 两种模式。
  * 使用 View Transitions API 实现平滑过渡动画。
  * 持久化统一使用 layout-store 的 storage key。
  */
 
 import { usePreferredDark } from '@vueuse/core';
-import { watch, computed, ref } from 'vue';
+import { watch, computed } from 'vue';
 import { useLayoutStore } from '../store/layout-store';
 import type { ColorMode } from '../types/color-mode-types';
 
@@ -70,69 +70,43 @@ function applyDarkMode(isDark: boolean) {
   }
 }
 
-function resolveIsDark(mode: ColorMode, prefersDark: boolean): boolean {
-  if (mode === 'system') {
-    return prefersDark;
-  }
-  return mode === 'dark';
-}
+let domWatcherInstalled = false;
 
-let systemDarkWatcherInstalled = false;
-
-function ensureSystemDarkWatcher() {
-  if (systemDarkWatcherInstalled) return;
-  systemDarkWatcherInstalled = true;
+function ensureDomWatcherInstalled() {
+  if (domWatcherInstalled) return;
+  domWatcherInstalled = true;
 
   const layoutStore = useLayoutStore();
-  const prefersDark = usePreferredDark();
 
-  watch(prefersDark, (newValue) => {
-    if (layoutStore.styleConfig.colorMode === 'system') {
+  watch(
+    () => layoutStore.styleConfig.colorMode,
+    (mode) => {
+      const isDark = mode === 'dark';
       withViewTransition(() => {
-        applyDarkMode(newValue);
+        applyDarkMode(isDark);
       });
-    }
-  });
+    },
+    { flush: 'sync' }
+  );
 }
 
 export function useColorMode() {
   const layoutStore = useLayoutStore();
   const prefersDark = usePreferredDark();
 
-  const isDark = ref<boolean>(false);
-  const initialized = ref(false);
-
   const colorMode = computed<ColorMode>(() => layoutStore.styleConfig.colorMode);
+  const isDark = computed<boolean>(() => colorMode.value === 'dark');
 
   const initColorMode = () => {
-    if (initialized.value) {
-      return;
-    }
     const savedMode = layoutStore.styleConfig.colorMode;
-    const resolved = resolveIsDark(savedMode, prefersDark.value);
-    isDark.value = resolved;
+    const resolved = savedMode === 'dark';
     applyDarkMode(resolved);
-    initialized.value = true;
-    ensureSystemDarkWatcher();
+    ensureDomWatcherInstalled();
   };
 
   const setColorMode = (mode: ColorMode, options?: { persist?: boolean }) => {
     const shouldPersist = options?.persist !== false;
     layoutStore.styleConfig.colorMode = mode;
-
-    const resolved = resolveIsDark(mode, prefersDark.value);
-
-    if (!initialized.value) {
-      isDark.value = resolved;
-      applyDarkMode(resolved);
-      initialized.value = true;
-      ensureSystemDarkWatcher();
-    } else {
-      withViewTransition(() => {
-        isDark.value = resolved;
-        applyDarkMode(resolved);
-      });
-    }
 
     if (shouldPersist) {
       layoutStore.persistPreferences();
@@ -140,14 +114,7 @@ export function useColorMode() {
   };
 
   const toggleDark = () => {
-    const newIsDark = !isDark.value;
-    const newMode: ColorMode = newIsDark ? 'dark' : 'light';
-
-    withViewTransition(() => {
-      isDark.value = newIsDark;
-      applyDarkMode(newIsDark);
-    });
-
+    const newMode: ColorMode = isDark.value ? 'light' : 'dark';
     layoutStore.styleConfig.colorMode = newMode;
     layoutStore.persistPreferences();
   };

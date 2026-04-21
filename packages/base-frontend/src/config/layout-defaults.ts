@@ -19,7 +19,7 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   showTabs: true,
   cardRadius: 8,
   buttonRadius: 6,
-  colorMode: 'system',
+  colorMode: 'light',
   themePackage: 'default',
 };
 

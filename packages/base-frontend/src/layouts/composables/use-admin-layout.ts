@@ -8,7 +8,8 @@ import { ApiAuthLogout } from '../../apis/sys';
 import { useLayoutStore } from '../../store/layout-store';
 import { useAuthStore } from '../../store/auth-store';
 import { resetRouteGuard } from '../../router/guard';
-import { getAvailableThemes, themeRegistry } from '../../themes';
+import { useColorMode, useThemeSwitch } from '../../composables';
+import { getAvailableThemes, themeRegistry, getTheme } from '../../themes';
 import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
 
 type CssVarMapping = {
@@ -253,6 +254,10 @@ export function useAdminLayout(): any {
       if (settingsSnapshot.value) {
         layoutStore.patchStyleConfig(settingsSnapshot.value, { persist: false });
         syncCssVars(settingsSnapshot.value);
+        const { setColorMode } = useColorMode();
+        setColorMode(settingsSnapshot.value.colorMode, { persist: false });
+        const { setTheme } = useThemeSwitch();
+        setTheme(settingsSnapshot.value.themePackage);
       }
       settingsSnapshot.value = null;
     },

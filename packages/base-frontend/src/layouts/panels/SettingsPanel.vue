@@ -86,13 +86,6 @@
                     @change="handleDarkModeToggle"
                   />
                 </div>
-                <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">{{ text.followSystem }}</span>
-                  <el-switch
-                    :model-value="colorMode === 'system'"
-                    @change="handleFollowSystemToggle"
-                  />
-                </div>
               </div>
             </div>
           </el-tab-pane>
@@ -225,12 +218,6 @@ function handleThemeSelect(themeName: string) {
 
 function handleDarkModeToggle(value: boolean) {
   const newMode = value ? 'dark' : 'light';
-  setColorMode(newMode, { persist: false });
-  draftStyleConfig.colorMode = newMode;
-}
-
-function handleFollowSystemToggle(value: boolean) {
-  const newMode = value ? 'system' : 'light';
   setColorMode(newMode, { persist: false });
   draftStyleConfig.colorMode = newMode;
 }

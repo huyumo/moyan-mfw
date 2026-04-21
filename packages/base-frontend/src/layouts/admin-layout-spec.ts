@@ -19,7 +19,7 @@ vi.mock('./composables/use-admin-layout', () => ({
         compact: false,
         showBreadcrumb: true,
         showTabs: true,
-        colorMode: 'system',
+        colorMode: 'light',
         themePackage: 'default',
       },
       showSidebar: true,
@@ -70,7 +70,7 @@ vi.mock('./composables/use-admin-layout', () => ({
 vi.mock('./composables/use-color-mode', () => ({
   useColorMode: () => ({
     isDark: { value: false },
-    colorMode: { value: 'system' },
+    colorMode: { value: 'light' },
     setColorMode: vi.fn(),
   }),
 }));
