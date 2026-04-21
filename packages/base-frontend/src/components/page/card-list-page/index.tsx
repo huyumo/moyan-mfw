@@ -237,7 +237,7 @@ export default defineComponent({
               pageSize={pagination.value.pageSize}
               pageSizes={pagination.value.pageSizeOptions}
               total={pagination.value.total}
-              layout="total, sizes, prev, pager, next, jumper"
+              layout= 'sizes, total, prev, pager, next'
               onCurrent-change={handlePageChange}
               onSize-change={handleSizeChange}
             />
