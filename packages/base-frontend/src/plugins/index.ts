@@ -5,16 +5,15 @@
 
 import type { App } from 'vue';
 import ElementPlus from 'element-plus';
+import zhCn from 'element-plus/es/locale/lang/zh-cn';
 import { MoAxios } from './api';
 
 /**
  * 安装所有插件
  */
 export function setupPlugins(app: App) {
-  // Element Plus
-  app.use(ElementPlus);
+  app.use(ElementPlus, { locale: zhCn });
 
-  // moyan-api 适配器
   app.use(MoAxios);
 }
 

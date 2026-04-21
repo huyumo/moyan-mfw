@@ -354,7 +354,6 @@ export default defineComponent({
             'onUpdate:pageSize': (val: number) => { pagination.value.pageSize = val; },
             pageSizes: pagination.value.pageSizeOptions,
             background: true,
-            small: true,
             total: pagination.value.total,
             layout: 'sizes, total, prev, pager, next',
             onSizeChange: handlePageChange,
