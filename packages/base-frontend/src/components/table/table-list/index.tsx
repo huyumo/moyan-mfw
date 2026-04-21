@@ -9,12 +9,13 @@ import {
   defineComponent,
   ref,
   computed,
+  withDirectives,
   type PropType
 } from 'vue';
 import {
   ElTable,
   ElTableColumn,
-  ElSkeleton
+  ElLoading
 } from 'element-plus';
 import type {  MfwTableListInstance, TableColumnConfig, ActionColumnConfig } from './types';
 
@@ -132,41 +133,38 @@ export default defineComponent({
       });
     };
 
-    return () => (
+    return () => withDirectives(
       <div class="mfw-table-list">
-        {props.loading ? (
-          <ElSkeleton animated rows={10} />
-        ) : (
-          <ElTable
-            ref={tableRef}
-            {...props.elProps}
-            data={tableData.value}
-            border={props.border}
-            stripe={props.stripe}
-            on-selection-change={handleSelectionChange}
-            on-sort-change={handleSortChange}
-          >
-            {props.selection && (
-              <ElTableColumn type="selection" width={55} />
-            )}
-            {props.index && (
-              <ElTableColumn type="index" label="序号" width={60} />
-            )}
-            {renderColumns(props.columns || [])}
-            {props.actionColumn && (
-              <ElTableColumn
-                label={props.actionColumn.label || '操作'}
-                width={props.actionColumn.width}
-                fixed={props.actionColumn.fixed}
-                align="center"
-              >
-                {(scope: any) => props.actionColumn?.render(scope)}
-              </ElTableColumn>
-            )}
-            {slots.default?.()}
-          </ElTable>
-        )}
-      </div>
+        <ElTable
+          ref={tableRef}
+          {...props.elProps}
+          data={tableData.value}
+          border={props.border}
+          stripe={props.stripe}
+          on-selection-change={handleSelectionChange}
+          on-sort-change={handleSortChange}
+        >
+          {props.selection && (
+            <ElTableColumn type="selection" width={55} />
+          )}
+          {props.index && (
+            <ElTableColumn type="index" label="序号" width={60} />
+          )}
+          {renderColumns(props.columns || [])}
+          {props.actionColumn && (
+            <ElTableColumn
+              label={props.actionColumn.label || '操作'}
+              width={props.actionColumn.width}
+              fixed={props.actionColumn.fixed}
+              align="center"
+            >
+              {(scope: any) => props.actionColumn?.render(scope)}
+            </ElTableColumn>
+          )}
+          {slots.default?.()}
+        </ElTable>
+      </div>,
+      [[ElLoading.directive, props.loading, { text: '加载中...' }]]
     );
   }
 });

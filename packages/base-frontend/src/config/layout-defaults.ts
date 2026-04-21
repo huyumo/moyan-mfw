@@ -15,7 +15,6 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   contentMaxWidth: 1360,
   compact: false,
   fixedHeader: true,
-  showBreadcrumb: true,
   showTabs: true,
   cardRadius: 8,
   buttonRadius: 6,

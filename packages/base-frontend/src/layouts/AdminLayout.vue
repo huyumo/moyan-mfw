@@ -47,9 +47,6 @@
 
       <MainPanel
         v-model="activeTabPath"
-        :show-breadcrumb="layoutStore.styleConfig.showBreadcrumb"
-        :home-path="layoutStore.navigation.homePath"
-        :current-title="currentTitle"
         :show-tabs="layoutStore.styleConfig.showTabs"
         :visited-tabs="layoutStore.visitedTabs"
         @tab-remove="removeTab"
@@ -107,7 +104,6 @@ const {
   layoutModeOptions,
   themeOptions,
   shellClasses,
-  currentTitle,
   topLevelMenus,
   activeTopMenuKey,
   showPrimaryTopMenus,

@@ -350,3 +350,49 @@ html.dark .mfw-floating-card {
     transform: none;
   }
 }
+
+/* ============================================
+   9. Element Plus Table 全局配置
+   ============================================ */
+
+.el-table {
+  .el-table__cell {
+    text-align: center;
+  }
+
+  &::before,
+  &::after {
+    display: none;
+  }
+
+  .el-table__inner-wrapper::before {
+    display: none;
+  }
+
+  .el-table__border-left-patch {
+    display: none !important;
+  }
+
+  th.el-table__cell,
+  td.el-table__cell {
+    border-bottom: none;
+  }
+
+  .el-table__header-wrapper {
+    th.el-table__cell {
+      border-right: none;
+    }
+  }
+
+  .el-table__body-wrapper {
+    td.el-table__cell {
+      border-right: none;
+    }
+  }
+
+  tr.el-table__row {
+    td.el-table__cell:first-child {
+      border-left: none;
+    }
+  }
+}

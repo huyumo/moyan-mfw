@@ -99,10 +99,6 @@
                   <span class="mfw-admin-switch-label">{{ text.showTabs }}</span
                   ><el-switch v-model="draftStyleConfig.showTabs" />
                 </div>
-                <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">{{ text.showBreadcrumb }}</span
-                  ><el-switch v-model="draftStyleConfig.showBreadcrumb" />
-                </div>
                 <div v-if="showSidebarInDraft" class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.compactSidebar }}</span
                   ><el-switch v-model="draftStyleConfig.compact" />

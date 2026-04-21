@@ -8,6 +8,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { ApiCall, ApiEntity } from 'moyan-api';
 import { ApiEvents } from 'moyan-api/dist/lib/base';
 import type { App } from 'vue';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../store/auth-store';
 
 const AXIOS = Symbol('mo#Api#axios');
 
@@ -61,12 +62,14 @@ export class MoAxios {
 
   /** 初始化拦截器 */
   initInterceptors() {
-    // 响应拦截器
     this.$axios.interceptors.response.use(
       (res) => res.data,
       async (error) => {
         if (error?.response) {
           switch (error.response.status) {
+            case 401:
+              error.message = '登录已过期，请重新登录';
+              break;
             case 502:
               error.message = '网关错误';
               break;
@@ -217,13 +220,16 @@ ApiCall.emitter.on(ApiEvents.HintFail, (apiCall: ApiCall<any, any>) => {
  * 未授权事件 - 跳转登录页
  */
 ApiCall.emitter.on(ApiEvents.Unauthorized, () => {
-  // 清除登录状态
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem(CURRENT_APP_KEY);
   localStorage.removeItem('access_token');
   sessionStorage.removeItem('access_token');
 
-  // 跳转登录页
   if (MoAxios.app) {
     const router = MoAxios.app.config.globalProperties.$router;
     router?.push('/login');
+  } else {
+    window.location.href = '/login';
   }
 });

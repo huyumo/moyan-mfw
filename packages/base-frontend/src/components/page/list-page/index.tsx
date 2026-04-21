@@ -346,11 +346,25 @@ export default defineComponent({
 
       // 表格区域
       const renderTableArea = () => {
+        const paginationNode = props.showPagination ? h('div', { class: 'mfw-list-page__pagination' }, [
+          h(ElPagination, {
+            currentPage: pagination.value.currentPage,
+            'onUpdate:currentPage': (val: number) => { pagination.value.currentPage = val; },
+            pageSize: pagination.value.pageSize,
+            'onUpdate:pageSize': (val: number) => { pagination.value.pageSize = val; },
+            pageSizes: pagination.value.pageSizeOptions,
+            background: true,
+            small: true,
+            total: pagination.value.total,
+            layout: 'sizes, total, prev, pager, next',
+            onSizeChange: handlePageChange,
+            onCurrentChange: handlePageChange
+          })
+        ]) : null;
+
         return h('div', { class: 'mfw-list-page__table' }, [
-          // 表格头部插槽
           slots['table-header']?.(),
 
-          // 表格
           h(MfwTableList, {
             ref: tableRef,
             data: tableData.value ?? [],
@@ -376,36 +390,15 @@ export default defineComponent({
             empty: () => slots.empty?.() || h(ElEmpty, { description: props.emptyText })
           }),
 
-          // 表格底部插槽
-          slots['table-footer']?.()
-        ]);
-      };
+          slots['table-footer']?.(),
 
-      // 分页区域
-      const renderPagination = () => {
-        if (!props.showPagination) {
-          return null;
-        }
-
-        return h('div', { class: 'mfw-list-page__pagination' }, [
-          h(ElPagination, {
-            currentPage: pagination.value.currentPage,
-            'onUpdate:currentPage': (val: number) => { pagination.value.currentPage = val; },
-            pageSize: pagination.value.pageSize,
-            'onUpdate:pageSize': (val: number) => { pagination.value.pageSize = val; },
-            pageSizes: pagination.value.pageSizeOptions,
-            total: pagination.value.total,
-            layout: 'total, sizes, prev, pager, next, jumper',
-            onSizeChange: handlePageChange,
-            onCurrentChange: handlePageChange
-          })
+          paginationNode
         ]);
       };
 
       return h('div', { class: 'mfw-list-page' }, [
         renderSearchPanel(),
-        renderTableArea(),
-        renderPagination()
+        renderTableArea()
       ]);
     };
   }

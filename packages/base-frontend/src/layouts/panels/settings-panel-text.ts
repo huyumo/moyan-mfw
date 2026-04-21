@@ -23,7 +23,6 @@ export const settingsPanelText = {
   shortcutSettings: '\u6253\u5f00\u8bbe\u7f6e\u9762\u677f',
   featureToggle: '\u529f\u80fd\u5f00\u5173',
   showTabs: '\u663e\u793a\u6807\u7b7e\u9875',
-  showBreadcrumb: '\u663e\u793a\u9762\u5305\u5c51',
   compactSidebar: '\u7d27\u51d1\u4fa7\u8fb9\u680f',
   fixedHeader: '\u56fa\u5b9a\u9876\u680f',
   cancel: '\u53d6\u6d88',

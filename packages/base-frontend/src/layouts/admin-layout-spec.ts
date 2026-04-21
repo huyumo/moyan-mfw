@@ -17,7 +17,6 @@ vi.mock('./composables/use-admin-layout', () => ({
       styleConfig: {
         fixedHeader: true,
         compact: false,
-        showBreadcrumb: true,
         showTabs: true,
         colorMode: 'light',
         themePackage: 'default',
@@ -44,7 +43,6 @@ vi.mock('./composables/use-admin-layout', () => ({
       { label: '顶部菜单', value: 'top' },
     ],
     shellClasses: computed(() => ({})),
-    currentTitle: computed(() => '首页'),
     topLevelMenus: computed(() => []),
     activeTopMenuKey: computed(() => ''),
     showPrimaryTopMenus: computed(() => false),
