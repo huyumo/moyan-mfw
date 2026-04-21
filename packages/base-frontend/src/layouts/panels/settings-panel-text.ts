@@ -33,6 +33,5 @@ export const settingsPanelText = {
   themeSelection: '\u4e3b\u9898\u9009\u62e9',
   colorMode: '\u989c\u8272\u6a21\u5f0f',
   darkMode: '\u6df1\u8272\u6a21\u5f0f',
-  followSystem: '\u8ddf\u968f\u7cfb\u7edf',
   lightMode: '\u6d45\u8272\u6a21\u5f0f',
 } as const;
