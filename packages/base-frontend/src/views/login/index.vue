@@ -1,88 +1,73 @@
 <!--
 /**
- * @fileoverview 登录页面组件。
+ * @fileoverview 登录页面组件 - 传统后台管理风格。
+ * 
+ * 设计风格：传统后台式（参考 Ant Design Pro / Arco Design Pro）
+ * - 居中表单卡片，无左右分栏
+ * - 简洁功能导向，无多余装饰
+ * - 紧凑布局，专业感强
  */
 -->
 <template>
   <div class="mfw-login-page">
-    <div class="mfw-login-layout">
-      <aside class="mfw-login-layout__aside">
-        <component :is="asideExtensionComponent" v-if="asideExtensionComponent" />
-        <template v-else>
-          <div class="mfw-login-brand-card">
-            <p class="mfw-login-brand-card__badge">MFW BASE FRONTEND</p>
-            <h2>Unified Admin Sign-In</h2>
-            <p>
-              Supports future expansion for SMS login, QR login, and third-party SSO while keeping a consistent visual
-              experience.
-            </p>
-            <ul>
-              <li>Extensible login methods region</li>
-              <li>Extensible side branding region</li>
-              <li>Extensible footer helper region</li>
-            </ul>
-          </div>
-        </template>
-      </aside>
+    <div class="mfw-login-card">
+      <div class="mfw-login-logo">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="10" fill="#409eff"/>
+          <path d="M24 12L32 20V28L24 36L16 28V20L24 12Z" fill="white"/>
+          <circle cx="24" cy="24" r="4" fill="#e6f7ff"/>
+        </svg>
+      </div>
 
-      <section class="mfw-login-layout__panel">
-        <div class="mfw-login-header">
-          <h1>Moyan Admin Console</h1>
-          <p>Frontend foundation for admin business applications.</p>
-        </div>
+      <h1 class="mfw-login-title">{{ layoutStore.navigation.brandName || '墨焱管理后台' }}</h1>
 
-        <div class="mfw-login-methods">
-          <component :is="methodsExtensionComponent" v-if="methodsExtensionComponent" />
-          <p v-else class="mfw-login-extension-empty">No extra login methods configured.</p>
-        </div>
+      <div class="mfw-login-methods">
+        <component :is="methodsExtensionComponent" v-if="methodsExtensionComponent" />
+      </div>
 
-        <el-form ref="formRef" :model="form" :rules="rules" label-position="top" @submit.prevent="submit">
-          <el-form-item label="Username" prop="username">
-            <el-input
-              ref="usernameInputRef"
-              v-model="form.username"
-              placeholder="Enter username"
-              size="large"
-              clearable
-              :disabled="loading"
-              aria-label="Username"
-              @keyup.enter="submit"
-            />
-          </el-form-item>
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="submit">
+        <el-form-item prop="username">
+          <el-input
+            ref="usernameInputRef"
+            v-model="form.username"
+            placeholder="请输入用户名"
+            clearable
+            :disabled="loading"
+            aria-label="用户名"
+            @keyup.enter="submit"
+          />
+        </el-form-item>
 
-          <el-form-item label="Password" prop="password">
-            <el-input
-              ref="passwordInputRef"
-              v-model="form.password"
-              show-password
-              placeholder="Enter password"
-              size="large"
-              :disabled="loading"
-              aria-label="Password"
-              @keyup.enter="submit"
-            />
-          </el-form-item>
+        <el-form-item prop="password">
+          <el-input
+            ref="passwordInputRef"
+            v-model="form.password"
+            show-password
+            placeholder="请输入密码"
+            :disabled="loading"
+            aria-label="密码"
+            @keyup.enter="submit"
+          />
+        </el-form-item>
 
-          <el-form-item>
-            <el-button
-              type="primary"
-              class="mfw-login-submit"
-              size="large"
-              native-type="submit"
-              :loading="loading"
-              :disabled="loading"
-              aria-label="Submit login"
-            >
-              Sign In
-            </el-button>
-          </el-form-item>
-        </el-form>
+        <el-form-item>
+          <el-button
+            type="primary"
+            class="mfw-login-submit"
+            native-type="submit"
+            :loading="loading"
+            :disabled="loading"
+            aria-label="登录"
+          >
+            {{ loading ? '登录中...' : '登 录' }}
+          </el-button>
+        </el-form-item>
+      </el-form>
 
-        <div class="mfw-login-footer">
-          <component :is="footerExtensionComponent" v-if="footerExtensionComponent" />
-          <p v-else class="mfw-login-tip">Demo login mode: any valid values can enter the dashboard.</p>
-        </div>
-      </section>
+      <div class="mfw-login-footer">
+        <component :is="footerExtensionComponent" v-if="footerExtensionComponent" />
+        <p v-else class="mfw-login-tip">演示模式：任意账号密码即可登录</p>
+      </div>
     </div>
   </div>
 </template>
@@ -97,17 +82,12 @@ import { MfwPopup } from '../../components/feedback/popup';
 import AppSelectorDialog from '../../components/business/app-selector-dialog/Index.vue';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
-/** 登录表单状态。 */
 interface LoginFormState {
-  /** 用户名。 */
   username: string;
-  /** 密码。 */
   password: string;
 }
 
-/** 输入框聚焦能力。 */
 interface InputFocusInstance {
-  /** 聚焦输入框。 */
   focus: () => void;
 }
 
@@ -135,16 +115,15 @@ const rules: FormRules<LoginFormState> = {
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 };
 
-const asideExtensionComponent = computed(() => normalizeExtensionComponent(layoutStore.loginExtensions.aside));
 const methodsExtensionComponent = computed(() => normalizeExtensionComponent(layoutStore.loginExtensions.methods));
 const footerExtensionComponent = computed(() => normalizeExtensionComponent(layoutStore.loginExtensions.footer));
 
 const extensionLoadingComponent = markRaw({
-  template: '<div class="mfw-login-extension-state">Loading extension...</div>',
+  template: '<div style="text-align:center;padding:8px;color:#999;font-size:13px;">加载中...</div>',
 });
 
 const extensionErrorComponent = markRaw({
-  template: '<div class="mfw-login-extension-state is-error">Extension failed to load.</div>',
+  template: '<div style="text-align:center;padding:8px;color:#f56c6c;font-size:13px;">加载失败</div>',
 });
 
 function isAsyncExtensionComponent(input: ExtensionComponentInput): input is AsyncExtensionComponent {
@@ -160,10 +139,7 @@ function normalizeLoadedComponent(loaded: Component | { default: Component }): C
 
 function resolveAsyncExtensionComponent(config: AsyncExtensionComponent): Component {
   const cached = asyncExtensionCache.get(config);
-  if (cached) {
-    return cached;
-  }
-
+  if (cached) return cached;
   const asyncComponent = defineAsyncComponent({
     loader: async () => normalizeLoadedComponent(await config.loader()),
     delay: 120,
@@ -172,68 +148,41 @@ function resolveAsyncExtensionComponent(config: AsyncExtensionComponent): Compon
     loadingComponent: extensionLoadingComponent,
     errorComponent: extensionErrorComponent,
   });
-
   const resolved = markRaw(asyncComponent);
   asyncExtensionCache.set(config, resolved);
   return resolved;
 }
 
 function normalizeExtensionComponent(input?: ExtensionComponentInput): Component | null {
-  if (!input) {
-    return null;
-  }
-  if (isAsyncExtensionComponent(input)) {
-    return resolveAsyncExtensionComponent(input);
-  }
+  if (!input) return null;
+  if (isAsyncExtensionComponent(input)) return resolveAsyncExtensionComponent(input);
   return input;
 }
 
 function focusFirstInvalidField(fields?: ValidateFieldsError) {
-  if (fields?.username) {
-    usernameInputRef.value?.focus();
-    return;
-  }
-  if (fields?.password) {
-    passwordInputRef.value?.focus();
-    return;
-  }
+  if (fields?.username) { usernameInputRef.value?.focus(); return; }
+  if (fields?.password) { passwordInputRef.value?.focus(); return; }
   usernameInputRef.value?.focus();
 }
 
 async function submit() {
-  if (loading.value) {
-    return;
-  }
-
+  if (loading.value) return;
   const now = Date.now();
-  if (now - lastSubmitAt < 800) {
-    return;
-  }
+  if (now - lastSubmitAt < 800) return;
   lastSubmitAt = now;
 
-  if (!formRef.value) {
-    return;
-  }
+  if (!formRef.value) return;
 
-  const valid = await formRef.value
-    .validate()
-    .then(() => true)
-    .catch((fields: ValidateFieldsError) => {
-      focusFirstInvalidField(fields);
-      return false;
-    });
+  const valid = await formRef.value.validate().then(() => true).catch((fields: ValidateFieldsError) => {
+    focusFirstInvalidField(fields);
+    return false;
+  });
 
-  if (!valid) {
-    return;
-  }
+  if (!valid) return;
 
   loading.value = true;
   try {
-    await authStore.login({
-      username: form.username,
-      password: form.password,
-    });
-
+    await authStore.login({ username: form.username, password: form.password });
     await authStore.fetchUserInfo();
     await authStore.fetchUserApps();
 
@@ -267,17 +216,14 @@ async function submit() {
       },
     });
   } catch (error: any) {
-    const message = error?.response?.data?.message || error?.message || '登录失败，请检查用户名和密码';
-    ElMessage.error(message);
+    ElMessage.error(error?.response?.data?.message || error?.message || '登录失败');
   } finally {
     loading.value = false;
   }
 }
 
 onMounted(() => {
-  void nextTick(() => {
-    usernameInputRef.value?.focus();
-  });
+  void nextTick(() => { usernameInputRef.value?.focus(); });
 });
 </script>
 
