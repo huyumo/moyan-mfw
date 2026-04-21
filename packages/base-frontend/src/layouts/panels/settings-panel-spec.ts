@@ -49,7 +49,6 @@ const styleConfig: LayoutStyleConfig = {
   contentMaxWidth: 1360,
   compact: false,
   fixedHeader: true,
-  showBreadcrumb: true,
   showTabs: true,
   cardRadius: 12,
   buttonRadius: 6,

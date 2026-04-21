@@ -7,14 +7,6 @@
   flex-direction: column;
 }
 
-.mfw-admin-breadcrumb-wrap {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color);
-  border-radius: 8px;
-  padding: 10px 14px;
-  flex-shrink: 0;
-}
-
 .mfw-admin-tabs-wrap {
   background: var(--el-bg-color);
   padding: 0px 10px;
@@ -97,6 +89,20 @@
 .el-input__wrapper,
 .el-textarea__inner {
   border-radius: 6px !important;
+}
+
+/**
+ * 统一 el-input 和 el-select 宽度
+ */
+.el-form-item {
+  .el-input,
+  .el-select {
+    width: 100%;
+  }
+}
+
+.el-select {
+  width: 100%;
 }
 
 /**
@@ -222,15 +228,6 @@ html.dark {
       box-shadow 0.3s ease;
   }
 
-  /* 面包屑样式覆盖 */
-  .mfw-admin-breadcrumb-wrap {
-    background: #1e293b;
-    border-color: #334155;
-    transition:
-      background-color 0.3s ease,
-      border-color 0.3s ease;
-  }
-
   /* 标签页样式覆盖 */
   .mfw-admin-tabs-wrap {
     background: #1e293b;
@@ -243,7 +240,6 @@ html.dark {
 .mfw-admin-header,
 .mfw-admin-sidebar,
 .mfw-admin-content,
-.mfw-admin-breadcrumb-wrap,
 .mfw-admin-tabs-wrap,
 .el-card,
 .mfw-dashboard-card,

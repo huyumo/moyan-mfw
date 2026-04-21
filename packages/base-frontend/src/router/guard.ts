@@ -107,10 +107,15 @@ export function setupRouteGuard(router: Router): void {
     // 3. 首次访问时初始化认证状态
     if (!isInitialized) {
       isInitialized = true;
+      
+      if (authStore.isAuthenticated) {
+        next();
+        return;
+      }
+      
       try {
         const success = await authStore.initializeAuth();
         if (!success) {
-          // 初始化失败，清除 Token 并重定向到登录页
           next({
             path: '/login',
             query: { redirect: to.fullPath },

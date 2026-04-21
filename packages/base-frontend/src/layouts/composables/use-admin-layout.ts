@@ -61,7 +61,6 @@ export function useAdminLayout(): any {
     'layout-mode-top': layoutStore.styleConfig.layoutMode === 'top',
     'layout-mode-dual': layoutStore.styleConfig.layoutMode === 'dual',
   }));
-  const currentTitle = computed(() => (typeof route.meta.title === 'string' ? route.meta.title : '\u4eea\u8868\u76d8'));
   const topLevelMenus = computed(() => layoutStore.navigation.sideMenu);
   const activeTopMenuKey = computed(() => layoutStore.activeTopMenuKey || topLevelMenus.value[0]?.key || '');
   const activeTopMenu = computed(
@@ -289,7 +288,6 @@ export function useAdminLayout(): any {
     layoutModeOptions,
     themeOptions,
     shellClasses,
-    currentTitle,
     topLevelMenus,
     activeTopMenuKey,
     showPrimaryTopMenus,

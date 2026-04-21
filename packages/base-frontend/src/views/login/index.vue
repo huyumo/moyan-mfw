@@ -93,6 +93,8 @@ import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive,
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../../store/auth-store';
 import { useLayoutStore } from '../../store/layout-store';
+import { MfwPopup } from '../../components/feedback/popup';
+import AppSelectorDialog from '../../components/business/app-selector-dialog/Index.vue';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
 /** 登录表单状态。 */
@@ -226,19 +228,44 @@ async function submit() {
   }
 
   loading.value = true;
-      // 调用真实登录 API
+  try {
     await authStore.login({
       username: form.username,
       password: form.password,
     });
 
+    await authStore.fetchUserInfo();
+    await authStore.fetchUserApps();
+
     ElMessage.success('登录成功');
 
-    // 跳转到目标页面
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
-    await router.replace(redirect);
-  try {
+    if (authStore.apps.length === 0) {
+      const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+      await router.replace(redirect);
+      return;
+    }
 
+    const autoSelected = await authStore.autoSelectApp();
+    if (autoSelected) {
+      const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+      await router.replace(redirect);
+      return;
+    }
+
+    MfwPopup.open({
+      title: '选择应用实例',
+      type: 'dialog',
+      component: AppSelectorDialog,
+      data: { forceSelect: true },
+      popupProps: { width: '600px' },
+      footer: false,
+      on: {
+        close: () => {
+          const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+          router.replace(redirect);
+        },
+      },
+    });
   } catch (error: any) {
     const message = error?.response?.data?.message || error?.message || '登录失败，请检查用户名和密码';
     ElMessage.error(message);

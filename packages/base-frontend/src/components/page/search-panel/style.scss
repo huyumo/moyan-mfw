@@ -59,6 +59,14 @@
     &__form {
       .el-form-item {
         width: 100%;
+        min-width: 200px;
+      }
+
+      .el-input,
+      .el-select,
+      .el-date-editor {
+        width: 100%;
+        min-width: 180px;
       }
     }
   }

@@ -17,7 +17,6 @@ export interface LayoutStyleConfig {
   contentMaxWidth: number;
   compact: boolean;
   fixedHeader: boolean;
-  showBreadcrumb: boolean;
   showTabs: boolean;
   cardRadius: number;
   buttonRadius: number;
