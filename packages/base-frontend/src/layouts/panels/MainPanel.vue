@@ -15,7 +15,9 @@
     />
 
     <div class="mfw-admin-content-area">
-      <slot />
+      <div class="mfw-admin-content-inner">
+        <slot />
+      </div>
     </div>
   </main>
 </template>
