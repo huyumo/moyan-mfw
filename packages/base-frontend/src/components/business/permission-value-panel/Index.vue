@@ -45,6 +45,8 @@ interface PermissionValueFormProps {
   permissionOptions?: ReturnType<typeof getPermissionOptions>;
 }
 
+const newValue = ref<number>(0);
+
 const { permissiondData, permissionOptions, isRoot } = defineProps<PermissionValueFormProps>();
 
 // 从 data 中解构属性
@@ -68,19 +70,15 @@ onMounted(() => {
 });
 
 const onConfirm = async () => {
-  const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
+  newValue.value = selectedActions.value.reduce((acc, val) => acc | val, 0);
   if (isRoot) {
     await new ApiPermissionUpdate({
       params: { id: nodeId.value },
-      body: { permissionValue: String(newValue) }, // 改为字符串格式
+      body: { permissionValue: String(newValue.value) }, // 改为字符串格式
     }, { hintSuccess: true, successMsg: '操作权限已更新' });
   }
-  console.log('**********',newValue);
-  
-  return newValue;
 };
-
-defineExpose({ onConfirm });
+defineExpose({ onConfirm, newValue });
 </script>
 
 <style scoped lang="scss">
