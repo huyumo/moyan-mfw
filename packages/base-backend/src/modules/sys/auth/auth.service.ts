@@ -347,11 +347,21 @@ export class AuthService {
     const result = await executeRawSql(this.entityManager, sql, { userId });
     const menuTree = flatToTree(result)
     const permissions = result.map((item)=>item.permCode)
-    const appTypeId = result[0].appTypeId || ''
+    const appTypeId = result[0]?.appTypeId || ''
+
+    // 构建 permissionValueMap
+    const permissionValueMap: Record<string, string> = {};
+    for (const item of result) {
+      if (item.permissionValue) {
+        permissionValueMap[item.permCode] = item.permissionValue.toString();
+      }
+    }
+
     return {
       menuTree,
       permissions: permissions,
       appTypeId: appTypeId,
+      permissionValueMap,
     };
   }
 
