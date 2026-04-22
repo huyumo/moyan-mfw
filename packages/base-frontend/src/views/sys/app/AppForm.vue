@@ -28,15 +28,12 @@ const STATUS = {
   DISABLED: 0,
 } as const;
 
-/** Props */
-interface Props {
-  data?: AppDetailResponseDto;
-}
 
-const props = defineProps<Props>();
+
+const props = defineProps<AppDetailResponseDto>();
 
 /** 是否编辑模式 */
-const isEdit = computed(() => !!props.data?.id);
+const isEdit = computed(() => !!props?.id);
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
@@ -97,7 +94,7 @@ const baseTemplate: FormItemConfig[] = [
     show: () => !isEdit.value,
   },
   {
-    key: 'appCodeDisplay',
+    key: 'appCode',
     label: '应用编码',
     component: 'el-input',
     disabled: true,
@@ -177,14 +174,16 @@ const loadAppTypes = async () => {
 onMounted(async () => {
   await loadAppTypes();
 
-  if (props.data) {
-    form.appTypeId = props.data.appTypeId;
-    form.appName = props.data.appName;
-    form.appCode = props.data.appCode;
-    form.ownerId = props.data.ownerId;
-    form.appDesc = props.data.appDesc || '';
-    form.icon = props.data.icon || '';
-    form.appStatus = props.data.appStatus as 1 | 0;
+  console.log('888888888',props);
+  
+  if (props.id) {
+    form.appTypeId = props.appTypeId;
+    form.appName = props.appName;
+    form.appCode = props.appCode;
+    form.ownerId = props.ownerId;
+    form.appDesc = props.appDesc || '';
+    form.icon = props.icon || '';
+    form.appStatus = props.appStatus as 1 | 0;
   }
 });
 
@@ -194,7 +193,7 @@ const onConfirm = async () => {
 
   if (isEdit.value) {
     await new ApiAppUpdate({
-      params: { id: props.data!.id },
+      params: { id: props.id },
       body: {
         appName: form.appName,
         appDesc: form.appDesc,
