@@ -40,11 +40,12 @@ interface PermissionValueFormProps {
     permissionValue?: string | number;
     parentPermissionValue?: string | number;
   };
+  isRoot?: boolean;
   // 可选：传入自定义权限选项（支持业务项目覆盖）
   permissionOptions?: ReturnType<typeof getPermissionOptions>;
 }
 
-const { permissiondData, permissionOptions } = defineProps<PermissionValueFormProps>();
+const { permissiondData, permissionOptions, isRoot } = defineProps<PermissionValueFormProps>();
 
 // 从 data 中解构属性
 const nodeId = computed(() => permissiondData?.nodeId || '');
@@ -68,11 +69,15 @@ onMounted(() => {
 
 const onConfirm = async () => {
   const newValue = selectedActions.value.reduce((acc, val) => acc | val, 0);
-
-  await new ApiPermissionUpdate({
-    params: { id: nodeId.value },
-    body: { permissionValue: String(newValue) }, // 改为字符串格式
-  }, { hintSuccess: true, successMsg: '操作权限已更新' });
+  if (isRoot) {
+    await new ApiPermissionUpdate({
+      params: { id: nodeId.value },
+      body: { permissionValue: String(newValue) }, // 改为字符串格式
+    }, { hintSuccess: true, successMsg: '操作权限已更新' });
+  }
+  console.log('**********',newValue);
+  
+  return newValue;
 };
 
 defineExpose({ onConfirm });
