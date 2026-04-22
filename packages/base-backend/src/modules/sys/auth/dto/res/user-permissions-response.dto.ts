@@ -173,4 +173,15 @@ export class UserPermissionsResponseDto {
    */
   @ApiProperty({ description: '应用类型 ID' })
   appTypeId: string;
+
+  /**
+   * 权限值映射
+   * @description 用户权限值映射（permCode → permissionValue）
+   */
+  @ApiProperty({
+    description: '权限值映射（permCode → permissionValue）',
+    example: { 'pc_root:sys:app': '7', 'pc_root:sys:role': '3' },
+    required: false,
+  })
+  permissionValueMap?: Record<string, string>;
 }
