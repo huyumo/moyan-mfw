@@ -8,18 +8,14 @@
   <MfwPageWrapper>
     <template #header-extra>
       <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
+        <el-icon>
+          <Plus />
+        </el-icon>
         新建角色
       </el-button>
     </template>
-    <MfwCardListPage
-      ref="cardListPage"
-      :search-template="searchTemplate"
-      :load-data="loadData"
-      render-mode="card"
-      :card-grid="{ cols: 3, gap: 16 }"
-      empty-text="暂无角色"
-    >
+    <MfwCardListPage ref="cardListPage" :search-template="searchTemplate" :load-data="loadData" render-mode="card"
+      :card-grid="{ cols: 3, gap: 16 }" empty-text="暂无角色">
       <template #card-item="{ item }">
         <RoleCard :data="item" @refresh="cardListPage?.refresh()" />
       </template>
@@ -34,8 +30,7 @@ import { MfwPageWrapper, MfwCardListPage } from '../../../components';
 import type { MfwCardListPageInstance } from '../../../components/page/card-list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { ApiRoleFindAll } from '../../../apis/sys';
-import { RoleForm } from '../../../components/business';
-import RoleCard from '../../../components/business/builtin-role-dialog/RoleCard.vue';
+import { RoleForm, RoleCard } from '../../../components/business';
 import { useAuthStore } from '../../../store/auth-store';
 
 const STATUS = {

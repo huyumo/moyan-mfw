@@ -20,17 +20,18 @@
     </div>
 
     <div class="role-card__footer">
-      <el-button type="primary" size="small" link @click="handlePermission">配置权限</el-button>
-      <el-button size="small" link @click="handleEdit">编辑</el-button>
-      <el-button type="danger" size="small" link @click="handleDelete">删除</el-button>
+      <el-button type="primary" size="small" link :disabled="isBuiltin" v-permission="{ value: ['编辑'] }" @click="handlePermission">配置权限</el-button>
+      <el-button size="small" link :disabled="isBuiltin" v-permission="{ value: ['编辑'] }" @click="handleEdit">编辑</el-button>
+      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" v-permission="{ value: ['删除'] }" @click="handleDelete">删除</el-button>
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import { User } from '@element-plus/icons-vue';
 import { ElMessageBox } from 'element-plus';
-import { MfwPopup } from '../../../components/feedback';
+import { MfwPopup } from '../../feedback';
 import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
@@ -50,6 +51,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'refresh'): void;
 }>();
+
+const isBuiltin = computed(() => props.data.isBuiltin === STATUS.ENABLED);
+const isOwner = computed(()=> props.data.isOwner === STATUS.ENABLED)
 
 const handlePermission = () => {
   MfwPopup.open({
