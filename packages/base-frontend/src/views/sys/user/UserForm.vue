@@ -80,17 +80,14 @@ interface UserFormData {
   gender: number;
 }
 
-/** Props */
-interface Props {
-  data?: UserResponseDto;
-}
 
-const props = defineProps<Props>();
+
+const props = defineProps<UserResponseDto>();
 
 defineOptions({ name: 'UserForm' });
 
 const formRef = ref<FormInstance>();
-const isEdit = computed(() => !!props.data?.id);
+const isEdit = computed(() => !!props?.id);
 
 const form = reactive<UserFormData>({
   username: '',
@@ -122,12 +119,12 @@ const rules: FormRules<UserFormData> = {
 };
 
 onMounted(() => {
-  if (isEdit.value && props.data) {
-    form.username = props.data.username;
-    form.nickname = props.data.nickname || '';
-    form.phone = props.data.phone || '';
-    form.email = props.data.email || '';
-    form.gender = props.data.gender || 0;
+  if (isEdit.value && props) {
+    form.username = props.username;
+    form.nickname = props.nickname || '';
+    form.phone = props.phone || '';
+    form.email = props.email || '';
+    form.gender = props.gender || 0;
   }
 });
 
@@ -140,7 +137,7 @@ const onConfirm = async () => {
   try {
     if (isEdit.value) {
       await new ApiUserUpdate({
-        params: { id: props.data!.id },
+        params: { id: props.id },
         body: {
           nickname: form.nickname,
           phone: form.phone,
