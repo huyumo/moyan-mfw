@@ -29,9 +29,9 @@ import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
 import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
-import RoleForm from './RoleForm.vue';
 import { RolePermissionPanel } from '../../../components/business/role-permission-panel';
 import { useAuthStore } from '../../../store/auth-store';
+import { RoleForm } from '../../../components/business';
 
 /** 状态常量 */
 const STATUS = {
@@ -154,6 +154,7 @@ const handleAdd = () => {
     title: '新建角色',
     type: 'dialog',
     component: RoleForm,
+    data: { appId: appId.value },
     popupProps: { width: 500 },
     on: {
       confirm: () => {
