@@ -84,6 +84,7 @@ export type UserPermissionsResponseDto = {
   menuTree: Array<PermissionTreeNodeDto> // 用户权限菜单树
   permissions: Array<string> // 用户权限列表（扁平化）
   appTypeId: string // 应用类型 ID
+  permissionValueMap?: Record<string, string> // 权限值映射（权限编码 -> 权限值）
 }
 
 export type RegisterDto = {
