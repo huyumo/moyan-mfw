@@ -1,81 +1,75 @@
 <!--
 /**
  * @fileoverview 内置角色配置弹窗组件
- * @description 用于应用类型详情页的内置角色配置
+ * @description 使用卡片网格布局展示内置角色列表
  */
 -->
 <template>
   <div class="builtin-role-dialog">
     <el-alert title="内置角色说明" type="info" :closable="false" show-icon class="mb-4">
-      <p>内置角色是与应用类型绑定的预设角色，用于快速分配权限。</p>
-      <p>每个应用类型可以配置多个内置角色，例如：管理员、普通用户等。</p>
+      <p>内置角色是与应用类型绑定的预设角色，创建应用实例时自动继承。</p>
     </el-alert>
-    <MfwTableList :data="roleList" :columns="columns" :loading="loading" :action-column="actionColumn" />
-    <div class="builtin-role-footer">
-      <el-button type="primary" @click="handleAddAndEditRole()">新增内置角色</el-button>
+    
+    <div class="builtin-role-header">
+      <span class="builtin-role-title">{{ typeName }} - 内置角色</span>
+      <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
+    </div>
+    
+    <div v-loading="loading" class="builtin-role-grid">
+      <RoleCard
+        v-for="role in roleList"
+        :key="role.id"
+        :data="role"
+        @permission="handleAssignPermissions"
+        @edit="handleEditRole"
+        @delete="handleDeleteRole"
+      />
+      <el-empty v-if="!loading && roleList.length === 0" description="暂无内置角色" />
     </div>
   </div>
 </template>
 
-<script setup lang="tsx">
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { MfwPopup } from '../../feedback';
 import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
-import type { CreateRoleDto, RoleResponseDto } from '../../../apis/sys/schemas';
+import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
-import { ActionColumnConfig, MfwTableList, TableColumnConfig } from '../../table';
 import { RoleForm } from '..';
+import RoleCard from './RoleCard.vue';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 
-const { appTypeId } = defineProps<{
+const props = defineProps<{
   appTypeId: string;
+  typeName?: string;
 }>();
 
+const typeName = props.typeName || '应用类型';
 const roleList = ref<RoleResponseDto[]>([]);
 const loading = ref(false);
-const columns: TableColumnConfig[] = [
-  { prop: 'roleName', label: '角色名称', width: 120 },
-  { prop: 'roleCode', label: '角色编码', width: 120 },
-  { prop: 'roleDesc', label: '角色描述', width: 200 },
-  { prop: 'roleStatus', label: '状态', width: 80 },
-  { prop: 'action', label: '操作', width: 120, fixed: 'right' },
-];
 
-const actionColumn: ActionColumnConfig = {
-  label: '操作',
-  width: 120,
-  fixed: 'right' as const,
-  render: ({ row }: { row: RoleResponseDto }) => (
-    <div>
-      <el-button type="primary" link size="small" onClick={() => handleAssignPermissions(row)}>
-        配置权限
-      </el-button>
-      <el-button type="danger" link size="small" onClick={() => handleDeleteRole(row)}>
-        删除
-      </el-button>
-      <el-button type="info" link size="small" onClick={() => handleAddAndEditRole(row)}>
-        编辑
-      </el-button>
-    </div>
-  ),
-};
-
-/** 加载内置角色列表 */
 const loadRoles = async () => {
-  if (!appTypeId) return;
-  const result = await new ApiRoleFindAll({
-    query: {
-      page: 1,
-      pageSize: 100,
-      appTypeId: appTypeId,
-    }
-  },{loading:loading.value});
-  roleList.value = result.list || [];
+  if (!props.appTypeId) return;
+  loading.value = true;
+  try {
+    const result = await new ApiRoleFindAll({
+      query: {
+        page: 1,
+        pageSize: 100,
+        appTypeId: props.appTypeId,
+      }
+    });
+    roleList.value = result.list || [];
+  } catch (error) {
+    ElMessage.error('加载内置角色失败');
+    roleList.value = [];
+  } finally {
+    loading.value = false;
+  }
 };
 
-/** 配置权限 */
 const handleAssignPermissions = (row: RoleResponseDto) => {
   MfwPopup.open({
     title: `配置角色权限 - ${row.roleName}`,
@@ -83,7 +77,7 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
     component: RolePermissionPanel,
     data: {
       roleId: row.id,
-      appTypeId: appTypeId,
+      appTypeId: props.appTypeId,
     },
     popupProps: {
       size: '800px',
@@ -102,13 +96,12 @@ const handleAssignPermissions = (row: RoleResponseDto) => {
   });
 };
 
-/** 新增角色 */
-const handleAddAndEditRole = (row?: RoleResponseDto) => {
+const handleAddRole = () => {
   MfwPopup.open({
     title: '新增内置角色',
     type: 'dialog',
     component: RoleForm,
-    data: { id: row?.id, role: row, appTypeId },
+    data: { appTypeId: props.appTypeId },
     popupProps: {
       size: '500px',
     },
@@ -117,16 +110,47 @@ const handleAddAndEditRole = (row?: RoleResponseDto) => {
       confirmText: '确定',
     },
     on: {
-      confirm: async () => {
+      confirm: () => {
         loadRoles();
       },
     },
   });
 };
 
-/** 删除角色 */
+const handleEditRole = (row: RoleResponseDto) => {
+  MfwPopup.open({
+    title: '编辑内置角色',
+    type: 'dialog',
+    component: RoleForm,
+    data: { id: row.id, role: row, appTypeId: props.appTypeId },
+    popupProps: {
+      size: '500px',
+    },
+    footer: {
+      cancelText: '取消',
+      confirmText: '确定',
+    },
+    on: {
+      confirm: () => {
+        loadRoles();
+      },
+    },
+  });
+};
+
 const handleDeleteRole = async (row: RoleResponseDto) => {
-  await new ApiRoleDelete({ params: { id: row.id } });
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除角色「${row.roleName}」吗？`,
+      '确认删除',
+      { type: 'warning' }
+    );
+    await new ApiRoleDelete({ params: { id: row.id } });
+    ElMessage.success('删除成功');
+    loadRoles();
+  } catch {
+    // 用户取消或删除失败
+  }
 };
 
 onMounted(() => {
@@ -136,7 +160,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .builtin-role-dialog {
-  height: 500px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 
@@ -144,12 +168,24 @@ onMounted(() => {
     margin-bottom: 16px;
   }
 
-  .builtin-role-footer {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--el-border-color-light);
+  .builtin-role-header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .builtin-role-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--el-text-color-primary);
+  }
+
+  .builtin-role-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+    flex: 1;
   }
 }
 </style>

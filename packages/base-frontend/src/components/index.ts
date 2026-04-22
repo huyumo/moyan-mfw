@@ -40,6 +40,7 @@ export * from './editor/mod';
 // 页面类组件
 export * from './page/page-wrapper/mod';
 export * from './page/list-page/mod';
+export * from './page/card-list-page/mod';
 
 // 选择器类组件
 export * from './picker/mod';

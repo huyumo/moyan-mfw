@@ -1,164 +1,108 @@
 <!--
 /**
- * @fileoverview 应用类型管理列表页面
- * @description 开发者模式专属页面，管理应用类型、权限池配置、内置角色
+ * @fileoverview 应用类型管理页面
+ * @description 使用卡片网格布局展示应用类型列表
  */
 -->
 <template>
   <MfwPageWrapper>
-    <MfwListPage
-      ref="listPage"
-      :search-template="searchTemplate"
-      :columns="columns"
-      :action-column="actionColumn"
+    <template #header-extra>
+      <el-button type="primary" @click="handleAdd">
+        <el-icon><Plus /></el-icon>
+        新增类型
+      </el-button>
+    </template>
+
+    <MfwCardListPage
+      ref="cardListPage"
+      :show-search="false"
+      :show-pagination="false"
       :load-data="loadData"
-    />
+      render-mode="card"
+      :card-grid="{ cols: 4, gap: 20 }"
+      empty-text="暂无应用类型"
+    >
+      <template #card-item="{ item }">
+        <AppTypeCard
+          :data="item"
+          @edit="handleEdit"
+          @permission="handleConfigPermissionPool"
+          @role="handleConfigBuiltinRoles"
+        />
+      </template>
+    </MfwCardListPage>
   </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, h } from 'vue';
-import { ElMessage, ElTag } from 'element-plus';
-import { View, Edit, Key, User } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage } from '../../../components';
-import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
+import { MfwPageWrapper, MfwCardListPage } from '../../../components';
+import type { MfwCardListPageInstance } from '../../../components/page/card-list-page/types';
 import { MfwPopup } from '../../../components/feedback';
-import { renderActionButtons } from '../../../components/table/action-buttons';
-import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
+import { ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
+import AppTypeCard from './AppTypeCard.vue';
 import EditForm from './EditForm.vue';
-import DetailPopup from './DetailPopup.vue';
+import AddForm from './AddForm.vue';
 import { PermissionPoolPanel } from '../../../components/business/permission-pool-panel';
 import { BuiltinRoleDialog } from '../../../components/business/builtin-role-dialog/mod';
 
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
-
 defineOptions({ name: 'MfwAppTypeList' });
 
-const listPage = ref<MfwListPageInstance>();
+const cardListPage = ref<MfwCardListPageInstance>();
 
-/** 搜索模板 */
-const searchTemplate = [
-  {
-    key: 'typeName',
-    label: '类型名称',
-    type: 'input' as const,
-    placeholder: '请输入类型名称',
-  },
-  {
-    key: 'typeCode',
-    label: '类型编码',
-    type: 'input' as const,
-    placeholder: '请输入类型编码',
-  },
-  {
-    key: 'typeStatus',
-    label: '状态',
-    type: 'select' as const,
-    placeholder: '请选择状态',
-    elProps: {
-      options: [
-        { label: '启用', value: STATUS.ENABLED },
-        { label: '禁用', value: STATUS.DISABLED },
-      ],
-    },
-  },
-];
-
-/** 表格列 */
-const columns = [
-  { prop: 'typeName', label: '类型名称', minWidth: 150 },
-  { prop: 'typeCode', label: '类型编码', minWidth: 120 },
-  {
-    prop: 'icon',
-    label: '图标',
-    width: 80,
-    render: ({ row }: { row: AppTypeResponseDto }) => row.icon || '-',
-  },
-  {
-    prop: 'multiAppEnabled',
-    label: '多应用',
-    width: 80,
-    render: ({ row }: { row: AppTypeResponseDto }) => h(ElTag, {
-      type: row.multiAppEnabled === STATUS.ENABLED ? 'success' : 'info',
-      size: 'small',
-    }, () => row.multiAppEnabled === STATUS.ENABLED ? '是' : '否'),
-  },
-  {
-    prop: 'typeStatus',
-    label: '状态',
-    width: 80,
-    render: ({ row }: { row: AppTypeResponseDto }) => h(ElTag, {
-      type: row.typeStatus === STATUS.ENABLED ? 'success' : 'danger',
-      size: 'small',
-    }, () => row.typeStatus === STATUS.ENABLED ? '启用' : '禁用'),
-  },
-  { prop: 'sortOrder', label: '排序', width: 80 },
-  { prop: 'createdAt', label: '创建时间', width: 180 },
-];
-
-/** 操作列 */
-const actionColumn = {
-  prop: 'action',
-  label: '操作',
-  width: 200,
-  fixed: 'right' as const,
-  render: ({ row }: { row: AppTypeResponseDto }) => renderActionButtons([
-    { label: '详情', type: 'primary', icon: View, onClick: handleDetail },
-    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
-    { label: '权限池', type: 'primary', icon: Key, onClick: handleConfigPermissionPool, permission: ['编辑'] },
-    { label: '内置角色', type: 'primary', icon: User, onClick: handleConfigBuiltinRoles, permission: ['编辑'] },
-  ], { maxVisible: 2 }, row),
-};
-
-/** 加载数据 */
-const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiAppTypeFindAll({
-    query: {
-      page: params.page as number,
-      pageSize: params.pageSize as number,
-      typeName: params.typeName as string,
-      typeCode: params.typeCode as string,
-      typeStatus: params.typeStatus as number,
-    },
-  });
-
-  return {
-    list: result.list || [],
-    total: result.total || 0,
-  };
-};
-
-/** 查看详情 */
-const handleDetail = async (row: AppTypeResponseDto) => {
+const loadData = async () => {
   try {
-    const apiResult = await new ApiAppTypeFindById({ params: { id: row.id } });
-    // @ts-ignore - API 实际返回 { code, data, message } 结构
-    const detailData = apiResult.data || apiResult;
-
-    MfwPopup.open({
-      title: '应用类型详情',
-      type: 'drawer',
-      component: DetailPopup,
-      data: detailData,
-      popupProps: { size: 500 },
-    });
+    const result = await new ApiAppTypeFindAllList({});
+    return {
+      list: result || [],
+      total: result?.length || 0,
+    };
   } catch (error) {
-    ElMessage.error('获取应用类型详情失败');
+    ElMessage.error('加载应用类型列表失败');
+    return { list: [], total: 0 };
   }
 };
 
-/** 配置权限池 */
-const handleConfigPermissionPool = async (row: AppTypeResponseDto) => {
+const handleAdd = () => {
+  MfwPopup.open({
+    title: '新增应用类型',
+    type: 'dialog',
+    component: AddForm,
+    popupProps: { width: 500 },
+    on: {
+      confirm: () => {
+        ElMessage.success('创建成功');
+        cardListPage.value?.refresh();
+      },
+    },
+  });
+};
+
+const handleEdit = (row: AppTypeResponseDto) => {
+  MfwPopup.open({
+    title: '编辑应用类型',
+    type: 'drawer',
+    position: 'rtl',
+    component: EditForm,
+    data: { ...row },
+    popupProps: { size: 400 },
+    on: {
+      confirm: () => {
+        ElMessage.success('保存成功');
+        cardListPage.value?.refresh();
+      },
+    },
+  });
+};
+
+const handleConfigPermissionPool = (row: AppTypeResponseDto) => {
   if (!row.id) {
     ElMessage.warning('请先保存应用类型');
     return;
   }
-  console.log('****************KKKKK::',row.id)
   MfwPopup.open({
     title: '配置权限池',
     type: 'dialog',
@@ -180,8 +124,7 @@ const handleConfigPermissionPool = async (row: AppTypeResponseDto) => {
   });
 };
 
-/** 配置内置角色 */
-const handleConfigBuiltinRoles = async (row: AppTypeResponseDto) => {
+const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
   if (!row.id) {
     ElMessage.warning('请先保存应用类型');
     return;
@@ -190,30 +133,11 @@ const handleConfigBuiltinRoles = async (row: AppTypeResponseDto) => {
     title: '配置内置角色',
     type: 'dialog',
     component: BuiltinRoleDialog,
-    data: { appTypeId: row.id },
+    data: { appTypeId: row.id, typeName: row.typeName },
     popupProps: {
       size: '800px',
       top: '10vh',
     },
   });
 };
-
-/** 编辑 */
-const handleEdit = (row: AppTypeResponseDto) => {
-  MfwPopup.open({
-    title: '编辑应用类型',
-    type: 'drawer',
-    position: 'rtl',
-    component: EditForm,
-    data: { ...row },
-    popupProps: { size: 400 },
-    on: {
-      confirm: () => {
-        ElMessage.success('保存成功');
-        listPage.value?.refresh();
-      },
-    },
-  });
-};
 </script>
-
