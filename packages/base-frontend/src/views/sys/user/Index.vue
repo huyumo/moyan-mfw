@@ -7,7 +7,7 @@
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-      <el-button type="primary" data-testid="user-create-btn" @click="handleAdd">
+      <el-button type="primary" data-testid="user-create-btn" v-permission="{ value: ['添加'] }" @click="handleAdd">
         <el-icon>
           <Plus />
         </el-icon>
@@ -28,6 +28,7 @@ import MfwPageWrapper from '../../../components/page/page-wrapper';
 import MfwListPage from '../../../components/page/list-page';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { usePermission } from '../../../hooks';
 import {
   ApiUserFindAll,
   ApiUserDelete,
@@ -60,6 +61,7 @@ const GENDER_TEXT = {
 defineOptions({ name: 'MfwUserList' });
 
 const listPage = ref<MfwListPageInstance>();
+const { hasPermissionValue } = usePermission();
 
 /** 搜索模板 */
 const searchTemplate = [
@@ -127,25 +129,25 @@ const actionColumn = {
   width: 250,
   fixed: 'right' as const,
   render: ({ row }: { row: UserResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElButton, {
+    hasPermissionValue({ value: ['编辑'] }) && h(ElButton, {
       type: 'primary',
       link: true,
       icon: Edit,
       onClick: () => handleEdit(row),
     }, () => '编辑'),
-    h(ElButton, {
+    hasPermissionValue({ value: ['编辑'] }) && h(ElButton, {
       type: 'warning',
       link: true,
       icon: Lock,
       onClick: () => handleResetPassword(row),
     }, () => '重置密码'),
-    h(ElButton, {
+    hasPermissionValue({ value: ['删除'] }) && h(ElButton, {
       type: 'danger',
       link: true,
       icon: Delete,
       onClick: () => handleDelete(row),
     }, () => '删除'),
-  ]),
+  ].filter(Boolean)),
 };
 
 /** 加载数据 */
