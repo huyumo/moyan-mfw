@@ -301,7 +301,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       const menuNodes = response.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
-      permissionValueMap.value = response.permissionValueMap || {};
+      permissionValueMap.value = (response.permissionValueMap || {}) as Record<string, string>;
       buildRoutePermCodeMap(menuNodes);
 
       console.log('加载权限菜单:', permissionMenu.value);

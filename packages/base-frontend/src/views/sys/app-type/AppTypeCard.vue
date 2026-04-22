@@ -32,7 +32,7 @@
     </div>
     
     <div class="app-type-card__footer">
-      <span class="app-type-card__meta">{{ roleCount }} 个内置角色</span>
+      <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} 个内置角色</span>
       <div class="app-type-card__actions">
         <el-button type="primary" size="small" v-permission="{ value: ['编辑'] }" @click="$emit('edit', data)">编辑</el-button>
         <el-button size="small" v-permission="{ value: ['权限池'] }" @click="$emit('permission', data)">权限池</el-button>
@@ -43,10 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
-import { ApiRoleFindAll } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 
 const STATUS = {
@@ -70,24 +69,6 @@ const currentIcon = computed(() => {
   const iconName = props.data.icon;
   if (!iconName) return null;
   return (IconMap as any)[iconName] || null;
-});
-
-const roleCount = ref(0);
-
-const loadRoleCount = async () => {
-  if (!props.data.id) return;
-  try {
-    const result = await new ApiRoleFindAll({
-      query: { page: 1, pageSize: 1, appTypeId: props.data.id }
-    });
-    roleCount.value = result.total || 0;
-  } catch {
-    roleCount.value = 0;
-  }
-};
-
-onMounted(() => {
-  loadRoleCount();
 });
 </script>
 

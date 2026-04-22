@@ -8,16 +8,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
 import { Permission } from '../permission/entities/permission.entity';
+import { Role } from '../role/entities/role.entity';
 import { AppTypeService } from './app-type.service';
 import { AppTypeController } from './app-type.controller';
 
-/**
- * 应用类型模块
- * @description 提供应用类型管理相关功能
- */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AppType, AppTypePermissionEntity, Permission]),
+    TypeOrmModule.forFeature([AppType, AppTypePermissionEntity, Permission, Role]),
   ],
   providers: [AppTypeService],
   controllers: [AppTypeController],

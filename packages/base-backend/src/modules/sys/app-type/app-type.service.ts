@@ -9,6 +9,7 @@ import { Repository, DataSource, In } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
 import { NodeType, Permission, PermissionType, ShowMode } from '../permission/entities/permission.entity';
+import { Role } from '../role/entities/role.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
 import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
 import {
@@ -31,6 +32,8 @@ export class AppTypeService {
     private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
     @InjectRepository(Permission)
     private permissionRepository: Repository<Permission>,
+    @InjectRepository(Role)
+    private roleRepository: Repository<Role>,
     private dataSource: DataSource,
   ) {}
 
@@ -102,12 +105,34 @@ export class AppTypeService {
    * 查询所有应用类型
    * @returns 应用类型列表
    */
-  async findAllList(): Promise<AppType[]> {
-    return this.appTypeRepository.find({
+  async findAllList(): Promise<any[]> {
+    const appTypes = await this.appTypeRepository.find({
       order: {
         sortOrder: 'ASC'
       },
     });
+
+    const appTypeIds = appTypes.map((t) => t.id);
+    const countResults = appTypeIds.length > 0
+      ? await this.roleRepository
+          .createQueryBuilder('role')
+          .select('role.appTypeId', 'appTypeId')
+          .addSelect('COUNT(*)', 'count')
+          .where('role.appTypeId IN (:...appTypeIds)', { appTypeIds })
+          .andWhere('role.isBuiltin = 1')
+          .groupBy('role.appTypeId')
+          .getRawMany()
+      : [];
+
+    const countMap = new Map<string, number>();
+    for (const row of countResults) {
+      countMap.set(row.appTypeId, Number(row.count));
+    }
+
+    return appTypes.map((appType) => ({
+      ...appType,
+      builtinRoleCount: countMap.get(appType.id) || 0,
+    }));
   }
 
   /**
