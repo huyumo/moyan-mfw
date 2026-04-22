@@ -31,9 +31,9 @@
     <div class="app-type-card__footer">
       <span class="app-type-card__meta">{{ roleCount }} 个内置角色</span>
       <div class="app-type-card__actions">
-        <el-button type="primary" size="small" @click="$emit('edit', data)">编辑</el-button>
-        <el-button size="small" @click="$emit('permission', data)">权限池</el-button>
-        <el-button size="small" @click="$emit('role', data)">内置角色</el-button>
+        <el-button type="primary" size="small" v-permission="{ value: ['编辑'] }" @click="$emit('edit', data)">编辑</el-button>
+        <el-button size="small" v-permission="{ value: ['权限池'] }" @click="$emit('permission', data)">权限池</el-button>
+        <el-button size="small" v-permission="{ value: ['内置角色'] }" @click="$emit('role', data)">内置角色</el-button>
       </div>
     </div>
   </div>

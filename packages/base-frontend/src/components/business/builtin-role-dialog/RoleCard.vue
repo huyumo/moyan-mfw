@@ -53,6 +53,7 @@ defineEmits<{
 
 <style scoped lang="scss">
 .role-card {
+  width: 100%;
   background: var(--el-bg-color);
   border-radius: 8px;
   padding: 16px;
@@ -67,15 +68,15 @@ defineEmits<{
   &__header {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: 6px;
+    margin-bottom: 6px;
   }
 
   &__icon {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: var(--el-color-primary-light-9);
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -89,27 +90,27 @@ defineEmits<{
   }
 
   &__body {
-    margin-bottom: 12px;
+    margin-bottom: 6px;
   }
 
   &__code {
     font-size: 12px;
     color: var(--el-text-color-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
 
   &__desc {
     font-size: 13px;
     color: var(--el-text-color-regular);
     line-height: 1.4;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
   }
 
   &__footer {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    padding-top: 12px;
+    gap: 6px;
+    padding-top: 6px;
     border-top: 1px solid var(--el-border-color-lighter);
   }
 }

@@ -137,7 +137,7 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
     component: BuiltinRoleDialog,
     data: { appTypeId: row.id, typeName: row.typeName },
     popupProps: {
-      size: '800px',
+      width: '600px',
       top: '10vh',
     },
   });

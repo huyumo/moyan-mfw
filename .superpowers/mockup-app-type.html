@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>应用类型管理 - 卡片布局设计</title>
+  <link href="https://cdn.jsdelivr.net/npm/element-plus@2.4.4/dist/index.css" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 20px;
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 16px 24px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .page-title { font-size: 20px; font-weight: 600; color: #303133; }
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 16px 24px;
+      background: white;
+      border-radius: 8px;
+    }
+    .search-input {
+      padding: 8px 12px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      width: 200px;
+    }
+    .btn {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-primary { background: #409eff; color: white; border: none; }
+    .btn-default { background: white; color: #606266; border: 1px solid #dcdfe6; }
+    
+    /* 卡片网格布局 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    
+    /* 应用类型卡片 */
+    .app-type-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+      border: 1px solid #e4e7ed;
+      position: relative;
+    }
+    .app-type-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      transform: translateY(-2px);
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #409eff, #67c23a);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 24px;
+    }
+    .card-title-area { flex: 1; }
+    .card-title { font-size: 16px; font-weight: 600; color: #303133; margin: 0 0 4px 0; }
+    .card-code { font-size: 12px; color: #909399; }
+    
+    .card-body { margin-bottom: 16px; }
+    .card-desc { font-size: 14px; color: #606266; line-height: 1.5; margin-bottom: 12px; }
+    .card-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tag {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .tag-success { background: #f0f9eb; color: #67c23a; border: 1px solid #e1f3d8; }
+    .tag-info { background: #f4f4f5; color: #909399; border: 1px solid #e9e9eb; }
+    .tag-warning { background: #fdf6ec; color: #e6a23c; border: 1px solid #faecd8; }
+    
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #ebeef5;
+    }
+    .card-meta { font-size: 12px; color: #909399; }
+    .card-actions { display: flex; gap: 8px; }
+    .action-btn {
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 1px solid #dcdfe6;
+      background: white;
+      color: #606266;
+      transition: all 0.2s;
+    }
+    .action-btn:hover { background: #f5f7fa; }
+    .action-btn.primary { border-color: #409eff; color: #409eff; }
+    .action-btn.primary:hover { background: #ecf5ff; }
+    
+    /* 内置角色卡片（弹窗内） */
+    .builtin-role-section {
+      margin-top: 20px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 8px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 16px; font-weight: 600; color: #303133; }
+    
+    .role-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .role-card {
+      background: white;
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid #e4e7ed;
+      transition: all 0.2s;
+    }
+    .role-card:hover {
+      border-color: #409eff;
+      box-shadow: 0 2px 8px rgba(64,158,255,0.15);
+    }
+    .role-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .role-icon {
+      width: 32px;
+      height: 32px;
+      background: #ecf5ff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #409eff;
+    }
+    .role-name { font-size: 14px; font-weight: 600; color: #303133; }
+    .role-code { font-size: 12px; color: #909399; margin-bottom: 8px; }
+    .role-desc { font-size: 13px; color: #606266; line-height: 1.4; }
+    .role-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #ebeef5;
+    }
+    
+    /* 设计对比区域 */
+    .comparison-section {
+      margin-top: 40px;
+      padding: 24px;
+      background: white;
+      border-radius: 12px;
+    }
+    .comparison-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .comparison-item {
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #e4e7ed;
+    }
+    .comparison-item.selected { border-color: #409eff; background: #ecf5ff; }
+    .comparison-label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .comparison-label .badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: #409eff;
+      color: white;
+    }
+    
+    /* 选项选择样式 */
+    .option-select {
+      cursor: pointer;
+      position: relative;
+    }
+    .option-select::after {
+      content: '点击选择';
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 12px;
+      color: #409eff;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .option-select:hover::after { opacity: 1; }
+    
+    .selected-indicator {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 24px;
+      height: 24px;
+      background: #409eff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="text-align: center; margin-bottom: 8px;">应用类型管理页面 - 卡片布局设计</h2>
+  <p style="text-align: center; color: #909399; margin-bottom: 24px;">请查看以下设计方案，点击选择您偏好的布局方式</p>
+  
+  <!-- 方案 A: 简洁卡片布局 -->
+  <div class="comparison-section">
+    <div class="comparison-title">方案对比</div>
+    <div class="comparison-grid">
+      
+      <!-- 方案 A -->
+      <div class="comparison-item option-select" id="option-a" onclick="selectOption('a')">
+        <div class="comparison-label">
+          <span>方案 A: 简洁卡片网格</span>
+          <span class="badge">推荐</span>
+        </div>
+        <p style="color: #606266; margin-bottom: 16px; font-size: 13px;">
+          卡片网格布局，每个应用类型一张卡片，信息紧凑，视觉清晰。
+          内置角色在卡片内以小卡片形式展示，点击展开详情。
+        </p>
+        
+        <!-- Mockup -->
+        <div style="background: #f5f7fa; padding: 16px; border-radius: 8px;">
+          <div class="page-header">
+            <span class="page-title">应用类型管理</span>
+            <button class="btn btn-primary">+ 新增类型</button>
+          </div>
+          <div class="search-bar">
+            <input class="search-input" placeholder="搜索类型名称...">
+            <button class="btn btn-default">筛选</button>
+          </div>
+          <div class="card-grid" style="max-width: 100%;">
+            <div class="app-type-card">
+              <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div class="card-title-area">
+                  <h3 class="card-title">项目管理</h3>
+                  <span class="card-code">PROJECT</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-desc">用于管理企业项目的应用类型</p>
+                <div class="card-tags">
+                  <span class="tag tag-success">启用</span>
+                  <span class="tag tag-info">多应用</span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span class="card-meta">3 个内置角色</span>
+                <div class="card-actions">
+                  <button class="action-btn primary">编辑</button>
+                  <button class="action-btn">权限池</button>
+                  <button class="action-btn">角色</button>
+                </div>
+              </div>
+            </div>
+            <div class="app-type-card">
+              <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #e6a23c, #f56c6c);">📝</div>
+                <div class="card-title-area">
+                  <h3 class="card-title">文档管理</h3>
+                  <span class="card-code">DOCUMENT</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p class="card-desc">企业文档协作与知识管理</p>
+                <div class="card-tags">
+                  <span class="tag tag-success">启用</span>
+                  <span class="tag tag-info">单应用</span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <span class="card-meta">2 个内置角色</span>
+                <div class="card-actions">
+                  <button class="action-btn primary">编辑</button>
+                  <button class="action-btn">权限池</button>
+                  <button class="action-btn">角色</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top: 16px;">
+          <div style="font-size: 13px; color: #67c23a; margin-bottom: 4px;">✓ 优点</div>
+          <ul style="font-size: 12px; color: #606266; margin: 0; padding-left: 16px;">
+            <li>信息一目了然，无需翻页</li>
+            <li>卡片可响应式排列，适配不同屏幕</li>
+            <li>操作按钮直接在卡片上，交互便捷</li>
+          </ul>
+        </div>
+      </div>
+      
+      <!-- 方案 B -->
+      <div class="comparison-item option-select" id="option-b" onclick="selectOption('b')">
+        <div class="comparison-label">
+          <span>方案 B: 详情展开卡片</span>
+        </div>
+        <p style="color: #606266; margin-bottom: 16px; font-size: 13px;">
+          卡片可点击展开显示详细信息，内置角色以列表形式在展开区域内展示。
+          适合需要展示更多信息的场景。
+        </p>
+        
+        <!-- Mockup -->
+        <div style="background: #f5f7fa; padding: 16px; border-radius: 8px;">
+          <div class="page-header">
+            <span class="page-title">应用类型管理</span>
+            <button class="btn btn-primary">+ 新增类型</button>
+          </div>
+          <div class="card-grid" style="max-width: 100%; grid-template-columns: 1fr;">
+            <!-- 展开的卡片 -->
+            <div class="app-type-card" style="border-color: #409eff;">
+              <div class="card-header">
+                <div class="card-icon">📊</div>
+                <div class="card-title-area">
+                  <h3 class="card-title">项目管理</h3>
+                  <span class="card-code">PROJECT</span>
+                </div>
+                <span class="tag tag-success">启用</span>
+              </div>
+              
+              <!-- 展开的详情区域 -->
+              <div style="padding: 16px; background: #fafafa; border-radius: 8px; margin-top: 12px;">
+                <div style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #303133;">
+                  内置角色 (3)
+                  <button class="btn btn-primary" style="float: right; padding: 4px 12px; font-size: 12px;">+ 新增角色</button>
+                </div>
+                <div class="role-card-grid">
+                  <div class="role-card">
+                    <div class="role-header">
+                      <div class="role-icon">👑</div>
+                      <span class="role-name">项目管理员</span>
+                    </div>
+                    <div class="role-code">PROJECT_ADMIN</div>
+                    <div class="role-desc">拥有项目全部权限</div>
+                    <div class="role-footer">
+                      <button class="action-btn" style="font-size: 11px;">配置权限</button>
+                      <button class="action-btn" style="font-size: 11px;">编辑</button>
+                    </div>
+                  </div>
+                  <div class="role-card">
+                    <div class="role-header">
+                      <div class="role-icon">👤</div>
+                      <span class="role-name">项目成员</span>
+                    </div>
+                    <div class="role-code">PROJECT_MEMBER</div>
+                    <div class="role-desc">基础项目操作权限</div>
+                    <div class="role-footer">
+                      <button class="action-btn" style="font-size: 11px;">配置权限</button>
+                      <button class="action-btn" style="font-size: 11px;">编辑</button>
+                    </div>
+                  </div>
+                  <div class="role-card">
+                    <div class="role-header">
+                      <div class="role-icon">👁</div>
+                      <span class="role-name">访客</span>
+                    </div>
+                    <div class="role-code">PROJECT_GUEST</div>
+                    <div class="role-desc">仅查看权限</div>
+                    <div class="role-footer">
+                      <button class="action-btn" style="font-size: 11px;">配置权限</button>
+                      <button class="action-btn" style="font-size: 11px;">编辑</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-footer" style="margin-top: 16px;">
+                <span class="card-meta">创建于 2024-01-15</span>
+                <div class="card-actions">
+                  <button class="action-btn primary">编辑类型</button>
+                  <button class="action-btn">权限池</button>
+                  <button class="action-btn">收起</button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 未展开的卡片 -->
+            <div class="app-type-card">
+              <div class="card-header">
+                <div class="card-icon" style="background: linear-gradient(135deg, #e6a23c, #f56c6c);">📝</div>
+                <div class="card-title-area">
+                  <h3 class="card-title">文档管理</h3>
+                  <span class="card-code">DOCUMENT</span>
+                </div>
+                <span class="tag tag-success">启用</span>
+              </div>
+              <div class="card-footer" style="border-top: none; padding-top: 0;">
+                <span class="card-meta">2 个内置角色</span>
+                <div class="card-actions">
+                  <button class="action-btn">点击展开详情</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div style="margin-top: 16px;">
+          <div style="font-size: 13px; color: #67c23a; margin-bottom: 4px;">✓ 优点</div>
+          <ul style="font-size: 12px; color: #606266; margin: 0; padding-left: 16px;">
+            <li>内置角色直接展示，无需弹窗</li>
+            <li>信息层次清晰，展开/收起灵活</li>
+            <li>适合需要频繁管理角色的场景</li>
+          </ul>
+          <div style="font-size: 13px; color: #f56c6c; margin-top: 8px; margin-bottom: 4px;">✗ 缺点</div>
+          <ul style="font-size: 12px; color: #606266; margin: 0; padding-left: 16px;">
+            <li>展开后占用较大空间</li>
+            <li>同时只能查看一个类型的详情</li>
+          </ul>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <!-- 内置角色弹窗设计 -->
+  <div class="comparison-section" style="margin-top: 24px;">
+    <div class="comparison-title">内置角色弹窗设计（方案 A 配套）</div>
+    <p style="color: #606266; margin-bottom: 16px; font-size: 13px;">
+      如果选择方案 A，内置角色管理通过弹窗进行。以下是弹窗内的卡片布局设计：
+    </p>
+    
+    <div style="background: white; padding: 24px; border-radius: 12px; border: 1px solid #e4e7ed; max-width: 600px;">
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #303133;">
+        配置内置角色 - 项目管理
+        <button class="btn btn-primary" style="float: right; padding: 6px 16px;">+ 新增角色</button>
+      </div>
+      
+      <div style="background: #fdf6ec; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; color: #e6a23c;">
+        💡 内置角色是与应用类型绑定的预设角色，创建应用实例时自动继承。
+      </div>
+      
+      <div class="role-card-grid" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="role-card">
+          <div class="role-header">
+            <div class="role-icon">👑</div>
+            <span class="role-name">项目管理员</span>
+          </div>
+          <div class="role-code">PROJECT_ADMIN</div>
+          <div class="role-desc">拥有项目全部权限，可管理成员</div>
+          <div class="role-footer">
+            <button class="action-btn primary" style="font-size: 11px;">配置权限</button>
+            <button class="action-btn" style="font-size: 11px;">编辑</button>
+            <button class="action-btn" style="font-size: 11px; color: #f56c6c;">删除</button>
+          </div>
+        </div>
+        <div class="role-card">
+          <div class="role-header">
+            <div class="role-icon">👤</div>
+            <span class="role-name">项目成员</span>
+          </div>
+          <div class="role-code">PROJECT_MEMBER</div>
+          <div class="role-desc">基础项目操作权限，可创建任务</div>
+          <div class="role-footer">
+            <button class="action-btn primary" style="font-size: 11px;">配置权限</button>
+            <button class="action-btn" style="font-size: 11px;">编辑</button>
+            <button class="action-btn" style="font-size: 11px; color: #f56c6c;">删除</button>
+          </div>
+        </div>
+        <div class="role-card">
+          <div class="role-header">
+            <div class="role-icon">👁</div>
+            <span class="role-name">访客</span>
+          </div>
+          <div class="role-code">PROJECT_GUEST</div>
+          <div class="role-desc">仅查看权限，无法编辑内容</div>
+          <div class="role-footer">
+            <button class="action-btn primary" style="font-size: 11px;">配置权限</button>
+            <button class="action-btn" style="font-size: 11px;">编辑</button>
+            <button class="action-btn" style="font-size: 11px; color: #f56c6c;">删除</button>
+          </div>
+        </div>
+      </div>
+      
+      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #ebeef5; display: flex; justify-content: flex-end; gap: 12px;">
+        <button class="btn btn-default">关闭</button>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let selectedOption = null;
+    
+    function selectOption(option) {
+      selectedOption = option;
+      
+      // 更新视觉状态
+      document.getElementById('option-a').classList.remove('selected');
+      document.getElementById('option-b').classList.remove('selected');
+      document.getElementById('option-' + option).classList.add('selected');
+      
+      // 显示选择提示
+      const label = option === 'a' ? '方案 A: 简洁卡片网格' : '方案 B: 详情展开卡片';
+      alert('您选择了: ' + label + '\n\n请在终端中确认您的选择');
+    }
+  </script>
+</body>
+</html>
