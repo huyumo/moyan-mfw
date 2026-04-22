@@ -8,17 +8,14 @@
   <MfwPageWrapper>
     <template #header-extra>
       <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
+        <el-icon>
+          <Plus />
+        </el-icon>
         新建角色
       </el-button>
     </template>
-    <MfwListPage
-      ref="listPage"
-      :search-template="searchTemplate"
-      :columns="columns"
-      :action-column="actionColumn"
-      :load-data="loadData"
-    />
+    <MfwListPage ref="listPage" :search-template="searchTemplate" :columns="columns" :action-column="actionColumn"
+      :load-data="loadData" />
   </MfwPageWrapper>
 </template>
 
@@ -137,13 +134,13 @@ const actionColumn = {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiRoleFindAll({ 
-    query: { 
+  const result = await new ApiRoleFindAll({
+    query: {
       page: params.page as number || 1,
       pageSize: params.pageSize as number || 20,
       appId: appId.value,
-      ...params 
-    } 
+      ...params
+    }
   });
   return {
     list: result.list || [],
@@ -206,7 +203,7 @@ const handlePermission = (row: RoleResponseDto) => {
 const handleDelete = async (row: RoleResponseDto) => {
   try {
     await ElMessageBox.confirm(`确定要删除角色「${row.roleName}」吗？`, '确认删除', { type: 'warning' });
-    await new ApiRoleDelete({ params: { id: row.id } });
+    await new ApiRoleDelete({ params: { id: row.id } }, { hintSuccess: true });
     ElMessage.success('删除成功');
     listPage.value?.refresh();
   } catch {
@@ -214,5 +211,3 @@ const handleDelete = async (row: RoleResponseDto) => {
   }
 };
 </script>
-
-
