@@ -9,20 +9,18 @@
     <el-alert title="内置角色说明" type="info" :closable="false" show-icon class="mb-4">
       <p>内置角色是与应用类型绑定的预设角色，创建应用实例时自动继承。</p>
     </el-alert>
-    
+
     <div class="builtin-role-header">
       <span class="builtin-role-title">{{ typeName }} - 内置角色</span>
       <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
     </div>
-    
+
     <div v-loading="loading" class="builtin-role-grid">
       <RoleCard
         v-for="role in roleList"
         :key="role.id"
         :data="role"
-        @permission="handleAssignPermissions"
-        @edit="handleEditRole"
-        @delete="handleDeleteRole"
+        @refresh="loadRoles"
       />
       <el-empty v-if="!loading && roleList.length === 0" description="暂无内置角色" />
     </div>
@@ -31,11 +29,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import { MfwPopup } from '../../feedback';
-import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
+import { ApiRoleFindAll } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
-import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
 import RoleCard from './RoleCard.vue';
 
@@ -70,38 +67,12 @@ const loadRoles = async () => {
   }
 };
 
-const handleAssignPermissions = (row: RoleResponseDto) => {
-  MfwPopup.open({
-    title: `配置角色权限 - ${row.roleName}`,
-    type: 'dialog',
-    component: RolePermissionPanel,
-    data: {
-      roleId: row.id,
-      appTypeId: props.appTypeId,
-    },
-    popupProps: {
-      size: '800px',
-      top: '10vh',
-    },
-    footer: {
-      cancelText: '关闭',
-      confirmText: '保存',
-    },
-    on: {
-      confirm: () => {
-        ElMessage.success('权限配置成功');
-        loadRoles();
-      },
-    },
-  });
-};
-
 const handleAddRole = () => {
   MfwPopup.open({
     title: '新增内置角色',
     type: 'dialog',
     component: RoleForm,
-    data: { appTypeId: props.appTypeId, isBuiltin: 1, },
+    data: { appTypeId: props.appTypeId, isBuiltin: 1 },
     popupProps: {
       size: '500px',
     },
@@ -115,42 +86,6 @@ const handleAddRole = () => {
       },
     },
   });
-};
-
-const handleEditRole = (row: RoleResponseDto) => {
-  MfwPopup.open({
-    title: '编辑内置角色',
-    type: 'dialog',
-    component: RoleForm,
-    data: { id: row.id, role: row ,appTypeId: props.appTypeId},
-    popupProps: {
-      size: '500px',
-    },
-    footer: {
-      cancelText: '取消',
-      confirmText: '确定',
-    },
-    on: {
-      confirm: () => {
-        loadRoles();
-      },
-    },
-  });
-};
-
-const handleDeleteRole = async (row: RoleResponseDto) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要删除角色「${row.roleName}」吗？`,
-      '确认删除',
-      { type: 'warning' }
-    );
-    await new ApiRoleDelete({ params: { id: row.id } });
-    ElMessage.success('删除成功');
-    loadRoles();
-  } catch {
-    // 用户取消或删除失败
-  }
 };
 
 onMounted(() => {

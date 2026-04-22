@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <div class="app-type-card">
+  <el-card class="app-type-card" shadow="hover">
     <div class="app-type-card__header">
       <div class="app-type-card__icon">
         <el-icon v-if="currentIcon" size="24">
@@ -18,7 +18,7 @@
         <span class="app-type-card__code">{{ data.typeCode }}</span>
       </div>
     </div>
-    
+
     <div class="app-type-card__body">
       <p class="app-type-card__desc">{{ data.typeDesc || '暂无描述' }}</p>
       <div class="app-type-card__tags">
@@ -30,7 +30,7 @@
         </el-tag>
       </div>
     </div>
-    
+
     <div class="app-type-card__footer">
       <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} 个内置角色</span>
       <div class="app-type-card__actions">
@@ -39,7 +39,7 @@
         <el-button size="small" v-permission="{ value: ['内置角色'] }" @click="$emit('role', data)">内置角色</el-button>
       </div>
     </div>
-  </div>
+  </el-card>
 </template>
 
 <script setup lang="ts">
@@ -74,20 +74,9 @@ const currentIcon = computed(() => {
 
 <style scoped lang="scss">
 .app-type-card {
-  background: var(--el-bg-color);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--el-box-shadow-light);
-  border: 1px solid var(--el-border-color);
-  transition: all 0.3s ease;
   width: 100%;
   display: flex;
   flex-direction: column;
-
-  &:hover {
-    box-shadow: var(--el-box-shadow);
-    transform: translateY(-2px);
-  }
 
   &__header {
     display: flex;
@@ -106,7 +95,7 @@ const currentIcon = computed(() => {
     justify-content: center;
     overflow: hidden;
     flex-shrink: 0;
-    
+
     .icon-text {
       font-size: 20px;
       color: white;
