@@ -79,4 +79,8 @@ export class AppTypeResponseDto {
   @ApiProperty({ description: '更新时间' })
   @Expose()
   updateAt: Date;
+
+  @ApiProperty({ description: '内置角色数量' })
+  @Expose()
+  builtinRoleCount: number;
 }

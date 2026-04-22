@@ -179,6 +179,7 @@ export class UserPermissionsResponseDto {
    * @description 用户权限值映射（permCode → permissionValue）
    */
   @ApiProperty({
+    type:'json',
     description: '权限值映射（permCode → permissionValue）',
     example: { 'pc_root:sys:app': '7', 'pc_root:sys:role': '3' },
     required: false,
