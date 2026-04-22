@@ -348,6 +348,7 @@ const handleConfigPermissionValue = (data: PermissionTreeNodeDto) => {
     type: 'dialog',
     component: MfwPermissionValuePanel,
     data: {
+      isRoot:true,
       permissiondData: {
         nodeId: data.id,
         nodeName: data.permName,

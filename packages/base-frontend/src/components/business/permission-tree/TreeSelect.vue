@@ -120,6 +120,12 @@ const handlePermissionValue = (data: PermissionTreeNodeDto) => {
         parentPermissionValue: data.parentPermissionValue,
       },
     },
+    on:{
+      confirm: (newValue) => {
+        console.log('confirm',newValue);
+        data.permissionValue = newValue;
+      }
+    }
   });
 };
 </script>
