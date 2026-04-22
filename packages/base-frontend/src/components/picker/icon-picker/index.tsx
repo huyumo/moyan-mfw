@@ -8,33 +8,20 @@ import './style.scss';
 import {
   defineComponent,
   ref,
-  computed,
   watch,
-  type PropType
+  type PropType,
+  h,
+  markRaw,
 } from 'vue';
-import {
-  ElInput,
-  ElPopover,
-  ElScrollbar,
-  ElTag,
-  ElIcon
-} from 'element-plus';
-import { Search, Close } from '@element-plus/icons-vue';
+import { ElInput, ElIcon } from 'element-plus';
+import { Close } from '@element-plus/icons-vue';
+import * as IconMap from '@element-plus/icons-vue';
+import { MfwPopup } from '../../feedback';
 import type { MfwIconPickerProps, MfwIconPickerEmits, MfwIconPickerInstance, IconItem } from './types';
+import IconPickerPanel from './IconPickerPanel.vue';
 
-// 内置 Element Plus 图标列表（简化版，实际使用时可扩展）
-const builtinIcons = [
-  'Plus', 'Minus', 'CirclePlus', 'Close', 'Edit', 'Delete', 'Star',
-  'Search', 'Upload', 'Download', 'Refresh', 'Setting', 'Question',
-  'Warning', 'Info', 'Success', 'Error', 'Loading',
-  'User', 'Avatar', 'Phone', 'Email', 'Message',
-  'Document', 'Folder', 'Calendar', 'Clock', 'Bell',
-  'Home', 'Location', 'Link', 'Picture', 'Video',
-  'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-  'Top', 'Bottom', 'Back', 'Right'
-];
-
-const defaultIcons: IconItem[] = builtinIcons.map((name) => ({
+// 从 @element-plus/icons-vue 自动获取所有图标
+const defaultIcons: IconItem[] = Object.keys(IconMap).map((name: string) => ({
   name,
   category: 'default',
   tags: [name.toLowerCase()]
@@ -72,12 +59,12 @@ export default defineComponent({
     /** 每行图标数量 */
     columns: {
       type: Number as PropType<MfwIconPickerProps['columns']>,
-      default: 10
+      default: 8
     },
     /** 弹窗宽度 */
     popupWidth: {
       type: [Number, String] as PropType<MfwIconPickerProps['popupWidth']>,
-      default: 400
+      default: 500
     },
     /** 是否禁用 */
     disabled: {
@@ -101,156 +88,109 @@ export default defineComponent({
     change: (value: string) => true
   },
 
-  setup(props, { emit, expose }) {
-    const visible = ref(false);
-    const searchValue = ref('');
-    const popoverRef = ref<any>();
+  setup(props, { emit }) {
+    const internalValue = ref(props.modelValue);
 
-    const selectedIcon = computed({
-      get: () => props.modelValue,
-      set: (value) => {
-        emit('update:modelValue', value);
-        emit('change', value);
-      }
+    // 监听外部 modelValue 变化，同步到内部值
+    watch(() => props.modelValue, (newValue) => {
+      internalValue.value = newValue;
     });
 
-    const filteredIcons = computed(() => {
-      if (!searchValue.value) {
-        return props.icons || [];
-      }
-      const keyword = searchValue.value.toLowerCase();
-      return (props.icons || []).filter((icon) => {
-        return (
-          icon.name.toLowerCase().includes(keyword) ||
-          (icon.tags && icon.tags.some((tag) => tag.toLowerCase().includes(keyword)))
-        );
+    const getIconComponent = (iconName: string) => {
+      return (IconMap as any)[iconName] || null;
+    };
+
+    const handleOpen = () => {
+      if (props.disabled) return;
+      
+      MfwPopup.open({
+        title: '选择图标',
+        type: 'dialog',
+        component: markRaw(IconPickerPanel),
+        data: {
+          modelValue: internalValue.value,
+          icons: props.icons,
+          iconSize: props.iconSize,
+          columns: props.columns,
+        },
+        popupProps: {
+          width: props.popupWidth,
+          top: '10vh',
+        },
+        footer: {
+          cancelText: '取消',
+          confirmText: '确定',
+        },
+        on: {
+          confirm: (component: any) => {
+            // 从 component ref 获取选中的值
+            if (component && component.selectedIcon !== undefined) {
+              let selectedValue;
+              // 检查是否是 ref 对象
+              if (component.selectedIcon && typeof component.selectedIcon.value !== 'undefined') {
+                selectedValue = component.selectedIcon.value;
+              } else {
+                selectedValue = component.selectedIcon;
+              }
+              
+              if (selectedValue !== undefined) {
+                internalValue.value = selectedValue;
+                emit('update:modelValue', selectedValue);
+                emit('change', selectedValue);
+              }
+            }
+          },
+        },
       });
-    });
-
-    const handleSelect = (iconName: string) => {
-      selectedIcon.value = iconName;
-      visible.value = false;
     };
 
-    const handleClear = () => {
-      selectedIcon.value = '';
-      visible.value = false;
+    const handleClear = (e: Event) => {
+      e.stopPropagation();
+      internalValue.value = '';
+      emit('update:modelValue', '');
+      emit('change', '');
     };
 
-    const open = () => {
-      visible.value = true;
-    };
+    return () => {
+      const CurrentIconComponent = internalValue.value ? getIconComponent(internalValue.value) : null;
 
-    const close = () => {
-      visible.value = false;
-    };
-
-    watch(visible, (val) => {
-      if (!val) {
-        searchValue.value = '';
-      }
-    });
-
-    expose<MfwIconPickerInstance>({
-      open,
-      close,
-      clear: handleClear
-    });
-
-    return () => (
-      <div class="mfw-icon-picker">
-        <ElPopover
-          ref={popoverRef}
-          v-model={visible.value}
-          placement="bottom-start"
-          width={props.popupWidth}
-          trigger="click"
-          disabled={props.disabled}
-        >
-          {{
-            reference: () => (
-              <ElInput
-                modelValue={selectedIcon.value}
-                placeholder={props.placeholder}
-                readonly
-                disabled={props.disabled}
-                class="mfw-icon-picker-input"
-                v-slots={{
-                  prefix: selectedIcon.value
-                    ? () => (
-                      <ElIcon size={props.iconSize}>
-                        {(ElIcon as any)[selectedIcon.value] || null}
+      return (
+        <div class="mfw-icon-picker">
+          <div onClick={handleOpen} style="display: flex;">
+            <ElInput
+              modelValue={internalValue.value}
+              placeholder={props.placeholder}
+              readonly
+              disabled={props.disabled}
+              class="mfw-icon-picker-input"
+              v-slots={{
+                prefix: CurrentIconComponent
+                  ? () => (
+                    <ElIcon size={props.iconSize}>
+                      <CurrentIconComponent />
+                    </ElIcon>
+                  )
+                  : undefined,
+                suffix: internalValue.value
+                  ? () => (
+                    <div
+                      style="cursor: pointer;"
+                      onClick={(e: Event) => {
+                        e.stopPropagation();
+                        handleClear(e);
+                      }}
+                    >
+                      <ElIcon size={16}>
+                        <Close />
                       </ElIcon>
-                    )
-                    : undefined,
-                  suffix: selectedIcon.value
-                    ? () => (
-                      <div
-                        style="cursor: pointer;"
-                        onClick={(e: Event) => {
-                          e.stopPropagation();
-                          handleClear();
-                        }}
-                      >
-                        <ElIcon size={16}>
-                          <Close />
-                        </ElIcon>
-                      </div>
-                    )
-                    : undefined
-                }}
-              />
-            ),
-            default: () => (
-              <div class="mfw-icon-picker-panel">
-                {props.showSearch && (
-                  <div class="mfw-icon-picker-search">
-                    <ElInput
-                      v-model={searchValue.value}
-                      placeholder={props.searchPlaceholder}
-                      clearable
-                      prefix-icon={Search}
-                      size="small"
-                    />
-                  </div>
-                )}
-                <ElScrollbar max-height="300px">
-                  <div
-                    class="mfw-icon-picker-grid"
-                    style={{ gridTemplateColumns: `repeat(${props.columns}, 1fr)` }}
-                  >
-                    {filteredIcons.value.map((icon) => {
-                      const IconComponent = (ElIcon as any)[icon.name];
-                      return (
-                        <div
-                          key={icon.name}
-                          class={[
-                            'mfw-icon-picker-item',
-                            selectedIcon.value === icon.name ? 'selected' : ''
-                          ]}
-                          onClick={() => handleSelect(icon.name)}
-                        >
-                          <ElIcon size={props.iconSize}>
-                            {IconComponent && <IconComponent />}
-                          </ElIcon>
-                          <span class="mfw-icon-picker-item-name">{icon.name}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ElScrollbar>
-                {selectedIcon.value && (
-                  <div class="mfw-icon-picker-footer">
-                    <ElTag size="small" type="info" onClick={handleClear}>
-                      {props.clearText}
-                    </ElTag>
-                  </div>
-                )}
-              </div>
-            )
-          }}
-        </ElPopover>
-      </div>
-    );
+                    </div>
+                  )
+                  : undefined
+              }}
+            />
+          </div>
+        </div>
+      );
+    };
   }
-});
+})

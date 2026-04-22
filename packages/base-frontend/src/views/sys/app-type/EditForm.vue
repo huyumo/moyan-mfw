@@ -17,6 +17,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
+import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeUpdate } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
@@ -64,8 +65,7 @@ const formTemplate: FormItemConfig[] = [
   {
     key: 'icon',
     label: '图标',
-    component: 'el-input',
-    placeholder: '请输入图标名称或 URL',
+    component: MfwIconPicker,
   },
   {
     key: 'typeDesc',
@@ -82,6 +82,7 @@ const formTemplate: FormItemConfig[] = [
     label: '状态',
     component: 'el-switch',
     value: STATUS.ENABLED,
+    disabled: () => Boolean(props.data?.typeCode === 'system' || props.data?.typeCode?.startsWith('sys')),
     elProps: {
       activeValue: STATUS.ENABLED,
       inactiveValue: STATUS.DISABLED,
@@ -117,7 +118,7 @@ const onConfirm = async () => {
       typeDesc: form.typeDesc,
       typeStatus: form.typeStatus,
     },
-  });
+  },{hintSuccess: true,successMsg: '更新成功'});
 };
 
 /** 暴露方法供 MfwPopup 调用 */

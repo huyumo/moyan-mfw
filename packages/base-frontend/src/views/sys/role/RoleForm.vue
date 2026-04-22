@@ -20,6 +20,7 @@ import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
+import { useAuthStore } from '../../../store/auth-store';
 
 /** 状态常量 */
 const STATUS = {
@@ -27,15 +28,14 @@ const STATUS = {
   DISABLED: 0,
 } as const;
 
-/** Props */
-interface Props {
-  data?: RoleResponseDto;
-}
 
-const props = defineProps<Props>();
+const props = defineProps<RoleResponseDto>();
+
+const authStore = useAuthStore();
+const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 是否编辑模式 */
-const isEdit = computed(() => !!props.data?.id);
+const isEdit = computed(() => !!props?.id);
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
@@ -103,12 +103,12 @@ const rules = {};
 
 /** 初始化表单 */
 onMounted(() => {
-  if (props.data) {
-    form.roleName = props.data.roleName;
-    form.roleCode = props.data.roleCode;
-    form.roleCodeDisplay = props.data.roleCode;
-    form.roleDesc = props.data.roleDesc || '';
-    form.roleStatus = props.data.roleStatus as 1 | 0;
+  if (props.id) {
+    form.roleName = props.roleName;
+    form.roleCode = props.roleCode;
+    form.roleCodeDisplay = props.roleCode;
+    form.roleDesc = props.roleDesc || '';
+    form.roleStatus = props.roleStatus as 1 | 0;
   }
 });
 
@@ -118,7 +118,7 @@ const onConfirm = async () => {
 
   if (isEdit.value) {
     await new ApiRoleUpdate({
-      params: { id: props.data!.id },
+      params: { id: props.id },
       body: {
         roleName: form.roleName,
         roleDesc: form.roleDesc,
@@ -128,6 +128,7 @@ const onConfirm = async () => {
   } else {
     await new ApiRoleCreate({
       body: {
+        appId: appId.value,
         roleName: form.roleName,
         roleCode: form.roleCode,
         roleDesc: form.roleDesc,
