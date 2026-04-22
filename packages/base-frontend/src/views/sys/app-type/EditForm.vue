@@ -118,7 +118,7 @@ const onConfirm = async () => {
       typeDesc: form.typeDesc,
       typeStatus: form.typeStatus,
     },
-  },{hintSuccess: true,successMsg: '更新成功'});
+  },{hintSuccess: true});
 };
 
 /** 暴露方法供 MfwPopup 调用 */

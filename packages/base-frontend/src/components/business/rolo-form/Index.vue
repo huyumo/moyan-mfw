@@ -17,10 +17,11 @@ import { FormItemConfig, MfwFormCard } from '../../form';
 
 defineOptions({ name: 'MfwAddRoleForm' });
 
-const { id, role ,appTypeId} = defineProps<{
+const { id, role ,appTypeId,isBuiltin} = defineProps<{
   id?: string;
   role?: CreateRoleDto;
   appTypeId: string;
+  isBuiltin?: number;
 }>();
 
 const emit = defineEmits<{
@@ -34,6 +35,7 @@ const formData = reactive(role || {
   roleCode: '',
   roleDesc: '',
   appTypeId: appTypeId,
+  isBuiltin: isBuiltin,
 });
 const formTemplate: FormItemConfig[] = [
   {

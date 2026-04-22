@@ -124,7 +124,7 @@ const onConfirm = async () => {
         roleDesc: form.roleDesc,
         roleStatus: form.roleStatus,
       },
-    });
+    }, { hintSuccess: true });
   } else {
     await new ApiRoleCreate({
       body: {
@@ -133,7 +133,7 @@ const onConfirm = async () => {
         roleCode: form.roleCode,
         roleDesc: form.roleDesc,
       },
-    });
+    }, { hintSuccess: true });
   }
 };
 

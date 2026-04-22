@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
+import { ElMessageBox, ElTag } from 'element-plus';
 import { Plus, View, Edit, Delete, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
@@ -181,7 +181,6 @@ const handleAdd = () => {
     popupProps: { width: 550 },
     on: {
       confirm: () => {
-        ElMessage.success('创建成功');
         listPage.value?.refresh();
       },
     },
@@ -198,7 +197,6 @@ const handleEdit = (row: AppDetailResponseDto) => {
     popupProps: { width: 550 },
     on: {
       confirm: () => {
-        ElMessage.success('更新成功');
         listPage.value?.refresh();
       },
     },
@@ -218,11 +216,9 @@ const handleDelete = async (row: AppDetailResponseDto) => {
       '确认删除',
       { type: 'warning' }
     );
-    await new ApiAppDelete({ params: { id: row.id } });
-    ElMessage.success('删除成功');
+    await new ApiAppDelete({ params: { id: row.id } }, { hintSuccess: true });
     listPage.value?.refresh();
   } catch {
-    // 用户取消
   }
 };
 

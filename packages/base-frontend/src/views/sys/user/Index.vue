@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElMessage, ElMessageBox, ElSwitch } from 'element-plus';
+import { ElMessageBox, ElSwitch } from 'element-plus';
 import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
 import MfwPageWrapper from '../../../components/page/page-wrapper';
 import MfwListPage from '../../../components/page/list-page';
@@ -156,7 +156,6 @@ const handleAdd = () => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('创建成功');
         listPage.value?.refresh();
       },
     },
@@ -173,7 +172,6 @@ const handleEdit = (row: UserResponseDto) => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('更新成功');
         listPage.value?.refresh();
       },
     },

@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { ref, h, computed } from 'vue';
-import { ElMessage, ElMessageBox, ElTag, ElAvatar } from 'element-plus';
+import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
@@ -143,7 +143,6 @@ const handleAdd = () => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('添加成功');
         listPage.value?.refresh();
       },
     },
@@ -160,7 +159,6 @@ const handleEditRoles = (row: MemberResponseDto) => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('角色分配成功');
         listPage.value?.refresh();
       },
     },
@@ -177,11 +175,9 @@ const handleRemove = async (row: MemberResponseDto) => {
     );
     await new ApiAppMemberRemoveMember({
       params: { appId: appId.value, userId: row.userId },
-    });
-    ElMessage.success('移除成功');
+    }, { hintSuccess: true });
     listPage.value?.refresh();
   } catch {
-    // 用户取消
   }
 };
 </script>

@@ -60,7 +60,7 @@ const onConfirm = async () => {
         normalTree: data.value.normalTree
       }
     }
-  },{ hintFail: true })
+  },{ hintSuccess: true, hintFail: true })
 }
 
 defineExpose({

@@ -99,7 +99,7 @@ const onConfirm = async () => {
       typeStatus: 1,
       sortOrder: 0,
     },
-  });
+  }, { hintSuccess: true });
 };
 
 /** 暴露方法供 MfwPopup 调用 */

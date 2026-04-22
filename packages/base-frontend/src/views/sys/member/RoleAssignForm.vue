@@ -76,7 +76,7 @@ const onConfirm = async () => {
       userId: props.data.member.userId,
     },
     body: { roleIds: selectedRoleIds.value as any },
-  });
+  }, { hintSuccess: true });
 };
 
 defineExpose({ onConfirm });

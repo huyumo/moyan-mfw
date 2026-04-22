@@ -50,21 +50,6 @@ const loadData = async () => {
   }
 };
 
-const handleAdd = () => {
-  MfwPopup.open({
-    title: '新增应用类型',
-    type: 'dialog',
-    component: AddForm,
-    popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        ElMessage.success('创建成功');
-        cardListPage.value?.refresh();
-      },
-    },
-  });
-};
-
 const handleEdit = (row: AppTypeResponseDto) => {
   MfwPopup.open({
     title: '编辑应用类型',
@@ -97,7 +82,6 @@ const handleConfigPermissionPool = (row: AppTypeResponseDto) => {
     },
     on: {
       confirm: () => {
-        ElMessage.success('保存成功');
       },
     },
   });

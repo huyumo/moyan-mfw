@@ -21,7 +21,7 @@
 
 <script setup lang="ts">
 import { ref, h, computed } from 'vue';
-import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
+import { ElMessageBox, ElTag } from 'element-plus';
 import { Plus, Edit, Delete, Key } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
@@ -157,7 +157,6 @@ const handleAdd = () => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('创建成功');
         listPage.value?.refresh();
       },
     },
@@ -174,7 +173,6 @@ const handleEdit = (row: RoleResponseDto) => {
     popupProps: { width: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('更新成功');
         listPage.value?.refresh();
       },
     },
@@ -192,7 +190,6 @@ const handlePermission = (row: RoleResponseDto) => {
     popupProps: { size: 500 },
     on: {
       confirm: () => {
-        ElMessage.success('权限分配成功');
         listPage.value?.refresh();
       },
     },
@@ -204,10 +201,8 @@ const handleDelete = async (row: RoleResponseDto) => {
   try {
     await ElMessageBox.confirm(`确定要删除角色「${row.roleName}」吗？`, '确认删除', { type: 'warning' });
     await new ApiRoleDelete({ params: { id: row.id } }, { hintSuccess: true });
-    ElMessage.success('删除成功');
     listPage.value?.refresh();
   } catch {
-    // 用户取消
   }
 };
 </script>
