@@ -89,6 +89,7 @@ onMounted(() => {
   border: 1px solid var(--el-border-color);
   transition: all 0.3s ease;
   height: 100%;
+  min-width: 280px;
   display: flex;
   flex-direction: column;
 
@@ -112,10 +113,15 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     
     .icon-text {
-      font-size: 24px;
+      font-size: 20px;
       color: white;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
     }
   }
 
