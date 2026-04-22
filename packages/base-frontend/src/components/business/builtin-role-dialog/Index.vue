@@ -160,7 +160,6 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .builtin-role-dialog {
-  min-height: 400px;
   display: flex;
   flex-direction: column;
 
@@ -183,9 +182,9 @@ onMounted(() => {
 
   .builtin-role-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(1, 1fr);
     gap: 12px;
-    flex: 1;
+    align-items: start;
   }
 }
 </style>
