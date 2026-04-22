@@ -22,13 +22,13 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElMessage, ElMessageBox, ElTag, ElButton, ElSwitch } from 'element-plus';
+import { ElMessage, ElMessageBox, ElSwitch } from 'element-plus';
 import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
 import MfwPageWrapper from '../../../components/page/page-wrapper';
 import MfwListPage from '../../../components/page/list-page';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
-import { usePermission } from '../../../hooks';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import {
   ApiUserFindAll,
   ApiUserDelete,
@@ -61,7 +61,6 @@ const GENDER_TEXT = {
 defineOptions({ name: 'MfwUserList' });
 
 const listPage = ref<MfwListPageInstance>();
-const { hasPermissionValue } = usePermission();
 
 /** 搜索模板 */
 const searchTemplate = [
@@ -126,28 +125,13 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 250,
+  width: 200,
   fixed: 'right' as const,
-  render: ({ row }: { row: UserResponseDto }) => h('div', { class: 'action-buttons' }, [
-    hasPermissionValue({ value: ['编辑'] }) && h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: Edit,
-      onClick: () => handleEdit(row),
-    }, () => '编辑'),
-    hasPermissionValue({ value: ['编辑'] }) && h(ElButton, {
-      type: 'warning',
-      link: true,
-      icon: Lock,
-      onClick: () => handleResetPassword(row),
-    }, () => '重置密码'),
-    hasPermissionValue({ value: ['删除'] }) && h(ElButton, {
-      type: 'danger',
-      link: true,
-      icon: Delete,
-      onClick: () => handleDelete(row),
-    }, () => '删除'),
-  ].filter(Boolean)),
+  render: ({ row }: { row: UserResponseDto }) => renderActionButtons([
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
+    { label: '重置密码', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['编辑'] },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
+  ], { maxVisible: 2 }, row),
 };
 
 /** 加载数据 */
@@ -244,9 +228,3 @@ const handleDelete = async (row: UserResponseDto) => {
 };
 </script>
 
-<style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-</style>

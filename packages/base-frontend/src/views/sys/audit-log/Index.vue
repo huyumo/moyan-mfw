@@ -19,11 +19,11 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElButton } from 'element-plus';
 import { View } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import { ApiAuditLogFindAll, ApiAuditLogFindById } from '../../../apis/sys';
 import type { AuditLogResponseDto } from '../../../apis/sys/schemas';
 import AuditLogDetail from './AuditLogDetail.vue';
@@ -94,14 +94,9 @@ const actionColumn = {
   label: '操作',
   width: 80,
   fixed: 'right' as const,
-  render: ({ row }: { row: AuditLogResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: View,
-      onClick: () => handleViewDetail(row),
-    }, () => '详情'),
-  ]),
+  render: ({ row }: { row: AuditLogResponseDto }) => renderActionButtons([
+    { label: '详情', type: 'primary', icon: View, onClick: handleViewDetail },
+  ], {}, row),
 };
 
 /** 加载数据 */
@@ -136,9 +131,3 @@ const handleViewDetail = async (row: AuditLogResponseDto) => {
 };
 </script>
 
-<style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 0px;
-}
-</style>
