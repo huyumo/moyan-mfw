@@ -139,4 +139,5 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
       top: '10vh',
     },
   });
+};
 </script>
