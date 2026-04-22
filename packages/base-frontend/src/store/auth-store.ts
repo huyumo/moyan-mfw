@@ -78,6 +78,8 @@ export const useAuthStore = defineStore('auth', () => {
   const permissionMenu = ref<PermissionMenuItem[]>([]);
   const tokenExpiresAt = ref<number>(0);
   const loading = ref<boolean>(false);
+  const permissionValueMap = ref<Record<string, string>>({});
+  const routePermCodeMap = ref<Map<string, string>>(new Map());
 
   // ============== 计算属性 ==============
   const isAuthenticated = computed(() => !!token.value && !!user.value);
@@ -299,6 +301,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       const menuNodes = response.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
+      permissionValueMap.value = response.permissionValueMap || {};
+      buildRoutePermCodeMap(menuNodes);
 
       console.log('加载权限菜单:', permissionMenu.value);
 
@@ -314,6 +318,8 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (error) {
       console.error('加载权限菜单失败:', error);
       permissionMenu.value = [];
+      permissionValueMap.value = {};
+      routePermCodeMap.value.clear();
       return [];
     }
   }
@@ -330,6 +336,31 @@ export const useAuthStore = defineStore('auth', () => {
         iconName: node.iconName,
         children: node.children ? transformPermissionMenu(node.children) : undefined,
       }));
+  }
+
+  /** 构建路由路径到权限编码的映射 */
+  function buildRoutePermCodeMap(nodes: PermissionTreeNodeDto[]): void {
+    for (const node of nodes) {
+      if (node.routePath && node.permCode) {
+        routePermCodeMap.value.set(node.routePath, node.permCode);
+      }
+      if (node.children) {
+        buildRoutePermCodeMap(node.children);
+      }
+    }
+  }
+
+  /** 根据当前路由路径获取权限编码 */
+  function getPermCodeByRoute(currentPath: string): string | undefined {
+    if (routePermCodeMap.value.has(currentPath)) {
+      return routePermCodeMap.value.get(currentPath);
+    }
+    for (const [routePath, permCode] of routePermCodeMap.value) {
+      if (currentPath.startsWith(routePath + '/') || currentPath === routePath) {
+        return permCode;
+      }
+    }
+    return undefined;
   }
 
   /** 自动选择应用 */
@@ -404,6 +435,8 @@ export const useAuthStore = defineStore('auth', () => {
     permissionMenu,
     tokenExpiresAt,
     loading,
+    permissionValueMap,
+    routePermCodeMap,
 
     // 计算属性
     isAuthenticated,
@@ -426,5 +459,7 @@ export const useAuthStore = defineStore('auth', () => {
     loadPermissions,
     setPermissionMenu,
     initializeAuth,
+    buildRoutePermCodeMap,
+    getPermCodeByRoute,
   };
 });
