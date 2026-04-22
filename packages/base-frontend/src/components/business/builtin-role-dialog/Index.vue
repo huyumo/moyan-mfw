@@ -34,7 +34,7 @@ import { MfwPopup } from '../../feedback';
 import { ApiRoleFindAll } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RoleForm } from '..';
-import RoleCard from './RoleCard.vue';
+import { RoleCard } from '../role-card';
 
 defineOptions({ name: 'BuiltinRoleDialog' });
 
