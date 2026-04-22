@@ -17,6 +17,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
+import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeCreate } from '../../../apis/sys';
 
@@ -57,8 +58,7 @@ const formTemplate: FormItemConfig[] = [
   {
     key: 'icon',
     label: '图标',
-    component: 'el-input',
-    placeholder: '请输入图标名称或 URL',
+    component: MfwIconPicker,
   },
   {
     key: 'typeDesc',

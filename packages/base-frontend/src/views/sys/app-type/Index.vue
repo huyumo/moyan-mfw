@@ -6,30 +6,12 @@
 -->
 <template>
   <MfwPageWrapper>
-    <template #header-extra>
-      <el-button type="primary" @click="handleAdd">
-        <el-icon><Plus /></el-icon>
-        新增类型
-      </el-button>
-    </template>
-
     <div class="app-type-content-wrapper">
-      <MfwCardListPage
-        ref="cardListPage"
-        :show-search="false"
-        :show-pagination="false"
-        :load-data="loadData"
-        render-mode="card"
-        :card-grid="{ cols: 2, gap: 24 }"
-        empty-text="暂无应用类型"
-      >
+      <MfwCardListPage ref="cardListPage" :show-search="false" :show-pagination="false" :load-data="loadData"
+        render-mode="card" :card-grid="{ cols: 2, gap: 24 }" empty-text="暂无应用类型">
         <template #card-item="{ item }">
-          <AppTypeCard
-            :data="item"
-            @edit="handleEdit"
-            @permission="handleConfigPermissionPool"
-            @role="handleConfigBuiltinRoles"
-          />
+          <AppTypeCard :data="item" @edit="handleEdit" @permission="handleConfigPermissionPool"
+            @role="handleConfigBuiltinRoles" />
         </template>
       </MfwCardListPage>
     </div>
@@ -91,12 +73,7 @@ const handleEdit = (row: AppTypeResponseDto) => {
     component: EditForm,
     data: { ...row },
     popupProps: { size: 400 },
-    on: {
-      confirm: () => {
-        ElMessage.success('保存成功');
-        cardListPage.value?.refresh();
-      },
-    },
+    on: { confirm: cardListPage.value?.refresh }
   });
 };
 

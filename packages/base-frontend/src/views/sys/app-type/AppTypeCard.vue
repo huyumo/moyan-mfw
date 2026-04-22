@@ -8,7 +8,10 @@
   <div class="app-type-card">
     <div class="app-type-card__header">
       <div class="app-type-card__icon">
-        <span class="icon-text">{{ data.icon || '📊' }}</span>
+        <el-icon v-if="currentIcon" size="24">
+          <component :is="currentIcon" />
+        </el-icon>
+        <span v-else class="icon-text">📊</span>
       </div>
       <div class="app-type-card__title-area">
         <h3 class="app-type-card__title">{{ data.typeName }}</h3>
@@ -40,7 +43,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { ElIcon } from 'element-plus';
+import * as IconMap from '@element-plus/icons-vue';
 import { ApiRoleFindAll } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 
@@ -60,6 +65,12 @@ defineEmits<{
   (e: 'permission', data: AppTypeResponseDto): void;
   (e: 'role', data: AppTypeResponseDto): void;
 }>();
+
+const currentIcon = computed(() => {
+  const iconName = props.data.icon;
+  if (!iconName) return null;
+  return (IconMap as any)[iconName] || null;
+});
 
 const roleCount = ref(0);
 

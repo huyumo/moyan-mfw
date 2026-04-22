@@ -16,9 +16,6 @@
     <div class="role-card__body">
       <div class="role-card__code">{{ data.roleCode }}</div>
       <p class="role-card__desc">{{ data.roleDesc || '暂无描述' }}</p>
-      <el-tag :type="data.roleStatus === STATUS.ENABLED ? 'success' : 'danger'" size="small">
-        {{ data.roleStatus === STATUS.ENABLED ? '启用' : '禁用' }}
-      </el-tag>
     </div>
     
     <div class="role-card__footer">
