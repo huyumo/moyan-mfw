@@ -88,8 +88,7 @@ onMounted(() => {
   box-shadow: var(--el-box-shadow-light);
   border: 1px solid var(--el-border-color);
   transition: all 0.3s ease;
-  height: 100%;
-  min-width: 280px;
+  width: 100%;
   display: flex;
   flex-direction: column;
 
@@ -114,6 +113,7 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    flex-shrink: 0;
     
     .icon-text {
       font-size: 20px;
@@ -127,6 +127,8 @@ onMounted(() => {
 
   &__title-area {
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   &__title {
@@ -134,16 +136,23 @@ onMounted(() => {
     font-weight: 600;
     color: var(--el-text-color-primary);
     margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__code {
     font-size: 12px;
     color: var(--el-text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__body {
     flex: 1;
     margin-bottom: 16px;
+    min-width: 0;
   }
 
   &__desc {
@@ -151,6 +160,11 @@ onMounted(() => {
     color: var(--el-text-color-regular);
     line-height: 1.5;
     margin: 0 0 12px 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
   &__tags {
