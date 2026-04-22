@@ -6,17 +6,17 @@
 -->
 <template>
   <MfwPageWrapper>
+    <template #header-extra>
+      <el-button type="primary" data-testid="user-create-btn" @click="handleAdd">
+        <el-icon>
+          <Plus />
+        </el-icon>
+        新建用户
+      </el-button>
+    </template>
+
     <MfwListPage ref="listPage" :search-template="searchTemplate" :columns="columns" :action-column="actionColumn"
-      :load-data="loadData">
-      <template #search-actions="{ loading }">
-        <el-button type="primary" :loading="loading" data-testid="user-create-btn" @click="handleAdd">
-          <el-icon>
-            <Plus />
-          </el-icon>
-          新建用户
-        </el-button>
-      </template>
-    </MfwListPage>
+      :load-data="loadData" />
   </MfwPageWrapper>
 </template>
 
@@ -124,7 +124,7 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 180,
+  width: 250,
   fixed: 'right' as const,
   render: ({ row }: { row: UserResponseDto }) => h('div', { class: 'action-buttons' }, [
     h(ElButton, {
