@@ -73,7 +73,7 @@ const onConfirm = async () => {
   await new ApiAppMemberAddMember({
     params: { appId: props.data!.appId },
     body: { userId: form.userId },
-  });
+  }, { hintSuccess: true });
 };
 
 defineExpose({ onConfirm });

@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { ElMessage } from 'element-plus';
 import { Refresh } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
@@ -175,11 +174,9 @@ const handleSync = async () => {
       body: {
         routes,
       },
-    });
-    ElMessage.success('同步成功');
+    }, { hintSuccess: true });
     managerRef.value?.reload();
   } catch (error) {
-    // 错误由底层处理
   }
 };
 </script>

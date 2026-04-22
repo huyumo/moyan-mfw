@@ -67,7 +67,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
+import { type FormInstance, type FormRules } from 'element-plus';
 import { ApiUserCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
 
@@ -134,33 +134,27 @@ const onConfirm = async () => {
   const valid = await formRef.value.validate().catch(() => false);
   if (!valid) throw new Error('表单验证失败');
 
-  try {
-    if (isEdit.value) {
-      await new ApiUserUpdate({
-        params: { id: props.id },
-        body: {
-          nickname: form.nickname,
-          phone: form.phone,
-          email: form.email,
-          gender: form.gender,
-        },
-      });
-    } else {
-      await new ApiUserCreate({
-        body: {
-          username: form.username,
-          password: form.password,
-          nickname: form.nickname,
-          phone: form.phone,
-          email: form.email,
-          gender: form.gender,
-        },
-      });
-    }
-  } catch (error: any) {
-    const message = error?.response?.data?.message || error?.message || '操作失败';
-    ElMessage.error(message);
-    throw error;
+  if (isEdit.value) {
+    await new ApiUserUpdate({
+      params: { id: props.id },
+      body: {
+        nickname: form.nickname,
+        phone: form.phone,
+        email: form.email,
+        gender: form.gender,
+      },
+    }, { hintSuccess: true });
+  } else {
+    await new ApiUserCreate({
+      body: {
+        username: form.username,
+        password: form.password,
+        nickname: form.nickname,
+        phone: form.phone,
+        email: form.email,
+        gender: form.gender,
+      },
+    }, { hintSuccess: true });
   }
 };
 

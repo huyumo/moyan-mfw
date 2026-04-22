@@ -201,7 +201,7 @@ const onConfirm = async () => {
         ownerId: form.ownerId,
         appStatus: form.appStatus,
       },
-    });
+    }, { hintSuccess: true });
   } else {
     await new ApiAppCreate({
       body: {
@@ -213,7 +213,7 @@ const onConfirm = async () => {
         icon: form.icon,
         sortOrder: 0,
       },
-    });
+    }, { hintSuccess: true });
   }
 };
 
