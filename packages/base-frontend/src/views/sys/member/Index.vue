@@ -25,11 +25,12 @@
 
 <script setup lang="ts">
 import { ref, h, computed } from 'vue';
-import { ElMessage, ElMessageBox, ElTag, ElButton, ElAvatar } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import {
   ApiAppMemberGetMembers,
   ApiAppMemberRemoveMember,
@@ -107,22 +108,12 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 250,
+  width: 150,
   fixed: 'right' as const,
-  render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: Edit,
-      onClick: () => handleEditRoles(row),
-    }, () => '分配角色'),
-    h(ElButton, {
-      type: 'danger',
-      link: true,
-      icon: Delete,
-      onClick: () => handleRemove(row),
-    }, () => '移除'),
-  ]),
+  render: ({ row }: { row: MemberResponseDto }) => renderActionButtons([
+    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'] },
+    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'] },
+  ], {}, row),
 };
 
 /** 加载数据 */
@@ -196,11 +187,6 @@ const handleRemove = async (row: MemberResponseDto) => {
 </script>
 
 <style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
 .role-tags {
   display: flex;
   flex-wrap: wrap;

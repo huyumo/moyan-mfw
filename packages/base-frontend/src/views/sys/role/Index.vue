@@ -24,11 +24,12 @@
 
 <script setup lang="ts">
 import { ref, h, computed } from 'vue';
-import { ElMessage, ElMessageBox, ElTag, ElButton, ElTooltip } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
 import { Plus, Edit, Delete, Key } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import { ApiRoleFindAll, ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import RoleForm from './RoleForm.vue';
@@ -125,49 +126,12 @@ const actionColumn = {
   fixed: 'right' as const,
   render: ({ row }: { row: RoleResponseDto }) => {
     const isBuiltin = row.isBuiltin === STATUS.ENABLED;
-    return h('div', { class: 'action-buttons' }, [
-      h(
-        ElTooltip,
-        {
-          content: isBuiltin ? '内置角色请在应用类型管理页面分配权限' : '分配权限',
-          placement: 'top',
-        },
-        () =>
-          h(
-            ElButton,
-            {
-              type: 'primary',
-              link: true,
-              icon: Key,
-              disabled: isBuiltin,
-              onClick: () => handlePermission(row),
-            },
-            () => '权限',
-          ),
-      ),
-      h(
-        ElButton,
-        {
-          type: 'primary',
-          link: true,
-          icon: Edit,
-          disabled: isBuiltin,
-          onClick: () => handleEdit(row),
-        },
-        () => '编辑',
-      ),
-      h(
-        ElButton,
-        {
-          type: 'danger',
-          link: true,
-          icon: Delete,
-          disabled: isBuiltin || row.isOwner === STATUS.ENABLED,
-          onClick: () => handleDelete(row),
-        },
-        () => '删除',
-      ),
-    ]);
+    const isOwner = row.isOwner === STATUS.ENABLED;
+    return renderActionButtons([
+      { label: '权限', type: 'primary', icon: Key, onClick: handlePermission, disabled: isBuiltin, permission: ['编辑'] },
+      { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, disabled: isBuiltin, permission: ['编辑'] },
+      { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, disabled: isBuiltin || isOwner, permission: ['删除'] },
+    ], { maxVisible: 2 }, row);
   },
 };
 
@@ -251,9 +215,4 @@ const handleDelete = async (row: RoleResponseDto) => {
 };
 </script>
 
-<style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-</style>
+

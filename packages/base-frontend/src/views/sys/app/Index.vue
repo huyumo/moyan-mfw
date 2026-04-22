@@ -26,11 +26,12 @@
 <script setup lang="ts">
 import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessage, ElMessageBox, ElTag, ElButton } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
 import { Plus, View, Edit, Delete, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import {
   ApiAppFindAll,
   ApiAppDelete,
@@ -123,34 +124,14 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 280,
+  width: 200,
   fixed: 'right' as const,
-  render: ({ row }: { row: AppDetailResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: View,
-      onClick: () => handleDetail(row),
-    }, () => '详情'),
-    h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: Edit,
-      onClick: () => handleEdit(row),
-    }, () => '编辑'),
-    h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: User,
-      onClick: () => handleMember(row),
-    }, () => '成员'),
-    h(ElButton, {
-      type: 'danger',
-      link: true,
-      icon: Delete,
-      onClick: () => handleDelete(row),
-    }, () => '删除'),
-  ]),
+  render: ({ row }: { row: AppDetailResponseDto }) => renderActionButtons([
+    { label: '详情', type: 'primary', icon: View, onClick: handleDetail },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
+    { label: '成员', type: 'primary', icon: User, onClick: handleMember, permission: ['编辑'] },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
+  ], { maxVisible: 2 }, row),
 };
 
 /** 加载应用类型列表 */
@@ -250,9 +231,3 @@ onMounted(() => {
 });
 </script>
 
-<style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-</style>

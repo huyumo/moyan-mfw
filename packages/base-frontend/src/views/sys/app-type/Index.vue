@@ -18,11 +18,12 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElMessage, ElTag, ElButton, ElTooltip } from 'element-plus';
+import { ElMessage, ElTag } from 'element-plus';
 import { View, Edit, Key, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import { ApiAppTypeFindAll, ApiAppTypeFindById } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import EditForm from './EditForm.vue';
@@ -104,34 +105,14 @@ const columns = [
 const actionColumn = {
   prop: 'action',
   label: '操作',
-  width: 180,
+  width: 200,
   fixed: 'right' as const,
-  render: ({ row }: { row: AppTypeResponseDto }) => h('div', { class: 'action-buttons' }, [
-    h(ElTooltip, { content: '详情' }, () => h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: View,
-      onClick: () => handleDetail(row),
-    })),
-    h(ElTooltip, { content: '编辑' }, () => h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: Edit,
-      onClick: () => handleEdit(row),
-    })),
-    h(ElTooltip, { content: '配置权限池' }, () => h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: Key,
-      onClick: () => handleConfigPermissionPool(row),
-    })),
-    h(ElTooltip, { content: '配置内置角色' }, () => h(ElButton, {
-      type: 'primary',
-      link: true,
-      icon: User,
-      onClick: () => handleConfigBuiltinRoles(row),
-    })),
-  ]),
+  render: ({ row }: { row: AppTypeResponseDto }) => renderActionButtons([
+    { label: '详情', type: 'primary', icon: View, onClick: handleDetail },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
+    { label: '权限池', type: 'primary', icon: Key, onClick: handleConfigPermissionPool, permission: ['编辑'] },
+    { label: '内置角色', type: 'primary', icon: User, onClick: handleConfigBuiltinRoles, permission: ['编辑'] },
+  ], { maxVisible: 2 }, row),
 };
 
 /** 加载数据 */
@@ -236,9 +217,3 @@ const handleEdit = (row: AppTypeResponseDto) => {
 };
 </script>
 
-<style scoped lang="scss">
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-</style>
