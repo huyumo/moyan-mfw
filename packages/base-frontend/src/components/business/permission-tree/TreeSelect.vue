@@ -1,5 +1,5 @@
 <template>
-  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" @check="handleCheck">
+  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" :default-expanded-keys="expandedKeys" @check="handleCheck">
     <template #default="{ data }">
       <div class="custom-tree-node">
         <div class="custom-tree-node_left">
@@ -40,6 +40,7 @@ const { modelValue } = defineProps({
 
 const refData = ref<PermissionTreeNodeDto[]>([]);
 const checkedKeys = ref<TreeKey[]>([]);
+const expandedKeys = ref<TreeKey[]>([]);
 
 watch(
   () => modelValue,
@@ -47,6 +48,7 @@ watch(
     refData.value = newVal;
     nextTick(() => {
       checkedKeys.value = initCheckedKeys();
+      expandedKeys.value = initExpandedKeys();
     });
   },
 );
@@ -92,6 +94,11 @@ const initCheckedKeys = () => {
   const checkedKeys: TreeKey[] = buildCheckedKeys(refData.value);
   console.log(checkedKeys);
   return checkedKeys;
+};
+
+/** 初始化展开节点的ID列表（展开第一级，显示第二级） */
+const initExpandedKeys = () => {
+  return refData.value.map((node) => node.id);
 };
 
 /**
