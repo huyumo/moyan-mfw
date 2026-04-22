@@ -30,11 +30,6 @@
 import { User } from '@element-plus/icons-vue';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
-
 defineOptions({ name: 'RoleCard' });
 
 defineProps<{
