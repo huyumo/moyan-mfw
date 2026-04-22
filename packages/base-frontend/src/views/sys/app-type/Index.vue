@@ -13,24 +13,26 @@
       </el-button>
     </template>
 
-    <MfwCardListPage
-      ref="cardListPage"
-      :show-search="false"
-      :show-pagination="false"
-      :load-data="loadData"
-      render-mode="card"
-      :card-grid="{ cols: 2, gap: 24 }"
-      empty-text="暂无应用类型"
-    >
-      <template #card-item="{ item }">
-        <AppTypeCard
-          :data="item"
-          @edit="handleEdit"
-          @permission="handleConfigPermissionPool"
-          @role="handleConfigBuiltinRoles"
-        />
-      </template>
-    </MfwCardListPage>
+    <div class="app-type-content-wrapper">
+      <MfwCardListPage
+        ref="cardListPage"
+        :show-search="false"
+        :show-pagination="false"
+        :load-data="loadData"
+        render-mode="card"
+        :card-grid="{ cols: 2, gap: 24 }"
+        empty-text="暂无应用类型"
+      >
+        <template #card-item="{ item }">
+          <AppTypeCard
+            :data="item"
+            @edit="handleEdit"
+            @permission="handleConfigPermissionPool"
+            @role="handleConfigBuiltinRoles"
+          />
+        </template>
+      </MfwCardListPage>
+    </div>
   </MfwPageWrapper>
 </template>
 
@@ -139,5 +141,12 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
       top: '10vh',
     },
   });
-};
+});
 </script>
+
+<style scoped lang="scss">
+.app-type-content-wrapper {
+  width: min(100%, var(--mfw-content-max-width));
+  margin: 0 auto;
+}
+</style>
