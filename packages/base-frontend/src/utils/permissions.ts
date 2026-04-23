@@ -30,13 +30,13 @@ export const EXTENSION_PERMISSION_VALUES = [
  * 合并后的权限配置（默认 = 默认 + 扩展）
  * 业务项目可以通过全局配置覆盖
  */
-export let PERMISSION_VALUES: string[] = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
+export let PERMISSION_VALUES = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
 
 /**
  * 权限配置接口
  */
 export interface PermissionConfig {
-  values: readonly string[]
+  values: readonly PermissionName[]
   labels?: Record<string, string>  // 可选：自定义显示名称
   icons?: Record<string, any>      // 可选：自定义图标
 }
@@ -44,13 +44,13 @@ export interface PermissionConfig {
 /**
  * 权限名称类型（字符串，支持动态扩展）
  */
-export type PermissionName = string
+export type PermissionName = (typeof PERMISSION_VALUES)[number]
 
 /**
  * 创建权限配置（支持覆盖）
  */
 export function createPermissionConfig(
-  customValues?: readonly string[],
+  customValues?: readonly PermissionName[],
   options?: Omit<PermissionConfig, 'values'>
 ): PermissionConfig {
   return {
