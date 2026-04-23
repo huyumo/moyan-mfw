@@ -20,13 +20,6 @@ const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
 }) as Record<string, unknown>;
 
 /**
- * 创建业务路由配置
- */
-export function createBusinessRoutes(): RouteRecordRaw[] {
-  return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
-}
-
-/**
  * 业务路由配置（默认导出）
  */
-export const businessRoutes: RouteRecordRaw[] = createBusinessRoutes();
+export const businessRoutes: RouteRecordRaw[] = buildRoutesFromConfigs(allConfigs, { minSegments: 1 })
