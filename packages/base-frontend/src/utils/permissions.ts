@@ -8,11 +8,11 @@
  * 业务项目可以选择继承、扩展或完全覆盖
  */
 export const DEFAULT_PERMISSION_VALUES = [
-  '添加',    // 0: 1n << 0 = 1n
-  '编辑',    // 1: 1n << 1 = 2n
-  '删除',    // 2: 1n << 2 = 4n
-  '导出',    // 3: 1n << 3 = 8n
-  '导入',    // 4: 1n << 4 = 16n
+  '添加',
+  '编辑',
+  '删除',
+  '导出',
+  '导入',
 ] as const
 
 /**
@@ -20,31 +20,41 @@ export const DEFAULT_PERMISSION_VALUES = [
  * 业务项目可以添加更多权限，如：'审批', '拒绝', '发布', '归档'
  */
 export const EXTENSION_PERMISSION_VALUES = [
-  '审批',    // 5: 1n << 5 = 32n
-  '拒绝',    // 6: 1n << 6 = 64n
-  '发布',    // 7: 1n << 7 = 128n
-  '归档',    // 8: 1n << 8 = 256n
+  '审批',
+  '拒绝',
+  '发布',
+  '归档',
 ] as const
 
 /**
- * 合并后的权限配置（默认 = 默认 + 扩展）
- * 业务项目可以通过全局配置覆盖
+ * 默认权限名称类型（基础框架提供）
  */
-export let PERMISSION_VALUES = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
+export type DefaultPermissionName = typeof DEFAULT_PERMISSION_VALUES[number]
+
+/**
+ * 扩展权限名称类型（可选）
+ */
+export type ExtensionPermissionName = typeof EXTENSION_PERMISSION_VALUES[number]
+
+/**
+ * 基础框架权限名称类型（默认 + 扩展）
+ */
+export type PermissionName = DefaultPermissionName | ExtensionPermissionName
+
+/**
+ * 合并后的权限配置（默认 = 默认 + 扩展）
+ * 业务项目可以通过全局配置覆盖或注册扩展
+ */
+export let PERMISSION_VALUES: string[] = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
 
 /**
  * 权限配置接口
  */
 export interface PermissionConfig {
-  values: readonly PermissionName[]
-  labels?: Record<string, string>  // 可选：自定义显示名称
-  icons?: Record<string, any>      // 可选：自定义图标
+  values: readonly string[]
+  labels?: Record<string, string>
+  icons?: Record<string, any>
 }
-
-/**
- * 权限名称类型（字符串，支持动态扩展）
- */
-export type PermissionName = (typeof PERMISSION_VALUES)[number]
 
 /**
  * 创建权限配置（支持覆盖）
@@ -66,9 +76,70 @@ export function createPermissionConfig(
  */
 export function setPermissionConfig(config: PermissionConfig) {
   PERMISSION_VALUES = [...config.values]
-    // 存储 labels 和 icons 供组件使用
     ; (window as any).__PERMISSION_CONFIG__ = config
 }
+
+/**
+ * 注册额外的权限值（业务项目使用）
+ * @param values - 额外的权限名称数组
+ * @description 将业务层权限追加到全局权限列表中
+ */
+export function registerPermissionValues(values: readonly string[]) {
+  const newValues = values.filter(v => !PERMISSION_VALUES.includes(v))
+  PERMISSION_VALUES = [...PERMISSION_VALUES, ...newValues]
+  const existingConfig = getPermissionConfig()
+  setPermissionConfig({
+    values: PERMISSION_VALUES,
+    labels: existingConfig.labels,
+    icons: existingConfig.icons,
+  })
+}
+
+/**
+ * 创建业务层页面配置函数（工厂函数）
+ * @param businessPermissions - 业务层权限值数组
+ * @returns defineBusinessPageConfig 函数，带有类型推断
+ * @description 注册业务权限并返回配置函数，业务层只需调用一次
+ *
+ * @example
+ * ```typescript
+ * // 业务层 permissions.ts
+ * import { createBusinessPageConfigFn } from 'moyan-mfw-base-frontend';
+ *
+ * export const BUSINESS_PERMISSION_VALUES = ['发货', '充值', '接待', '指派'] as const;
+ * export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES);
+ *
+ * // 业务层页面 index.ts
+ * import { defineBusinessPageConfig } from '../permissions';
+ *
+ * export default defineBusinessPageConfig({
+ *   permissions: ['发货', '充值', '添加'], // 有完整类型推断
+ * });
+ * ```
+ */
+export function createBusinessPageConfigFn<T extends readonly string[]>(
+  businessPermissions: T
+): <C extends PageConfig<PermissionName | T[number]>>(config: C) => C & { permissionValue?: bigint } {
+  registerPermissionValues(businessPermissions);
+  
+  return function defineBusinessPageConfig<C extends PageConfig<PermissionName | T[number]>>(config: C): C & { permissionValue?: bigint } {
+    const permissionValue = config.permissions ? buildPerValue(config.permissions) : undefined;
+    return { ...config, permissionValue };
+  };
+}
+
+type PageConfig<T extends string = string> = {
+  page: unknown;
+  path: string;
+  name: string;
+  icon?: string;
+  auth?: boolean;
+  order?: number;
+  hidden?: boolean;
+  permissions?: T[];
+  permissionValue?: bigint;
+  children?: PageConfig<T>[];
+};
 
 /**
  * 获取全局权限配置
@@ -79,17 +150,17 @@ export function getPermissionConfig(): PermissionConfig {
 
 /**
  * 根据权限名称数组构建位运算权限值
- * @param names - 权限名称数组，如 ['查看', '添加', '编辑']
+ * @param names - 权限名称数组，如 ['添加', '编辑', '发货']
  * @returns bigint 位运算值
  *
  * @example
  * ```typescript
- * buildPerValue(['查看']) // 1n
- * buildPerValue(['查看', '添加', '编辑']) // 7n
- * buildPerValue(['添加', '删除']) // 10n
+ * buildPerValue(['添加']) // 1n
+ * buildPerValue(['添加', '编辑']) // 3n
+ * buildPerValue(['发货', '充值']) // 业务层权限值
  * ```
  */
-export function buildPerValue(names: PermissionName[]): bigint {
+export function buildPerValue(names: string[]): bigint {
   let result = 0n
   for (const name of names) {
     const index = PERMISSION_VALUES.indexOf(name)
@@ -108,11 +179,11 @@ export function buildPerValue(names: PermissionName[]): bigint {
  *
  * @example
  * ```typescript
- * getPermValue('查看') // 1n
- * getPermValue('添加') // 2n
+ * getPermValue('添加') // 1n
+ * getPermValue('编辑') // 2n
  * ```
  */
-export function getPermValue(name: PermissionName): bigint {
+export function getPermValue(name: string): bigint {
   const index = PERMISSION_VALUES.indexOf(name)
   if (index === -1) {
     throw new Error(`未知的权限名称：${name}`)
@@ -127,16 +198,16 @@ export function getPermValue(name: PermissionName): bigint {
  *
  * @example
  * ```typescript
- * parsePerValue('7') // ['查看', '添加', '编辑']
- * parsePerValue('10') // ['添加', '删除']
+ * parsePerValue('3') // ['添加', '编辑']
+ * parsePerValue('10') // ['删除', '导出']
  * ```
  */
-export function parsePerValue(value: string): PermissionName[] {
+export function parsePerValue(value: string): string[] {
   const bigValue = BigInt(value)
-  const result: PermissionName[] = []
+  const result: string[] = []
   for (let i = 0; i < PERMISSION_VALUES.length; i++) {
     if ((bigValue & (1n << BigInt(i))) !== 0n) {
-      result.push(PERMISSION_VALUES[i] as PermissionName)
+      result.push(PERMISSION_VALUES[i])
     }
   }
   return result
@@ -150,11 +221,11 @@ export function parsePerValue(value: string): PermissionName[] {
  *
  * @example
  * ```typescript
- * hasPermission('7', '查看') // true
- * hasPermission('7', '删除') // false
+ * hasPermission('3', '添加') // true
+ * hasPermission('3', '删除') // false
  * ```
  */
-export function hasPermission(value: string, name: PermissionName): boolean {
+export function hasPermission(value: string, name: string): boolean {
   const index = PERMISSION_VALUES.indexOf(name)
   if (index === -1) {
     return false
