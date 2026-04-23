@@ -63,7 +63,9 @@ export class MoAxios {
   /** 初始化拦截器 */
   initInterceptors() {
     this.$axios.interceptors.response.use(
-      (res) => res.data,
+      (res) => {
+        return res.data;
+      },
       async (error) => {
         if (error?.response) {
           switch (error.response.status) {
@@ -103,9 +105,6 @@ export class MoAxios {
       method: apiEntity.method as 'GET' | 'POST' | 'PUT' | 'DELETE',
       headers: this.buildHeaders(apiEntity),
     };
-
-    console.log(apiEntity);
-    
 
     // GET 请求参数放 params，其他方法放 data
     if (apiEntity.method === 'GET') {
@@ -177,7 +176,7 @@ ApiCall.emitter.on(ApiEvents.Success, (apiCall: ApiCall<any, any>) => {
 ApiCall.emitter.on(ApiEvents.HintSuccess, (apiCall: ApiCall<any, any>) => {
   ApiCall.hasPrompted = true;
   ElMessage.success({
-    message: apiCall.successMsg,
+    message: apiCall?.successMsg || '操作成功',
     onClose: () => {
       ApiCall.hasPrompted = false;
     },
