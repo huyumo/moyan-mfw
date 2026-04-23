@@ -5,7 +5,7 @@
 
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/auth-store';
-import { buildPerValue, type PermissionName } from '../utils/permissions';
+import { buildPerValue } from '../utils/permissions';
 
 /**
  * 权限检查选项
@@ -13,8 +13,8 @@ import { buildPerValue, type PermissionName } from '../utils/permissions';
 export interface PermissionCheckOptions {
   /** 权限编码（可选，不传则自动推断） */
   permCode?: string;
-  /** 权限值数组，如 ['添加', '编辑'] */
-  value: PermissionName[];
+  /** 权限值数组，如 ['添加', '编辑', '发货'] */
+  value: string[];
 }
 
 /**
@@ -65,7 +65,7 @@ export function usePermission() {
    * @param permCode 权限编码（可选）
    * @returns 是否有任意一个权限
    */
-  function hasAnyPermissionValue(values: PermissionName[], permCode?: string): boolean {
+  function hasAnyPermissionValue(values: string[], permCode?: string): boolean {
     return values.some((v) => hasPermissionValue({ value: [v], permCode }));
   }
 
@@ -75,7 +75,7 @@ export function usePermission() {
    * @param permCode 权限编码（可选）
    * @returns 是否拥有所有权限
    */
-  function hasAllPermissionValues(values: PermissionName[], permCode?: string): boolean {
+  function hasAllPermissionValues(values: string[], permCode?: string): boolean {
     return values.every((v) => hasPermissionValue({ value: [v], permCode }));
   }
 

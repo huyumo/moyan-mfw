@@ -17,7 +17,9 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import { buildPerValue, type PermissionName } from '../utils/permissions';
+import { buildPerValue, registerPermissionValues, type PermissionName } from '../utils/permissions';
+
+export { registerPermissionValues, createBusinessPageConfigFn } from '../utils/permissions';
 
 /**
  * 模块配置接口（用于菜单分组）
@@ -34,9 +36,9 @@ export interface ModuleConfig {
 }
 
 /**
- * 页面配置接口
+ * 页面配置接口（支持泛型扩展权限类型）
  */
-export interface PageConfig {
+export interface PageConfig<T extends string = PermissionName> {
   /** 页面组件 */
   page: unknown;
   /** 路由路径 */
@@ -52,11 +54,11 @@ export interface PageConfig {
   /** 菜单隐藏 */
   hidden?: boolean;
   /** 页面权限名称列表（definePageConfig 内部自动转为 permissionValue） */
-  permissions?: PermissionName[];
+  permissions?: T[];
   /** 权限值（由 definePageConfig 根据 permissions 自动计算，请勿手动设置） */
   permissionValue?: bigint;
   /** 子页面配置 */
-  children?: PageConfig[];
+  children?: PageConfig<T>[];
 }
 
 /**
@@ -69,7 +71,7 @@ export function isModuleConfig(config: unknown): config is ModuleConfig {
 /**
  * 判断是否为页面配置
  */
-export function isPageConfig(config: unknown): config is PageConfig {
+export function isPageConfig(config: unknown): config is PageConfig<string> {
   return typeof config === 'object' && config !== null && 'page' in config && 'path' in config && 'name' in config;
 }
 
@@ -83,8 +85,11 @@ export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
 /**
  * 定义页面配置（提供类型推断和标准化）
  * 内部自动将 permissions 名称列表转为 permissionValue 位运算值
+ * @template T - 权限名称类型，默认为 PermissionName
  */
-export function definePageConfig(config: PageConfig): PageConfig & { permissionValue?: bigint } {
+export function definePageConfig<T extends string = PermissionName>(
+  config: PageConfig<T>
+): PageConfig<T> & { permissionValue?: bigint } {
   const permissionValue = config.permissions ? buildPerValue(config.permissions) : undefined;
   return { ...config, permissionValue };
 }
@@ -107,7 +112,7 @@ export function buildRoutesFromConfigs(
 
   // 1. 分离模块配置和页面配置
   const moduleMap = new Map<string, ModuleConfig>();
-  const pageConfigs = new Map<string, PageConfig>();
+  const pageConfigs = new Map<string, PageConfig<string>>();
 
   for (const [path, config] of Object.entries(allConfigs)) {
     // 跳过指定路径
