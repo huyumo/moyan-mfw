@@ -20,8 +20,8 @@
     </div>
 
     <div class="role-card__footer">
-      <el-button type="primary" size="small" link :disabled="isBuiltin" v-permission="{ value: ['编辑'] }" @click="handlePermission">配置权限</el-button>
-      <el-button size="small" link :disabled="isBuiltin" v-permission="{ value: ['编辑'] }" @click="handleEdit">编辑</el-button>
+      <el-button type="primary" size="small" link :disabled="!canEdit" v-permission="{ value: ['编辑'] }" @click="handlePermission">配置权限</el-button>
+      <el-button size="small" link :disabled="!canEdit" v-permission="{ value: ['编辑'] }" @click="handleEdit">编辑</el-button>
       <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" v-permission="{ value: ['删除'] }" @click="handleDelete">删除</el-button>
     </div>
   </el-card>
@@ -46,6 +46,7 @@ defineOptions({ name: 'RoleCard' });
 
 const props = defineProps<{
   data: RoleResponseDto;
+  canEditBuiltin?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -54,6 +55,7 @@ const emit = defineEmits<{
 
 const isBuiltin = computed(() => props.data.isBuiltin === STATUS.ENABLED);
 const isOwner = computed(()=> props.data.isOwner === STATUS.ENABLED)
+const canEdit = computed(() => !isBuiltin.value || props.canEditBuiltin);
 
 const handlePermission = () => {
   MfwPopup.open({
@@ -161,6 +163,9 @@ const handleDelete = async () => {
     color: var(--el-text-color-regular);
     line-height: 1.4;
     margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__footer {

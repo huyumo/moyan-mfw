@@ -1,15 +1,12 @@
-/**
- * @fileoverview 应用实例管理页面配置
- */
-import { buildPerValue } from '@/utils/permissions';
+import { definePageConfig } from '../../../router/routes';
 import AppList from './Index.vue';
 
-export default {
+export default definePageConfig({
   page: AppList,
   path: 'app',
   name: '应用管理',
   icon: 'Application',
   auth: true,
   order: 2,
-  permissionValue: buildPerValue(['编辑']),
-};
+  permissions: ['添加','编辑','删除'],
+})

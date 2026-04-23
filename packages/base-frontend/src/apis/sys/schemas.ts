@@ -313,6 +313,7 @@ export type UpdatePermissionDto = {
 export type RouteNodeDto = {
   path: string // 路由路径
   name: string // 路由名称
+  permissionValue?: string // 权限值（位运算字符串，如 "6"）
   children?: Array<RouteNodeDto> // 子路由
 }
 

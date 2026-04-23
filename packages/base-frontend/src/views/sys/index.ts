@@ -1,11 +1,8 @@
-/**
- * @fileoverview 系统管理模块配置
- * @description 定义系统管理菜单分组
- */
+import { defineModuleConfig } from '../../router/routes';
 
-export default {
-  type: 'module' as const,
+export default defineModuleConfig({
+  type: 'module',
   name: '系统管理',
   icon: 'Setting',
   order: 100,
-};
+});

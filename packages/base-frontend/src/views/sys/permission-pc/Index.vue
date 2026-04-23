@@ -45,8 +45,8 @@ const managerRef = ref<InstanceType<typeof PermissionManager>>();
 const collectRouteInfos = (
   routes: RouteRecordRaw[],
   processedPaths: Set<string> = new Set(),
-): Array<{ path: string; name: string }> => {
-  const result: Array<{ path: string; name: string }> = [];
+): Array<{ path: string; name: string; permissionValue?: string }> => {
+  const result: Array<{ path: string; name: string; permissionValue?: string }> = [];
 
   for (const route of routes) {
     const meta = route.meta as any;
@@ -81,6 +81,7 @@ const collectRouteInfos = (
     result.push({
       path: fullPath,
       name: meta.title as string,
+      permissionValue: meta.permissionValue as string | undefined,
     });
   }
 
@@ -91,7 +92,7 @@ const collectRouteInfos = (
  * 根据路径关系构建树形结构
  * router.getRoutes() 返回扁平数组，需要根据路径推导父子关系
  */
-const buildRouteTree = (flatRoutes: Array<{ path: string; name: string }>): RouteNodeDto[] => {
+const buildRouteTree = (flatRoutes: Array<{ path: string; name: string; permissionValue?: string }>): RouteNodeDto[] => {
   // 按路径深度排序（先处理父节点）
   flatRoutes.sort((a, b) => {
     const depthA = a.path.split('/').filter(Boolean).length;
@@ -108,6 +109,7 @@ const buildRouteTree = (flatRoutes: Array<{ path: string; name: string }>): Rout
     const node: RouteNodeDto & { children?: RouteNodeDto[] } = {
       path: route.path,
       name: route.name,
+      permissionValue: route.permissionValue,
       children: [],
     };
     nodeMap.set(route.path, node);

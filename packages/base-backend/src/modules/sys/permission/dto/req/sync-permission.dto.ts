@@ -31,6 +31,14 @@ export class RouteNodeDto {
   name: string;
 
   /**
+   * 权限值（位运算字符串，如 "6"）
+   */
+  @ApiProperty({ description: '权限值（位运算）', required: false, example: '6' })
+  @IsOptional()
+  @IsString()
+  permissionValue?: string;
+
+  /**
    * 子路由
    */
   @ApiProperty({ description: '子路由', required: false, type: () => [RouteNodeDto] })
