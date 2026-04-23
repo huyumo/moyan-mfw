@@ -200,6 +200,7 @@ const getNodeTypeTagType = (nodeType?: string) => {
 };
 
 const canSetPermissionValue = (nodeType?: string) => {
+  if (props.permissionType === 'PC') return false;
   return nodeType === 'PAGE' || nodeType === 'TAG';
 };
 

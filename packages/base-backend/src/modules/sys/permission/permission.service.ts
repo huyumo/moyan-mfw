@@ -547,17 +547,22 @@ export class PermissionService {
     );
     const nodeType = (hasChildrenInRoute || hasChildRoutes) ? NodeType.MENU : NodeType.PAGE;
 
+    // 解析前端传入的 permissionValue
+    const permissionValue = route.permissionValue
+      ? BigInt(route.permissionValue)
+      : 0n;
+
     // 检查是否已存在
     const existing = await this.permissionRepository.findOne({
       where: { permCode },
     });
 
     if (existing) {
-      // 更新名称、路径、nodeType（不修改 permissionValue，避免覆盖种子数据或手动设置的值）
       existing.permName = route.name;
       existing.routePath = route.path;
       existing.nodeType = nodeType;
       if (parentId) existing.parentId = parentId;
+      existing.permissionValue = nodeType === NodeType.PAGE ? permissionValue : 0n;
       await this.permissionRepository.save(existing);
     } else {
       // 新增
@@ -572,7 +577,7 @@ export class PermissionService {
         sortOrder: depth * 10,
         isAutoSync: 1,
         permStatus: 1,
-        permissionValue: nodeType === NodeType.PAGE ? 63n : 0n,
+        permissionValue: nodeType === NodeType.PAGE ? permissionValue : 0n,
       });
       await this.permissionRepository.save(newPerm);
     }

@@ -20,6 +20,7 @@
         v-for="role in roleList"
         :key="role.id"
         :data="role"
+        :can-edit-builtin="true"
         @refresh="loadRoles"
       />
       <el-empty v-if="!loading && roleList.length === 0" description="暂无内置角色" />

@@ -17,6 +17,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
+import { buildPerValue, type PermissionName } from '../utils/permissions';
 
 /**
  * 模块配置接口（用于菜单分组）
@@ -50,6 +51,10 @@ export interface PageConfig {
   order?: number;
   /** 菜单隐藏 */
   hidden?: boolean;
+  /** 页面权限名称列表（definePageConfig 内部自动转为 permissionValue） */
+  permissions?: PermissionName[];
+  /** 权限值（由 definePageConfig 根据 permissions 自动计算，请勿手动设置） */
+  permissionValue?: bigint;
   /** 子页面配置 */
   children?: PageConfig[];
 }
@@ -66,6 +71,22 @@ export function isModuleConfig(config: unknown): config is ModuleConfig {
  */
 export function isPageConfig(config: unknown): config is PageConfig {
   return typeof config === 'object' && config !== null && 'page' in config && 'path' in config && 'name' in config;
+}
+
+/**
+ * 定义模块配置（提供类型推断和标准化）
+ */
+export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
+  return config;
+}
+
+/**
+ * 定义页面配置（提供类型推断和标准化）
+ * 内部自动将 permissions 名称列表转为 permissionValue 位运算值
+ */
+export function definePageConfig(config: PageConfig): PageConfig & { permissionValue?: bigint } {
+  const permissionValue = config.permissions ? buildPerValue(config.permissions) : undefined;
+  return { ...config, permissionValue };
 }
 
 /**
@@ -136,6 +157,7 @@ export function buildRoutesFromConfigs(
         menuOrder: config.order ?? 50,
         requiresAuth: config.auth ?? true,
         hidden: config.hidden,
+        permissionValue: config.permissionValue?.toString(),
       },
     } as RouteRecordRaw;
 
