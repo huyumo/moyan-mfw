@@ -3,7 +3,7 @@
  */
 
 .mfw-card-list-page {
-  --card-cols: 4;
+  --card-min-width: 280px;
   --card-gap: 16px;
 
   width: 100%;
@@ -13,7 +13,7 @@
 
   &__cards {
     display: grid;
-    grid-template-columns: repeat(var(--card-cols), 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
     gap: var(--card-gap);
   }
 
@@ -33,17 +33,5 @@
     display: flex;
     justify-content: flex-end;
     padding: 16px 0;
-  }
-
-  @media (max-width: 1200px) {
-    --card-cols: 3;
-  }
-
-  @media (max-width: 900px) {
-    --card-cols: 2;
-  }
-
-  @media (max-width: 600px) {
-    --card-cols: 1;
   }
 }

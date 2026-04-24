@@ -65,8 +65,8 @@ export default defineComponent({
       type: Function as PropType<(item: any, index: number) => VNode>
     },
     cardGrid: {
-      type: Object as PropType<{ cols?: number; gap?: number }>,
-      default: () => ({ cols: 4, gap: 16 })
+      type: Object as PropType<{ minWidth?: number; gap?: number }>,
+      default: () => ({ minWidth: 280, gap: 16 })
     },
     emptyText: {
       type: String,
@@ -131,7 +131,8 @@ export default defineComponent({
       }
     };
 
-    const handleSearch = () => {
+    const handleSearch = (formData: Record<string, any>) => {
+      searchForm.value = formData;
       pagination.value.currentPage = 1;
       emit('search', { ...searchForm.value });
       loadTableData();
@@ -185,7 +186,7 @@ export default defineComponent({
     );
 
     const cardGridStyle = computed(() => ({
-      '--card-cols': props.cardGrid?.cols || 4,
+      '--card-min-width': `${props.cardGrid?.minWidth || 280}px`,
       '--card-gap': `${props.cardGrid?.gap || 16}px`
     }));
 

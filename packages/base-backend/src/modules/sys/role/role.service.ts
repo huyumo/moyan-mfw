@@ -111,13 +111,14 @@ export class RoleService {
         const whereClause = wheres?.main || '';
         return `
           SELECT ${select} FROM sys_roles role
-          INNER JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
+          LEFT JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
           ${whereClause}
           ${orderBy}
           ${limit}
         `;
       })
       .select('role.*')
+      .printSql()
       .defaultOrderBy('role.sortOrder ASC, role.createdAt DESC')
       .getData();
   }
