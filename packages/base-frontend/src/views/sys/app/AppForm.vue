@@ -18,7 +18,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
-import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList, ApiUserFindAll } from '../../../apis/sys';
+import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import MfwUserPicker from '../../../components/picker/user-picker';
 
@@ -51,19 +51,6 @@ const form = reactive({
   icon: '',
   appStatus: STATUS.ENABLED as 1 | 0,
 });
-
-/** 加载用户列表（用于用户选择器） */
-const loadUserList = async (params: { keyword?: string; departmentId?: string | number; page?: number; pageSize?: number }) => {
-  const result = await new ApiUserFindAll({
-    query: {
-      username: params.keyword,
-      phone: params.keyword,
-      pageSize: params.pageSize || 20,
-      page: params.page || 1,
-    },
-  });
-  return result;
-};
 
 /** 基础表单项配置 */
 const baseTemplate: FormItemConfig[] = [
@@ -106,8 +93,6 @@ const baseTemplate: FormItemConfig[] = [
     component: MfwUserPicker,
     rules: [{ required: true, message: '请选择拥有者', trigger: 'change' }],
     elProps: {
-      placeholder: '请选择拥有者',
-      loadUserList,
       style: 'width: 100%',
     },
   },
