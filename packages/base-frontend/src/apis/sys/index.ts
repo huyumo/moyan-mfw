@@ -210,6 +210,20 @@ export class ApiUserAdminCreate extends ApiCall<
   readonly auth = true
 }
 
+export class ApiUserFindOneByKeyword extends ApiCall<
+  {
+    query: {
+      keyword: string
+      searchBy?: string
+    }
+  },
+  UserResponseDto | null
+> {
+  readonly path = '/api/users/find-one'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
 /**
  * user|用户相关接口->查询用户列表
  */
