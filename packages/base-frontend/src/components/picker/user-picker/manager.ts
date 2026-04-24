@@ -70,16 +70,11 @@ export class UserPickerManager {
           label: '用户名',
           type: 'el-input',
           component: 'el-input',
-          elProps: { maxlength: 30, disabled: !!context?.id },
-          rules: [{ type: 'string', required: true, message: '用户名不能为空', trigger: 'blur' }]
-        },
-        {
-          key: 'password',
-          label: '密码',
-          type: 'el-input',
-          component: 'el-input',
-          elProps: { type: 'password', maxlength: 30, showPassword: true, disabled: !!context?.id },
-          rules: context?.id ? [] : [{ type: 'string', required: true, message: '密码不能为空', trigger: 'blur' }]
+          elProps: { maxlength: 20, disabled: !!context?.id },
+          rules: [
+            { type: 'string', required: true, message: '用户名不能为空', trigger: 'blur' },
+            { type: 'string', pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '用户名须以字母开头，仅允许字母和数字，最长20位', trigger: 'blur' }
+          ]
         },
         {
           key: 'nickname',
@@ -96,13 +91,6 @@ export class UserPickerManager {
           component: 'el-input',
           elProps: { maxlength: 11 },
           rules: [{ type: 'string', required: true, message: '手机号不能为空', trigger: 'blur' }]
-        },
-        {
-          key: 'email',
-          label: '邮箱',
-          type: 'el-input',
-          component: 'el-input',
-          elProps: { maxlength: 50 }
         },
         {
           key: 'avatar',
