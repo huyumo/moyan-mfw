@@ -6,9 +6,10 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
-import { CreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
+import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
 import { hashPassword } from '../../../common/utils/encrypt';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
@@ -24,6 +25,7 @@ export class UserService {
     @InjectRepository(UserRole)
     private userRoleRepository: Repository<UserRole>,
     private dataSource: DataSource,
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -80,6 +82,67 @@ export class UserService {
     } finally {
       await queryRunner.release();
     }
+  }
+
+  async adminCreate(dto: AdminCreateUserDto): Promise<User> {
+    const { username, phone, roleIds, ...rest } = dto;
+
+    const existingUser = await this.userRepository.findOne({ where: { username } });
+    if (existingUser) {
+      throw new ConflictException('用户名已存在');
+    }
+
+    const password = this.resolveDefaultPassword(phone);
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const hashedPassword = await hashPassword(password);
+
+      const user = queryRunner.manager.create(User, {
+        username,
+        password: hashedPassword,
+        phone,
+        ...rest,
+      });
+
+      await queryRunner.manager.save(user);
+
+      if (roleIds && roleIds.length > 0) {
+        const userRoles = roleIds.map((roleId) =>
+          queryRunner.manager.create(UserRole, {
+            userId: user.id,
+            roleId,
+          }),
+        );
+        await queryRunner.manager.save(userRoles);
+      }
+
+      await queryRunner.commitTransaction();
+      return user;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  private resolveDefaultPassword(phone: string): string {
+    const userConfig = this.configService.get<any>('userConfig');
+    const type = userConfig?.defaultPassword?.type || process.env.ADMIN_DEFAULT_PASSWORD_TYPE || 'fixed';
+    const value = userConfig?.defaultPassword?.value || process.env.ADMIN_DEFAULT_PASSWORD || 'Admin@123';
+
+    if (type === 'phone') {
+      if (!phone || phone.length < 8) {
+        return phone || value;
+      }
+      return phone.slice(-8);
+    }
+
+    return value;
   }
 
   /**

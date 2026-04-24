@@ -3,8 +3,8 @@ import './style.scss'
 import { defineComponent, ref, type PropType } from 'vue'
 import { MfwFormCard } from '../../form/form-card/mod'
 import type { MfwFormCardInstance } from '../../form/form-card/types'
-import { ApiUserCreate, ApiUserUpdate } from '../../../apis/sys'
-import type { UserResponseDto, CreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
+import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys'
+import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
 import { UserPickerManager } from './manager'
 
 export default defineComponent({
@@ -20,7 +20,7 @@ export default defineComponent({
       default: 'default'
     },
     onCreate: {
-      type: Function as PropType<(data: CreateUserDto) => Promise<UserResponseDto>>,
+      type: Function as PropType<(data: AdminCreateUserDto) => Promise<UserResponseDto>>,
       default: undefined
     },
     onUpdate: {
@@ -41,15 +41,12 @@ export default defineComponent({
             username: props.context.username,
             nickname: props.context.nickname,
             phone: props.context.phone,
-            email: props.context.email,
             avatar: props.context.avatar
           }
         : {
             username: '',
-            password: '',
             nickname: '',
             phone: '',
-            email: '',
             avatar: ''
           }
     )
@@ -62,7 +59,6 @@ export default defineComponent({
         const updateData: UpdateUserDto = {
           nickname: formData.value.nickname,
           phone: formData.value.phone,
-          email: formData.value.email,
           avatar: formData.value.avatar
         }
         if (props.onUpdate) {
@@ -74,18 +70,16 @@ export default defineComponent({
         })
       }
 
-      const createData: CreateUserDto = {
+      const createData: AdminCreateUserDto = {
         username: formData.value.username,
-        password: formData.value.password,
-        nickname: formData.value.nickname,
         phone: formData.value.phone,
-        email: formData.value.email,
+        nickname: formData.value.nickname,
         avatar: formData.value.avatar
       }
       if (props.onCreate) {
         return await props.onCreate(createData)
       }
-      return await new ApiUserCreate({ body: createData })
+      return await new ApiUserAdminCreate({ body: createData })
     }
 
     expose({ onConfirm })

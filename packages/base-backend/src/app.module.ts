@@ -13,7 +13,7 @@ import { APP_GUARD, Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
 // 配置
-import { databaseConfig, appConfig, redisConfig } from './config';
+import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
 
 // 实体 - 直接导入确保打包后可用
 import { User } from './modules/sys/user/entities/user.entity';
@@ -153,7 +153,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],
-      load: [databaseConfig, appConfig, redisConfig],
+      load: [databaseConfig, appConfig, redisConfig, userConfig],
       ignoreEnvFile: false,
     }),
 
