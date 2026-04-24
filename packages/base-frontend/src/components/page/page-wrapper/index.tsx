@@ -155,9 +155,9 @@ export default defineComponent({
         <ElButton
           loading={isRefreshing.value}
           onClick={handleRefresh}
-        >
-          <ElIcon><Refresh /></ElIcon>
-        </ElButton>
+          icon={Refresh}
+          circle
+        />
       )
     );
 
@@ -180,6 +180,7 @@ export default defineComponent({
           <ElTooltip content="重置" placement="top">
             <ElButton
               icon={Refresh}
+              loading={ctx.loading.value}
               onClick={ctx.reset}
               circle
             />
