@@ -151,7 +151,7 @@ const loadAppTypes = async () => {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiAppFindAll({
+  return await new ApiAppFindAll({
     query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
@@ -161,10 +161,6 @@ const loadData = async (params: Record<string, unknown>) => {
       appStatus: params.appStatus as number,
     },
   });
-  return {
-    list: result.list || [],
-    total: result.total || 0,
-  };
 };
 
 /** 查看详情 */
@@ -179,11 +175,7 @@ const handleAdd = () => {
     type: 'dialog',
     component: AppForm,
     popupProps: { width: 550 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -195,11 +187,7 @@ const handleEdit = (row: AppDetailResponseDto) => {
     component: AppForm,
     data: { ...row },
     popupProps: { width: 550 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -216,10 +204,11 @@ const handleDelete = async (row: AppDetailResponseDto) => {
       '确认删除',
       { type: 'warning' }
     );
-    await new ApiAppDelete({ params: { id: row.id } }, { hintSuccess: true });
-    listPage.value?.refresh();
   } catch {
+    return;
   }
+  await new ApiAppDelete({ params: { id: row.id } }, { hintSuccess: true });
+  listPage.value?.refresh();
 };
 
 onMounted(() => {

@@ -154,11 +154,7 @@ const handleAdd = () => {
     type: 'dialog',
     component: UserForm,
     popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -170,11 +166,7 @@ const handleEdit = (row: UserResponseDto) => {
     component: UserForm,
     data: { ...row },
     popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -190,8 +182,9 @@ const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
 
 /** 重置密码 */
 const handleResetPassword = async (row: UserResponseDto) => {
+  let value: string;
   try {
-    const { value } = await ElMessageBox.prompt(
+    ({ value } = await ElMessageBox.prompt(
       `请输入用户「${row.username}」的新密码`,
       '重置密码',
       {
@@ -200,14 +193,14 @@ const handleResetPassword = async (row: UserResponseDto) => {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
       }
-    );
-    await new ApiUserResetPassword({
-      params: { id: row.id },
-      query: { password: value }
-    },{hintSuccess:true,successMsg:'密码重置成功'});
+    ));
   } catch {
-    // 用户取消
+    return;
   }
+  await new ApiUserResetPassword({
+    params: { id: row.id },
+    query: { password: value }
+  },{hintSuccess:true,successMsg:'密码重置成功'});
 };
 
 /** 删除 */
@@ -218,11 +211,11 @@ const handleDelete = async (row: UserResponseDto) => {
       '确认删除',
       { type: 'warning' }
     );
-    await new ApiUserDelete({ params: { id: row.id } },{hintSuccess:true,successMsg:'删除成功'});
-    listPage.value?.refresh();
   } catch {
-    // 用户取消
+    return;
   }
+  await new ApiUserDelete({ params: { id: row.id } },{hintSuccess:true,successMsg:'删除成功'});
+  listPage.value?.refresh();
 };
 </script>
 

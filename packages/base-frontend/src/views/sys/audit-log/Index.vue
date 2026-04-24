@@ -101,7 +101,7 @@ const actionColumn = {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiAuditLogFindAll({
+  return await new ApiAuditLogFindAll({
     query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
@@ -112,10 +112,6 @@ const loadData = async (params: Record<string, unknown>) => {
       endTime: params.endTime as string,
     },
   });
-  return {
-    list: result.list || [],
-    total: result.total || 0,
-  };
 };
 
 /** 查看详情 */

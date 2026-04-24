@@ -62,7 +62,7 @@ const loadUserList = async (params: { keyword?: string; departmentId?: string | 
       page: params.page || 1,
     },
   });
-  return { list: (result as any).list || [], total: (result as any).total || 0 };
+  return result;
 };
 
 /** 基础表单项配置 */
@@ -174,8 +174,6 @@ const loadAppTypes = async () => {
 onMounted(async () => {
   await loadAppTypes();
 
-  console.log('888888888',props);
-  
   if (props.id) {
     form.appTypeId = props.appTypeId;
     form.appName = props.appName;
