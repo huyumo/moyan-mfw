@@ -156,9 +156,9 @@
     flex: 1;
     padding: var(--mfw-page-padding);
     overflow: auto;
-    min-height: 0; // 允许 flex 子项收缩
-
-    // 平滑滚动
+    min-height: 0;
+    width: min(100%, var(--mfw-content-max-width, 100%));
+    margin-inline: auto;
     scroll-behavior: smooth;
 
     // 自定义滚动条（可选，增强视觉体验）

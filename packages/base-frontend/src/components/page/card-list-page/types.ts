@@ -10,8 +10,8 @@ export type { SearchTemplateItem, LoadParams, TableData };
 
 /** 卡片栅格配置 */
 export interface CardGridConfig {
-  /** 每行卡片数 */
-  cols?: number;
+  /** 卡片最小宽度 */
+  minWidth?: number;
   /** 卡片间距 */
   gap?: number;
 }
