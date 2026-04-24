@@ -5,10 +5,10 @@
 
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
-import { NodeType, Permission, PermissionType, ShowMode } from '../permission/entities/permission.entity';
+import { PermissionType } from '../permission/entities/permission.entity';
 import { Role } from '../role/entities/role.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
 import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
@@ -18,6 +18,7 @@ import {
 } from './dto/res/permission-pool-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
+import { flatToTree } from '@/common/utils/tree.util';
 import { PermissionTreeNodeDto } from '../permission';
 
 /**
@@ -28,10 +29,6 @@ export class AppTypeService {
   constructor(
     @InjectRepository(AppType)
     private appTypeRepository: Repository<AppType>,
-    @InjectRepository(AppTypePermissionEntity)
-    private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
-    @InjectRepository(Permission)
-    private permissionRepository: Repository<Permission>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     private dataSource: DataSource,
@@ -209,7 +206,6 @@ export class AppTypeService {
    * @returns 权限池配置
    */
   async getPermissionPool(appTypeId: string): Promise<PermissionPoolResponseDto> {
-    // 验证应用类型存在
     const appType = await this.appTypeRepository.findOne({
       where: { id: appTypeId },
     });
@@ -218,31 +214,39 @@ export class AppTypeService {
       throw new NotFoundError('应用类型');
     }
 
-    // 获取所有权限
-    const allPermissions = await this.permissionRepository.find({
-      order: { sortOrder: 'ASC' },
-    });
-
-    // 获取权限池中已配置的权限
-    const poolPermissions = await this.appTypePermissionRepository.find({
-      where: { appTypeId },
-    });
-
-    // 构建权限池 Map（permissionId -> permissionValue）
-    const poolMap = new Map<string, bigint>();
-    for (const pool of poolPermissions) {
-      poolMap.set(pool.permissionId, pool.permissionValue);
-    }
-
-    // 构建权限树
-    const pcTree = this.buildPermissionTree(
-      allPermissions.filter((p) => p.permissionType === PermissionType.PC),
-      poolMap,
+    const rows: any[] = await this.dataSource.query(
+      `SELECT
+        p.id,
+        p.permName,
+        p.permCode,
+        p.permDesc,
+        p.permissionType,
+        p.nodeType,
+        p.parentId,
+        p.routePath,
+        p.externalUrl,
+        p.iconName,
+        p.sortOrder,
+        p.isVisible,
+        p.isCache,
+        p.showMode,
+        p.permStatus,
+        p.isAutoSync,
+        p.permissionValue AS parentPermissionValue,
+        atp.permissionValue,
+        IF(atp.permissionId IS NULL, 0, 1) checked
+      FROM sys_permissions p
+      LEFT JOIN sys_app_type_permissions atp ON atp.permissionId = p.id AND atp.appTypeId = ?
+      WHERE p.deleteAt IS NULL
+      ORDER BY p.sortOrder ASC`,
+      [appTypeId],
     );
-    const normalTree = this.buildPermissionTree(
-      allPermissions.filter((p) => p.permissionType === PermissionType.NORMAL),
-      poolMap,
-    );
+
+    const pcRows = rows.filter((r) => r.permissionType === PermissionType.PC);
+    const normalRows = rows.filter((r) => r.permissionType === PermissionType.NORMAL);
+
+    const pcTree = this.buildPermissionTreeFromRows(pcRows);
+    const normalTree = this.buildPermissionTreeFromRows(normalRows);
 
     return {
       appTypeId,
@@ -317,80 +321,33 @@ export class AppTypeService {
     };
   }
 
-  /**
-   * 构建权限树
-   * @param permissions - 权限列表
-   * @param poolMap - 权限池 Map
-   * @returns 权限树
-   */
-  private buildPermissionTree(
-    permissions: Permission[],
-    poolMap: Map<string, bigint>,
-  ): PermissionTreeNodeDto[] {
-    // 构建 ID -> Permission Map
-    const permMap = new Map<string, Permission>();
-    for (const perm of permissions) {
-      permMap.set(perm.id, perm);
-    }
+  private buildPermissionTreeFromRows(rows: any[]): PermissionTreeNodeDto[] {
+    const nodes = rows.map((row) => {
+      const checked = row.checked === 1;
+      return {
+        ...row,
+        checked,
+        sortOrder: Number(row.sortOrder),
+        isVisible: Number(row.isVisible),
+        isCache: Number(row.isCache),
+        permStatus: Number(row.permStatus),
+        isAutoSync: row.isAutoSync != null ? Number(row.isAutoSync) : undefined,
+        permissionValue: checked && row.permissionValue != null ? String(row.permissionValue) : undefined,
+        parentPermissionValue: row.parentPermissionValue != null ? String(row.parentPermissionValue) : undefined,
+      } as PermissionTreeNodeDto;
+    });
 
-    // 找出根节点（parentId 为空或 null）
-    const roots = permissions.filter((p) => !p.parentId);
+    const tree = flatToTree(nodes as any[], { keepEmptyChildren: false }) as PermissionTreeNodeDto[];
 
-    // 递归构建树
-    return roots.map((root) => this.buildTreeNode(root, permMap, poolMap));
-  }
-
-  /**
-   * 构建单个树节点
-   * @param permission - 权限实体
-   * @param permMap - 权限 Map
-   * @param poolMap - 权限池 Map
-   * @returns 树节点
-   */
-  private buildTreeNode(
-    permission: Permission,
-    permMap: Map<string, Permission>,
-    poolMap: Map<string, bigint>,
-  ): PermissionTreeNodeDto {
-    // 检查是否在权限池中
-    const checked = poolMap.has(permission.id);
-    const poolValue = poolMap.get(permission.id);
-
-    // 构建节点
-    const node: PermissionTreeNodeDto = {
-      id: permission.id,
-      permName: permission.permName,
-      permCode: permission.permCode,
-      permDesc: permission.permDesc,
-      permissionType: permission.permissionType as PermissionType,
-      nodeType: permission.nodeType as NodeType,
-      parentId: permission.parentId ?? undefined,
-      routePath: permission.routePath,
-      externalUrl: permission.externalUrl,
-      iconName: permission.iconName,
-      sortOrder: permission.sortOrder,
-      isVisible: permission.isVisible,
-      isCache: permission.isCache,
-      showMode: permission.showMode as ShowMode,
-      permStatus: permission.permStatus,
-      isAutoSync: permission.isAutoSync,
-      checked,
-      // permissionValue 在 PC 权限的 PAGE 节点、普通权限的 TAG 节点时有效（bigint 序列化为字符串）
-      permissionValue: checked && poolValue !== undefined ? poolValue.toString() : undefined,
-      // parentPermissionValue 父权限定义的权限值
-      parentPermissionValue: permission.permissionValue?.toString(),
+    const sortTree = (items: PermissionTreeNodeDto[]) => {
+      items.sort((a, b) => a.sortOrder - b.sortOrder);
+      for (const item of items) {
+        if (item.children?.length) sortTree(item.children);
+      }
     };
+    sortTree(tree);
 
-    // 找出子节点
-    const children = Array.from(permMap.values()).filter((p) => p.parentId === permission.id);
-
-    if (children.length > 0) {
-      node.children = children
-        .sort((a, b) => Number(a.sortOrder) - Number(b.sortOrder))
-        .map((child) => this.buildTreeNode(child, permMap, poolMap));
-    }
-
-    return node;
+    return tree;
   }
 
   /**
