@@ -15,7 +15,7 @@
       </el-button>
     </template>
     <MfwCardListPage ref="cardListPage" :search-template="searchTemplate" :load-data="loadData" render-mode="card"
-      :card-grid="{ minWidth: 280, gap: 16 }" empty-text="暂无角色">
+      empty-text="暂无角色">
       <template #card-item="{ item }">
         <RoleCard :data="item" @refresh="cardListPage?.refresh()" />
       </template>
