@@ -361,8 +361,59 @@ interface PopupInstance {
 
 ---
 
+## 最佳实践
+
+### 仅声明与默认值不同的 footer 配置
+
+`footer` 的 `cancelText` 默认值为 `'关闭'`，`confirmText` 默认值为 `'确认'`，`showCancel`/`showConfirm` 默认为 `true`。仅当值与默认值不同时才需显式声明：
+
+```typescript
+// ❌ 错误：cancelText 与默认值重复
+MfwPopup.open({
+  footer: { cancelText: '关闭', confirmText: '保存' },
+});
+
+// ✅ 正确：仅声明与默认值不同的字段
+MfwPopup.open({
+  footer: { confirmText: '保存' },
+});
+```
+
+### 简化 confirm 回调为函数引用
+
+当 `on.confirm` 回调仅调用单个方法时，直接传递函数引用即可，与箭头函数写法语义等价：
+
+```typescript
+// ❌ 冗余：不必要的箭头函数包装
+on: {
+  confirm: () => {
+    listPage.value?.refresh();
+  },
+}
+
+// ✅ 简洁：直接传递函数引用
+on: { confirm: listPage.value?.refresh }
+```
+
+### 移除空的回调定义
+
+空的回调函数没有任何作用，不需要时直接省略 `on` 配置：
+
+```typescript
+// ❌ 错误：空的 confirm 回调
+on: {
+  confirm: () => {},
+}
+
+// ✅ 正确：不需要回调时不传 on
+// （不传 on 即可）
+```
+
+---
+
 ## 更新历史
 
 | 版本 | 日期 | 变更说明 |
 |------|------|----------|
+| 1.1.0 | 2026-04-24 | 新增最佳实践章节（footer 精简、回调简化、空回调移除） |
 | 1.0.0 | 2026-04-03 | 初始版本 |

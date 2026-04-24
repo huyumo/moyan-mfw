@@ -72,18 +72,14 @@ const searchTemplate = [
 ];
 
 const loadData = async (params: Record<string, unknown>) => {
-  const result = await new ApiRoleFindAll({
+  return await new ApiRoleFindAll({
     query: {
-      page: params.page as number || 1,
-      pageSize: params.pageSize as number || 20,
+      page: params.page as number,
+      pageSize: params.pageSize as number,
       appId: appId.value,
       ...params
     }
   });
-  return {
-    list: result.list || [],
-    total: result.total || 0,
-  };
 };
 
 const handleAdd = () => {
@@ -93,11 +89,7 @@ const handleAdd = () => {
     component: RoleForm,
     data: { appId: appId.value },
     popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        cardListPage.value?.refresh();
-      },
-    },
+    on: { confirm: cardListPage.value?.refresh },
   });
 };
 </script>

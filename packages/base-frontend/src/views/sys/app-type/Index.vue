@@ -21,7 +21,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwCardListPage } from '../../../components';
 import type { MfwCardListPageInstance } from '../../../components/page/card-list-page/types';
 import { MfwPopup } from '../../../components/feedback';
@@ -38,16 +37,8 @@ defineOptions({ name: 'MfwAppTypeList' });
 const cardListPage = ref<MfwCardListPageInstance>();
 
 const loadData = async () => {
-  try {
-    const result = await new ApiAppTypeFindAllList({});
-    return {
-      list: result || [],
-      total: result?.length || 0,
-    };
-  } catch (error) {
-    ElMessage.error('加载应用类型列表失败');
-    return { list: [], total: 0 };
-  }
+  const result = await new ApiAppTypeFindAllList({});
+  return { list: result || [], total: result?.length || 0 };
 };
 
 const handleEdit = (row: AppTypeResponseDto) => {
@@ -77,12 +68,7 @@ const handleConfigPermissionPool = (row: AppTypeResponseDto) => {
       top: '10vh',
     },
     footer: {
-      cancelText: '关闭',
       confirmText: '保存',
-    },
-    on: {
-      confirm: () => {
-      },
     },
   });
 };

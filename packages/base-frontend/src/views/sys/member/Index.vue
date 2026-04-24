@@ -118,8 +118,6 @@ const actionColumn = {
 
 /** 加载数据 */
 const loadData = async (params: Record<string, any>) => {
-  console.log('*****:::',appId.value);
-  
   if (!appId.value) {
     return { list: [], total: 0 };
   }
@@ -141,11 +139,7 @@ const handleAdd = () => {
     component: AddMemberForm,
     data: { appId: appId.value },
     popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -157,11 +151,7 @@ const handleEditRoles = (row: MemberResponseDto) => {
     component: RoleAssignForm,
     data: { appId: appId.value, member: row },
     popupProps: { width: 500 },
-    on: {
-      confirm: () => {
-        listPage.value?.refresh();
-      },
-    },
+    on: { confirm: listPage.value?.refresh },
   });
 };
 
@@ -173,12 +163,13 @@ const handleRemove = async (row: MemberResponseDto) => {
       '确认移除',
       { type: 'warning' }
     );
-    await new ApiAppMemberRemoveMember({
-      params: { appId: appId.value, userId: row.userId },
-    }, { hintSuccess: true });
-    listPage.value?.refresh();
   } catch {
+    return;
   }
+  await new ApiAppMemberRemoveMember({
+    params: { appId: appId.value, userId: row.userId },
+  }, { hintSuccess: true });
+  listPage.value?.refresh();
 };
 </script>
 
