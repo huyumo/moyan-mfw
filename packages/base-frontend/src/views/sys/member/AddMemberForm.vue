@@ -15,18 +15,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppMemberAddMember } from '../../../apis/sys';
 import MfwUserPicker from '../../../components/picker/user-picker';
+import { useAuthStore } from '../../../store/auth-store';
 
-/** Props */
-interface Props {
-  data?: { appId: string };
-}
-
-const props = defineProps<Props>();
+const authStore = useAuthStore();
+const appId = computed(() => authStore.currentApp?.appId || '');
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
@@ -55,11 +52,10 @@ const rules = {};
 /** 确认提交 */
 const onConfirm = async () => {
   await formRef.value?.validate();
-
   await new ApiAppMemberAddMember({
-    params: { appId: props.data!.appId },
+    params: { appId: appId.value },
     body: { userId: form.userId },
-  }, { hintSuccess: true });
+  }, { hintSuccess: true })
 };
 
 defineExpose({ onConfirm });
