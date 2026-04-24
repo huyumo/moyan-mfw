@@ -12,7 +12,7 @@ import {
 import { ElInput, ElButton, ElAvatar, ElMessage } from 'element-plus'
 import { Search, Plus, Close, Edit } from '@element-plus/icons-vue'
 import { MfwPopup } from '../../feedback/popup/mod'
-import { ApiUserFindAll, ApiUserFindById } from '../../../apis/sys'
+import { ApiUserFindOneByKeyword, ApiUserFindById } from '../../../apis/sys'
 import type { UserResponseDto } from '../../../apis/sys/schemas'
 import CreatePanel from './create-panel'
 import { UserPickerManager } from './manager'
@@ -99,28 +99,13 @@ export default defineComponent({
             noDataTag.value = `未搜索到"${keyword.value}"相关的用户`
           }
         } else {
-          const query: {
-            page: number
-            pageSize: number
-            sortField?: string
-            sortOrder?: string
-            username?: string
-            phone?: string
-            userStatus?: number
-          } = {
-            page: 1,
-            pageSize: 1
-          }
-          if (effectiveSearchBy.value === 'phone' || effectiveSearchBy.value === 'both') {
-            query.phone = keyword.value
-          }
-          if (effectiveSearchBy.value === 'username' || effectiveSearchBy.value === 'both') {
-            query.username = keyword.value
-          }
-
-          const result = await new ApiUserFindAll({ query })
-          if (result.list && result.list.length > 0) {
-            const user = result.list[0]
+          const user = await new ApiUserFindOneByKeyword({
+            query: {
+              keyword: keyword.value,
+              searchBy: effectiveSearchBy.value
+            }
+          })
+          if (user) {
             active.value = user
             emitChange(user)
           } else {

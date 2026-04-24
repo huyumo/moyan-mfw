@@ -145,6 +145,23 @@ export class UserService {
     return value;
   }
 
+  async findOneByKeyword(keyword: string, searchBy: 'username' | 'phone' | 'both'): Promise<User | null> {
+    const conditions: Array<Record<string, string>> = [];
+
+    if (searchBy === 'username' || searchBy === 'both') {
+      conditions.push({ username: keyword });
+    }
+    if (searchBy === 'phone' || searchBy === 'both') {
+      conditions.push({ phone: keyword });
+    }
+
+    if (conditions.length === 0) return null;
+
+    return this.userRepository.findOne({
+      where: conditions,
+    });
+  }
+
   /**
    * 根据 ID 查询用户
    * @param id - 用户 ID

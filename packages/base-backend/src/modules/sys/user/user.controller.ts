@@ -95,6 +95,25 @@ export class UserController {
     return ApiResponseUtil.success(result, '查询成功');
   }
 
+  @Get('find-one')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '精确查找用户', description: '根据用户名或手机号精确匹配查找单个用户' })
+  @ApiQuery({ name: 'keyword', description: '搜索关键词' })
+  @ApiQuery({ name: 'searchBy', description: '搜索方式: username | phone | both', enum: ['username', 'phone', 'both'], required: false })
+  @ApiResponse({
+    status: 200,
+    description: '查询成功',
+    type: UserResponseDto,
+  })
+  @RequirePermission({ permCode: 'pc_root:sys:user' })
+  async findOneByKeyword(
+    @Query('keyword') keyword: string,
+    @Query('searchBy') searchBy: 'username' | 'phone' | 'both' = 'both',
+  ) {
+    const result = await this.userService.findOneByKeyword(keyword, searchBy);
+    return ApiResponseUtil.success(result, '查询成功');
+  }
+
   /**
    * 根据 ID 查询用户
    */
