@@ -5,20 +5,19 @@
 
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, EntityManager, Equal } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { RolePermission } from './entities/role-permission.entity';
 import { UserRole } from './entities/user-role.entity';
-import { Permission, PermissionType } from '../permission/entities/permission.entity';
-import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
+import { PermissionType } from '../permission/entities/permission.entity';
 import { AssignPermissionsDto, CreateRoleDto, UpdateRoleDto, QueryRoleDto } from './dto';
 import {
   RolePermissionResponseDto,
 } from './dto/res/role-permission-response.dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
-import { AppType, AppTypeService } from '../app-type';
 import { PermissionTreeNodeDto } from '../permission';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
+import { flatToTree } from '@/common/utils/tree.util';
 import { App } from '../app/entities/app.entity';
 
 /**
@@ -33,7 +32,6 @@ export class RoleService {
     private roleRepository: Repository<Role>,
     @InjectRepository(RolePermission)
     private rolePermissionRepository: Repository<RolePermission>,
-    private appTypeService: AppTypeService,
   ) { }
 
   /**
@@ -206,13 +204,15 @@ export class RoleService {
         [];
       this.collectPermissionNodes(assignPermissionsDto.permissionTrees.pcTree, allNodes);
       this.collectPermissionNodes(assignPermissionsDto.permissionTrees.normalTree, allNodes);
-      const datas = allNodes.map((item)=>{
+      const datas = allNodes.map((item) => {
         return manager.create(RolePermission, {
           roleId,
           permissionId: item.id,
           permissionValue: item.permissionValue ? BigInt(item.permissionValue) : 0n,
         })
       })
+      console.log(datas);
+
       await manager.save(datas);
     });
   }
@@ -235,7 +235,6 @@ export class RoleService {
    * @returns 角色权限树配置
    */
   async getRolePermissionTree(roleId: string): Promise<RolePermissionResponseDto> {
-    // 验证角色存在
     const role = await this.roleRepository.findOne({
       where: { id: roleId },
     });
@@ -244,20 +243,42 @@ export class RoleService {
       throw new NotFoundError('角色');
     }
 
-    // 权限池数据
-    const permissionPool = await this.appTypeService.getPermissionPool(role.appTypeId);
-    // 已选中的角色权限
-    const rolePermissions = await this.rolePermissionRepository.find({ where: { roleId: Equal(roleId) } })
-
-    const pcTree = this.buildRolePermissions(
-      permissionPool.permissionTrees.pcTree,
-      rolePermissions,
+    const rows: any[] = await this.entityManager.query(
+      `WITH 
+      pond AS(
+        SELECT 
+          p.id,
+          p.permName,
+          p.permCode,
+          p.permissionType,
+          p.nodeType,
+          p.parentId,
+          p.routePath,
+          p.externalUrl,
+          p.iconName,
+          p.sortOrder,
+          p.isCache,
+          p.showMode,
+          atp.permissionValue AS parentPermissionValue,
+          atp.appTypeId
+        FROM sys_app_type_permissions atp
+        INNER JOIN sys_permissions p ON atp.permissionId = p.id
+        LEFT JOIN sys_roles r ON r.appTypeId = atp.appTypeId
+        WHERE r.id = ?
+      )
+      SELECT 
+        pond.*,
+        IFNULL(rp.permissionValue,0) permissionValue,
+        IF(rp.permissionId IS NULL,false,true) checked
+      FROM pond
+      LEFT JOIN sys_role_permissions rp ON rp.permissionId = pond.id AND rp.roleId = ?`,
+      [roleId, roleId],
     );
-    const normalTree = this.buildRolePermissions(
-      permissionPool.permissionTrees.normalTree,
-      rolePermissions,
-    );
 
+    const pcRows = rows.filter((r) => r.permissionType === PermissionType.PC);
+    const normalRows = rows.filter((r) => r.permissionType === PermissionType.NORMAL);
+    const pcTree = this.buildPermissionTreeFromRows(pcRows);
+    const normalTree = this.buildPermissionTreeFromRows(normalRows);
     return {
       roleId,
       permissionTrees: {
@@ -267,28 +288,33 @@ export class RoleService {
     };
   }
 
-  private buildRolePermissions(
-    tree: PermissionTreeNodeDto[],
-    rolePermissions: RolePermission[],
-  ): PermissionTreeNodeDto[] {
-
-    const filter = (arr: PermissionTreeNodeDto[]) => {
-      return arr.filter((item) => {
-        if (item.children?.length) {
-          item.children = filter(item.children);
-        }
-        return item.checked || (item.children && item.children.length > 0);
-      })
-    }
-    const filteredTree = filter(tree);
-    const newTree = filteredTree.map((item) => {
-      if (item.children) {
-        item.children = this.buildRolePermissions(item.children, rolePermissions);
-      }
-      item.checked = rolePermissions.some((perm) => perm.permissionId === item.id);
-      return item;
+  private buildPermissionTreeFromRows(rows: any[]): PermissionTreeNodeDto[] {
+    const nodes = rows.map((row) => {
+      const { appTypeId, ...rest } = row;
+      return {
+        ...rest,
+        sortOrder: Number(row.sortOrder),
+        isVisible: Number(row.isVisible),
+        isCache: Number(row.isCache),
+        permStatus: Number(row.permStatus),
+        isAutoSync: row.isAutoSync != null ? Number(row.isAutoSync) : undefined,
+        checked: row.checked === 1,
+        permissionValue: row.permissionValue != null ? String(row.permissionValue) : undefined,
+        parentPermissionValue: row.parentPermissionValue != null ? String(row.parentPermissionValue) : undefined,
+      } as PermissionTreeNodeDto;
     });
-    return newTree;
+
+    const tree = flatToTree(nodes as any[], { keepEmptyChildren: false }) as PermissionTreeNodeDto[];
+
+    const sortTree = (items: PermissionTreeNodeDto[]) => {
+      items.sort((a, b) => a.sortOrder - b.sortOrder);
+      for (const item of items) {
+        if (item.children?.length) sortTree(item.children);
+      }
+    };
+    sortTree(tree);
+
+    return tree;
   }
 
 }

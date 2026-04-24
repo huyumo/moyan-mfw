@@ -29,6 +29,8 @@ export interface FlatToTreeOptions {
   rootParentId?: string | number | null;
   /** 是否保留原始数据中的 parentId 字段，默认为 true */
   keepParentId?: boolean;
+  /** 是否保留空 children 字段，默认为 true */
+  keepEmptyChildren?: boolean;
   /** 自定义子节点字段名，默认为 'children' */
   childrenField?: string;
   /** 自定义父节点 ID 字段名，默认为 'parentId' */
@@ -83,6 +85,7 @@ export function flatToTree<T extends ExtendedTreeNode>(
   const {
     rootParentId = null,
     keepParentId = true,
+    keepEmptyChildren = true,
     childrenField = 'children',
     parentIdField = 'parentId',
   } = options;
@@ -121,6 +124,20 @@ export function flatToTree<T extends ExtendedTreeNode>(
     if (!keepParentId) {
       deleteProperty(node, parentIdField);
     }
+  }
+
+  if (!keepEmptyChildren) {
+    const removeEmptyChildren = (nodes: T[]) => {
+      for (const n of nodes) {
+        const children = getProperty(n, childrenField) as T[];
+        if (Array.isArray(children) && children.length === 0) {
+          deleteProperty(n, childrenField);
+        } else if (Array.isArray(children)) {
+          removeEmptyChildren(children);
+        }
+      }
+    };
+    removeEmptyChildren(rootNodes);
   }
 
   return rootNodes;
