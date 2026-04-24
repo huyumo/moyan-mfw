@@ -8,11 +8,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Role } from './entities/role.entity';
 import { UserRole } from './entities/user-role.entity';
 import { RolePermission } from './entities/role-permission.entity';
-import { Permission } from '../permission/entities/permission.entity';
-import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
 import { RoleService } from './role.service';
 import { RoleController } from './role.controller';
-import { AppTypeModule } from '../app-type';
 
 /**
  * 角色模块
@@ -20,8 +17,7 @@ import { AppTypeModule } from '../app-type';
  */
 @Module({
   imports: [
-    AppTypeModule,
-    TypeOrmModule.forFeature([Role, UserRole, RolePermission, Permission, AppTypePermissionEntity]),
+    TypeOrmModule.forFeature([Role, UserRole, RolePermission]),
   ],
   providers: [RoleService],
   controllers: [RoleController],
