@@ -1,6 +1,3 @@
-/**
- * @fileoverview MfwUserPicker 用户选择器组件导出
- */
-
-export { default as MfwUserPicker } from './index';
-export type * from './types';
+export { default as MfwUserPicker } from './index'
+export { UserPickerManager } from './manager'
+export type * from './types'

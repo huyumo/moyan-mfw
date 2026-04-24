@@ -18,7 +18,7 @@
 import { ref, reactive } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
-import { ApiAppMemberAddMember, ApiUserFindAll } from '../../../apis/sys';
+import { ApiAppMemberAddMember } from '../../../apis/sys';
 import MfwUserPicker from '../../../components/picker/user-picker';
 
 /** Props */
@@ -36,18 +36,6 @@ const form = reactive({
   userId: '',
 });
 
-/** 加载用户列表 */
-const loadUserList = async (params: { keyword?: string; departmentId?: string | number; page?: number; pageSize?: number }) => {
-  return await new ApiUserFindAll({
-    query: {
-      username: params.keyword,
-      phone: params.keyword,
-      pageSize: params.pageSize || 20,
-      page: params.page || 1,
-    },
-  });
-};
-
 /** 表单项配置 */
 const formTemplate: FormItemConfig[] = [
   {
@@ -56,8 +44,6 @@ const formTemplate: FormItemConfig[] = [
     component: MfwUserPicker,
     rules: [{ required: true, message: '请选择用户', trigger: 'change' }],
     elProps: {
-      placeholder: '请选择用户',
-      loadUserList,
       style: 'width: 100%',
     },
   },

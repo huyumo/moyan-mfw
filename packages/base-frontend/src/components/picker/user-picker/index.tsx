@@ -1,550 +1,284 @@
-/**
- * @fileoverview MfwUserPicker 用户选择器组件
- * @description 支持用户选择、部门筛选、多选等功能
- * @example
- * ```vue
- * <!-- 单选 -->
- * <MfwUserPicker v-model="userId" />
- *
- * <!-- 多选 -->
- * <MfwUserPicker v-model="userIds" multiple />
- *
- * <!-- 显示部门筛选 -->
- * <MfwUserPicker v-model="userId" show-department-filter />
- *
- * <!-- 自定义占位符 -->
- * <MfwUserPicker v-model="userId" placeholder="请选择用户" />
- * ```
- */
-
-import './style.scss';
+import './style.scss'
 
 import {
   defineComponent,
   ref,
   computed,
   watch,
-  nextTick,
   onMounted,
   h,
-  type PropType,
-  type Ref,
-  type VNode
-} from 'vue';
-import {
-  ElSelect,
-  ElOption,
-  ElTag,
-  ElTree,
-  ElInput,
-  ElEmpty,
-  ElSkeleton
-} from 'element-plus';
-import {
-  User,
-  Search,
-  Loading
-} from '@element-plus/icons-vue';
+  type PropType
+} from 'vue'
+import { ElInput, ElButton, ElAvatar, ElMessage } from 'element-plus'
+import { Search, Plus, Close, Edit } from '@element-plus/icons-vue'
+import { MfwPopup } from '../../feedback/popup/mod'
+import { ApiUserFindAll, ApiUserFindById } from '../../../apis/sys'
+import type { UserResponseDto } from '../../../apis/sys/schemas'
+import CreatePanel from './create-panel'
+import { UserPickerManager } from './manager'
 import type {
   MfwUserPickerProps,
-  MfwUserPickerEmits,
   MfwUserPickerInstance,
-  MfwUserPickerSlots,
-  UserInfo,
-  DepartmentInfo,
-  UserPickerState
-} from './types';
+  SearchBy
+} from './types'
 
 export default defineComponent({
   name: 'MfwUserPicker',
 
   props: {
-    /** 绑定值 */
     modelValue: {
-      type: [String, Number, Array, Object] as PropType<MfwUserPickerProps['modelValue']>,
+      type: String as PropType<MfwUserPickerProps['modelValue']>,
       default: undefined
     },
-    /** 是否禁用 */
-    disabled: {
-      type: Boolean,
-      default: false
-    },
-    /** 是否多选 */
-    multiple: {
-      type: Boolean,
-      default: false
-    },
-    /** 最多选择数量 */
-    maxCount: {
-      type: Number,
-      default: 0
-    },
-    /** 占位文本 */
-    placeholder: {
+    theme: {
       type: String,
-      default: '请选择用户'
-    },
-    /** 是否显示部门树筛选 */
-    showDepartmentFilter: {
-      type: Boolean,
-      default: false
-    },
-    /** 部门树数据 */
-    departmentData: {
-      type: Array as PropType<DepartmentInfo[]>,
-      default: () => []
-    },
-    /** 用户列表数据加载函数 */
-    loadUserList: {
-      type: Function as PropType<MfwUserPickerProps['loadUserList']>,
-      required: true
-    },
-    /** 自定义用户标签渲染 */
-    renderTag: {
-      type: Function as PropType<(user: UserInfo) => VNode | string>
-    },
-    /** 尺寸 */
-    size: {
-      type: String as PropType<'small' | 'default' | 'large'>,
       default: 'default'
     },
-    /** 是否可清空 */
-    clearable: {
-      type: Boolean,
-      default: true
-    },
-    /** 远程搜索防抖时间（ms） */
-    debounce: {
-      type: Number,
-      default: 300
-    },
-    /** 是否支持搜索 */
-    searchable: {
-      type: Boolean,
-      default: true
-    },
-    /** 空数据提示文本 */
-    emptyText: {
+    helper: {
       type: String,
-      default: '暂无数据'
+      default: ''
     },
-    /** 加载中提示文本 */
-    loadingText: {
-      type: String,
-      default: '加载中...'
+    searchBy: {
+      type: String as PropType<SearchBy>,
+      default: undefined
+    },
+    onSearch: {
+      type: Function as PropType<MfwUserPickerProps['onSearch']>,
+      default: undefined
+    },
+    onCreate: {
+      type: Function as PropType<MfwUserPickerProps['onCreate']>,
+      default: undefined
+    },
+    onUpdate: {
+      type: Function as PropType<MfwUserPickerProps['onUpdate']>,
+      default: undefined
     }
   },
 
   emits: {
-    'update:modelValue': (value: any) => true,
-    change: (value: any, oldValue: any) => true,
-    clear: () => true,
-    search: (keyword: string) => true,
-    'department-change': (departmentId: string | number) => true
+    'update:modelValue': (value: string | undefined) => true,
+    change: (user: UserResponseDto | null) => true
   },
 
   setup(props, { emit, expose, slots }) {
-    const selectRef = ref<any>();
-    const treeRef = ref<any>();
+    const active = ref<UserResponseDto>()
+    const keyword = ref('')
+    const noDataTag = ref('请使用手机号/用户名搜索或添加新用户')
 
-    // 内部状态
-    const state = ref<UserPickerState>({
-      visible: false,
-      keyword: '',
-      userList: [],
-      loading: false,
-      selectedIds: [],
-      currentValue: null,
-      page: 1,
-      pageSize: 50,
-      total: 0,
-      selectedDepartmentId: undefined
-    });
+    const manager = new UserPickerManager()
+    const themeConfig = computed(() => manager.getTheme(props.theme, active.value))
 
-    // 搜索防抖定时器
-    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+    const helperStr = computed(() => props.helper || themeConfig.value.helper || '')
+    const editable = computed(() => themeConfig.value.editable ?? true)
+    const effectiveSearchBy = computed(() => props.searchBy || themeConfig.value.searchBy || 'both')
 
-    /**
-     * 标准化值为 UserInfo[] 数组
-     */
-    const normalizeValue = (): (string | number)[] => {
-      const val = props.modelValue;
-      if (val === undefined || val === null) {
-        return [];
+    const emitChange = (user: UserResponseDto | null) => {
+      emit('update:modelValue', user?.id)
+      emit('change', user)
+    }
+
+    const resolveSearchFn = computed(() => props.onSearch || themeConfig.value.onSearch)
+    const resolveCreateFn = computed(() => props.onCreate || themeConfig.value.onCreate)
+    const resolveUpdateFn = computed(() => props.onUpdate || themeConfig.value.onUpdate)
+
+    const doSearch = async () => {
+      if (!keyword.value) {
+        ElMessage.warning('请输入搜索关键词')
+        return
       }
-      if (Array.isArray(val)) {
-        return val.map((item) => {
-          if (typeof item === 'object' && item !== null) {
-            return (item as UserInfo).id;
-          }
-          return item as string | number;
-        });
-      }
-      if (typeof val === 'object') {
-        return [(val as UserInfo).id];
-      }
-      return [val];
-    };
 
-    /**
-     * 获取选中的用户 ID 列表
-     */
-    const selectedIds = computed(() => {
-      return normalizeValue();
-    });
-
-    /**
-     * 获取选中的用户对象列表
-     */
-    const selectedUsers = computed(() => {
-      return state.value.userList.filter((user) =>
-        selectedIds.value.includes(user.id)
-      );
-    });
-
-    /**
-     * 显示值（用于 Select 显示）
-     */
-    const displayValue = computed(() => {
-      if (props.multiple) {
-        return selectedIds.value;
-      }
-      return selectedIds.value[0] ?? '';
-    });
-
-    /**
-     * 加载用户列表
-     */
-    const loadUserList = async () => {
-      if (!props.loadUserList) return;
-
-      state.value.loading = true;
       try {
-        const result = await props.loadUserList({
-          keyword: state.value.keyword || undefined,
-          departmentId: state.value.selectedDepartmentId,
-          page: state.value.page,
-          pageSize: state.value.pageSize
-        });
-        state.value.userList = result.list || [];
-        state.value.total = result.total || 0;
+        const searchFn = resolveSearchFn.value
+        if (searchFn) {
+          const user = await searchFn(keyword.value)
+          if (user) {
+            active.value = user
+            emitChange(user)
+          } else {
+            noDataTag.value = `未搜索到"${keyword.value}"相关的用户`
+          }
+        } else {
+          const query: {
+            page: number
+            pageSize: number
+            sortField?: string
+            sortOrder?: string
+            username?: string
+            phone?: string
+            userStatus?: number
+          } = {
+            page: 1,
+            pageSize: 1
+          }
+          if (effectiveSearchBy.value === 'phone' || effectiveSearchBy.value === 'both') {
+            query.phone = keyword.value
+          }
+          if (effectiveSearchBy.value === 'username' || effectiveSearchBy.value === 'both') {
+            query.username = keyword.value
+          }
+
+          const result = await new ApiUserFindAll({ query })
+          if (result.list && result.list.length > 0) {
+            const user = result.list[0]
+            active.value = user
+            emitChange(user)
+          } else {
+            noDataTag.value = `未搜索到"${keyword.value}"相关的用户`
+          }
+        }
       } catch (error) {
-        console.error('加载用户列表失败:', error);
-        state.value.userList = [];
-        state.value.total = 0;
+        console.error('搜索用户失败:', error)
+        noDataTag.value = '搜索失败，请重试'
       } finally {
-        state.value.loading = false;
+        keyword.value = ''
       }
-    };
+    }
 
-    /**
-     * 处理值变化
-     */
-    const handleValueChange = (value: any) => {
-      const oldValue = props.multiple ? selectedUsers.value : state.value.currentValue;
+    const openCreatePanel = (user?: UserResponseDto) => {
+      MfwPopup.open({
+        title: themeConfig.value.title || (user ? '编辑账号' : '添加账号'),
+        component: CreatePanel,
+        type: 'dialog',
+        popupProps: { width: '500px' },
+        data: {
+          context: user,
+          theme: props.theme,
+          onCreate: resolveCreateFn.value,
+          onUpdate: resolveUpdateFn.value
+        },
+        on: {
+          confirm: (componentRef: any) => {
+            const result = componentRef?.onConfirm?.()
+            if (result instanceof Promise) {
+              result.then((createdUser: UserResponseDto) => {
+                if (createdUser) {
+                  active.value = createdUser
+                  emitChange(createdUser)
+                }
+              })
+            }
+          }
+        }
+      })
+    }
 
-      let newValue: any;
-      if (props.multiple) {
-        // 多选模式
-        const ids = Array.isArray(value) ? value : [value];
-        newValue = ids.map((id: string | number) => {
-          const user = state.value.userList.find((u) => u.id === id);
-          return user || { id };
-        });
-      } else {
-        // 单选模式
-        const user = state.value.userList.find((u) => u.id === value);
-        newValue = user || { id: value };
-        state.value.currentValue = user || null;
+    const handleDelete = () => {
+      active.value = undefined
+      emitChange(null)
+    }
+
+    const loadUserById = async () => {
+      if (!props.modelValue) return
+      try {
+        const user = await new ApiUserFindById({ params: { id: props.modelValue } })
+        if (user) {
+          active.value = user
+        }
+      } catch (error) {
+        console.error('加载用户信息失败:', error)
       }
+    }
 
-      emit('update:modelValue', newValue);
-      emit('change', newValue, oldValue);
-    };
+    const clear = () => handleDelete()
+    const getSelected = (): UserResponseDto | null => active.value ?? null
+    const setSelected = (user: UserResponseDto) => {
+      active.value = user
+      emitChange(user)
+    }
+    const refresh = () => loadUserById()
 
-    /**
-     * 处理搜索
-     */
-    const handleSearch = (keyword: string) => {
-      if (searchTimer) {
-        clearTimeout(searchTimer);
-      }
+    expose<MfwUserPickerInstance>({ clear, getSelected, setSelected, refresh })
 
-      searchTimer = setTimeout(() => {
-        state.value.keyword = keyword;
-        state.value.page = 1;
-        emit('search', keyword);
-        loadUserList();
-      }, props.debounce);
-    };
-
-    /**
-     * 处理部门变化
-     */
-    const handleDepartmentChange = (departmentId: string | number) => {
-      state.value.selectedDepartmentId = departmentId;
-      state.value.page = 1;
-      emit('department-change', departmentId);
-      loadUserList();
-    };
-
-    /**
-     * 处理清除
-     */
-    const handleClear = () => {
-      state.value.keyword = '';
-      state.value.selectedDepartmentId = undefined;
-      emit('clear');
-      emit('update:modelValue', props.multiple ? [] : undefined);
-      emit('change', props.multiple ? [] : undefined, selectedUsers.value);
-      loadUserList();
-    };
-
-    /**
-     * 下拉面板展开/收起
-     */
-    const handleVisibleChange = (visible: boolean) => {
-      state.value.visible = visible;
-      if (visible) {
-        nextTick(() => {
-          loadUserList();
-        });
-      }
-    };
-
-    /**
-     * 聚焦
-     */
-    const focus = () => {
-      selectRef.value?.focus();
-    };
-
-    /**
-     * 失焦
-     */
-    const blur = () => {
-      selectRef.value?.blur();
-    };
-
-    /**
-     * 清空选择
-     */
-    const clear = () => {
-      handleClear();
-    };
-
-    /**
-     * 获取已选择的用户
-     */
-    const getSelected = (): UserInfo[] => {
-      return selectedUsers.value;
-    };
-
-    /**
-     * 设置选中用户
-     */
-    const setSelected = (users: UserInfo[]) => {
-      const ids = users.map((u) => u.id);
-      emit('update:modelValue', props.multiple ? ids : ids[0]);
-    };
-
-    /**
-     * 刷新用户列表
-     */
-    const refresh = async () => {
-      await loadUserList();
-    };
-
-    // 暴露实例方法
-    expose<MfwUserPickerInstance>({
-      focus,
-      blur,
-      clear,
-      getSelected,
-      setSelected,
-      refresh
-    });
-
-    // 监听外部值变化
     watch(
       () => props.modelValue,
-      () => {
-        // 外部值变化时，同步内部状态
-        loadUserList();
-      },
-      { deep: true }
-    );
+      (newVal, oldVal) => {
+        if (newVal !== oldVal && newVal && !active.value?.id) {
+          loadUserById()
+        }
+      }
+    )
 
-    // 初始化
     onMounted(() => {
-      loadUserList();
-    });
+      if (props.modelValue) {
+        loadUserById()
+      }
+    })
 
-    // 渲染函数
     return () => {
-      // 渲染部门树筛选
-      const renderDepartmentFilter = () => {
-        if (!props.showDepartmentFilter) {
-          return null;
-        }
+      const renderEmpty = () => (
+        <div class="mfw-user-picker__empty">
+          <div class="mfw-user-picker__empty-tag">{noDataTag.value}</div>
+          {helperStr.value && <div class="mfw-user-picker__empty-helper">{helperStr.value}</div>}
+          {slots.empty?.()}
+        </div>
+      )
 
-        return h('div', { class: 'mfw-user-picker__department-filter' }, [
-          h(ElTree, {
-            ref: treeRef,
-            data: props.departmentData,
-            nodeKey: 'id',
-            props: {
-              children: 'children',
-              label: 'name'
-            },
-            highlightCurrent: true,
-            expandOnClickNode: false,
-            onNodeClick: (data: DepartmentInfo) => {
-              handleDepartmentChange(data.id);
-            }
-          }, {
-            default: ({ node, data }: any) =>
-              h('span', { class: 'mfw-tree-node' }, [
-                h('span', { class: 'mfw-tree-node__label' }, node.label)
-              ])
-          })
-        ]);
-      };
+      const renderUserInfo = () => (
+        <div class="mfw-user-picker__info">
+          <ElAvatar size={40} src={active.value?.avatar} />
+          <div class="mfw-user-picker__info-detail">
+            <div class="mfw-user-picker__info-name">
+              <span>{active.value?.nickname || active.value?.username}</span>
+              {active.value?.username && active.value?.nickname && (
+                <span class="mfw-user-picker__info-label">{active.value.username}</span>
+              )}
+            </div>
+            <div class="mfw-user-picker__info-phone">{active.value?.phone}</div>
+          </div>
+          <div class="mfw-user-picker__info-actions">
+            {editable.value && (
+              <ElButton
+                type="primary"
+                text
+                circle
+                icon={Edit}
+                onClick={(e: Event) => {
+                  e.stopPropagation()
+                  openCreatePanel(active.value)
+                }}
+              />
+            )}
+            <ElButton
+              type="danger"
+              text
+              circle
+              icon={Close}
+              onClick={(e: Event) => {
+                e.stopPropagation()
+                handleDelete()
+              }}
+            />
+          </div>
+        </div>
+      )
 
-      // 渲染用户列表项
-      const renderUserItem = (user: UserInfo) => {
-        const isSelected = selectedIds.value.includes(user.id);
-        const isDisabled = props.multiple &&
-          props.maxCount! > 0 &&
-          selectedIds.value.length >= props.maxCount! &&
-          !isSelected;
-
-        // 自定义插槽
-        if (slots.item) {
-          return slots.item({ user, selected: isSelected });
-        }
-
-        // 默认渲染
-        return h('div', { class: 'mfw-user-picker__item', style: { display: 'flex', alignItems: 'center', gap: '8px' } }, [
-          // 头像
-          user.avatar
-            ? h('img', {
-                src: user.avatar,
-                style: { width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }
-              })
-            : h('div', {
-                class: 'mfw-user-picker__avatar',
-                style: {
-                  width: '32px',
-                  height: '32px',
-                  borderRadius: '50%',
-                  background: 'var(--el-color-primary)',
-                  color: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px'
-                }
-              }, user.name.charAt(0).toUpperCase()),
-
-          // 用户信息
-          h('div', { style: { flex: 1, minWidth: 0 } }, [
-            h('div', { class: 'mfw-user-picker__name', style: { fontWeight: 500 } }, user.name),
-            (user.departmentName || user.position) && h('div', {
-              class: 'mfw-user-picker__info',
-              style: { fontSize: '12px', color: 'var(--el-text-color-secondary)' }
-            }, [user.departmentName, user.position ? ` · ${user.position}` : ''].filter(Boolean).join(''))
-          ])
-        ]);
-      };
-
-      // 渲染下拉面板内容
-      const renderDropdown = () => {
-        return h('div', { class: 'mfw-user-picker__dropdown' }, [
-          // 部门筛选
-          renderDepartmentFilter(),
-
-          // 搜索框（如果 Select 不自带）
-          props.searchable && h(ElInput, {
-            modelValue: state.value.keyword,
-            'onUpdate:modelValue': (val: string) => { handleSearch(val); },
-            placeholder: '搜索用户...',
-            prefixIcon: Search,
-            clearable: true,
-            size: 'small',
-            style: { marginBottom: '8px' }
-          }),
-
-          // 用户列表
-          state.value.loading
-            ? h(ElSkeleton, { animated: true, rows: 5 })
-            : state.value.userList.length === 0
-              ? slots.empty?.() || h(ElEmpty, {
-                  description: state.value.keyword ? '未找到相关用户' : props.emptyText,
-                  imageSize: 60
-                })
-              : h('div', { class: 'mfw-user-picker__list' },
-                  state.value.userList.map((user) =>
-                    h(ElOption, {
-                      key: user.id,
-                      value: user.id,
-                      label: user.name
-                    }, {
-                      default: () => renderUserItem(user)
-                    })
+      return (
+        <div class="mfw-user-picker">
+          {!active.value && (
+            <div class="mfw-user-picker__search" onKeyup={(e: KeyboardEvent) => { if (e.key === 'Enter') doSearch() }}>
+              <ElInput
+                v-model={keyword.value}
+                placeholder="请输入手机号/用户名查询"
+                v-slots={{
+                  append: () => (
+                    <ElButton icon={Search} onClick={doSearch} />
                   )
-                )
-        ]);
-      };
-
-      // 渲染标签
-      const renderTag = (user: UserInfo) => {
-        if (slots.tag) {
-          return slots.tag({ user });
-        }
-        if (props.renderTag) {
-          return props.renderTag(user);
-        }
-        return h(ElTag, { key: user.id, closable: !props.disabled }, user.name);
-      };
-
-      return h(ElSelect, {
-        ref: selectRef,
-        modelValue: displayValue.value,
-        'onUpdate:modelValue': handleValueChange,
-        multiple: props.multiple,
-        disabled: props.disabled,
-        clearable: props.clearable && !props.disabled,
-        placeholder: props.placeholder,
-        size: props.size,
-        filterable: props.searchable,
-        remote: props.searchable,
-        remoteMethod: handleSearch,
-        loading: state.value.loading,
-        loadingText: props.loadingText,
-        noMatchText: '未找到相关用户',
-        noDataText: props.emptyText,
-        onClear: handleClear,
-        onVisibleChange: handleVisibleChange,
-        popperClass: props.showDepartmentFilter ? 'mfw-user-picker__popper' : '',
-        style: { width: '100%' }
-      }, {
-        header: () => props.showDepartmentFilter ? renderDepartmentFilter() : null,
-        default: () => state.value.userList.map((user) =>
-          h(ElOption, {
-            key: user.id,
-            value: user.id,
-            label: user.name,
-            disabled: props.multiple &&
-              props.maxCount! > 0 &&
-              selectedIds.value.length >= props.maxCount! &&
-              !selectedIds.value.includes(user.id)
-          }, {
-            default: () => renderUserItem(user)
-          })
-        ),
-        prefix: slots.prefix
-      });
-    };
+                }}
+              />
+              <ElButton
+                icon={Plus}
+                type="primary"
+                style="margin-left: 10px"
+                onClick={() => openCreatePanel()}
+              />
+            </div>
+          )}
+          <div class="mfw-user-picker__content">
+            {!active.value ? renderEmpty() : renderUserInfo()}
+          </div>
+        </div>
+      )
+    }
   }
-});
+})
