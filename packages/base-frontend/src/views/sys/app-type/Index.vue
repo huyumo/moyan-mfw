@@ -63,13 +63,7 @@ const handleConfigPermissionPool = (row: AppTypeResponseDto) => {
     type: 'dialog',
     component: PermissionPoolPanel,
     data: { appTypeId: row.id },
-    popupProps: {
-      size: '800px',
-      top: '10vh',
-    },
-    footer: {
-      confirmText: '保存',
-    },
+    popupProps: { size: '800px' }
   });
 };
 
@@ -83,10 +77,7 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
     type: 'dialog',
     component: BuiltinRoleDialog,
     data: { appTypeId: row.id, typeName: row.typeName },
-    popupProps: {
-      width: '600px',
-      top: '10vh',
-    },
+    popupProps: { width: '600px' },
   });
 };
 </script>
