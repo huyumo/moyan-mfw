@@ -112,6 +112,15 @@ export type CreateUserDto = {
   roleIds?: Array<string> // 角色 ID 列表
 }
 
+export type AdminCreateUserDto = {
+  username: string // 用户名
+  phone: string // 手机号
+  nickname?: string // 昵称
+  avatar?: string // 头像 URL
+  gender?: number // 性别 (0:未知 1:男 2:女)
+  roleIds?: Array<string> // 角色 ID 列表
+}
+
 export type UserResponseDto = {
   id: string // 用户 ID
   username: string // 用户名

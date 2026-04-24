@@ -15,6 +15,7 @@ import type {
   RegisterDto,
   CheckAvailabilityResponseDto,
   CreateUserDto,
+  AdminCreateUserDto,
   UserResponseDto,
   PageResponseDto,
   UpdateUserDto,
@@ -194,6 +195,17 @@ export class ApiUserCreate extends ApiCall<
   UserResponseDto
 > {
   readonly path = '/api/users'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+export class ApiUserAdminCreate extends ApiCall<
+  {
+    body: AdminCreateUserDto
+  },
+  UserResponseDto
+> {
+  readonly path = '/api/users/admin-create'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }

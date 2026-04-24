@@ -21,16 +21,6 @@
       />
     </el-form-item>
 
-    <el-form-item v-if="!isEdit" label="密码" prop="password">
-      <el-input
-        v-model="form.password"
-        type="password"
-        placeholder="请输入密码"
-        show-password
-        clearable
-      />
-    </el-form-item>
-
     <el-form-item label="昵称" prop="nickname">
       <el-input
         v-model="form.nickname"
@@ -43,14 +33,6 @@
       <el-input
         v-model="form.phone"
         placeholder="请输入手机号"
-        clearable
-      />
-    </el-form-item>
-
-    <el-form-item label="邮箱" prop="email">
-      <el-input
-        v-model="form.email"
-        placeholder="请输入邮箱"
         clearable
       />
     </el-form-item>
@@ -68,15 +50,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { type FormInstance, type FormRules } from 'element-plus';
-import { ApiUserCreate, ApiUserUpdate } from '../../../apis/sys';
+import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
 
 interface UserFormData {
   username: string;
-  password: string;
   nickname: string;
   phone: string;
-  email: string;
   gender: number;
 }
 
@@ -91,30 +71,22 @@ const isEdit = computed(() => !!props?.id);
 
 const form = reactive<UserFormData>({
   username: '',
-  password: '',
   nickname: '',
   phone: '',
-  email: '',
   gender: 0,
 });
 
 const rules: FormRules<UserFormData> = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 2, max: 50, message: '用户名长度需为 2-50 个字符', trigger: 'blur' },
-  ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度需为 6-20 个字符', trigger: 'blur' },
+    { pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '用户名须以字母开头，仅允许字母和数字，最长20位', trigger: 'blur' },
   ],
   nickname: [
     { max: 50, message: '昵称长度不能超过 50 个字符', trigger: 'blur' },
   ],
   phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
-  ],
-  email: [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' },
   ],
 };
 
@@ -123,7 +95,6 @@ onMounted(() => {
     form.username = props.username;
     form.nickname = props.nickname || '';
     form.phone = props.phone || '';
-    form.email = props.email || '';
     form.gender = props.gender || 0;
   }
 });
@@ -140,18 +111,15 @@ const onConfirm = async () => {
       body: {
         nickname: form.nickname,
         phone: form.phone,
-        email: form.email,
         gender: form.gender,
       },
     }, { hintSuccess: true });
   } else {
-    await new ApiUserCreate({
+    await new ApiUserAdminCreate({
       body: {
         username: form.username,
-        password: form.password,
-        nickname: form.nickname,
         phone: form.phone,
-        email: form.email,
+        nickname: form.nickname,
         gender: form.gender,
       },
     }, { hintSuccess: true });

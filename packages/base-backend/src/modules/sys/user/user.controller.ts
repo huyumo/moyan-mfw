@@ -28,7 +28,7 @@ import {
   ApiExtraModels,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto, QueryUserDto, UserResponseDto } from './dto';
+import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto, UserResponseDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -63,6 +63,23 @@ export class UserController {
   @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['添加'] })
   async create(@Body() createUserDto: CreateUserDto) {
     const result = await this.userService.create(createUserDto);
+    return ApiResponseUtil.success(result, '创建成功');
+  }
+
+  @Post('admin-create')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: '管理员创建用户', description: '管理员创建用户，使用系统默认密码' })
+  @ApiResponse({
+    status: 201,
+    description: '创建成功',
+    type: UserResponseDto,
+  })
+  @ApiResponse({ status: 400, description: '请求参数错误' })
+  @ApiResponse({ status: 409, description: '用户名已存在' })
+  @AuditLog({ module: AuditModule.USER, event: 'ADMIN_CREATE_USER', description: '管理员创建用户' })
+  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['添加'] })
+  async adminCreate(@Body() dto: AdminCreateUserDto) {
+    const result = await this.userService.adminCreate(dto);
     return ApiResponseUtil.success(result, '创建成功');
   }
 

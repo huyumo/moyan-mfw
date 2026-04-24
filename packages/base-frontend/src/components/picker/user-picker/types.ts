@@ -1,8 +1,8 @@
 import type { VNode } from 'vue'
 import type { FormItemConfig } from '../../form/form-card/types'
-import type { UserResponseDto, CreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
+import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
 
-export type { UserResponseDto, CreateUserDto, UpdateUserDto }
+export type { UserResponseDto, AdminCreateUserDto, UpdateUserDto }
 
 export type SearchBy = 'phone' | 'username' | 'both'
 
@@ -13,7 +13,7 @@ export interface UserPickerTheme {
   editable?: boolean
   searchBy?: SearchBy
   onSearch?: (keyword: string) => Promise<UserResponseDto | null>
-  onCreate?: (data: CreateUserDto) => Promise<UserResponseDto>
+  onCreate?: (data: AdminCreateUserDto) => Promise<UserResponseDto>
   onUpdate?: (id: string, data: UpdateUserDto) => Promise<UserResponseDto>
 }
 
@@ -27,7 +27,7 @@ export interface MfwUserPickerProps {
   helper?: string
   searchBy?: SearchBy
   onSearch?: (keyword: string) => Promise<UserResponseDto | null>
-  onCreate?: (data: CreateUserDto) => Promise<UserResponseDto>
+  onCreate?: (data: AdminCreateUserDto) => Promise<UserResponseDto>
   onUpdate?: (id: string, data: UpdateUserDto) => Promise<UserResponseDto>
 }
 
