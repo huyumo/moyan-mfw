@@ -24,7 +24,8 @@
 import { ref, h } from 'vue';
 import { ElMessageBox, ElSwitch } from 'element-plus';
 import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwImageFormat, MfwDictFormat } from '../../../components';
+import type { DictItem } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -50,12 +51,18 @@ const GENDER = {
   FEMALE: 2,
 } as const;
 
-/** 性别文本映射 */
-const GENDER_TEXT = {
-  [GENDER.UNKNOWN]: '未知',
-  [GENDER.MALE]: '男',
-  [GENDER.FEMALE]: '女',
-} as const;
+/** 性别字典 */
+const GENDER_DICT: DictItem[] = [
+  { value: GENDER.UNKNOWN, label: '未知', type: 'info' },
+  { value: GENDER.MALE, label: '男', type: 'primary' },
+  { value: GENDER.FEMALE, label: '女', type: 'danger' },
+];
+
+/** 开发者字典 */
+const DEVELOPER_DICT: DictItem[] = [
+  { value: 1, label: '是', type: 'success' },
+  { value: 0, label: '否', type: 'info' },
+];
 
 defineOptions({ name: 'MfwUserList' });
 
@@ -91,6 +98,12 @@ const searchTemplate = [
 
 /** 表格列 */
 const columns = [
+  {
+    prop: 'avatar',
+    label: '头像',
+    width: 80,
+    render: ({ row }: { row: UserResponseDto }) => h(MfwImageFormat, { value: row.avatar, width: 40, height: 40, preview: true }),
+  },
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
   { prop: 'phone', label: '手机号', minWidth: 130 },
@@ -99,13 +112,13 @@ const columns = [
     prop: 'gender',
     label: '性别',
     width: 80,
-    render: ({ row }: { row: UserResponseDto }) => GENDER_TEXT[row.gender as keyof typeof GENDER_TEXT] || '未知',
+    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.gender, dict: GENDER_DICT, asTag: true }),
   },
   {
     prop: 'isDeveloper',
     label: '开发者',
     width: 80,
-    render: ({ row }: { row: UserResponseDto }) => row.isDeveloper ? '是' : '否',
+    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.isDeveloper ? 1 : 0, dict: DEVELOPER_DICT, asTag: true }),
   },
   {
     prop: 'userStatus',
