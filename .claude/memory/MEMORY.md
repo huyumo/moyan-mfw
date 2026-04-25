@@ -1,3 +1,0 @@
-- [团队协作模式](feedback_team_collaboration.md) — AI 独立团队模式，严格协同交接规范
-- [Harness 身份报告配置](project-harness-identity.md) — 会话启动时自动报告 Agent 身份和开发模式
-- [红线规则 - 不做不该做的事](feedback-no-overreach.md) — 1:1 还原原型，不添加额外功能，严格遵守权限
