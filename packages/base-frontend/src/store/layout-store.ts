@@ -103,8 +103,8 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
       toggleCompact(this as unknown as LayoutPreferenceActionContext, force);
     },
 
-    setNavigation(payload: Partial<AdminNavigationConfig>) {
-      setNavigation(this as unknown as LayoutPreferenceActionContext, payload);
+    setNavigation(payload: Partial<AdminNavigationConfig>, options?: { clearTabs?: boolean }) {
+      setNavigation(this as unknown as LayoutPreferenceActionContext, payload, options);
     },
 
     toggleSettingsPanel(force?: boolean) {
