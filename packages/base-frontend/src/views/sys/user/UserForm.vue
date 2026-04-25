@@ -5,104 +5,91 @@
  */
 -->
 <template>
-  <el-form
+  <MfwFormCard
     ref="formRef"
-    :model="form"
-    :rules="rules"
-    label-width="80px"
-    @submit.prevent
-  >
-    <el-form-item label="用户名" prop="username">
-      <el-input
-        v-model="form.username"
-        placeholder="请输入用户名"
-        :disabled="isEdit"
-        clearable
-      />
-    </el-form-item>
-
-    <el-form-item label="昵称" prop="nickname">
-      <el-input
-        v-model="form.nickname"
-        placeholder="请输入昵称"
-        clearable
-      />
-    </el-form-item>
-
-    <el-form-item label="手机号" prop="phone">
-      <el-input
-        v-model="form.phone"
-        placeholder="请输入手机号"
-        clearable
-      />
-    </el-form-item>
-
-    <el-form-item label="性别" prop="gender">
-      <el-radio-group v-model="form.gender">
-        <el-radio :value="0">未知</el-radio>
-        <el-radio :value="1">男</el-radio>
-        <el-radio :value="2">女</el-radio>
-      </el-radio-group>
-    </el-form-item>
-  </el-form>
+    :form-data="form"
+    :template="formTemplate"
+    :form-props="{ labelWidth: '80px' }"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue';
-import { type FormInstance, type FormRules } from 'element-plus';
+import { ref, reactive, computed } from 'vue';
+import { MfwFormCard, MfwRadioGroup } from '../../../components';
+import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
-
-interface UserFormData {
-  username: string;
-  nickname: string;
-  phone: string;
-  gender: number;
-}
-
-
 
 const props = defineProps<UserResponseDto>();
 
 defineOptions({ name: 'UserForm' });
 
-const formRef = ref<FormInstance>();
+const formRef = ref<MfwFormCardInstance>();
 const isEdit = computed(() => !!props?.id);
 
-const form = reactive<UserFormData>({
-  username: '',
-  nickname: '',
-  phone: '',
-  gender: 0,
+const form = reactive({
+  username: props?.username || '',
+  nickname: props?.nickname || '',
+  phone: props?.phone || '',
+  gender: props?.gender ?? 0,
 });
 
-const rules: FormRules<UserFormData> = {
-  username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '用户名须以字母开头，仅允许字母和数字，最长20位', trigger: 'blur' },
-  ],
-  nickname: [
-    { max: 50, message: '昵称长度不能超过 50 个字符', trigger: 'blur' },
-  ],
-  phone: [
-    { required: true, message: '请输入手机号', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
-  ],
-};
-
-onMounted(() => {
-  if (isEdit.value && props) {
-    form.username = props.username;
-    form.nickname = props.nickname || '';
-    form.phone = props.phone || '';
-    form.gender = props.gender || 0;
-  }
-});
+const formTemplate: FormItemConfig[] = [
+  {
+    key: 'username',
+    label: '用户名',
+    component: 'el-input',
+    disabled: isEdit.value,
+    rules: [
+      { required: true, message: '请输入用户名', trigger: 'blur' },
+      { pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '用户名须以字母开头，仅允许字母和数字，最长20位', trigger: 'blur' },
+    ],
+    elProps: {
+      placeholder: '请输入用户名',
+      clearable: true,
+    },
+  },
+  {
+    key: 'nickname',
+    label: '昵称',
+    component: 'el-input',
+    rules: [
+      { max: 50, message: '昵称长度不能超过 50 个字符', trigger: 'blur' },
+    ],
+    elProps: {
+      placeholder: '请输入昵称',
+      clearable: true,
+    },
+  },
+  {
+    key: 'phone',
+    label: '手机号',
+    component: 'el-input',
+    rules: [
+      { required: true, message: '请输入手机号', trigger: 'blur' },
+      { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
+    ],
+    elProps: {
+      placeholder: '请输入手机号',
+      clearable: true,
+    },
+  },
+  {
+    key: 'gender',
+    label: '性别',
+    component: MfwRadioGroup,
+    elProps: {
+      options: [
+        { label: '未知', value: 0 },
+        { label: '男', value: 1 },
+        { label: '女', value: 2 },
+      ],
+    },
+  },
+];
 
 const onConfirm = async () => {
-  if (!formRef.value) return;
-
-  const valid = await formRef.value.validate().catch(() => false);
+  const valid = await formRef.value?.validate();
   if (!valid) throw new Error('表单验证失败');
 
   if (isEdit.value) {

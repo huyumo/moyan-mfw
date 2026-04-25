@@ -331,6 +331,8 @@ export class UserService {
     }
 
     const hashedPassword = await hashPassword(newPassword);
+    console.log('hashedPassword:', hashedPassword);
+    
     await this.userRepository.update(id, { password: hashedPassword });
   }
 }

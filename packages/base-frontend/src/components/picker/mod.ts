@@ -10,3 +10,6 @@ export type * from './icon-picker/types';
 
 export { default as MfwAppSelector } from './app-selector';
 export type * from './app-selector/types';
+
+export { MfwRadioGroup } from './radio-group/mod';
+export type * from './radio-group/types';

@@ -186,25 +186,24 @@ const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
 
 /** 重置密码 */
 const handleResetPassword = async (row: UserResponseDto) => {
-  let value: string;
-  try {
-    ({ value } = await ElMessageBox.prompt(
-      `请输入用户「${row.username}」的新密码`,
-      '重置密码',
-      {
-        inputPattern: /^.{6,20}$/,
-        inputErrorMessage: '密码长度需为 6-20 个字符',
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-      }
-    ));
-  } catch {
-    return;
-  }
-  await new ApiUserResetPassword({
-    params: { id: row.id },
-    query: { password: value }
-  },{hintSuccess:true,successMsg:'密码重置成功'});
+
+  await ElMessageBox.prompt(
+    `请输入用户「${row.username}」的新密码`,
+    '重置密码',
+    {
+      inputPattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/, // 仅允许字母和数字，最长20位
+      inputErrorMessage: '密码必须包含至少一个字母和一个数字，且长度不少于 6 位',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+    }
+  ).then(async ({ value }) => {
+    console.log(value);
+
+    await new ApiUserResetPassword({
+      params: { id: row.id },
+      body: { password: value }
+    }, { hintSuccess: true, successMsg: '密码重置成功' });
+  })
 };
 
 /** 删除 */
@@ -218,8 +217,7 @@ const handleDelete = async (row: UserResponseDto) => {
   } catch {
     return;
   }
-  await new ApiUserDelete({ params: { id: row.id } },{hintSuccess:true,successMsg:'删除成功'});
+  await new ApiUserDelete({ params: { id: row.id } }, { hintSuccess: true, successMsg: '删除成功' });
   listPage.value?.refresh();
 };
 </script>
-

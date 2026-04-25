@@ -153,6 +153,10 @@ export type UpdateUserDto = {
   roleIds?: Array<string> // 角色 ID 列表
 }
 
+export type ResetPasswordDto = {
+  password: string // 新密码
+}
+
 export type CreateRoleDto = {
   roleName: string // 角色名称
   roleCode: string // 角色编码
