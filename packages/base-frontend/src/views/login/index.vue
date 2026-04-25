@@ -183,6 +183,7 @@ async function submit() {
   loading.value = true;
   try {
     await authStore.login({ username: form.username, password: form.password });
+    console.log('=======成功=======');
     await authStore.fetchUserInfo();
     await authStore.fetchUserApps();
 

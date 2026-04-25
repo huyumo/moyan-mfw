@@ -35,7 +35,7 @@ const data = ref<PermissionTreesResponseDto>({
 })
 
 const getTreeData = async () => {
-  new ApiRoleGetRolePermissions({
+ await new ApiRoleGetRolePermissions({
     params: {
       id: roleId
     }
