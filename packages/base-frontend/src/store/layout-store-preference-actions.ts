@@ -15,23 +15,27 @@ import type {
 import { containsPathInMenu, createHomeTab, cloneMenus } from './layout-store-utils';
 import {
   LAYOUT_PREFERENCES_STORAGE_KEY,
+  LAYOUT_TABS_STORAGE_KEY,
   type LayoutPersistedState,
   type LayoutPreferenceActionContext,
 } from './layout-store-model';
 
-/** 偏好操作实现。 */
 export function persistPreferences(store: LayoutPreferenceActionContext): void {
   if (typeof window === 'undefined') {
     return;
   }
 
-  const payload: LayoutPersistedState = {
+  const localStoragePayload: LayoutPersistedState = {
     styleConfig: store.styleConfig,
     activeTopMenuKey: store.activeTopMenuKey,
+  };
+  window.localStorage.setItem(LAYOUT_PREFERENCES_STORAGE_KEY, JSON.stringify(localStoragePayload));
+
+  const sessionStoragePayload = {
     visitedTabs: store.visitedTabs,
     activeTabPath: store.activeTabPath,
   };
-  window.localStorage.setItem(LAYOUT_PREFERENCES_STORAGE_KEY, JSON.stringify(payload));
+  window.sessionStorage.setItem(LAYOUT_TABS_STORAGE_KEY, JSON.stringify(sessionStoragePayload));
 }
 
 /** 偏好操作实现。 */
@@ -61,8 +65,11 @@ export function toggleCompact(store: LayoutPreferenceActionContext, force?: bool
   store.persistPreferences();
 }
 
-/** 偏好操作实现。 */
-export function setNavigation(store: LayoutPreferenceActionContext, payload: Partial<AdminNavigationConfig>): void {
+export function setNavigation(
+  store: LayoutPreferenceActionContext,
+  payload: Partial<AdminNavigationConfig>,
+  options?: { clearTabs?: boolean },
+): void {
   store.navigation = {
     ...store.navigation,
     ...payload,
@@ -72,12 +79,18 @@ export function setNavigation(store: LayoutPreferenceActionContext, payload: Par
 
   const homePath = store.navigation.homePath || '/dashboard';
   const homeTab = createHomeTab(homePath);
-  const restTabs = store.visitedTabs.filter((tab) => !tab.affix);
-  store.visitedTabs = [homeTab, ...restTabs];
 
-  if (!store.activeTabPath) {
+  if (options?.clearTabs) {
+    store.visitedTabs = [homeTab];
     store.activeTabPath = homePath;
+  } else {
+    const restTabs = store.visitedTabs.filter((tab) => !tab.affix);
+    store.visitedTabs = [homeTab, ...restTabs];
+    if (!store.activeTabPath) {
+      store.activeTabPath = homePath;
+    }
   }
+
   if (!store.activeTopMenuKey && store.navigation.sideMenu.length > 0) {
     store.activeTopMenuKey = store.navigation.sideMenu[0].key;
   }

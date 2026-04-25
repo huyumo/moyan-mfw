@@ -7,7 +7,7 @@ import type {
   PageTabItem,
   SideMenuItem,
 } from '../types/layout-types';
-import { LAYOUT_PREFERENCES_STORAGE_KEY, type LayoutPersistedState } from './layout-store-model';
+import { LAYOUT_PREFERENCES_STORAGE_KEY, LAYOUT_TABS_STORAGE_KEY, type LayoutPersistedState } from './layout-store-model';
 
 /**
  * 深拷贝菜单树。
@@ -41,16 +41,34 @@ export function readPersistedState(): LayoutPersistedState {
     return {};
   }
 
+  let result: LayoutPersistedState = {};
+
   try {
     const raw = window.localStorage.getItem(LAYOUT_PREFERENCES_STORAGE_KEY);
-    if (!raw) {
-      return {};
+    if (raw) {
+      const parsed = JSON.parse(raw) as LayoutPersistedState;
+      if (parsed && typeof parsed === 'object') {
+        result = { ...result, ...parsed };
+      }
     }
-    const parsed = JSON.parse(raw) as LayoutPersistedState;
-    return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
-    return {};
+    // ignore
   }
+
+  try {
+    const raw = window.sessionStorage.getItem(LAYOUT_TABS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Pick<LayoutPersistedState, 'visitedTabs' | 'activeTabPath'>;
+      if (parsed && typeof parsed === 'object') {
+        result.visitedTabs = parsed.visitedTabs;
+        result.activeTabPath = parsed.activeTabPath;
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  return result;
 }
 
 /**

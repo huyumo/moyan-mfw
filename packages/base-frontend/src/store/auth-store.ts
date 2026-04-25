@@ -310,7 +310,7 @@ export const useAuthStore = defineStore('auth', () => {
       const { useLayoutStore } = await import('./layout-store');
       const layoutStore = useLayoutStore();
       const sideMenu = transformPermissionMenuToSideMenu(permissionMenu.value);
-      layoutStore.setNavigation({ sideMenu });
+      layoutStore.setNavigation({ sideMenu }, { clearTabs: true });
 
       console.log('已更新侧边栏菜单:', sideMenu);
       

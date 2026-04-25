@@ -39,6 +39,7 @@ export interface AppItem {
  * 布局偏好设置本地存储键名。
  */
 export const LAYOUT_PREFERENCES_STORAGE_KEY = 'mfw:base-frontend:layout-preferences';
+export const LAYOUT_TABS_STORAGE_KEY = 'mfw:base-frontend:layout-tabs';
 
 /**
  * 布局持久化状态。
