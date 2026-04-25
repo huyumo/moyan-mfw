@@ -6,13 +6,10 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectDataSource, InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, DataSource, EntityManager } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
 import { Role } from '../role/entities/role.entity';
-import { App } from '../app/entities/app.entity';
-import { AppMember } from '../app/entities/app-member.entity';
-import { AppType } from '../app-type/entities/app-type.entity';
 import { NodeType, Permission, ShowMode } from '../permission/entities/permission.entity';
 import { RolePermission } from '../role/entities/role-permission.entity';
 import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
@@ -51,12 +48,6 @@ export class AuthService {
     private userRoleRepository: Repository<UserRole>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
-    @InjectRepository(App)
-    private appRepository: Repository<App>,
-    @InjectRepository(AppMember)
-    private appMemberRepository: Repository<AppMember>,
-    @InjectRepository(AppType)
-    private appTypeRepository: Repository<AppType>,
     @InjectRepository(Permission)
     private permissionRepository: Repository<Permission>,
     @InjectRepository(RolePermission)
@@ -225,87 +216,22 @@ export class AuthService {
    * @returns 用户可访问的应用实例列表
    */
   async getUserApps(userId: string): Promise<AppInstanceItemDto[]> {
-    // 1. 查询用户作为拥有者的应用
-    const ownedApps = await this.appRepository.find({
-      where: { ownerId: userId, appStatus: 1 },
-    });
-
-    // 2. 查询用户作为成员的应用
-    const memberApps = await this.appMemberRepository.find({
-      where: { userId },
-      relations: ['app'],
-    });
-
-    // 3. 获取所有相关的应用类型 ID
-    const appIds = new Set<string>();
-    const appTypeIdSet = new Set<string>();
-
-    ownedApps.forEach((app) => {
-      appIds.add(app.id);
-      if (app.appTypeId) {
-        appTypeIdSet.add(app.appTypeId);
-      }
-    });
-
-    memberApps.forEach((member) => {
-      if (member.app && member.app.appStatus === 1) {
-        appIds.add(member.appId);
-        if (member.app.appTypeId) {
-          appTypeIdSet.add(member.app.appTypeId);
-        }
-      }
-    });
-
-    // 4. 查询应用类型信息
-    const appTypeIds = Array.from(appTypeIdSet);
-    const appTypes = appTypeIds.length > 0
-      ? await this.appTypeRepository.find({
-          where: { id: In(appTypeIds) },
-        })
-      : [];
-
-    const appTypeMap = new Map<string, AppType>();
-    appTypes.forEach((appType) => {
-      appTypeMap.set(appType.id, appType);
-    });
-
-    // 5. 构建返回结果
-    const result: AppInstanceItemDto[] = [];
-
-    // 添加拥有者的应用
-    ownedApps.forEach((app) => {
-      const appType = appTypeMap.get(app.appTypeId);
-      result.push({
-        appId: app.id,
-        appName: app.appName,
-        appCode: app.appCode,
-        appTypeId: app.appTypeId || '',
-        appTypeCode: appType?.typeCode || '',
-        appTypeName: appType?.typeName || '',
-        role: 'owner',
-        icon: app.icon,
-      });
-    });
-
-    // 添加成员的应用（排除已经是拥有者的）
-    memberApps.forEach((member) => {
-      if (member.app && member.app.appStatus === 1 && !appIds.has(member.appId)) {
-        const app = member.app;
-        const appType = appTypeMap.get(app.appTypeId);
-        result.push({
-          appId: app.id,
-          appName: app.appName,
-          appCode: app.appCode,
-          appTypeId: app.appTypeId || '',
-          appTypeCode: appType?.typeCode || '',
-          appTypeName: appType?.typeName || '',
-          role: 'member',
-          icon: app.icon,
-        });
-      }
-    });
-
-    return result;
+    const sql = `
+      SELECT
+        sam.appId,
+        sa.appName,
+        sa.appCode,
+        sa.appTypeId,
+        sat.typeCode AS appTypeCode,
+        sat.typeName AS appTypeName,
+        IF(sa.ownerId = sam.userId, 'owner', 'member') AS role,
+        sa.icon
+      FROM sys_app_members sam
+      INNER JOIN sys_apps sa ON sa.id = sam.appId
+      INNER JOIN sys_app_types sat ON sat.id = sa.appTypeId
+      WHERE sam.userId = :userId AND sa.appStatus = 1
+    `;
+    return executeRawSql<AppInstanceItemDto>(this.entityManager, sql, { userId });
   }
 
   /**
