@@ -213,8 +213,6 @@ const handleResetPassword = async (row: UserResponseDto) => {
       cancelButtonText: '取消',
     }
   ).then(async ({ value }) => {
-    console.log(value);
-
     await new ApiUserResetPassword({
       params: { id: row.id },
       body: { password: value }
