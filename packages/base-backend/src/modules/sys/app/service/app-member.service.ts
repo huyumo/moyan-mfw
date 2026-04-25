@@ -95,46 +95,49 @@ export class AppMemberService {
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
         return `
+        WITH rj AS(
           SELECT 
-            ${select}
-          FROM (
-            SELECT 
-              am.id,
-              am.userId,
-              am.appId,
-              am.createdAt,
-              u.nickname,
-              u.avatar,
-              u.email,
-              u.phone,
-              u.username,
-              a.appCode,
-              a.appName,
-              a.icon as appIcon,
-              a.ownerId,
-              a.sortOrder,
-              a.appTypeId,
-              JSON_ARRAYAGG(
-                JSON_OBJECT(
-                  'roleCode', r.roleCode,
-                  'roleName', r.roleName,
-                  'isBuiltin', r.isBuiltin
-                )
-              ) as roles
-            FROM sys_app_members am
-            INNER JOIN sys_apps a ON a.id = am.appId
-            INNER JOIN sys_users u ON u.id = am.userId
-            LEFT JOIN sys_user_roles ur ON ur.userId = am.userId 
-            LEFT JOIN sys_roles r ON ur.roleId = r.id
-            ${whereClause}
-            GROUP BY am.userId
-          ) AS sub
+            ur.userId,
+            JSON_ARRAYAGG(
+              JSON_OBJECT(
+                'roleCode', r.roleCode,
+                'roleName', r.roleName,
+                'isBuiltin', r.isBuiltin
+              )
+            ) AS roles
+          FROM sys_user_roles ur
+          INNER JOIN sys_roles r ON ur.roleId = r.id
+          GROUP BY ur.userId
+        )
+        SELECT
+          ${select}
+        FROM sys_app_members am
+        INNER JOIN sys_apps a ON a.id = am.appId   
+        INNER JOIN sys_users u ON u.id = am.userId 
+        LEFT JOIN  rj ON rj.userId = am.userId
+          ${whereClause}
           ${orderBy}
           ${limit}
         `;
       })
-      .select('*')
-      .printSql()
+      .select(`
+          am.id,
+          am.userId,
+          am.appId,
+          am.createdAt,
+          u.nickname,
+          u.avatar,
+          u.email,
+          u.phone,
+          u.username,
+          a.appCode,
+          a.appName,
+          a.icon as appIcon,
+          a.ownerId,
+          a.sortOrder,
+          a.appTypeId,
+          COALESCE(rj.roles, JSON_ARRAY()) AS roles
+        `)
       .defaultOrderBy('createdAt DESC')
       .getData();
   }
