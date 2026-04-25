@@ -16,7 +16,7 @@
     <el-descriptions-item label="描述">{{ data?.description }}</el-descriptions-item>
     <el-descriptions-item label="IP地址">{{ data?.ip }}</el-descriptions-item>
     <el-descriptions-item label="User-Agent">{{ data?.userAgent || '-' }}</el-descriptions-item>
-    <el-descriptions-item label="操作时间">{{ data?.createAt }}</el-descriptions-item>
+    <el-descriptions-item label="操作时间"><mfw-date-format :value="data?.createAt" /></el-descriptions-item>
   </el-descriptions>
 
   <el-divider content-position="left">快照数据</el-divider>

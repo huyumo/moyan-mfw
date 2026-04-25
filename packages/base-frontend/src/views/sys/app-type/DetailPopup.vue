@@ -33,10 +33,10 @@
         {{ data?.sortOrder || '-' }}
       </el-descriptions-item>
       <el-descriptions-item label="创建时间">
-        {{ data?.createdAt || '-' }}
+        <mfw-date-format :value="data?.createdAt" />
       </el-descriptions-item>
       <el-descriptions-item label="更新时间">
-        {{ data?.updateAt || '-' }}
+        <mfw-date-format :value="data?.updateAt" />
       </el-descriptions-item>
     </el-descriptions>
   </div>
