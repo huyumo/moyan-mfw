@@ -22,9 +22,9 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue';
-import { ElMessageBox, ElSwitch } from 'element-plus';
-import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwImageFormat, MfwDictFormat } from '../../../components';
+import { ElMessageBox, ElSwitch, ElAvatar } from 'element-plus';
+import { Plus, Edit, Delete, Lock, User } from '@element-plus/icons-vue';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
 import type { DictItem } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
@@ -102,7 +102,8 @@ const columns = [
     prop: 'avatar',
     label: '头像',
     width: 80,
-    render: ({ row }: { row: UserResponseDto }) => h(MfwImageFormat, { value: row.avatar, width: 40, height: 40, preview: true }),
+    align: 'center' as const,
+    render: ({ row }: { row: UserResponseDto }) => h(ElAvatar, { size: 36, src: row.avatar || undefined, icon: User }),
   },
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
@@ -112,12 +113,14 @@ const columns = [
     prop: 'gender',
     label: '性别',
     width: 80,
+    align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.gender, dict: GENDER_DICT, asTag: true }),
   },
   {
     prop: 'isDeveloper',
     label: '开发者',
     width: 80,
+    align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.isDeveloper ? 1 : 0, dict: DEVELOPER_DICT, asTag: true }),
   },
   {
