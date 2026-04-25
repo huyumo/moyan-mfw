@@ -148,15 +148,14 @@ export const useAuthStore = defineStore('auth', () => {
   /** 登录 */
   async function login(params: LoginParams): Promise<boolean> {
     loading.value = true;
-    try {
-      const response = await new ApiAuthLogin({
-        body: { username: params.username, password: params.password },
-      })
 
+    return await new ApiAuthLogin({
+      body: { username: params.username, password: params.password },
+    }).then((response) => {
       // API 返回格式: {code, data: {accessToken, refreshToken, user, ...}, message}
       // moyan-api 可能返回 response.data 或 response.data.data
-      const result = response;
 
+      const result = response;
       // 保存 Token (API 返回 accessToken)
       saveToken(result.accessToken, result.refreshToken, result.expiresIn);
 
@@ -173,14 +172,13 @@ export const useAuthStore = defineStore('auth', () => {
       };
 
       return true;
-    } catch (error) {
-      console.error(error);
-      
-      clearToken();
-      throw error;
-    } finally {
-      loading.value = false;
-    }
+    })
+      .finally(() => {
+        console.log('=======登录完成=======');
+        loading.value = false;
+        return false
+      })
+
   }
 
   /** 登出 */
@@ -286,8 +284,8 @@ export const useAuthStore = defineStore('auth', () => {
         label: item.permName,
         to: item.routePath,
         icon: item.iconName,
-        children: item.children 
-          ? transformPermissionMenuToSideMenu(item.children) 
+        children: item.children
+          ? transformPermissionMenuToSideMenu(item.children)
           : undefined,
       }));
   }
@@ -313,7 +311,7 @@ export const useAuthStore = defineStore('auth', () => {
       layoutStore.setNavigation({ sideMenu }, { clearTabs: true });
 
       console.log('已更新侧边栏菜单:', sideMenu);
-      
+
       return permissionMenu.value;
     } catch (error) {
       console.error('加载权限菜单失败:', error);

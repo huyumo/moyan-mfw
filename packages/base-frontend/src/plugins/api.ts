@@ -119,7 +119,7 @@ export class MoAxios {
         apiEntity.options.ext?.onprogress?.(e);
       };
     }
-
+    console.log('requestConfig', requestConfig);
     return this.$axios(requestConfig);
   }
 
@@ -192,7 +192,6 @@ ApiCall.emitter.on(ApiEvents.HintFail, (apiCall: ApiCall<any, any>) => {
     ElMessage.error('您没有权限执行该操作');
     return;
   }
-
   // 忽略特定路径的错误提示
   const ignored = ['/', '/login'];
   if (!MoAxios.$route || ignored.includes(MoAxios.$route.path)) {
@@ -212,7 +211,7 @@ ApiCall.emitter.on(ApiEvents.HintFail, (apiCall: ApiCall<any, any>) => {
         ApiCall.hasPrompted = false;
       },
     });
-  }
+  }  
 });
 
 /**
