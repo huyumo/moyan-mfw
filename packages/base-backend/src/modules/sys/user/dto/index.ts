@@ -8,6 +8,7 @@ export { CreateUserDto } from './req/create-user.dto';
 export { AdminCreateUserDto } from './req/admin-create-user.dto';
 export { UpdateUserDto } from './req/update-user.dto';
 export { QueryUserDto } from './req/query-user.dto';
+export { ResetPasswordDto } from './req/reset-password.dto';
 
 // Response DTOs
 export { UserResponseDto } from './res/user-response.dto';

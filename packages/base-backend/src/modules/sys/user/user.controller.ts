@@ -28,7 +28,7 @@ import {
   ApiExtraModels,
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
-import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto, UserResponseDto } from './dto';
+import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto, ResetPasswordDto, UserResponseDto } from './dto';
 import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
@@ -208,20 +208,15 @@ export class UserController {
   @Post(':id/reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '重置用户密码', description: '重置指定用户的密码' })
-  @ApiParam({ name: 'id', description: '用户 ID' })
-  @ApiQuery({ name: 'password', description: '新密码' })
   @ApiResponse({ status: 200, description: '重置成功' })
   @ApiResponse({ status: 400, description: '密码格式错误' })
   @AuditLog({ module: AuditModule.USER, event: 'RESET_USER_PASSWORD', description: '重置用户密码' })
   @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
   async resetPassword(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('password') password: string,
+    @Body() body: ResetPasswordDto,
   ) {
-    // 密码格式验证
-    if (!password || !/^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/.test(password)) {
-      throw new BadRequestException('密码必须包含至少一个字母和一个数字，且长度不少于 6 位');
-    }
+    const { password } = body;
     await this.userService.resetPassword(id, password);
     return ApiResponseUtil.success(null, '重置成功');
   }

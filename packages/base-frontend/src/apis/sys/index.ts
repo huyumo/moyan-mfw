@@ -19,6 +19,7 @@ import type {
   AdminCreateUserDto,
   PageResponseDto,
   UpdateUserDto,
+  ResetPasswordDto,
   CreateRoleDto,
   RoleResponseDto,
   UpdateRoleDto,
@@ -327,11 +328,9 @@ export class ApiUserUpdateStatus extends ApiCall<
  */
 export class ApiUserResetPassword extends ApiCall<
   {
+    body: ResetPasswordDto
     params: {
-      id: string //用户 ID
-    }
-    query: {
-      password: string //新密码
+      id: string
     }
   },
   unknown
