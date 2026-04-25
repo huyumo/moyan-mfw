@@ -136,7 +136,8 @@ export class AppMemberService {
           a.ownerId,
           a.sortOrder,
           a.appTypeId,
-          COALESCE(rj.roles, JSON_ARRAY()) AS roles
+          COALESCE(rj.roles, JSON_ARRAY()) AS roles,
+          IF(a.ownerId = am.userId,1,0) isOwner
         `)
       .defaultOrderBy('createdAt DESC')
       .getData();

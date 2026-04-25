@@ -15,8 +15,8 @@ import type {
   RegisterDto,
   CheckAvailabilityResponseDto,
   CreateUserDto,
-  AdminCreateUserDto,
   UserResponseDto,
+  AdminCreateUserDto,
   PageResponseDto,
   UpdateUserDto,
   CreateRoleDto,
@@ -27,6 +27,11 @@ import type {
   AssignPermissionsDto,
   RolePermissionTreesResponseDto,
   RolePermissionResponseDto,
+  CreatePermissionDto,
+  PermissionResponseDto,
+  UpdatePermissionDto,
+  RouteNodeDto,
+  SyncPermissionDto,
   CreateAppTypeDto,
   AppTypeResponseDto,
   PermissionTreesResponseDto,
@@ -34,11 +39,6 @@ import type {
   UpdatePermissionPoolDto,
   UpdatePermissionPoolResponseDto,
   UpdateAppTypeDto,
-  CreatePermissionDto,
-  PermissionResponseDto,
-  UpdatePermissionDto,
-  RouteNodeDto,
-  SyncPermissionDto,
   CreateAppDto,
   AppDetailResponseDto,
   UpdateAppDto,
@@ -199,31 +199,6 @@ export class ApiUserCreate extends ApiCall<
   readonly auth = true
 }
 
-export class ApiUserAdminCreate extends ApiCall<
-  {
-    body: AdminCreateUserDto
-  },
-  UserResponseDto
-> {
-  readonly path = '/api/users/admin-create'
-  readonly method: MoMethod = 'POST'
-  readonly auth = true
-}
-
-export class ApiUserFindOneByKeyword extends ApiCall<
-  {
-    query: {
-      keyword: string
-      searchBy?: string
-    }
-  },
-  UserResponseDto | null
-> {
-  readonly path = '/api/users/find-one'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
 /**
  * user|用户相关接口->查询用户列表
  */
@@ -244,6 +219,37 @@ export class ApiUserFindAll extends ApiCall<
   }
 > {
   readonly path = '/api/users'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * user|用户相关接口->管理员创建用户
+ */
+export class ApiUserAdminCreate extends ApiCall<
+  {
+    body: AdminCreateUserDto
+  },
+  UserResponseDto
+> {
+  readonly path = '/api/users/admin-create'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * user|用户相关接口->精确查找用户
+ */
+export class ApiUserFindOneByKeyword extends ApiCall<
+  {
+    query: {
+      keyword: string //搜索关键词
+      searchBy?: string //搜索方式: username | phone | both
+    }
+  },
+  UserResponseDto
+> {
+  readonly path = '/api/users/find-one'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -458,6 +464,156 @@ export class ApiRoleGetRolePermissions extends ApiCall<
 }
 
 /**
+ * permission|权限相关接口->创建权限
+ */
+export class ApiPermissionCreate extends ApiCall<
+  {
+    body: CreatePermissionDto
+  },
+  PermissionResponseDto
+> {
+  readonly path = '/api/permissions'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->查询权限列表
+ */
+export class ApiPermissionFindAll extends ApiCall<
+  {
+    query: {
+      page: number //页码
+      pageSize: number //每页数量
+      sortField?: string //排序字段
+      sortOrder?: string //排序方向
+      appTypeId?: string //应用类型 ID
+      permName?: string //权限名称（模糊查询）
+      permCode?: string //权限编码（模糊查询）
+      permissionType?: string //权限类型
+      nodeType?: string //节点类型
+      parentId?: string //父权限 ID
+    }
+  },
+  PageResponseDto & {
+    list: Array<PermissionResponseDto>
+  }
+> {
+  readonly path = '/api/permissions'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->查询所有权限树
+ */
+export class ApiPermissionFindAllTree extends ApiCall<
+  {
+    query: {
+      permissionType?: string //权限类型：PC/NORMAL
+    }
+  },
+  Array<PermissionTreeNodeDto>
+> {
+  readonly path = '/api/permissions/tree/all'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->获取权限树
+ */
+export class ApiPermissionGetPermissionTree extends ApiCall<
+  {
+    query: {
+      parentId?: string //父权限 ID，不传则查询根节点
+    }
+  },
+  Array<PermissionTreeNodeDto>
+> {
+  readonly path = '/api/permissions/tree'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->根据 ID 查询权限
+ */
+export class ApiPermissionFindById extends ApiCall<
+  {
+    params: {
+      id: string //权限 ID
+    }
+  },
+  PermissionResponseDto
+> {
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->更新权限
+ */
+export class ApiPermissionUpdate extends ApiCall<
+  {
+    body: UpdatePermissionDto
+    params: {
+      id: string //权限 ID
+    }
+  },
+  PermissionResponseDto
+> {
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->删除权限
+ */
+export class ApiPermissionDelete extends ApiCall<
+  {
+    params: {
+      id: string //权限 ID
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/permissions/{id}'
+  readonly method: MoMethod = 'DELETE'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->批量创建权限
+ */
+export class ApiPermissionBatchCreate extends ApiCall<
+  {
+    body: Array<CreatePermissionDto>
+  },
+  Array<PermissionResponseDto>
+> {
+  readonly path = '/api/permissions/batch'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * permission|权限相关接口->同步路由到权限表
+ */
+export class ApiPermissionSyncPermissions extends ApiCall<
+  {
+    body: SyncPermissionDto
+  },
+  Array<PermissionTreeNodeDto>
+> {
+  readonly path = '/api/permissions/sync'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
  * app-type|应用类型相关接口->创建应用类型
  */
 export class ApiAppTypeCreate extends ApiCall<
@@ -605,156 +761,6 @@ export class ApiAppTypeUpdateStatus extends ApiCall<
 > {
   readonly path = '/api/app-types/{id}/status'
   readonly method: MoMethod = 'PUT'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->创建权限
- */
-export class ApiPermissionCreate extends ApiCall<
-  {
-    body: CreatePermissionDto
-  },
-  PermissionResponseDto
-> {
-  readonly path = '/api/permissions'
-  readonly method: MoMethod = 'POST'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->查询权限列表
- */
-export class ApiPermissionFindAll extends ApiCall<
-  {
-    query: {
-      page: number //页码
-      pageSize: number //每页数量
-      sortField?: string //排序字段
-      sortOrder?: string //排序方向
-      appTypeId?: string //应用类型 ID
-      permName?: string //权限名称（模糊查询）
-      permCode?: string //权限编码（模糊查询）
-      permissionType?: string //权限类型
-      nodeType?: string //节点类型
-      parentId?: string //父权限 ID
-    }
-  },
-  PageResponseDto & {
-    list: Array<PermissionResponseDto>
-  }
-> {
-  readonly path = '/api/permissions'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->查询所有权限树
- */
-export class ApiPermissionFindAllTree extends ApiCall<
-  {
-    query: {
-      permissionType?: string //权限类型：PC/NORMAL
-    }
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  readonly path = '/api/permissions/tree/all'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->获取权限树
- */
-export class ApiPermissionGetPermissionTree extends ApiCall<
-  {
-    query: {
-      parentId?: string //父权限 ID，不传则查询根节点
-    }
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  readonly path = '/api/permissions/tree'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->根据 ID 查询权限
- */
-export class ApiPermissionFindById extends ApiCall<
-  {
-    params: {
-      id: string //权限 ID
-    }
-  },
-  PermissionResponseDto
-> {
-  readonly path = '/api/permissions/{id}'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->更新权限
- */
-export class ApiPermissionUpdate extends ApiCall<
-  {
-    body: UpdatePermissionDto
-    params: {
-      id: string //权限 ID
-    }
-  },
-  PermissionResponseDto
-> {
-  readonly path = '/api/permissions/{id}'
-  readonly method: MoMethod = 'PUT'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->删除权限
- */
-export class ApiPermissionDelete extends ApiCall<
-  {
-    params: {
-      id: string //权限 ID
-    }
-  },
-  unknown
-> {
-  readonly path = '/api/permissions/{id}'
-  readonly method: MoMethod = 'DELETE'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->批量创建权限
- */
-export class ApiPermissionBatchCreate extends ApiCall<
-  {
-    body: Array<CreatePermissionDto>
-  },
-  Array<PermissionResponseDto>
-> {
-  readonly path = '/api/permissions/batch'
-  readonly method: MoMethod = 'POST'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->同步路由到权限表
- */
-export class ApiPermissionSyncPermissions extends ApiCall<
-  {
-    body: SyncPermissionDto
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  readonly path = '/api/permissions/sync'
-  readonly method: MoMethod = 'POST'
   readonly auth = true
 }
 

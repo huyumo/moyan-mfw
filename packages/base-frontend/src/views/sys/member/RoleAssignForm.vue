@@ -8,10 +8,7 @@
   <div class="role-assign-form">
     <el-checkbox-group v-model="selectedRoleIds">
       <div v-for="role in availableRoles" :key="role.id" class="role-item">
-        <el-checkbox
-          :label="role.id"
-          :disabled="role.isOwner === STATUS.ENABLED"
-        >
+        <el-checkbox :label="role.id" :disabled="role.isOwner === STATUS.ENABLED">
           {{ role.roleName }}
           <el-tag v-if="role.isBuiltin === STATUS.ENABLED" type="warning" size="small">内置</el-tag>
         </el-checkbox>
@@ -21,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
 import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
 
@@ -33,10 +30,8 @@ const STATUS = {
 
 /** Props */
 interface Props {
-  data?: {
-    appId: string;
-    member: MemberResponseDto;
-  };
+  appId: string;
+  member: MemberResponseDto;
 }
 
 const props = defineProps<Props>();
@@ -49,9 +44,9 @@ const selectedRoleIds = ref<string[]>([]);
 
 /** 加载可选角色 */
 const loadAvailableRoles = async () => {
-  if (!props.data?.appId) return;
+  if (!props.appId) return;
   const result = await new ApiAppMemberGetAvailableRoles({
-    params: { appId: props.data.appId },
+    params: { appId: props.appId },
   });
   availableRoles.value = result || [];
 };
@@ -61,19 +56,21 @@ onMounted(async () => {
   await loadAvailableRoles();
 
   // 设置当前角色
-  if (props.data?.member?.roles) {
-    selectedRoleIds.value = props.data.member.roles.map((r) => r.roleId);
+  if (props.member?.roles) {
+    selectedRoleIds.value = props.member.roles.map((r) => r.roleId);
   }
 });
 
+const isMemberOwner = computed(() => Number(props.member.isOwner) === STATUS.ENABLED);
+
 /** 确认提交 */
 const onConfirm = async () => {
-  if (!props.data) return;
+  if (!props.appId || isMemberOwner.value) return;
 
   await new ApiAppMemberUpdateRoles({
     params: {
-      appId: props.data.appId,
-      userId: props.data.member.userId,
+      appId: props.appId,
+      userId: props.member.userId,
     },
     body: { roleIds: selectedRoleIds.value as any },
   }, { hintSuccess: true });

@@ -7,8 +7,6 @@ import { UserInfoDto } from '@/modules/sys/auth';
 import { RoleResponseDto } from '@/modules/sys/role';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-
-
 export class MemberUserInfoDto extends PickType(
   UserInfoDto, [
   'id',
@@ -143,6 +141,19 @@ export class MemberResponseDto {
   @ApiProperty({ description: '角色列表', type: MemberRoleInfoDto, isArray: true })
   @Expose()
   roles?: MemberRoleInfoDto[];
+
+  /**
+   * 是否拥有者角色
+   */
+  @ApiProperty({ description: '是否拥有者角色' ,type:Number ,enum() {
+    return {
+      0: '否',
+      1: '是',
+    }
+  },})
+  @Expose()
+
+  isOwner: number;
 }
 
 /**
