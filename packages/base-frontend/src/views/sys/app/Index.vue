@@ -28,7 +28,7 @@ import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox, ElTag } from 'element-plus';
 import { Plus, View, Edit, Delete, User } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage } from '../../../components';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -117,7 +117,12 @@ const columns = [
     }, () => row.appStatus === STATUS.ENABLED ? '启用' : '禁用'),
   },
   { prop: 'sortOrder', label: '排序', width: 80 },
-  { prop: 'createdAt', label: '创建时间', width: 180 },
+  {
+    prop: 'createdAt',
+    label: '创建时间',
+    width: 180,
+    render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDateFormat, { value: row.createdAt }),
+  },
 ];
 
 /** 操作列 */

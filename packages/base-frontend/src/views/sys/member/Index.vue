@@ -96,12 +96,6 @@ const columns = [
       ),
     ),
   },
-  {
-    prop: 'createdAt',
-    label: '加入时间',
-    minWidth: 180,
-    render: ({ row }: { row: MemberResponseDto }) => row.createdAt || '-',
-  },
 ];
 
 /** 操作列 */

@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue';
 import { View } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage } from '../../../components';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -85,7 +85,12 @@ const columns = [
   { prop: 'targetId', label: '目标ID', minWidth: 180 },
   { prop: 'description', label: '描述', minWidth: 200 },
   { prop: 'ip', label: 'IP地址', width: 140 },
-  { prop: 'createAt', label: '操作时间', width: 180 },
+  {
+    prop: 'createAt',
+    label: '操作时间',
+    width: 180,
+    render: ({ row }: { row: AuditLogResponseDto }) => h(MfwDateFormat, { value: row.createAt }),
+  },
 ];
 
 /** 操作列 */

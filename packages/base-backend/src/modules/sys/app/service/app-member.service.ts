@@ -100,6 +100,7 @@ export class AppMemberService {
             ur.userId,
             JSON_ARRAYAGG(
               JSON_OBJECT(
+                'roleId', r.id,
                 'roleCode', r.roleCode,
                 'roleName', r.roleName,
                 'isBuiltin', r.isBuiltin
@@ -207,10 +208,10 @@ export class AppMemberService {
       if (roleIds.length > 0) {
         const insertValues = roleIds.map((roleId) => {
           const id = require('crypto').randomUUID();
-          return [id, userId, roleId, new Date()];
+          return [id, userId, roleId];
         });
         await queryRunner.manager.query(
-          `INSERT INTO sys_user_roles (id, userId, roleId, created_at) VALUES ?`,
+          `INSERT INTO sys_user_roles (id, userId, roleId) VALUES ?`,
           [insertValues],
         );
       }

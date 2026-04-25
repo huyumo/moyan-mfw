@@ -24,8 +24,7 @@
 import { ref, h } from 'vue';
 import { ElMessageBox, ElSwitch } from 'element-plus';
 import { Plus, Edit, Delete, Lock } from '@element-plus/icons-vue';
-import MfwPageWrapper from '../../../components/page/page-wrapper';
-import MfwListPage from '../../../components/page/list-page';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -118,7 +117,12 @@ const columns = [
       onChange: (val: string | number | boolean) => handleStatusChange(row, Boolean(val)),
     }),
   },
-  { prop: 'createdAt', label: '创建时间', width: 180 },
+  {
+    prop: 'createdAt',
+    label: '创建时间',
+    width: 180,
+    render: ({ row }: { row: UserResponseDto }) => h(MfwDateFormat, { value: row.createdAt }),
+  },
 ];
 
 /** 操作列 */

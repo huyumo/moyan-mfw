@@ -86,6 +86,7 @@ defineExpose({ onConfirm });
 }
 
 .role-item {
-  margin-bottom: 12px;
+  display: inline-block;
+  margin-right: 16px;
 }
 </style>
