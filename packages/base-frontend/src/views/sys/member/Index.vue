@@ -105,14 +105,16 @@ const columns = [
 ];
 
 /** 操作列 */
+const isNotOwner = (row: MemberResponseDto) => Number(row.isOwner) === STATUS.ENABLED;
+
 const actionColumn = {
   prop: 'action',
   label: '操作',
   width: 150,
   fixed: 'right' as const,
   render: ({ row }: { row: MemberResponseDto }) => renderActionButtons([
-    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'] },
-    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'] },
+    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'], disabled: isNotOwner },
+    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'], disabled: isNotOwner },
   ], {}, row),
 };
 

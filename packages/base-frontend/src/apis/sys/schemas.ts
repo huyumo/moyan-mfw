@@ -112,15 +112,6 @@ export type CreateUserDto = {
   roleIds?: Array<string> // 角色 ID 列表
 }
 
-export type AdminCreateUserDto = {
-  username: string // 用户名
-  phone: string // 手机号
-  nickname?: string // 昵称
-  avatar?: string // 头像 URL
-  gender?: number // 性别 (0:未知 1:男 2:女)
-  roleIds?: Array<string> // 角色 ID 列表
-}
-
 export type UserResponseDto = {
   id: string // 用户 ID
   username: string // 用户名
@@ -133,6 +124,15 @@ export type UserResponseDto = {
   isDeveloper: boolean // 是否开发者
   createdAt: string // 创建时间
   updateAt: string // 更新时间
+}
+
+export type AdminCreateUserDto = {
+  username: string // 用户名
+  phone: string // 手机号
+  nickname?: string // 昵称
+  avatar?: string // 头像 URL
+  gender?: number // 性别 (0:未知 1:男 2:女)
+  roleIds?: Array<string> // 角色 ID 列表
 }
 
 export type PageResponseDto = {
@@ -211,59 +211,6 @@ export type RolePermissionResponseDto = {
   permissionTrees: any // 权限树配置
 }
 
-export type CreateAppTypeDto = {
-  typeName: string // 类型名称
-  typeCode: string // 类型编码
-  typeDesc?: string // 类型描述
-  icon?: string // 图标 URL 或图标名称
-  multiAppEnabled: number // 是否支持多应用
-  typeStatus: number // 类型状态
-  sortOrder: number // 排序号
-}
-
-export type AppTypeResponseDto = {
-  id: string // 应用类型 ID
-  typeName: string // 类型名称
-  typeCode: string // 类型编码
-  typeDesc: string // 类型描述
-  icon: string // 图标
-  multiAppEnabled: number // 是否支持多应用
-  typeStatus: number // 类型状态
-  sortOrder: number // 排序号
-  createdAt: string // 创建时间
-  updateAt: string // 更新时间
-  builtinRoleCount: number // 内置角色数量
-}
-
-export type PermissionTreesResponseDto = {
-  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
-  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
-}
-
-export type PermissionPoolResponseDto = {
-  appTypeId: string // 应用类型 ID
-  permissionTrees: any // 权限树配置
-}
-
-export type UpdatePermissionPoolDto = {
-  permissionTrees: any // 权限树配置
-}
-
-export type UpdatePermissionPoolResponseDto = {
-  appTypeId: string // 应用类型 ID
-  updatedCount: number // 更新的权限节点数量
-}
-
-export type UpdateAppTypeDto = {
-  typeName?: string // 类型名称
-  typeCode?: string // 类型编码
-  typeDesc?: string // 类型描述
-  icon?: string // 图标 URL 或图标名称
-  multiAppEnabled?: number // 是否支持多应用
-  typeStatus?: number // 类型状态
-  sortOrder?: number // 排序号
-}
-
 export type CreatePermissionDto = {
   permName: string // 权限名称
   permCode: string // 权限编码
@@ -322,12 +269,65 @@ export type UpdatePermissionDto = {
 export type RouteNodeDto = {
   path: string // 路由路径
   name: string // 路由名称
-  permissionValue?: string // 权限值（位运算字符串，如 "6"）
+  permissionValue?: string // 权限值（位运算）
   children?: Array<RouteNodeDto> // 子路由
 }
 
 export type SyncPermissionDto = {
   routes: Array<RouteNodeDto> // 路由树结构
+}
+
+export type CreateAppTypeDto = {
+  typeName: string // 类型名称
+  typeCode: string // 类型编码
+  typeDesc?: string // 类型描述
+  icon?: string // 图标 URL 或图标名称
+  multiAppEnabled: number // 是否支持多应用
+  typeStatus: number // 类型状态
+  sortOrder: number // 排序号
+}
+
+export type AppTypeResponseDto = {
+  id: string // 应用类型 ID
+  typeName: string // 类型名称
+  typeCode: string // 类型编码
+  typeDesc: string // 类型描述
+  icon: string // 图标
+  multiAppEnabled: number // 是否支持多应用
+  typeStatus: number // 类型状态
+  sortOrder: number // 排序号
+  createdAt: string // 创建时间
+  updateAt: string // 更新时间
+  builtinRoleCount: number // 内置角色数量
+}
+
+export type PermissionTreesResponseDto = {
+  pcTree: Array<PermissionTreeNodeDto> // PC 权限树
+  normalTree: Array<PermissionTreeNodeDto> // 普通权限树
+}
+
+export type PermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  permissionTrees: any // 权限树配置
+}
+
+export type UpdatePermissionPoolDto = {
+  permissionTrees: any // 权限树配置
+}
+
+export type UpdatePermissionPoolResponseDto = {
+  appTypeId: string // 应用类型 ID
+  updatedCount: number // 更新的权限节点数量
+}
+
+export type UpdateAppTypeDto = {
+  typeName?: string // 类型名称
+  typeCode?: string // 类型编码
+  typeDesc?: string // 类型描述
+  icon?: string // 图标 URL 或图标名称
+  multiAppEnabled?: number // 是否支持多应用
+  typeStatus?: number // 类型状态
+  sortOrder?: number // 排序号
 }
 
 export type CreateAppDto = {
@@ -394,6 +394,7 @@ export type MemberResponseDto = {
   sortOrder: number // 排序序号
   appTypeId: string // 应用类型 ID
   roles: Array<MemberRoleInfoDto> // 角色列表
+  isOwner: string // 是否拥有者角色
 }
 
 export type UpdateMemberRolesDto = {
