@@ -14,7 +14,7 @@ import {
   type Component,
   h
 } from 'vue';
-import { ElDialog, ElDrawer, ElButton } from 'element-plus';
+import { ElDialog, ElDrawer, ElButton, ElMessage } from 'element-plus';
 import type { DialogProps, DrawerProps } from 'element-plus';
 
 /** 弹窗类型 */
@@ -192,13 +192,13 @@ const MfwPopupDialog = defineComponent({
         loading.value = true;
         if (componentRef.value?.onConfirm) {
           const result = componentRef.value.onConfirm();
-          if (result instanceof Promise) await result;
+          if (result && typeof result.then === 'function') await result;
         }
         item.value.on.confirm?.(componentRef.value);
         handleClose();
-      } catch (error) {
-        // 如果组件的 onConfirm 抛出错误或返回 rejected Promise，则不关闭弹窗
-        // 错误已由组件自身处理（如显示 ElMessage）
+      } catch (error: any) {
+        const msg = error?.response?.data?.message || error?.message || '操作失败';
+        ElMessage.error(msg);
       } finally {
         loading.value = false;
       }
@@ -289,13 +289,13 @@ const MfwPopupDrawer = defineComponent({
         loading.value = true;
         if (componentRef.value?.onConfirm) {
           const result = componentRef.value.onConfirm();
-          if (result instanceof Promise) await result;
+          if (result && typeof result.then === 'function') await result;
         }
         item.value.on.confirm?.(componentRef.value);
         handleClose();
-      } catch (error) {
-        // 如果组件的 onConfirm 抛出错误或返回 rejected Promise，则不关闭弹窗
-        // 错误已由组件自身处理（如显示 ElMessage）
+      } catch (error: any) {
+        const msg = error?.response?.data?.message || error?.message || '操作失败';
+        ElMessage.error(msg);
       } finally {
         loading.value = false;
       }
