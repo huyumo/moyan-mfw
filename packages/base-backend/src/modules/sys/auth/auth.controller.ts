@@ -143,7 +143,7 @@ export class AuthController {
     type: [AppInstanceItemDto],
   })
   async getUserApps(@Request() req: any) {
-    const userId = req.user.sub || req.user.id;
+    const userId = req.user.id;
     const apps = await this.authService.getUserApps(userId);
     return ApiResponseUtil.success(apps, '获取成功');
   }
