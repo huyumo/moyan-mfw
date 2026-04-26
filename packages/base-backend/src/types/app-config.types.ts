@@ -2,11 +2,9 @@
  * @fileoverview 应用配置类型定义
  */
 
-import { Type } from '@nestjs/common';
+import { Type, ExceptionFilter, NestInterceptor, NestMiddleware, Provider, INestApplication } from '@nestjs/common';
 import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
-import { ExceptionFilter, Interceptor, NestMiddleware, Provider } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { INestApplication } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 
 /** 数据库配置 */
@@ -151,7 +149,7 @@ export interface CreateBaseBackendAppOptions {
   providers?: Provider[];
   middlewares?: Array<NestMiddleware>;
   exceptionFilters?: Array<Type<ExceptionFilter>>;
-  interceptors?: Array<Type<Interceptor>>;
+  interceptors?: Array<Type<NestInterceptor>>;
   migrations?: MigrationConfig;
   swagger?: SwaggerGroupConfig[];
   hooks?: HookConfig;

@@ -218,7 +218,9 @@ function setupCors(
   configService: ConfigService,
 ): void {
   const corsConfig = options.cors ?? configService.get('cors');
-  app.enableCors(corsConfig);
+  if (corsConfig !== false) {
+    app.enableCors(corsConfig === true ? undefined : corsConfig);
+  }
 }
 
 /**
