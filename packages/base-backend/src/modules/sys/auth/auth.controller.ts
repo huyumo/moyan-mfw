@@ -14,6 +14,7 @@ import {
   Request,
   BadRequestException,
 } from '@nestjs/common';
+import { User, UserDto } from '../../../common';
 import {
   ApiTags,
   ApiOperation,
@@ -91,7 +92,7 @@ export class AuthController {
 
   /**
    * 获取当前用户信息
-   * @param req - 请求对象（user 从 JWT 中解析）
+   * @param user - 用户信息（从 JWT 中解析）
    * @returns 当前用户信息
    */
   @Post('userinfo')
@@ -103,8 +104,8 @@ export class AuthController {
     description: '获取成功',
     type: UserInfoDto,
   })
-  async getCurrentUser(@Request() req: any) {
-    const userId = req.user.id;
+  async getCurrentUser(@User() user: UserDto) {
+    const userId = user.id;
     const result = await this.authService.getCurrentUser(userId);
     return ApiResponseUtil.success(result, '获取成功');
   }
@@ -128,7 +129,7 @@ export class AuthController {
 
   /**
    * 获取用户可访问的应用实例列表
-   * @param req - 请求对象（user 从 JWT 中解析）
+   * @param user - 用户信息（从 JWT 中解析）
    * @returns 用户可访问的应用实例列表
    */
   @Get('apps')
@@ -142,15 +143,15 @@ export class AuthController {
     description: '获取成功',
     type: [AppInstanceItemDto],
   })
-  async getUserApps(@Request() req: any) {
-    const userId = req.user.id;
+  async getUserApps(@User() user: UserDto) {
+    const userId = user.id;
     const apps = await this.authService.getUserApps(userId);
     return ApiResponseUtil.success(apps, '获取成功');
   }
 
   /**
    * 获取用户权限菜单
-   * @param req - 请求对象（user 从 JWT 中解析）
+   * @param user - 用户信息（从 JWT 中解析）
    * @param query - 查询参数（appId）
    * @returns 用户权限菜单树
    */
@@ -167,10 +168,10 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
   async getUserPermissions(
-    @Request() req: any,
+    @User() user: UserDto,
     @Query() query: UserPermissionsDto,
   ) {
-    const userId = req.user.sub || req.user.id;
+    const userId = user.id;
     if (!query.appId) {
       throw new BadRequestException('appId 参数不能为空');
     }
@@ -221,7 +222,7 @@ export class AuthController {
 
   /**
    * 修改密码
-   * @param req - 请求对象
+   * @param user - 用户信息
    * @param body - 请求体
    * @returns 修改结果
    */
@@ -233,20 +234,20 @@ export class AuthController {
   @ApiResponse({ status: 400, description: '原密码错误' })
   @ApiResponse({ status: 401, description: '未登录' })
   async changePassword(
-    @Request() req: any,
+    @User() user: UserDto,
     @Body() body: { oldPassword: string; newPassword: string },
   ) {
     if (!body.oldPassword || !body.newPassword) {
       throw new BadRequestException('原密码和新密码不能为空');
     }
-    const userId = req.user.sub || req.user.id;
+    const userId = user.id;
     await this.authService.changePassword(userId, body.oldPassword, body.newPassword);
     return ApiResponseUtil.success(null, '密码修改成功');
   }
 
   /**
    * 同步用户权限
-   * @param req - 请求对象
+   * @param user - 用户信息
    * @param query - 查询参数
    * @returns 用户权限菜单树
    */
@@ -264,10 +265,10 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
   async syncPermissions(
-    @Request() req: any,
+    @User() user: UserDto,
     @Body() body: { appId: string },
   ) {
-    const userId = req.user.sub || req.user.id;
+    const userId = user.id;
     if (!body.appId) {
       throw new BadRequestException('appId 参数不能为空');
     }
