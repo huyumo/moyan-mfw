@@ -5,6 +5,7 @@
 import { createBaseBackendApp } from 'moyan-base-backend';
 import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
+import './permissions';
 
 async function bootstrap() {
   const app = await createBaseBackendApp({
