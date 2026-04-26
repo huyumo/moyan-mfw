@@ -1,13 +1,25 @@
 {
   "name": "moyan-base-backend",
   "version": "1.0.0",
-  "description": "Moyan Management Framework - Base Backend",
+  "description": "墨焱基础后端框架 - NestJS 管理后台基础设施",
   "author": "Moyan Team",
-  "private": true,
   "license": "MIT",
   "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "nest build",
+    "prepublishOnly": "pnpm build",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -26,6 +38,22 @@
     "migration:show": "pnpm typeorm migration:show -d src/database/data-source.ts",
     "seed:run": "ts-node -r tsconfig-paths/register src/database/run-seeds.ts",
     "db:clear": "ts-node -r tsconfig-paths/register src/database/clear-database.ts"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/jwt": "^10.0.0",
+    "@nestjs/swagger": "^7.0.0",
+    "typeorm": "^0.3.17",
+    "mysql2": "^3.6.0",
+    "redis": "^4.6.0",
+    "bcrypt": "^5.1.0",
+    "class-validator": "^0.14.0",
+    "class-transformer": "^0.5.1",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
