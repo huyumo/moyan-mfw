@@ -65,6 +65,12 @@ export type {
   ApiResponseUtil,
   ErrorResponse,
 } from './types/api.types';
+export {
+  ImageResourceDto,
+  MediaResourceDto,
+  FileResourceDto,
+  ResourceType,
+} from './types/resource.types';
 
 // Constants
 export {
