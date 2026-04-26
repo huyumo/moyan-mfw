@@ -190,3 +190,6 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
   ],
 })
 export class AppModule {}
+
+// === 导出供 createBaseBackendApp 使用 ===
+export { DatabaseHealthService, createTypeOrmOptions, entities };
