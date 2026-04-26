@@ -298,7 +298,7 @@ export class RoleService {
         isCache: Number(row.isCache),
         permStatus: Number(row.permStatus),
         isAutoSync: row.isAutoSync != null ? Number(row.isAutoSync) : undefined,
-        checked: row.checked === 1,
+        checked: row.checked == 1,
         permissionValue: row.permissionValue != null ? String(row.permissionValue) : undefined,
         parentPermissionValue: row.parentPermissionValue != null ? String(row.parentPermissionValue) : undefined,
       } as PermissionTreeNodeDto;
