@@ -141,6 +141,8 @@ export interface CreateBaseBackendAppOptions {
   security?: SecurityConfig;
   logger?: LoggerConfig;
   appTypes?: AppTypeConfig[];
+  /** 是否在启动时同步应用类型配置到数据库，默认 false */
+  syncAppTypes?: boolean;
   userAttributes?: UserAttributeConfig[];
   memberAttributes?: MemberAttributeConfig[];
   permissions?: PermissionConfig[];

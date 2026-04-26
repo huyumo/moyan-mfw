@@ -44,3 +44,6 @@ export type { LoginDto } from './modules/sys/auth/dto';
 
 // === 数据库种子 ===
 export { runSeeds } from './database/seeds/index';
+
+// === 应用类型同步 ===
+export { syncAppTypesConfig } from './modules/sys/app-type/app-type-sync';
