@@ -3,6 +3,7 @@ packages:
   - packages/base-frontend
   - packages/component-demo
   - frontend
+  - backend
   - examples
   - docs
   - .harness
