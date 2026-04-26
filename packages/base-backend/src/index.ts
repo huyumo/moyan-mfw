@@ -20,7 +20,7 @@ export type {
 export * from './common/index';
 
 // === 核心实体类 ===
-export { User } from './modules/sys/user/entities/user.entity';
+export { User as UserEntity } from './modules/sys/user/entities/user.entity';
 export { Role } from './modules/sys/role/entities/role.entity';
 export { Permission } from './modules/sys/permission/entities/permission.entity';
 export { AppType } from './modules/sys/app-type/entities/app-type.entity';

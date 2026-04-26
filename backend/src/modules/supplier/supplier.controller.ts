@@ -2,52 +2,51 @@
  * @fileoverview 供应商控制器
  */
 
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SupplierService } from './supplier.service';
-import { CreateSupplierProfileDto } from './dto/create-supplier.dto';
-import { SupplierMemberProfile } from './entities/supplier-member-profile.entity';
+import { CreateSupplierDto } from './dto/create-supplier.dto';
+import { RequirePermission, UserDto } from 'moyan-base-backend';
 
-@ApiTags('供应商')
+@ApiTags('supplier')
 @Controller('supplier')
+@RequirePermission({ permCode: 'supplier:manage' })
 export class SupplierController {
-  constructor(private readonly supplierService: SupplierService) {}
+  constructor(private supplierService: SupplierService) {}
 
-  @Post()
+  @Post('profile/:memberId')
   @ApiOperation({ summary: '创建供应商档案' })
-  @ApiResponse({ status: 201, description: '创建成功', type: SupplierMemberProfile })
-  create(@Body() dto: CreateSupplierProfileDto): Promise<SupplierMemberProfile> {
-    return this.supplierService.create(dto);
+  @ApiResponse({ status: 201, description: '创建成功' })
+  async createProfile(
+    @Param('memberId') memberId: string,
+    @Body() dto: CreateSupplierDto,
+    @Request() req: any,
+  ) {
+    const user = req.user as UserDto;
+    return this.supplierService.createSupplierProfile(memberId, dto);
   }
 
-  @Get()
-  @ApiOperation({ summary: '获取所有供应商档案' })
-  @ApiResponse({ status: 200, description: '获取成功', type: [SupplierMemberProfile] })
-  findAll(): Promise<SupplierMemberProfile[]> {
-    return this.supplierService.findAll();
+  @Get('profile/:memberId')
+  @ApiOperation({ summary: '获取供应商档案' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  async getProfile(@Param('memberId') memberId: string) {
+    return this.supplierService.getSupplierProfile(memberId);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: '获取单个供应商档案' })
-  @ApiResponse({ status: 200, description: '获取成功', type: SupplierMemberProfile })
-  findOne(@Param('id') id: string): Promise<SupplierMemberProfile | null> {
-    return this.supplierService.findOne(id);
-  }
-
-  @Put(':id')
+  @Put('profile/:memberId')
   @ApiOperation({ summary: '更新供应商档案' })
-  @ApiResponse({ status: 200, description: '更新成功', type: SupplierMemberProfile })
-  update(
-    @Param('id') id: string,
-    @Body() dto: Partial<CreateSupplierProfileDto>,
-  ): Promise<SupplierMemberProfile | null> {
-    return this.supplierService.update(id, dto);
+  @ApiResponse({ status: 200, description: '更新成功' })
+  async updateProfile(
+    @Param('memberId') memberId: string,
+    @Body() dto: Partial<CreateSupplierDto>,
+  ) {
+    return this.supplierService.updateSupplierProfile(memberId, dto);
   }
 
-  @Delete(':id')
-  @ApiOperation({ summary: '删除供应商档案' })
-  @ApiResponse({ status: 200, description: '删除成功' })
-  remove(@Param('id') id: string): Promise<void> {
-    return this.supplierService.remove(id);
+  @Get('profiles')
+  @ApiOperation({ summary: '获取供应商档案列表' })
+  @ApiResponse({ status: 200, description: '获取成功' })
+  async listProfiles() {
+    return this.supplierService.listSupplierProfiles();
   }
 }
