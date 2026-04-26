@@ -4,13 +4,13 @@
 
 import { createBaseBackendApp } from 'moyan-base-backend';
 import { appTypesConfig } from './app-types.config';
-import { SupplierModule } from './modules/supplier/supplier.module';
+import { AppModule } from './app.modules';
 
 async function bootstrap() {
   const app = await createBaseBackendApp({
     name: '墨焱业务后端',
     appTypes: appTypesConfig,
-    modules: [SupplierModule],
+    modules: [AppModule],
     hooks: {
       onAppInit: async (ctx) => {
         console.log('[Backend] 应用初始化完成');

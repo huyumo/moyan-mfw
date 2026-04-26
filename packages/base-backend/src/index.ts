@@ -41,3 +41,6 @@ export { InstallService } from './modules/sys/install/install.service';
 
 // === 类型定义 ===
 export type { LoginDto } from './modules/sys/auth/dto';
+
+// === 数据库种子 ===
+export { runSeeds } from './database/seeds/index';

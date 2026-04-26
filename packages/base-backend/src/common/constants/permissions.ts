@@ -1,11 +1,11 @@
 /**
  * @fileoverview 权限常量定义
- * @description 定义全局权限位运算常量和工具函数（支持可扩展配置）
+ * @description 定义全局权限位运算常量和工具函数（支持代码扩展）
  */
 
 /**
  * 默认权限配置（基础框架提供）
- * 业务项目可以通过环境变量 PERMISSION_VALUES 覆盖
+ * 这些权限值在 base-backend 和 base-frontend 中已使用，不可覆盖
  */
 export const DEFAULT_PERMISSION_VALUES = [
   '添加',    // 0: 1n << 0 = 1n
@@ -27,12 +27,41 @@ export const EXTENSION_PERMISSION_VALUES = [
 ] as const;
 
 /**
- * 合并后的权限配置（默认 = 默认 + 扩展）
- * 业务项目可以通过环境变量覆盖
+ * 业务扩展权限值存储
+ * 通过 registerPermissionValues 函数注册
  */
-export const PERMISSION_VALUES = process.env.PERMISSION_VALUES
-  ? (process.env.PERMISSION_VALUES.split(',') as readonly string[])
-  : [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES] as const;
+let customPermissionValues: string[] = [];
+
+/**
+ * 注册业务扩展权限值
+ * @param values - 业务自定义权限值数组
+ * 
+ * @example
+ * ```typescript
+ * // 在 backend/src/main.ts 中调用
+ * registerPermissionValues(['上架', '下架', '审核', '退款']);
+ * ```
+ */
+export function registerPermissionValues(values: string[]): void {
+  customPermissionValues = values;
+}
+
+/**
+ * 获取完整的权限值列表
+ * @returns 所有权限值（默认 + 扩展 + 业务自定义）
+ */
+export function getPermissionValues(): readonly string[] {
+  return [
+    ...DEFAULT_PERMISSION_VALUES,
+    ...EXTENSION_PERMISSION_VALUES,
+    ...customPermissionValues,
+  ];
+}
+
+/**
+ * 当前生效的权限值列表
+ */
+export const PERMISSION_VALUES = getPermissionValues();
 
 /**
  * 权限配置接口
@@ -49,28 +78,29 @@ export const PERMISSION_CONFIG: PermissionConfig = {
 };
 
 /**
- * 权限名称类型（从 PERMISSION_VALUES 数组推断）
+ * 权限名称类型
  */
-export type PermissionName = (typeof PERMISSION_VALUES)[number];
+export type PermissionName = string;
 
 /**
  * 根据权限名称数组构建位运算权限值
- * @param names - 权限名称数组，如 ['查看', '添加', '编辑']
+ * @param names - 权限名称数组，如 ['添加', '编辑']
  * @returns bigint 位运算值
  *
  * @example
  * ```typescript
- * buildPerValue(['查看']) // 1n
- * buildPerValue(['查看', '添加', '编辑']) // 7n
- * buildPerValue(['添加', '删除']) // 10n
+ * buildPerValue(['添加']) // 1n
+ * buildPerValue(['添加', '编辑']) // 3n
+ * buildPerValue(['添加', '删除']) // 5n
  * ```
  */
 export function buildPerValue(names: PermissionName[]): bigint {
+  const values = getPermissionValues();
   let result = 0n;
   for (const name of names) {
-    const index = PERMISSION_VALUES.indexOf(name);
+    const index = values.indexOf(name);
     if (index === -1) {
-      throw new Error(`未知的权限名称：${name}，可用值：${PERMISSION_VALUES.join(', ')}`);
+      throw new Error(`未知的权限名称：${name}，可用值：${values.join(', ')}`);
     }
     result |= (1n << BigInt(index));
   }
@@ -84,12 +114,13 @@ export function buildPerValue(names: PermissionName[]): bigint {
  *
  * @example
  * ```typescript
- * getPermValue('查看') // 1n
- * getPermValue('添加') // 2n
+ * getPermValue('添加') // 1n
+ * getPermValue('编辑') // 2n
  * ```
  */
 export function getPermValue(name: PermissionName): bigint {
-  const index = PERMISSION_VALUES.indexOf(name);
+  const values = getPermissionValues();
+  const index = values.indexOf(name);
   if (index === -1) {
     throw new Error(`未知的权限名称：${name}`);
   }
@@ -103,15 +134,16 @@ export function getPermValue(name: PermissionName): bigint {
  *
  * @example
  * ```typescript
- * parsePerValue(7n) // ['查看', '添加', '编辑']
- * parsePerValue(10n) // ['添加', '删除']
+ * parsePerValue(3n) // ['添加', '编辑']
+ * parsePerValue(5n) // ['添加', '删除']
  * ```
  */
 export function parsePerValue(value: bigint): PermissionName[] {
+  const values = getPermissionValues();
   const result: PermissionName[] = [];
-  for (let i = 0; i < PERMISSION_VALUES.length; i++) {
+  for (let i = 0; i < values.length; i++) {
     if ((value & (1n << BigInt(i))) !== 0n) {
-      result.push(PERMISSION_VALUES[i] as PermissionName);
+      result.push(values[i] as PermissionName);
     }
   }
   return result;
@@ -125,12 +157,13 @@ export function parsePerValue(value: bigint): PermissionName[] {
  *
  * @example
  * ```typescript
- * hasPermission(7n, '查看') // true
- * hasPermission(7n, '删除') // false
+ * hasPermission(3n, '添加') // true
+ * hasPermission(3n, '删除') // false
  * ```
  */
 export function hasPermission(value: bigint, name: PermissionName): boolean {
-  const index = PERMISSION_VALUES.indexOf(name);
+  const values = getPermissionValues();
+  const index = values.indexOf(name);
   if (index === -1) {
     return false;
   }
@@ -146,9 +179,10 @@ export function getPermissionOptions(): Array<{
   label: string;
   value: bigint;
 }> {
-  return PERMISSION_VALUES.map((name) => ({
+  const values = getPermissionValues();
+  return values.map((name, index) => ({
     name,
     label: name,
-    value: 1n << BigInt(PERMISSION_VALUES.indexOf(name)),
+    value: 1n << BigInt(index),
   }));
 }
