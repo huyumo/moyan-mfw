@@ -91,6 +91,45 @@ Controller 必须遵守：
 - 响应统一使用 `ApiResponseUtil.success(result, message)`
 - ID 参数使用 `@Param('id', ParseUUIDPipe)`
 - 公开接口使用 `@Public()` 装饰器
+- 获取用户信息使用 `@User()` 装饰器，而非 `@Request() req`
+
+## @User() 装饰器
+
+从请求中提取用户信息，避免手动从 `@Request()` 中获取：
+
+```typescript
+import { User, UserDto } from '../../../common';
+
+// 获取完整用户信息
+@Get('profile')
+async getProfile(@User() user: UserDto) {
+  return { userId: user.id, username: user.username };
+}
+
+// 获取单个属性（如用户 ID）
+@Get('my-posts')
+async getMyPosts(@User('id') userId: string) {
+  return this.postService.findByUserId(userId);
+}
+
+// 获取角色 ID 列表
+@Get('roles')
+async getRoles(@User('roleIds') roleIds: string[]) {
+  return this.roleService.findByIds(roleIds);
+}
+```
+
+**UserDto 类型定义：**
+```typescript
+class UserDto {
+  id: string;        // 用户 ID
+  username: string;  // 用户名
+  roleIds?: string[]; // 角色 ID 列表
+}
+```
+
+**反模式：**
+- ✋ 使用 `@Request() req` 然后手动获取 `req.user.id` → 使用 `@User() user` 或 `@User('id') userId`
 
 ## Service 标准
 
