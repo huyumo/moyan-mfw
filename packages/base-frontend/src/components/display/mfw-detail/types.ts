@@ -5,6 +5,7 @@
 
 import type { Component, CSSProperties } from 'vue';
 import type { DictItem } from '../mfw-format/types';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 详情面板 ==========
 
@@ -67,13 +68,13 @@ export interface UserInfo {
   username?: string;
   /** 昵称 */
   nickname?: string;
-  /** 头像 */
-  avatar?: string;
+  /** 头像（支持 URL 字符串或 ImageResource 格式） */
+  avatar?: string | ImageResource;
   /** 部门 */
   department?: string;
   /** 职位 */
   position?: string;
-  /** 邮箱 */
+  /** 集箱 */
   email?: string;
   /** 手机号 */
   phone?: string;

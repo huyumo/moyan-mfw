@@ -4,6 +4,7 @@
  */
 
 import type { Component } from 'vue';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 基础类型 ==========
 
@@ -46,15 +47,15 @@ export interface DateFormatInstance {
 
 /** 图片格式化 Props */
 export interface ImageFormatProps extends BaseFormatProps {
-  /** 图片 URL */
-  value?: string | string[] | null;
+  /** 图片值（支持 URL 字符串、ImageResource 对象或数组） */
+  value?: string | ImageResource | (string | ImageResource)[] | null;
   /** 图片宽度 */
   width?: number | string;
   /** 图片高度 */
   height?: number | string;
   /** 是否支持预览 */
   preview?: boolean;
-  /** -fit 模式 */
+  /** fit 模式 */
   fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 }
 

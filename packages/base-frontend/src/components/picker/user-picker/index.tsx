@@ -21,6 +21,13 @@ import type {
   MfwUserPickerInstance,
   SearchBy
 } from './types'
+import type { ImageResource } from '../../upload/types'
+
+function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
+  if (!avatar) return undefined;
+  if (typeof avatar === 'string') return avatar;
+  return avatar.src;
+}
 
 export default defineComponent({
   name: 'MfwUserPicker',
@@ -201,7 +208,7 @@ export default defineComponent({
 
       const renderUserInfo = () => (
         <div class="mfw-user-picker__info">
-          <ElAvatar size={40} src={active.value?.avatar} />
+          <ElAvatar size={40} src={extractAvatarUrl(active.value?.avatar)} />
           <div class="mfw-user-picker__info-detail">
             <div class="mfw-user-picker__info-name">
               <span>{active.value?.nickname || active.value?.username}</span>
