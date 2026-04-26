@@ -5,6 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
+import { ClassConstructor } from 'class-transformer';
 
 /**
  * 应用类型实体
@@ -62,3 +63,4 @@ export class AppType {
   @Column({ type: 'int', default: 0, comment: '排序号 - 数值越小越靠前' })
   sortOrder: number;
 }
+ 

@@ -2,10 +2,9 @@
  * @fileoverview 钩子执行器
  */
 
-import { INestApplication } from '@nestjs/core';
+import { INestApplication, Type } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Type } from '@nestjs/common';
 import { HookConfig, AppContext } from '../types/app-config.types';
 
 /**

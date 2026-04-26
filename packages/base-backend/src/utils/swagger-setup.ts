@@ -2,9 +2,8 @@
  * @fileoverview Swagger 多文档分组配置工具
  */
 
-import { INestApplication } from '@nestjs/core';
+import { INestApplication, Type } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { Type } from '@nestjs/common';
 import { SwaggerGroupConfig } from '../types/app-config.types';
 import { SysModule } from '../modules/sys/sys.module';
 
@@ -59,7 +58,6 @@ function setupSwaggerDocument(
 
   const document = SwaggerModule.createDocument(app, documentConfig, {
     include: config.include,
-    exclude: config.exclude,
     operationIdFactory: (controllerKey: string, methodKey: string) => {
       const controllerName = controllerKey.replace(/Controller$/, '');
       const methodName = methodKey.charAt(0).toUpperCase() + methodKey.slice(1);
