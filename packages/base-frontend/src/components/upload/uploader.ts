@@ -7,9 +7,6 @@ import type { IUploader, UploadRequestOptions, UploadResult } from './types';
 
 const uploadingFiles = new Set<any>();
 
-/**
- * 基础上传器类
- */
 export abstract class BaseUploader implements IUploader {
   static uploading = false;
 
@@ -17,21 +14,10 @@ export abstract class BaseUploader implements IUploader {
     return uploadingFiles;
   }
 
-  /**
-   * 上传文件
-   * @param options 上传选项
-   */
   abstract upload(options: UploadRequestOptions): Promise<UploadResult>;
 
-  /**
-   * 删除文件（可选实现）
-   * @param url 文件 URL
-   */
   delete?(url: string): Promise<void>;
 
-  /**
-   * 验证上传（用于表单验证）
-   */
   static verifyUpload(rule: any, value: any, cb: (error?: string) => void) {
     if (uploadingFiles.size > 0) {
       return cb('有未上传完的文件');
@@ -40,15 +26,14 @@ export abstract class BaseUploader implements IUploader {
   }
 }
 
-/**
- * 表单上传器（直接上传到服务器）
- */
 export class FormUploader extends BaseUploader {
   private uploadUrl: string;
+  private businessType?: string;
 
-  constructor(uploadUrl: string) {
+  constructor(uploadUrl: string, businessType?: string) {
     super();
     this.uploadUrl = uploadUrl;
+    this.businessType = businessType;
   }
 
   async upload(options: UploadRequestOptions): Promise<UploadResult> {
@@ -56,6 +41,10 @@ export class FormUploader extends BaseUploader {
 
     const formData = new FormData();
     formData.append(filename || 'file', file);
+
+    const url = this.businessType 
+      ? `${this.uploadUrl}?businessType=${this.businessType}` 
+      : this.uploadUrl;
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
@@ -68,14 +57,16 @@ export class FormUploader extends BaseUploader {
       });
 
       xhr.onload = () => {
-        if (xhr.status === 200) {
+        if (xhr.status === 200 || xhr.status === 201) {
           try {
             const response = JSON.parse(xhr.responseText);
+            const data = response.data || response;
             const result: UploadResult = {
-              url: response.url || response.data?.url,
-              name: response.name || file.name,
-              size: response.size || file.size,
-              ...response
+              url: data.url,
+              originalName: data.originalName || file.name,
+              fileName: data.fileName,
+              fileSize: data.fileSize || file.size,
+              mimeType: data.mimeType || file.type,
             };
             onSuccess?.(result);
             resolve(result);
@@ -96,15 +87,12 @@ export class FormUploader extends BaseUploader {
         reject(error);
       };
 
-      xhr.open('POST', this.uploadUrl, true);
+      xhr.open('POST', url, true);
       xhr.send(formData);
     });
   }
 }
 
-/**
- * OSS 上传器（阿里云 OSS 等）
- */
 export class OssUploader extends BaseUploader {
   private getUploadToken: () => Promise<string>;
   private ossEndpoint: string;
@@ -128,10 +116,8 @@ export class OssUploader extends BaseUploader {
     const { file, filename, onProgress, onSuccess, onError } = options;
 
     try {
-      // 获取上传凭证
       const token = await this.getUploadToken();
 
-      // 生成文件路径
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substr(2, 8);
       const ext = file.name.split('.').pop();
@@ -161,8 +147,10 @@ export class OssUploader extends BaseUploader {
             const url = `https://${this.ossBucket}.${this.ossEndpoint}/${key}`;
             const result: UploadResult = {
               url,
-              name: file.name,
-              size: file.size
+              originalName: file.name,
+              fileName: key,
+              fileSize: file.size,
+              mimeType: file.type,
             };
             onSuccess?.(result);
             resolve(result);
@@ -190,17 +178,14 @@ export class OssUploader extends BaseUploader {
   }
 
   private getOssAccessKeyId(token: string): string {
-    // 从 token 中解析 OSSAccessKeyId，具体实现根据实际凭证格式
     return token;
   }
 
   private getPolicy(token: string): string {
-    // 从 token 中解析 policy，具体实现根据实际凭证格式
     return token;
   }
 
   private getSignature(token: string): string {
-    // 从 token 中解析 Signature，具体实现根据实际凭证格式
     return token;
   }
 }

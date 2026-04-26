@@ -11,6 +11,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, AuditInterceptor } from './common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from 'path';
 
 // 加载 .env 文件
 config({ path: '.env' });
@@ -21,7 +23,7 @@ config({ path: '.env' });
  */
 async function bootstrap() {
   // 创建应用实例
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // 全局处理 BigInt 序列化（避免 JSON.stringify 错误）
   // 在 Express response.json 中拦截
@@ -41,6 +43,11 @@ async function bootstrap() {
 
   // 获取配置服务
   const configService = app.get(ConfigService);
+
+  // 静态文件服务（必须在 setGlobalPrefix 之前挂载，避免被 /api 前缀拦截）
+  const uploadDir = configService.get<string>('UPLOAD_DIR', 'uploads');
+  const absoluteUploadDir = path.resolve(uploadDir);
+  app.useStaticAssets(absoluteUploadDir, { prefix: '/uploads/' });
 
   // 全局前缀
   const globalPrefix = configService.get<string>('globalPrefix', '/api');

@@ -22,6 +22,7 @@ export enum AuditModule {
   APP_TYPE = 'APP_TYPE',
   MEMBER = 'MEMBER',
   SYSTEM = 'SYSTEM',
+  UPLOAD = 'UPLOAD',
 }
 
 /**

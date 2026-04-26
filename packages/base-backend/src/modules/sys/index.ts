@@ -9,3 +9,5 @@ export * from './role';
 export * from './permission';
 export * from './app-type';
 export * from './audit-log';
+export * from './upload';
+export { SysModule } from './sys.module';

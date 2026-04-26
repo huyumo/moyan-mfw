@@ -1,21 +1,16 @@
 /**
  * @fileoverview MfwUpload 上传组件
- * @description 提供文件上传功能，支持单图、多图、文件等多种上传场景
+ * @description 提供文件上传功能，支持图片和文件两种资源格式
  * @example
  * ```vue
- * <!-- 单图上传 -->
- * <MfwUpload v-model="imageUrl" />
+ * <!-- 图片上传（返回 {src, width, height}） -->
+ * <MfwUpload v-model="imageData" resource-type="image" />
+ *
+ * <!-- 文件上传（返回 {url, name, type}） -->
+ * <MfwUpload v-model="fileData" resource-type="file" />
  *
  * <!-- 多图上传 -->
- * <MfwUpload v-model="imageUrls" :multiple="true" :limit="9" />
- *
- * <!-- 自定义上传按钮 -->
- * <MfwUpload v-model="imageUrl">
- *   <el-button type="primary">选择文件</el-button>
- * </mfw-upload>
- *
- * <!-- 图片列表 -->
- * <MfwUpload v-model="imageUrls" list-type="picture-card" />
+ * <MfwUpload v-model="images" resource-type="image" :multiple="true" :limit="9" />
  * ```
  */
 
@@ -37,78 +32,127 @@ import {
   type UploadRequestOptions
 } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
-import type { MfwUploadProps, UploadResult } from './types';
+import type { 
+  MfwUploadProps, 
+  UploadResult, 
+  ImageResource, 
+  MediaResource,
+  FileResource, 
+  ResourceValue,
+  ResourceType 
+} from './types';
+import { FormUploader } from './uploader';
+
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.width, height: img.height });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('无法获取图片尺寸'));
+    };
+    img.src = url;
+  });
+}
+
+function getMediaDuration(file: File): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const media = document.createElement(
+      file.type.startsWith('video') ? 'video' : 'audio'
+    );
+    const url = URL.createObjectURL(file);
+    media.onloadedmetadata = () => {
+      URL.revokeObjectURL(url);
+      resolve(Math.round(media.duration));
+    };
+    media.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(0);
+    };
+    media.src = url;
+  });
+}
+
+function getDisplayUrl(value: ResourceValue | undefined): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if ('src' in value) return value.src;
+  if ('url' in value) return value.url;
+  return '';
+}
 
 export default defineComponent({
   name: 'MfwUpload',
 
   props: {
-    /** 绑定值 */
     modelValue: {
-      type: [String, Array] as PropType<MfwUploadProps['modelValue']>,
+      type: [Object, Array, String] as PropType<MfwUploadProps['modelValue']>,
       default: undefined
     },
-    /** 上传类型 */
+    resourceType: {
+      type: String as PropType<ResourceType>,
+      default: 'image'
+    },
     uploadType: {
       type: String as PropType<MfwUploadProps['uploadType']>,
       default: 'form'
     },
-    /** 是否多选 */
     multiple: {
       type: Boolean as PropType<MfwUploadProps['multiple']>,
       default: false
     },
-    /** 最大上传数量 */
     limit: {
       type: Number as PropType<MfwUploadProps['limit']>,
       default: 1
     },
-    /** 是否禁用 */
     disabled: {
       type: Boolean as PropType<MfwUploadProps['disabled']>,
       default: false
     },
-    /** 文件大小限制（MB） */
     maxSize: {
       type: Number as PropType<MfwUploadProps['maxSize']>,
       default: 10
     },
-    /** 允许的文件类型 */
     accept: {
       type: String as PropType<MfwUploadProps['accept']>,
       default: ''
     },
-    /** 允许的文件扩展名 */
     fileTypes: {
       type: Array as PropType<MfwUploadProps['fileTypes']>,
       default: () => ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
     },
-    /** 自定义上传方法 */
     httpRequest: {
       type: Function as PropType<MfwUploadProps['httpRequest']>
     },
-    /** 上传前回调 */
     beforeUpload: {
       type: Function as PropType<MfwUploadProps['beforeUpload']>
     },
-    /** Element Plus Upload Props */
     elProps: {
       type: Object as PropType<Partial<MfwUploadProps['elProps']>>
     },
-    /** 列表类型 */
     listType: {
       type: String as PropType<MfwUploadProps['listType']>,
       default: 'picture-card'
     },
-    /** 是否显示删除按钮 */
     showDelete: {
       type: Boolean as PropType<MfwUploadProps['showDelete']>,
       default: true
     },
-    /** 空值提示文本 */
     emptyText: {
       type: String as PropType<MfwUploadProps['emptyText']>,
       default: '点击上传'
+    },
+    uploadUrl: {
+      type: String as PropType<MfwUploadProps['uploadUrl']>,
+      default: '/api/upload-files'
+    },
+    businessType: {
+      type: String as PropType<MfwUploadProps['businessType']>,
+      default: undefined
     }
   },
 
@@ -123,96 +167,113 @@ export default defineComponent({
   setup(props, { emit, expose, slots }) {
     const fileList = ref<UploadUserFile[]>([]);
 
-    // 初始化文件列表
     const initFileList = () => {
-      if (props.modelValue) {
-        if (Array.isArray(props.modelValue)) {
-          fileList.value = props.modelValue.map((url) => ({
-            url,
-            name: url.split('/').pop() || 'file'
-          }));
-        } else if (props.modelValue) {
-          fileList.value = [{
-            url: props.modelValue,
-            name: props.modelValue.split('/').pop() || 'file'
-          }];
-        }
-      } else {
+      if (!props.modelValue) {
         fileList.value = [];
+        return;
       }
+
+      const values = props.multiple 
+        ? (props.modelValue as ResourceValue[]) 
+        : [props.modelValue as ResourceValue];
+
+      fileList.value = values.filter(Boolean).map((v, index) => ({
+        url: getDisplayUrl(v),
+        name: typeof v === 'object' && 'name' in v ? v.name : getDisplayUrl(v).split('/').pop() || 'file',
+        uid: index
+      }));
     };
 
     initFileList();
 
-    watch(() => props.modelValue, () => {
-      initFileList();
-    }, { deep: true });
+    watch(() => props.modelValue, initFileList, { deep: true });
 
-    /**
-     * 文件变化
-     */
     const handleChange = (uploadFile: UploadFile, uploadFiles: UploadFile[]) => {
       emit('change', uploadFile, uploadFiles);
     };
 
-    /**
-     * 上传成功
-     */
-    const handleSuccess = (response: any, uploadFile: UploadFile) => {
+    const handleSuccess = async (response: any, uploadFile: UploadFile) => {
       const result: UploadResult = {
-        url: response.url || response.data?.url,
-        name: response.name || uploadFile.name,
-        size: response.size || uploadFile.size,
-        ...response
+        url: response.url,
+        originalName: response.originalName,
+        fileName: response.fileName,
+        fileSize: response.fileSize,
+        mimeType: response.mimeType,
       };
 
-      // 更新 modelValue
-      if (props.multiple) {
-        const urls = fileList.value.map((f) => f.url).filter(Boolean) as string[];
-        if (result.url && !urls.includes(result.url)) {
-          urls.push(result.url);
+      let resourceValue: ResourceValue;
+
+      if (props.resourceType === 'image') {
+        try {
+          const dimensions = await getImageDimensions(uploadFile.raw as File);
+          resourceValue = {
+            src: result.url,
+            width: dimensions.width,
+            height: dimensions.height,
+          } as ImageResource;
+        } catch {
+          resourceValue = {
+            src: result.url,
+            width: 0,
+            height: 0,
+          } as ImageResource;
         }
-        emit('update:modelValue', urls);
+      } else if (props.resourceType === 'media') {
+        try {
+          const duration = await getMediaDuration(uploadFile.raw as File);
+          resourceValue = {
+            url: result.url,
+            name: result.originalName,
+            type: result.mimeType,
+            size: result.fileSize,
+            duration,
+          } as MediaResource;
+        } catch {
+          resourceValue = {
+            url: result.url,
+            name: result.originalName,
+            type: result.mimeType,
+            size: result.fileSize,
+            duration: 0,
+          } as MediaResource;
+        }
       } else {
-        if (result.url) {
-          emit('update:modelValue', result.url);
-        }
+        resourceValue = {
+          url: result.url,
+          name: result.originalName,
+          type: result.mimeType,
+          size: result.fileSize,
+        } as FileResource;
+      }
+
+      if (props.multiple) {
+        const currentValues = (props.modelValue as ResourceValue[]) || [];
+        emit('update:modelValue', [...currentValues, resourceValue]);
+      } else {
+        emit('update:modelValue', resourceValue);
       }
 
       emit('success', result, uploadFile);
     };
 
-    /**
-     * 上传失败
-     */
     const handleError = (error: any, uploadFile: UploadFile) => {
       ElMessage.error(`上传失败：${error.message || '未知错误'}`);
       emit('error', error, uploadFile);
     };
 
-    /**
-     * 文件移除
-     */
     const handleRemove = (uploadFile: UploadFile) => {
       emit('remove', uploadFile);
 
-      // 更新 modelValue
       if (props.multiple) {
-        const urls = fileList.value
-          .filter((f) => f.uid !== uploadFile.uid)
-          .map((f) => f.url)
-          .filter(Boolean) as string[];
-        emit('update:modelValue', urls);
+        const values = (props.modelValue as ResourceValue[]) || [];
+        const remaining = values.filter((_, index) => index !== uploadFile.uid);
+        emit('update:modelValue', remaining);
       } else {
-        emit('update:modelValue', '');
+        emit('update:modelValue', null);
       }
     };
 
-    /**
-     * 上传前验证
-     */
     const beforeUpload = (file: File): boolean | Promise<File> => {
-      // 检查文件类型
       if (props.fileTypes && props.fileTypes.length > 0) {
         const isAllowed = props.fileTypes.some((type) => {
           if (type.includes('/')) {
@@ -227,7 +288,6 @@ export default defineComponent({
         }
       }
 
-      // 检查文件大小
       const maxSize = props.maxSize * 1024 * 1024;
       if (file.size > maxSize) {
         ElMessage.error(`文件大小不能超过 ${props.maxSize}MB`);
@@ -241,35 +301,29 @@ export default defineComponent({
       return true;
     };
 
-    /**
-     * 自定义上传请求
-     */
-    const handleHttpRequest = (options: UploadRequestOptions) => {
+    const handleHttpRequest = async (options: UploadRequestOptions) => {
       if (props.httpRequest) {
         return props.httpRequest(options);
       }
 
-      // 默认上传逻辑（需要业务项目提供实际实现）
-      return Promise.reject(new Error('MfwUpload: 请通过 httpRequest prop 提供自定义上传方法'));
+      const uploader = new FormUploader(props.uploadUrl, props.businessType);
+      return uploader.upload({
+        file: options.file,
+        filename: options.filename,
+        onProgress: options.onProgress as any,
+        onSuccess: options.onSuccess as any,
+        onError: options.onError as any,
+      });
     };
 
-    /**
-     * 清除上传列表
-     */
     const clear = () => {
       fileList.value = [];
-      emit('update:modelValue', props.multiple ? [] : '');
+      emit('update:modelValue', props.multiple ? [] : null);
     };
 
-    /**
-     * 获取上传文件列表
-     */
     const uploadFiles = computed(() => fileList.value);
 
-    expose({
-      clear,
-      uploadFiles
-    });
+    expose({ clear, uploadFiles });
 
     return () => (
       <div class="mfw-upload">
@@ -281,7 +335,7 @@ export default defineComponent({
           disabled={props.disabled}
           accept={props.accept}
           listType={props.listType}
-          autoUpload={false}
+          autoUpload={true}
           beforeUpload={beforeUpload}
           httpRequest={handleHttpRequest}
           on-change={handleChange}
