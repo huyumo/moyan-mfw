@@ -12,8 +12,15 @@
 import { defineComponent, toRef, ref, computed, watch, type PropType, h } from 'vue';
 import { ElAvatar, ElTag, ElPopover, ElSkeleton } from 'element-plus';
 import type { UserFormatProps, UserInfo } from './types';
+import type { ImageResource } from '../../upload/types';
 
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
+
+function extractAvatarUrl(avatar: string | ImageResource | undefined): string {
+  if (!avatar) return defaultAvatar;
+  if (typeof avatar === 'string') return avatar;
+  return avatar.src;
+}
 
 export default defineComponent({
   name: 'MfwUserFormat',
@@ -156,7 +163,7 @@ export default defineComponent({
         return h(ElSkeleton, { style: { width: avatarSizeValue.value, height: avatarSizeValue.value } });
       }
       return h(ElAvatar, {
-        src: userInfo.value?.avatar || defaultAvatar,
+        src: extractAvatarUrl(userInfo.value?.avatar),
         size: avatarSizeValue.value,
         class: 'mfw-user-avatar'
       });
@@ -198,7 +205,7 @@ export default defineComponent({
 
       const popoverContent = h('div', { class: 'mfw-user-popover-content' }, [
         h('div', { class: 'mfw-user-popover-header' }, [
-          h(ElAvatar, { src: userInfo.value.avatar || defaultAvatar, size: 48 }),
+          h(ElAvatar, { src: extractAvatarUrl(userInfo.value?.avatar), size: 48 }),
           h('div', { class: 'mfw-user-popover-info' }, [
             h('span', { class: 'mfw-user-popover-name' }, displayName.value),
             userInfo.value.department && h('span', { class: 'mfw-user-popover-dept' }, userInfo.value.department),

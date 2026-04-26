@@ -31,6 +31,7 @@ import { MfwPageWrapper, MfwListPage } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
+import type { ImageResource } from '../../../components/upload/types';
 import {
   ApiAppMemberGetMembers,
   ApiAppMemberRemoveMember,
@@ -39,6 +40,12 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
+
+function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
+  if (!avatar) return undefined;
+  if (typeof avatar === 'string') return avatar;
+  return avatar.src;
+}
 
 /** 状态常量 */
 const STATUS = {
@@ -60,7 +67,7 @@ const columns = [
     width: 80,
     render: ({ row }: { row: MemberResponseDto }) => h(ElAvatar, {
       size: 40,
-      src: row.avatar,
+      src: extractAvatarUrl(row.avatar),
     }, () => row.nickname?.charAt(0) || row.username?.charAt(0) || '?'),
   },
   {
