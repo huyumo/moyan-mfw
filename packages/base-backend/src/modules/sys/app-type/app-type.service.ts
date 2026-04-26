@@ -248,6 +248,7 @@ export class AppTypeService {
     const pcTree = this.buildPermissionTreeFromRows(pcRows);
     const normalTree = this.buildPermissionTreeFromRows(normalRows);
 
+    console.log('********:::::',pcRows);
     return {
       appTypeId,
       permissionTrees: {
@@ -323,7 +324,7 @@ export class AppTypeService {
 
   private buildPermissionTreeFromRows(rows: any[]): PermissionTreeNodeDto[] {
     const nodes = rows.map((row) => {
-      const checked = row.checked === 1;
+      const checked = row.checked == 1;
       return {
         ...row,
         checked,
