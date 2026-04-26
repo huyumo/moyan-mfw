@@ -64,3 +64,4 @@ description: "Use when working on moyan-mfw project code, creating modules or pa
 6. 前端路由自动扫描 → 页面放在 `views/` 下配置 `index.ts` 即自动注册
 7. 审计拦截器当前仅输出日志，未写入 `sys_audit_logs`
 8. Redis 配置已预留但业务层未使用
+9. 获取用户信息用 `@User() user: UserDto` → 不要用 `@Request() req.user`

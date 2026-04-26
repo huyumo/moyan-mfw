@@ -22,13 +22,13 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │   ├── base-backend/               # 后端服务 (NestJS 10 + TypeORM + MySQL)
 │   │   ├── src/common/             # 通用基础设施
 │   │   │   ├── constants/          #   权限常量（位运算值）
-│   │   │   ├── decorators/         #   装饰器（Public/RequirePermission/AuditLog）
+│   │   │   ├── decorators/         #   装饰器（Public/RequirePermission/AuditLog/User）
 │   │   │   ├── entities/           #   Base 基类
 │   │   │   ├── exceptions/         #   自定义异常
 │   │   │   ├── filters/            #   全局异常过滤器
 │   │   │   ├── guards/             #   守卫（Auth/Permission）
 │   │   │   ├── interceptors/       #   拦截器（Transform/Logging/Audit）
-│   │   │   ├── types/              #   通用类型
+│   │   │   ├── types/              #   通用类型（UserDto/ResourceDto/CommonTypes）
 │   │   │   └── utils/              #   工具函数（encrypt/pagination/sql/tree）
 │   │   ├── src/config/             # 配置（app/database/redis/user）
 │   │   ├── src/modules/sys/        # 系统业务模块
@@ -39,6 +39,7 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │   │   │   ├── app-type/           #   应用类型管理
 │   │   │   ├── app/                #   应用实例+成员管理
 │   │   │   ├── audit-log/          #   审计日志
+│   │   │   ├── upload/             #   文件上传（简单URL存储）
 │   │   │   └── install/            #   系统初始化
 │   │   ├── src/database/seeds/     # 种子数据
 │   │   └── tests/integration/      # 集成测试
@@ -82,12 +83,13 @@ Moyan MFW 是一个**后台管理框架**，核心提供权限管理、用户管
 - **应用管理**：应用类型定义、应用实例创建、成员管理、权限池配置
 - **认证体系**：JWT 登录/注册/刷新/登出、Token 自动刷新
 - **审计日志**：操作审计、模块分类、数据快照
+- **文件上传**：简单 URL 存储、图片/媒体/文件资源类型、静态文件服务
 - **系统初始化**：一键初始化、种子数据
 - **前端框架**：自动路由扫描、权限菜单、组件库、主题系统、布局系统
 
 ## 框架边界（不提供的能力）
 
-- 不提供文件存储服务（需外部 OSS）
+- 不提供复杂文件存储服务（仅简单 URL 存储，复杂需求需外部 OSS）
 - 不提供消息队列（Redis 配置已预留但未使用）
 - 不提供工作流引擎
 - 不提供实时通讯（WebSocket）
