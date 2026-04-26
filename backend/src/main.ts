@@ -11,6 +11,7 @@ async function bootstrap() {
   const app = await createBaseBackendApp({
     name: '墨焱业务后端',
     appTypes: appTypesConfig,
+    syncAppTypes: true, // 开发阶段开启同步
     modules: [AppModule],
     hooks: {
       onAppInit: async (ctx) => {

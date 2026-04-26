@@ -93,6 +93,12 @@ export async function createBaseBackendApp(
 
   await hooksExecutor.onAppInit();
 
+  // 根据配置决定是否同步应用类型
+  if (options.syncAppTypes && allAppTypes.length > 0) {
+    const { syncAppTypesConfig } = await import('./modules/sys/app-type/app-type-sync');
+    await syncAppTypesConfig(dataSource, allAppTypes);
+  }
+
   return {
     app,
     listen: async (port: number) => {
