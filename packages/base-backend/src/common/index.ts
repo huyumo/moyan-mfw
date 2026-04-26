@@ -28,6 +28,7 @@ export { AuditInterceptor } from './interceptors/audit.interceptor';
 export { Public, IS_PUBLIC_KEY } from './decorators/public.decorator';
 export {
   RequirePermission,
+  createBusinessPermissionDecorator,
   REQUIRE_PERMISSION,
   type RequirePermissionOptions,
 } from './decorators/require-permission.decorator';
@@ -76,10 +77,17 @@ export { UserDto } from './types/user.dto';
 
 // Constants
 export {
+  DEFAULT_PERMISSION_VALUES,
+  EXTENSION_PERMISSION_VALUES,
   PERMISSION_VALUES,
+  registerPermissionValues,
+  getPermissionValues,
   buildPerValue,
   getPermValue,
   parsePerValue,
   hasPermission,
-  type PermissionName,
+  getPermissionOptions,
+  type DefaultPermissionName,
+  type ExtensionPermissionName,
+  type BasePermissionName,
 } from './constants/permissions';

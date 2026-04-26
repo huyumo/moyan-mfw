@@ -21,7 +21,7 @@ import {
 import { validateAppTypes, getBuiltinAppTypes } from './utils/app-type-validator';
 import { setupSwaggerGroups } from './utils/swagger-setup';
 import { HooksExecutor, createAppContext } from './utils/hooks-executor';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, AuditInterceptor } from './common';
+import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, AuditInterceptor, registerPermissionValues } from './common';
 import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
 import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from './app.module';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -36,6 +36,10 @@ config({ path: '.env' });
 export async function createBaseBackendApp(
   options: CreateBaseBackendAppOptions = {},
 ): Promise<BaseBackendAppInstance> {
+  if (options.permissionValues && options.permissionValues.length > 0) {
+    registerPermissionValues(options.permissionValues);
+  }
+
   validateAppTypes(options.appTypes || []);
 
   const allAppTypes = [...getBuiltinAppTypes(), ...(options.appTypes || [])];

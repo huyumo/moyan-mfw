@@ -16,6 +16,11 @@ export const DEFAULT_PERMISSION_VALUES = [
 ] as const;
 
 /**
+ * 默认权限名称类型（字面量）
+ */
+export type DefaultPermissionName = (typeof DEFAULT_PERMISSION_VALUES)[number];
+
+/**
  * 扩展权限配置（可选）
  * 业务项目可以添加更多权限，如：'审批', '拒绝', '发布', '归档'
  */
@@ -25,6 +30,16 @@ export const EXTENSION_PERMISSION_VALUES = [
   '发布',    // 7: 1n << 7 = 256n
   '归档',    // 8: 1n << 8 = 512n
 ] as const;
+
+/**
+ * 扩展权限名称类型（字面量）
+ */
+export type ExtensionPermissionName = (typeof EXTENSION_PERMISSION_VALUES)[number];
+
+/**
+ * 基础权限名称类型（默认 + 扩展）
+ */
+export type BasePermissionName = DefaultPermissionName | ExtensionPermissionName;
 
 /**
  * 业务扩展权限值存储
@@ -38,8 +53,8 @@ let customPermissionValues: string[] = [];
  * 
  * @example
  * ```typescript
- * // 在 backend/src/main.ts 中调用
- * registerPermissionValues(['上架', '下架', '审核', '退款']);
+ * // 在 backend/src/permissions.ts 中调用
+ * registerPermissionValues(['上架', '发货', '退款']);
  * ```
  */
 export function registerPermissionValues(values: string[]): void {
@@ -78,11 +93,6 @@ export const PERMISSION_CONFIG: PermissionConfig = {
 };
 
 /**
- * 权限名称类型
- */
-export type PermissionName = string;
-
-/**
  * 根据权限名称数组构建位运算权限值
  * @param names - 权限名称数组，如 ['添加', '编辑']
  * @returns bigint 位运算值
@@ -94,7 +104,7 @@ export type PermissionName = string;
  * buildPerValue(['添加', '删除']) // 5n
  * ```
  */
-export function buildPerValue(names: PermissionName[]): bigint {
+export function buildPerValue(names: string[]): bigint {
   const values = getPermissionValues();
   let result = 0n;
   for (const name of names) {
@@ -118,7 +128,7 @@ export function buildPerValue(names: PermissionName[]): bigint {
  * getPermValue('编辑') // 2n
  * ```
  */
-export function getPermValue(name: PermissionName): bigint {
+export function getPermValue(name: string): bigint {
   const values = getPermissionValues();
   const index = values.indexOf(name);
   if (index === -1) {
@@ -138,12 +148,12 @@ export function getPermValue(name: PermissionName): bigint {
  * parsePerValue(5n) // ['添加', '删除']
  * ```
  */
-export function parsePerValue(value: bigint): PermissionName[] {
+export function parsePerValue(value: bigint): string[] {
   const values = getPermissionValues();
-  const result: PermissionName[] = [];
+  const result: string[] = [];
   for (let i = 0; i < values.length; i++) {
     if ((value & (1n << BigInt(i))) !== 0n) {
-      result.push(values[i] as PermissionName);
+      result.push(values[i]);
     }
   }
   return result;
@@ -161,7 +171,7 @@ export function parsePerValue(value: bigint): PermissionName[] {
  * hasPermission(3n, '删除') // false
  * ```
  */
-export function hasPermission(value: bigint, name: PermissionName): boolean {
+export function hasPermission(value: bigint, name: string): boolean {
   const values = getPermissionValues();
   const index = values.indexOf(name);
   if (index === -1) {

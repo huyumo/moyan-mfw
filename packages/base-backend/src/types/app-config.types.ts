@@ -80,7 +80,7 @@ export interface MemberAttributeConfig {
   }>;
 }
 
-/** 扩展权限配置 */
+/** 扩展权限配置（已废弃，请使用 permissionValues） */
 export interface PermissionConfig {
   name: string;
   description?: string;
@@ -144,6 +144,7 @@ export interface CreateBaseBackendAppOptions {
   userAttributes?: UserAttributeConfig[];
   memberAttributes?: MemberAttributeConfig[];
   permissions?: PermissionConfig[];
+  permissionValues?: string[];
   seeds?: SeedConfig[];
   modules?: Type<any>[];
   providers?: Provider[];
