@@ -38,6 +38,7 @@ export {
   type AuditLogOptions,
 } from './decorators/audit-log.decorator';
 export { ApiPaginatedResponse } from './decorators/api-paginated-response.decorator';
+export { User } from './decorators/user.decorator';
 
 // Utils
 export { hashPassword, verifyPassword } from './utils/encrypt';
@@ -71,6 +72,7 @@ export {
   FileResourceDto,
   ResourceType,
 } from './types/resource.types';
+export { UserDto } from './types/user.dto';
 
 // Constants
 export {
