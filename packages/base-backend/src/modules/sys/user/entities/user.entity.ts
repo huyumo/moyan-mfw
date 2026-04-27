@@ -5,6 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 用户实体类
@@ -61,7 +62,7 @@ export class User extends Base {
    * @description 用户头像 - ImageResource 对象
    */
   @Column({ type: 'json', nullable: true, comment: '头像 - ImageResource 对象' })
-  avatar: { src: string; width: number; height: number };
+  avatar: ImageResourceDto;
 
   /**
    * 性别
