@@ -1,12 +1,14 @@
 /**
  * @fileoverview MfwQuillEditor 富文本编辑器组件
- * @description 基于 Quill 2.x 的富文本编辑器，支持 v-model 双向绑定
+ * @description 基于 Quill 2.x 的富文本编辑器，支持 v-model 双向绑定、图片上传
  */
 
 import './style.scss';
 import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ElMessage } from 'element-plus';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
+import { uploadImage } from '../../../config/upload-config';
 
 export default defineComponent({
   name: 'MfwQuillEditor',
@@ -33,6 +35,38 @@ export default defineComponent({
     const editorRef = ref<HTMLElement | null>(null);
     let quillInstance: InstanceType<typeof Quill> | null = null;
     let updatingFromQuill = false;
+    let fileInput: HTMLInputElement | null = null;
+    const uploading = ref(false);
+
+    const handleImageUpload = () => {
+      if (!fileInput) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.multiple = true;
+        fileInput.addEventListener('change', async () => {
+          const files = fileInput?.files;
+          if (!files || !quillInstance) return;
+
+          uploading.value = true;
+          const range = quillInstance.getSelection(true);
+          for (const file of Array.from(files)) {
+            try {
+              const result = await uploadImage(file);
+              quillInstance!.insertEmbed(range.index, 'image', result.url);
+              range.index += 1;
+            } catch (e: any) {
+              ElMessage.error(`图片上传失败：${e?.message || '未知错误'}`);
+            }
+          }
+          uploading.value = false;
+          if (fileInput) fileInput.value = '';
+        });
+      }
+      if (!uploading.value) {
+        fileInput.click();
+      }
+    };
 
     const initEditor = () => {
       if (!editorRef.value) return;
@@ -42,7 +76,12 @@ export default defineComponent({
         placeholder: props.placeholder,
         readOnly: props.readonly,
         modules: {
-          toolbar: props.toolbar,
+          toolbar: {
+            container: props.toolbar,
+            handlers: {
+              image: handleImageUpload,
+            },
+          },
         },
       });
 
@@ -84,6 +123,7 @@ export default defineComponent({
 
     onBeforeUnmount(() => {
       quillInstance = null;
+      if (fileInput) fileInput.remove();
     });
 
     return () => (

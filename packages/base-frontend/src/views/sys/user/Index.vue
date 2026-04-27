@@ -180,7 +180,7 @@ const handleAdd = () => {
     title: '新建用户',
     type: 'dialog',
     component: UserForm,
-    popupProps: { width: 500 },
+    popupProps: { width: 700 },
     on: { confirm: listPage.value?.refresh },
   });
 };
@@ -192,7 +192,7 @@ const handleEdit = (row: UserResponseDto) => {
     type: 'dialog',
     component: UserForm,
     data: { ...row },
-    popupProps: { width: 500 },
+    popupProps: { width: 700 },
     on: { confirm: listPage.value?.refresh },
   });
 };
