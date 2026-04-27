@@ -10,5 +10,8 @@ packages/*/test-results/
 
 # Claude worktrees
 .claude/worktrees/
+
+# Git worktrees
+.worktrees/
 **/.env.test
 **/agent-memory/
