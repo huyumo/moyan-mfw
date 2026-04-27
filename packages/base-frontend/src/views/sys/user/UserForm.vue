@@ -11,11 +11,14 @@
     :template="formTemplate"
     :form-props="{ labelWidth: '80px' }"
   />
+  <div class="bio-editor-wrapper">
+    <MfwMdEditor v-model="form.bio" :height="300" placeholder="请输入个人简介（支持 Markdown）" />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { MfwFormCard, MfwRadioGroup, MfwImageSingle } from '../../../components';
+import { MfwFormCard, MfwRadioGroup, MfwImageSingle, MfwMdEditor } from '../../../components';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
@@ -34,6 +37,7 @@ const form = reactive({
   nickname: props?.nickname || '',
   phone: props?.phone || '',
   gender: props?.gender ?? 0,
+  bio: props?.bio || '',
 });
 
 const formTemplate: FormItemConfig[] = [
@@ -114,6 +118,7 @@ const onConfirm = async () => {
         phone: form.phone,
         gender: form.gender,
         avatar: form.avatar,
+        bio: form.bio,
       },
     }, { hintSuccess: true });
   } else {
@@ -124,6 +129,7 @@ const onConfirm = async () => {
         nickname: form.nickname,
         gender: form.gender,
         avatar: form.avatar,
+        bio: form.bio,
       },
     }, { hintSuccess: true });
   }
@@ -131,3 +137,9 @@ const onConfirm = async () => {
 
 defineExpose({ onConfirm });
 </script>
+
+<style scoped>
+.bio-editor-wrapper {
+  margin-top: 16px;
+}
+</style>
