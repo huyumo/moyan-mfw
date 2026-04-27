@@ -1,6 +1,6 @@
 import './style.scss';
 import { defineComponent, ref, computed, type PropType } from 'vue';
-import { ElUpload, ElMessage } from 'element-plus';
+import { ElUpload, ElMessage, type UploadRequestOptions } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { uploadImage } from '../../config/upload-config';
 import type { ImageResource, UploadMethodType } from './types';
@@ -38,9 +38,9 @@ export default defineComponent({
     const uploading = ref(false);
 
     const fileList = computed(() => {
-      return (props.modelValue || []).map((item, index) => ({
-        url: typeof item === 'string' ? item : item.src,
-        name: typeof item === 'string' ? item.split('/').pop() || 'image' : `image-${index}`,
+      return (props.modelValue || []).map((item: ImageResource, index) => ({
+        url: item.src,
+        name: `image-${index}`,
         uid: index,
       }));
     });
@@ -65,13 +65,12 @@ export default defineComponent({
       return true;
     };
 
-    const handleHttpRequest = async (options: { file: File; onProgress?: (percentage: number) => void }) => {
+    const handleHttpRequest = async (options: UploadRequestOptions) => {
       uploading.value = true;
       try {
         const result = await uploadImage(options.file, {
           uploadType: props.uploadType,
           businessType: props.businessType,
-          onProgress: options.onProgress,
         });
         
         const dimensions = await getImageDimensions(options.file);
