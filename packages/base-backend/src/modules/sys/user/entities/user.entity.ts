@@ -58,10 +58,10 @@ export class User extends Base {
 
   /**
    * 头像
-   * @description 用户头像 URL 地址
+   * @description 用户头像 - ImageResource 对象
    */
-  @Column({ type: 'varchar', length: 255, nullable: true, comment: '头像 URL 地址' })
-  avatar: string;
+  @Column({ type: 'json', nullable: true, comment: '头像 - ImageResource 对象' })
+  avatar: { src: string; width: number; height: number };
 
   /**
    * 性别
