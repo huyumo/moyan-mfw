@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, computed, Teleport } from 'vue';
 import { ElDialog, ElButton } from 'element-plus';
 import { Cropper } from 'vue-advanced-cropper';
 import 'vue-advanced-cropper/dist/style.css';
@@ -8,7 +8,7 @@ export default defineComponent({
   name: 'ImageCropper',
   props: {
     visible: { type: Boolean, default: false },
-    image: { type: [String, Blob], default: '' },
+    image: { type: [String, File, Blob], default: '' },
     ratio: { type: Number, default: 1 },
     outputWidth: { type: Number, default: 200 },
     outputHeight: { type: Number, default: 200 },
@@ -16,6 +16,14 @@ export default defineComponent({
   emits: ['confirm', 'cancel', 'update:visible'],
   setup(props, { emit }) {
     const cropperRef = ref<InstanceType<typeof Cropper> | null>(null);
+
+    const imageSrc = computed(() => {
+      if (typeof props.image === 'string') return props.image;
+      if (props.image instanceof File || props.image instanceof Blob) {
+        return URL.createObjectURL(props.image);
+      }
+      return '';
+    });
 
     const handleConfirm = () => {
       const result = cropperRef.value?.getResult();
@@ -36,32 +44,35 @@ export default defineComponent({
     };
 
     return () => (
-      <ElDialog
-        modelValue={props.visible}
-        title="裁剪图片"
-        width="500px"
-        onClose={handleCancel}
-        destroyOnClose
-        v-slots={{
-          footer: () => (
-            <>
-              <ElButton onClick={handleCancel}>取消</ElButton>
-              <ElButton type="primary" onClick={handleConfirm}>确认</ElButton>
-            </>
-          ),
-        }}
-      >
-        <div class="image-cropper-container">
-          <Cropper
-            ref={cropperRef}
-            src={props.image}
-            stencilProps={{
-              aspectRatio: props.ratio,
-            }}
-            class="image-cropper"
-          />
-        </div>
-      </ElDialog>
+      <Teleport to="body" disabled={!props.visible}>
+        <ElDialog
+          modelValue={props.visible}
+          title="裁剪图片"
+          width="500px"
+          onClose={handleCancel}
+          destroyOnClose
+          zIndex={3000}
+          v-slots={{
+            footer: () => (
+              <>
+                <ElButton onClick={handleCancel}>取消</ElButton>
+                <ElButton type="primary" onClick={handleConfirm}>确认</ElButton>
+              </>
+            ),
+          }}
+        >
+          <div class="image-cropper-container">
+            <Cropper
+              ref={cropperRef}
+              src={imageSrc.value}
+              stencilProps={{
+                aspectRatio: props.ratio,
+              }}
+              class="image-cropper"
+            />
+          </div>
+        </ElDialog>
+      </Teleport>
     );
   },
 });

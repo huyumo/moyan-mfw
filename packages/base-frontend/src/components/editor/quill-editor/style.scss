@@ -1,0 +1,23 @@
+/**
+ * @fileoverview MfwQuillEditor 样式
+ */
+
+.mfw-quill-editor {
+  display: flex;
+  flex-direction: column;
+
+  .mfw-quill-editor-container {
+    flex: 1;
+    background: #fff;
+
+    .ql-container {
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .ql-editor {
+      min-height: 100px;
+      overflow-y: auto;
+    }
+  }
+}

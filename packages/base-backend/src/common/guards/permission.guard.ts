@@ -18,6 +18,9 @@ import {
   RequirePermissionOptions,
 } from '../decorators/require-permission.decorator';
 import {
+  SKIP_PERMISSION_KEY,
+} from '../decorators/skip-permission.decorator';
+import {
   PERMISSION_VALUES,
   buildPerValue,
 } from '../constants/permissions';
@@ -48,6 +51,15 @@ export class PermissionGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const skipPermission = this.reflector.getAllAndOverride<boolean>(SKIP_PERMISSION_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (skipPermission) {
+      return true;
+    }
+
     // 获取所有 @RequirePermission 装饰器（支持多次注解）
     const requirePermissions = this.reflector.getAllAndOverride<RequirePermissionOptions | RequirePermissionOptions[]>(
       REQUIRE_PERMISSION,

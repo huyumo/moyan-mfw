@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 编辑器设计方案</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            padding: 40px;
+            color: #333;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 50px;
+            color: #1a1a1a;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .card.selected {
+            border-color: #409eff;
+            background: #f0f9ff;
+        }
+        .card h3 {
+            color: #409eff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .card .preview {
+            background: #f5f7fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            border: 1px solid #e4e7ed;
+        }
+        .card .desc {
+            color: #606266;
+            line-height: 1.6;
+        }
+        .card .pros {
+            margin-top: 15px;
+            color: #67c23a;
+        }
+        .card .cons {
+            margin-top: 8px;
+            color: #f56c6c;
+        }
+        .badge {
+            display: inline-block;
+            background: #409eff;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        .badge.recommended {
+            background: #67c23a;
+        }
+        /* Layout 1: Editor + Preview Side by Side */
+        .layout-1 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .layout-1 .editor, .layout-1 .preview {
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .layout-1 .editor {
+            background: #fafafa;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .layout-1 .preview {
+            border-left: 2px solid #409eff;
+        }
+
+        /* Layout 2: Tabs */
+        .layout-2 .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .layout-2 .tab {
+            padding: 8px 20px;
+            background: #e4e7ed;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .layout-2 .tab.active {
+            background: #409eff;
+            color: white;
+        }
+        .layout-2 .content {
+            background: white;
+            border-radius: 4px;
+            padding: 10px;
+            min-height: 100px;
+        }
+
+        /* Layout 3: Editor Only with Preview Button */
+        .layout-3 .toolbar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .layout-3 .toolbar .btn {
+            padding: 6px 12px;
+            background: #409eff;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .layout-3 .toolbar .btn.preview {
+            background: #67c23a;
+        }
+        .layout-3 .editor {
+            background: #fafafa;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            min-height: 100px;
+        }
+
+        /* Layout 4: Full-featured with Toolbar */
+        .layout-4 .toolbar {
+            display: flex;
+            gap: 6px;
+            padding: 8px;
+            background: #f5f7fa;
+            border-bottom: 1px solid #e4e7ed;
+            flex-wrap: wrap;
+        }
+        .layout-4 .toolbar .btn {
+            padding: 4px 8px;
+            background: white;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .layout-4 .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+        }
+        .layout-4 .editor {
+            background: #fafafa;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .layout-4 .preview {
+            border-left: 2px solid #409eff;
+            padding-left: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            margin: 60px 0 30px;
+            color: #1a1a1a;
+        }
+        .legend {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+        }
+        .legend h3 { margin-bottom: 15px; }
+        .legend ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .legend li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f5f7fa;
+        }
+        .legend li:last-child { border-bottom: none; }
+        .key { color: #409eff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Markdown 编辑器组件 - 布局方案对比</h1>
+    
+    <div class="grid">
+        <!-- 方案 1: 分屏编辑 -->
+        <div class="card" onclick="selectCard(this)">
+            <h3>方案 A: 分屏实时预览</h3>
+            <div class="preview">
+                <div class="layout-1">
+                    <div class="editor">
+                        <div># 标题</div>
+                        <div>&#10;</div>
+                        <div>这是**粗体**文本</div>
+                        <div>&#10;</div>
+                        <div>- 列表项 1</div>
+                        <div>- 列表项 2</div>
+                    </div>
+                    <div class="preview">
+                        <h4 style="margin-bottom: 8px;">标题</h4>
+                        <p style="margin-bottom: 8px;">这是<strong>粗体</strong>文本</p>
+                        <ul style="padding-left: 20px;">
+                            <li>列表项 1</li>
+                            <li>列表项 2</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p class="desc">左侧编辑器,右侧实时预览。用户可以看到编辑效果和原始 Markdown 语法。</p>
+            <span class="badge recommended">推荐</span>
+            <p class="pros">✓ 实时预览 ✓ 适合长文档 ✓ 用户反馈好</p>
+            <p class="cons">✗ 占用更多屏幕空间</p>
+        </div>
+
+        <!-- 方案 2: Tab 切换 -->
+        <div class="card" onclick="selectCard(this)">
+            <h3>方案 B: Tab 切换模式</h3>
+            <div class="preview">
+                <div class="layout-2">
+                    <div class="tabs">
+                        <div class="tab active">编辑</div>
+                        <div class="tab">预览</div>
+                    </div>
+                    <div class="content">
+                        <div style="background: #fafafa; padding: 10px; font-family: 'Courier New', monospace; font-size: 12px;">
+                            <div># 标题</div>
+                            <div>&#10;</div>
+                            <div>这是**粗体**文本</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="desc">通过 Tab 切换在编辑模式和预览模式之间切换,节省空间。</p>
+            <span class="badge">节省空间</span>
+            <p class="pros">✓ 节省空间 ✓ 全屏编辑</p>
+            <p class="cons">✗ 无法同时查看效果 ✗ 需要频繁切换</p>
+        </div>
+
+        <!-- 方案 3: 纯编辑器 -->
+        <div class="card" onclick="selectCard(this)">
+            <h3>方案 C: 纯编辑 + 按钮预览</h3>
+            <div class="preview">
+                <div class="layout-3">
+                    <div class="toolbar">
+                        <div class="btn">B</div>
+                        <div class="btn">I</div>
+                        <div class="btn">H1</div>
+                        <div class="btn">Link</div>
+                        <div class="btn preview">预览</div>
+                    </div>
+                    <div class="editor">
+                        <div># 标题</div>
+                        <div>&#10;</div>
+                        <div>这是**粗体**文本</div>
+                    </div>
+                </div>
+            </div>
+            <p class="desc">纯编辑模式,顶部工具栏提供 Markdown 快捷按钮,点击预览按钮弹出预览。</p>
+            <span class="badge">简洁</span>
+            <p class="pros">✓ 最简洁 ✓ 快捷工具栏</p>
+            <p class="cons">✗ 预览不方便 ✗ 需要手动触发</p>
+        </div>
+
+        <!-- 方案 4: 全功能模式 -->
+        <div class="card" onclick="selectCard(this)">
+            <h3>方案 D: 全功能工具栏 + 分屏</h3>
+            <div class="preview">
+                <div class="layout-4">
+                    <div class="toolbar">
+                        <div class="btn">B</div>
+                        <div class="btn">I</div>
+                        <div class="btn">U</div>
+                        <div class="btn">H1</div>
+                        <div class="btn">H2</div>
+                        <div class="btn">Link</div>
+                        <div class="btn">Image</div>
+                        <div class="btn">Code</div>
+                        <div class="btn">Table</div>
+                    </div>
+                    <div class="content">
+                        <div class="editor">
+                            <div># 标题</div>
+                            <div>&#10;</div>
+                            <div>这是**粗体**文本</div>
+                        </div>
+                        <div class="preview">
+                            <h4 style="margin-bottom: 8px;">标题</h4>
+                            <p>这是<strong>粗体</strong>文本</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p class="desc">完整工具栏 + 分屏预览。功能最全面,适合复杂文档编辑。</p>
+            <span class="badge">功能最全</span>
+            <p class="pros">✓ 工具栏便捷 ✓ 实时预览 ✓ 适合复杂文档</p>
+            <p class="cons">✗ UI 较复杂 ✗ 开发成本高</p>
+        </div>
+    </div>
+
+    <div class="legend">
+        <h3>关键特性对比</h3>
+        <ul>
+            <li><span class="key">实时预览:</span> 方案 A 和 D 支持,用户体验最佳</li>
+            <li><span class="key">空间利用:</span> 方案 B 最节省,方案 A/D 占用较多</li>
+            <li><span class="key">工具栏:</span> 方案 C/D 提供快捷按钮,方案 A/B 需要手动输入 Markdown</li>
+            <li><span class="key">开发复杂度:</span> A < B < C < D</li>
+            <li><span class="key">推荐场景:</span> 
+                方案 A - 通用后台管理 | 
+                方案 B - 空间受限 | 
+                方案 C - 简单编辑 | 
+                方案 D - 专业文档
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        function selectCard(card) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            const title = card.querySelector('h3').textContent;
+            console.log('Selected:', title);
+        }
+    </script>
+</body>
+</html>
