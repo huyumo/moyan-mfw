@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { MfwFormCard, MfwRadioGroup, MfwImageSingle, MfwImageGallery, MfwQuillEditor } from '../../../components';
+import { MfwFormCard, MfwRadioGroup, MfwImageSingle, MfwImageGallery, MfwQuillEditor, MfwMdEditor } from '../../../components';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
@@ -101,25 +101,7 @@ const formTemplate: FormItemConfig[] = [
         { label: '女', value: 2 },
       ],
     },
-  },
-  {
-    key: 'images',
-    label: '图片集',
-    component: MfwImageGallery,
-    elProps: {
-      limit: 9,
-      placeholder: '点击上传图片',
-    },
-  },
-  {
-    key: 'content',
-    label: '富文本',
-    component: MfwQuillEditor,
-    elProps: {
-      height: '250px',
-      placeholder: '请输入富文本内容',
-    },
-  },
+  }
 ];
 
 const onConfirm = async () => {

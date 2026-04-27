@@ -25,8 +25,8 @@
           @click="togglePreviewMode"
         >
           <el-icon>
-            <Cellphone v-if="previewMode === 'mobile'" />
-            <Monitor v-else />
+            <!-- <Cellphone v-if="previewMode === 'mobile'" />
+            <Monitor v-else /> -->
           </el-icon>
         </button>
       </template>
