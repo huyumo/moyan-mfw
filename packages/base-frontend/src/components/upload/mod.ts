@@ -3,5 +3,8 @@
  */
 
 export { default as MfwUpload } from './upload';
+export { default as MfwImageSingle } from './image-single';
+export { default as MfwImageGallery } from './image-gallery';
+export { default as ImageCropper } from './image-cropper';
 export type * from './types';
 export { BaseUploader, FormUploader, OssUploader } from './uploader';
