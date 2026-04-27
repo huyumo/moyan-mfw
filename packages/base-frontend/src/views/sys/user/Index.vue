@@ -108,14 +108,14 @@ const columns = [
   {
     prop: 'avatar',
     label: '头像',
-    width: 80,
+    width: 60,
     align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(ElAvatar, { size: 36, src: extractAvatarUrl(row.avatar), icon: User }),
   },
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
   { prop: 'phone', label: '手机号', minWidth: 130 },
-  { prop: 'email', label: '邮箱', minWidth: 180 },
+  // { prop: 'email', label: '邮箱', minWidth: 180 },
   {
     prop: 'gender',
     label: '性别',
@@ -180,7 +180,7 @@ const handleAdd = () => {
     title: '新建用户',
     type: 'dialog',
     component: UserForm,
-    popupProps: { width: 700 },
+    popupProps: { width: 500 },
     on: { confirm: listPage.value?.refresh },
   });
 };
@@ -192,7 +192,7 @@ const handleEdit = (row: UserResponseDto) => {
     type: 'dialog',
     component: UserForm,
     data: { ...row },
-    popupProps: { width: 700 },
+    popupProps: { width: 500 },
     on: { confirm: listPage.value?.refresh },
   });
 };
