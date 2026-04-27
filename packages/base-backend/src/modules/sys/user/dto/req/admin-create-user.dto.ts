@@ -23,10 +23,9 @@ export class AdminCreateUserDto {
   @Length(1, 64, { message: '昵称长度应在 1-64 字符之间' })
   nickname?: string;
 
-  @ApiProperty({ description: '头像 URL', required: false })
+  @ApiProperty({ description: '头像', required: false })
   @IsOptional()
-  @IsString()
-  avatar?: string;
+  avatar?: { src: string; width: number; height: number };
 
   @ApiProperty({ description: '性别 (0:未知 1:男 2:女)', default: 0, required: false })
   @IsOptional()
