@@ -11,9 +11,6 @@
     :template="formTemplate"
     :form-props="{ labelWidth: '80px' }"
   />
-  <div class="bio-editor-wrapper">
-    <MfwMdEditor v-model="form.bio" :height="300" placeholder="请输入个人简介（支持 Markdown）" />
-  </div>
 </template>
 
 <script setup lang="ts">
@@ -104,6 +101,15 @@ const formTemplate: FormItemConfig[] = [
       ],
     },
   },
+  {
+    key: 'bio',
+    label: '个人简介',
+    component: MfwMdEditor,
+    elProps: {
+      height: 300,
+      placeholder: '请输入个人简介（支持 Markdown）',
+    },
+  },
 ];
 
 const onConfirm = async () => {
@@ -137,9 +143,3 @@ const onConfirm = async () => {
 
 defineExpose({ onConfirm });
 </script>
-
-<style scoped>
-.bio-editor-wrapper {
-  margin-top: 16px;
-}
-</style>
