@@ -34,7 +34,7 @@ const form = reactive({
   nickname: props?.nickname || '',
   phone: props?.phone || '',
   gender: props?.gender ?? 0,
-  bio: props?.bio || '',
+  bio: '',
 });
 
 const formTemplate: FormItemConfig[] = [
@@ -124,7 +124,6 @@ const onConfirm = async () => {
         phone: form.phone,
         gender: form.gender,
         avatar: form.avatar,
-        bio: form.bio,
       },
     }, { hintSuccess: true });
   } else {
@@ -135,7 +134,6 @@ const onConfirm = async () => {
         nickname: form.nickname,
         gender: form.gender,
         avatar: form.avatar,
-        bio: form.bio,
       },
     }, { hintSuccess: true });
   }

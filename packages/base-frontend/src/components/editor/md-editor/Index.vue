@@ -12,6 +12,7 @@
       :noImgZoomIn="true"
       :codeFoldable="false"
       :noPrettier="false"
+      :onUploadImg="handleUploadImg"
       @onSave="handleSave"
       @onChange="handleChange"
     >
@@ -49,6 +50,7 @@ import type { ToolbarNames, Themes } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { Cellphone, Monitor } from '@element-plus/icons-vue';
 import type { MfwMdEditorProps, MfwMdEditorEmits, MfwMdEditorInstance } from './types';
+import { uploadImage } from '../../../config/upload-config';
 
 defineOptions({ name: 'MfwMdEditor' });
 
@@ -86,7 +88,6 @@ const computedToolbars = computed<ToolbarNames[]>(() => {
     'quote', 'unorderedList', 'orderedList', 'code', 'link',
     'image', 'table', 'divider', 'revoke', 'next', 'save',
     'pageFullscreen', 'fullscreen', 'preview', 'htmlPreview',
-    'github',
   ] as ToolbarNames[];
 });
 
@@ -106,6 +107,19 @@ const handleChange = (value: string) => {
 
 const handleSave = (value: string) => {
   emit('save', value);
+};
+
+const handleUploadImg: (files: File[], callbackFn: (urls: string[]) => void) => void = async (files, callbackFn) => {
+  const urls: string[] = [];
+  for (const file of files) {
+    try {
+      const result = await uploadImage(file);
+      urls.push(result.url);
+    } catch (e) {
+      console.error('图片上传失败:', e);
+    }
+  }
+  callbackFn(urls);
 };
 
 const togglePreviewMode = () => {

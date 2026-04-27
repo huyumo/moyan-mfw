@@ -178,9 +178,9 @@ const loadData = async (params: Record<string, unknown>) => {
 const handleAdd = () => {
   MfwPopup.open({
     title: '新建用户',
-    type: 'dialog',
+    type: 'drawer',
     component: UserForm,
-    popupProps: { width: 500 },
+    popupProps: { size: 800 },
     on: { confirm: listPage.value?.refresh },
   });
 };
@@ -189,10 +189,10 @@ const handleAdd = () => {
 const handleEdit = (row: UserResponseDto) => {
   MfwPopup.open({
     title: '编辑用户',
-    type: 'dialog',
+    type: 'drawer',
     component: UserForm,
     data: { ...row },
-    popupProps: { width: 500 },
+    popupProps: { size: 800 },
     on: { confirm: listPage.value?.refresh },
   });
 };
