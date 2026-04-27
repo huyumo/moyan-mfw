@@ -38,10 +38,9 @@ export class UpdateUserDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像 URL', required: false })
+  @ApiProperty({ description: '头像', required: false })
   @IsOptional()
-  @IsString()
-  avatar?: string;
+  avatar?: { src: string; width: number; height: number };
 
   /**
    * 性别 (0:未知 1:男 2:女)
