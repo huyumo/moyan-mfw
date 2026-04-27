@@ -15,8 +15,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { MfwFormCard, MfwRadioGroup } from '../../../components';
+import { MfwFormCard, MfwRadioGroup, MfwImageSingle } from '../../../components';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
+import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
 
@@ -28,6 +29,7 @@ const formRef = ref<MfwFormCardInstance>();
 const isEdit = computed(() => !!props?.id);
 
 const form = reactive({
+  avatar: props?.avatar || undefined,
   username: props?.username || '',
   nickname: props?.nickname || '',
   phone: props?.phone || '',
@@ -35,6 +37,18 @@ const form = reactive({
 });
 
 const formTemplate: FormItemConfig[] = [
+  {
+    key: 'avatar',
+    label: '头像',
+    component: MfwImageSingle,
+    elProps: {
+      crop: true,
+      cropRatio: 1,
+      cropWidth: 200,
+      cropHeight: 200,
+      placeholder: '点击上传头像',
+    },
+  },
   {
     key: 'username',
     label: '用户名',
@@ -99,6 +113,7 @@ const onConfirm = async () => {
         nickname: form.nickname,
         phone: form.phone,
         gender: form.gender,
+        avatar: form.avatar,
       },
     }, { hintSuccess: true });
   } else {
@@ -108,6 +123,7 @@ const onConfirm = async () => {
         phone: form.phone,
         nickname: form.nickname,
         gender: form.gender,
+        avatar: form.avatar,
       },
     }, { hintSuccess: true });
   }
