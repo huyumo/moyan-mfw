@@ -106,3 +106,50 @@ export interface MfwUploadInstance {
   submit: () => void;
   uploadFiles: UploadFileInfo[];
 }
+
+/** 上传方式类型（从环境变量配置） */
+export type UploadMethodType = 'Form' | 'Oss';
+
+/** 裁剪选项 */
+export interface CropOptions {
+  enabled?: boolean;
+  ratio?: number;
+  outputWidth?: number;
+  outputHeight?: number;
+}
+
+/** MfwImageSingle 组件 Props */
+export interface MfwImageSingleProps {
+  modelValue?: ImageResource;
+  uploadType?: UploadMethodType;
+  crop?: boolean;
+  cropRatio?: number;
+  cropWidth?: number;
+  cropHeight?: number;
+  maxSize?: number;
+  accept?: string;
+  disabled?: boolean;
+  placeholder?: string;
+  businessType?: string;
+}
+
+/** MfwImageGallery 组件 Props */
+export interface MfwImageGalleryProps {
+  modelValue?: ImageResource[];
+  uploadType?: UploadMethodType;
+  limit?: number;
+  maxSize?: number;
+  accept?: string;
+  disabled?: boolean;
+  draggable?: boolean;
+  businessType?: string;
+}
+
+/** ImageCropper 组件 Props */
+export interface ImageCropperProps {
+  visible: boolean;
+  image: string | Blob;
+  ratio?: number;
+  outputWidth?: number;
+  outputHeight?: number;
+}
