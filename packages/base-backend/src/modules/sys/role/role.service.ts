@@ -79,38 +79,29 @@ export class RoleService {
    * @returns 分页结果
    */
   async findAll(query: QueryRoleDto): Promise<PaginationResult<any>> {
-    const { roleCode, roleName, roleStatus, appTypeId, appId } = query;
-
-    const subBuilder1 = new WhereBuilder();
-    subBuilder1
-      .eq('role.isBuiltin', 1)
-      .isNull('role.appId');
-
-    const subBuilder2 = new WhereBuilder();
-    subBuilder2.eq('role.appId', appId);
-
-    const outerBuilder = new WhereBuilder();
-    outerBuilder
-      .group(subBuilder1)
-      .group(subBuilder2, 'OR');
+    const { roleCode, roleName, roleStatus, appId } = query;
 
     const whereBuilder = new WhereBuilder();
     whereBuilder
       .like('role.roleCode', roleCode)
       .like('role.roleName', roleName)
-      .eq('role.roleStatus', roleStatus)
-      .eq('role.appTypeId', appTypeId)
-      .group(outerBuilder);
+      .eq('role.roleStatus', roleStatus);
 
     const pager = new PaginationX(this.entityManager.connection, query);
     return await pager
       .where('main', whereBuilder)
+      .unshiftSql({
+        tag: 'appType',
+        sql: `SELECT @appTypeId := appTypeId FROM sys_apps WHERE id = '${appId}'`,
+        isGetOne: true,
+      })
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
         return `
           SELECT ${select} FROM sys_roles role
           LEFT JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
-          ${whereClause}
+          WHERE role.appTypeId = @appTypeId
+          ${whereClause.replace('WHERE', 'AND')}
           ${orderBy}
           ${limit}
         `;
