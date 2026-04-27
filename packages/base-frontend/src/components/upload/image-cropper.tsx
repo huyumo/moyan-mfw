@@ -42,6 +42,14 @@ export default defineComponent({
         width="500px"
         onClose={handleCancel}
         destroyOnClose
+        v-slots={{
+          footer: () => (
+            <>
+              <ElButton onClick={handleCancel}>取消</ElButton>
+              <ElButton type="primary" onClick={handleConfirm}>确认</ElButton>
+            </>
+          ),
+        }}
       >
         <div class="image-cropper-container">
           <Cropper
@@ -53,10 +61,6 @@ export default defineComponent({
             class="image-cropper"
           />
         </div>
-        <template #footer>
-          <ElButton onClick={handleCancel}>取消</ElButton>
-          <ElButton type="primary" onClick={handleConfirm}>确认</ElButton>
-        </template>
       </ElDialog>
     );
   },

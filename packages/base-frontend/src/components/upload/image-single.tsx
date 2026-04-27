@@ -1,6 +1,6 @@
 import './style.scss';
 import { defineComponent, ref, computed, type PropType } from 'vue';
-import { ElUpload, ElMessage, ElImageViewer } from 'element-plus';
+import { ElUpload, ElMessage, ElImageViewer, type UploadRequestOptions } from 'element-plus';
 import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue';
 import ImageCropper from './image-cropper';
 import { uploadImage } from '../../config/upload-config';
@@ -46,9 +46,7 @@ export default defineComponent({
 
     const imageUrl = computed(() => {
       if (!props.modelValue) return '';
-      return typeof props.modelValue === 'string' 
-        ? props.modelValue 
-        : props.modelValue.src;
+      return props.modelValue.src;
     });
 
     const beforeUpload = (file: File): boolean => {
@@ -72,13 +70,12 @@ export default defineComponent({
       return true;
     };
 
-    const handleHttpRequest = async (options: { file: File; onProgress?: (percentage: number) => void }) => {
+    const handleHttpRequest = async (options: UploadRequestOptions) => {
       uploading.value = true;
       try {
         const result = await uploadImage(options.file, {
           uploadType: props.uploadType,
           businessType: props.businessType,
-          onProgress: options.onProgress,
         });
         
         const dimensions = await getImageDimensions(options.file);
@@ -163,8 +160,14 @@ export default defineComponent({
                 style={{ objectFit: 'cover' }}
               />
               <span class="avatar-actions" onClick={(e: Event) => e.stopPropagation()}>
-                <ZoomIn class="action-icon" onClick={handlePreview} />
-                {!props.disabled && <Delete class="action-icon" onClick={handleRemove} />}
+                <i class="action-icon" onClick={handlePreview}>
+                  <ZoomIn />
+                </i>
+                {!props.disabled && (
+                  <i class="action-icon" onClick={handleRemove}>
+                    <Delete />
+                  </i>
+                )}
               </span>
             </div>
           ) : (
