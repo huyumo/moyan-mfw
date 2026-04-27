@@ -104,6 +104,7 @@ export default defineComponent({
     const formRef = ref<FormInstance>();
     const load = ref(true);
     const formTemplate = ref<FormItemConfig[]>([]);
+    const componentRefs = new Map<string, any>();
 
     /**
      * 初始化表单项
@@ -204,11 +205,28 @@ export default defineComponent({
     };
 
     /**
+     * 检查是否有组件正在上传
+     */
+    const checkUploading = (): boolean => {
+      for (const [, compRef] of componentRefs) {
+        if (compRef && typeof compRef === 'object' && (compRef as any).isUploading) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    /**
      * 验证表单
      */
     const validate = async (): Promise<boolean> => {
       if (!formRef.value) {
         throw new Error('Form ref not found');
+      }
+
+      if (checkUploading()) {
+        ElMessage.error('文件正在上传中，请稍后再提交');
+        throw new Error('文件正在上传中，请稍后再提交');
       }
 
       return formRef.value.validate().then(() => {
@@ -313,7 +331,12 @@ export default defineComponent({
             ref: typeof item.ref === 'string' ? item.ref : undefined
           };
 
-          return h(component, propsData);
+          return h(component, {
+            ...propsData,
+            ref: (el: any) => {
+              componentRefs.set(item.key, el);
+            }
+          });
         };
 
         return (

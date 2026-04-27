@@ -1,0 +1,70 @@
+/**
+ * @fileoverview MfwMdEditor Markdown 编辑器样式
+ */
+
+.mfw-md-editor {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--el-border-radius-base, 8px);
+  overflow: hidden;
+  border: 1px solid var(--el-border-color-light, #e4e7ed);
+
+  :deep(.md-editor) {
+    height: 100%;
+    border: none;
+
+    .md-editor-toolbar {
+      border-bottom-color: var(--el-border-color-light, #e4e7ed);
+    }
+
+    .md-editor-preview {
+      padding: 16px;
+      background: var(--el-bg-color, #fff);
+    }
+  }
+
+  .mobile-preview-container {
+    max-width: 375px;
+    margin: 0 auto;
+    padding: 16px;
+    border-left: 1px solid var(--el-border-color, #dcdfe6);
+    border-right: 1px solid var(--el-border-color, #dcdfe6);
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+    background: var(--el-bg-color, #fff);
+
+    .mobile-preview-content {
+      font-size: 14px;
+      line-height: 1.6;
+      word-wrap: break-word;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+
+      pre {
+        overflow-x: auto;
+        padding: 12px;
+        background: var(--el-fill-color-light, #f5f7fa);
+        border-radius: 4px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 16px 0;
+
+        th, td {
+          border: 1px solid var(--el-border-color-light, #e4e7ed);
+          padding: 8px 12px;
+          text-align: left;
+        }
+
+        th {
+          background: var(--el-fill-color-light, #f5f7fa);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+}

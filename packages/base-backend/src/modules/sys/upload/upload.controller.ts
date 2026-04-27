@@ -24,13 +24,14 @@ import {
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadFileService, UploadResult } from './upload.service';
 import { AuthGuard } from '../../../common/guards/auth.guard';
-import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { AuditLog } from '../../../common/decorators/audit-log.decorator';
+import { SkipPermission } from '../../../common/decorators/skip-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 
 @ApiTags('upload', '文件上传相关接口')
 @ApiBearerAuth('Authorization')
 @UseGuards(AuthGuard)
+@SkipPermission()
 @Controller('upload-files')
 export class UploadFileController {
   constructor(private uploadFileService: UploadFileService) {}
@@ -41,7 +42,6 @@ export class UploadFileController {
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: '上传成功' })
   @AuditLog({ module: 'UPLOAD', event: 'UPLOAD_FILE', description: '上传文件' })
-  @RequirePermission({ permCode: 'pc_root:sys:upload', permissionValue: ['添加'] })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
@@ -57,7 +57,6 @@ export class UploadFileController {
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: '上传成功' })
   @AuditLog({ module: 'UPLOAD', event: 'BATCH_UPLOAD_FILE', description: '批量上传文件' })
-  @RequirePermission({ permCode: 'pc_root:sys:upload', permissionValue: ['添加'] })
   @UseInterceptors(FilesInterceptor('files', 10))
   async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],

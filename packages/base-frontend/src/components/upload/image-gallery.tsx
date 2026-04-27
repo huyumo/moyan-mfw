@@ -1,5 +1,5 @@
 import './style.scss';
-import { defineComponent, ref, computed, type PropType } from 'vue';
+import { defineComponent, ref, computed, type PropType, defineExpose } from 'vue';
 import { ElUpload, ElMessage, type UploadRequestOptions } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { uploadImage } from '../../config/upload-config';
@@ -103,6 +103,8 @@ export default defineComponent({
       emit('remove', file);
     };
 
+    defineExpose({ isUploading: uploading });
+
     return () => (
       <div class="mfw-image-gallery">
         <ElUpload
@@ -118,7 +120,9 @@ export default defineComponent({
         >
           {fileList.value.length < props.limit && (
             <div class="upload-placeholder">
-              <Plus class="placeholder-icon" />
+              <span class="placeholder-icon">
+                <Plus />
+              </span>
             </div>
           )}
         </ElUpload>

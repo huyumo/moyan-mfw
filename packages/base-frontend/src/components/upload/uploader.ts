@@ -5,6 +5,15 @@
 
 import type { IUploader, UploadRequestOptions, UploadResult } from './types';
 
+const getAuthToken = (): string => {
+  return (
+    localStorage.getItem('mfw:admin:token') ||
+    localStorage.getItem('access_token') ||
+    sessionStorage.getItem('access_token') ||
+    ''
+  );
+};
+
 const uploadingFiles = new Set<any>();
 
 export abstract class BaseUploader implements IUploader {
@@ -88,6 +97,12 @@ export class FormUploader extends BaseUploader {
       };
 
       xhr.open('POST', url, true);
+
+      const token = getAuthToken();
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
       xhr.send(formData);
     });
   }

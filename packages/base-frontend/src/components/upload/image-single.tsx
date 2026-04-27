@@ -1,5 +1,5 @@
 import './style.scss';
-import { defineComponent, ref, computed, type PropType } from 'vue';
+import { defineComponent, ref, computed, type PropType, defineExpose } from 'vue';
 import { ElUpload, ElMessage, ElImageViewer, type UploadRequestOptions } from 'element-plus';
 import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue';
 import ImageCropper from './image-cropper';
@@ -41,92 +41,88 @@ export default defineComponent({
   setup(props, { emit }) {
     const cropperVisible = ref(false);
     const pendingFile = ref<File | null>(null);
+    const pendingImageUrl = ref('');
     const previewVisible = ref(false);
     const uploading = ref(false);
+    const inputRef = ref<HTMLInputElement | null>(null);
 
     const imageUrl = computed(() => {
       if (!props.modelValue) return '';
       return props.modelValue.src;
     });
 
-    const beforeUpload = (file: File): boolean => {
+    const triggerFileInput = () => {
+      inputRef.value?.click();
+    };
+
+    const handleFileChange = (e: Event) => {
+      const target = e.target as HTMLInputElement;
+      const file = target.files?.[0];
+      if (!file) return;
+
       const maxSize = props.maxSize * 1024 * 1024;
       if (file.size > maxSize) {
         ElMessage.error(`文件大小不能超过 ${props.maxSize}MB`);
-        return false;
+        target.value = '';
+        return;
       }
 
       if (!file.type.startsWith('image/')) {
         ElMessage.error('请上传图片文件');
-        return false;
+        target.value = '';
+        return;
       }
 
       if (props.crop) {
         pendingFile.value = file;
+        pendingImageUrl.value = URL.createObjectURL(file);
         cropperVisible.value = true;
-        return false;
+      } else {
+        handleUpload(file);
       }
 
-      return true;
+      target.value = '';
     };
 
-    const handleHttpRequest = async (options: UploadRequestOptions) => {
+    const handleUpload = async (file: File | Blob) => {
       uploading.value = true;
       try {
-        const result = await uploadImage(options.file, {
+        const result = await uploadImage(file, {
           uploadType: props.uploadType,
           businessType: props.businessType,
         });
-        
-        const dimensions = await getImageDimensions(options.file);
+
+        const dimensions = await getImageDimensions(file);
         const imageResource: ImageResource = {
           src: result.url,
           width: dimensions.width,
           height: dimensions.height,
         };
-        
+
         emit('update:modelValue', imageResource);
         emit('change', imageResource);
         emit('success', result);
-        
-        return result;
-      } catch (error) {
-        ElMessage.error('上传失败');
+      } catch (error: any) {
+        ElMessage.error(error?.message || '上传失败');
         emit('error', error);
-        throw error;
       } finally {
         uploading.value = false;
       }
     };
 
     const handleCropConfirm = async (blob: Blob) => {
-      uploading.value = true;
-      try {
-        const result = await uploadImage(blob, {
-          uploadType: props.uploadType,
-          businessType: props.businessType,
-        });
-        
-        const imageResource: ImageResource = {
-          src: result.url,
-          width: props.cropWidth,
-          height: props.cropHeight,
-        };
-        
-        emit('update:modelValue', imageResource);
-        emit('change', imageResource);
-        emit('success', result);
-      } catch (error) {
-        ElMessage.error('上传失败');
-        emit('error', error);
-      } finally {
-        uploading.value = false;
-        cropperVisible.value = false;
-        pendingFile.value = null;
+      cropperVisible.value = false;
+      if (pendingImageUrl.value) {
+        URL.revokeObjectURL(pendingImageUrl.value);
+        pendingImageUrl.value = '';
       }
+      const file = pendingFile.value;
+      pendingFile.value = null;
+      await handleUpload(blob);
     };
 
-    const handleRemove = () => {
+    const handleRemove = (e: Event) => {
+      e.stopPropagation();
       emit('update:modelValue', undefined);
       emit('change', undefined);
     };
@@ -137,65 +133,77 @@ export default defineComponent({
 
     const handleCropCancel = () => {
       cropperVisible.value = false;
+      if (pendingImageUrl.value) {
+        URL.revokeObjectURL(pendingImageUrl.value);
+        pendingImageUrl.value = '';
+      }
       pendingFile.value = null;
     };
 
+    defineExpose({ isUploading: uploading });
+
     return () => (
       <div class="mfw-image-single">
-        <ElUpload
-          class="avatar-uploader"
-          action="#"
-          showFileList={false}
-          autoUpload={!props.crop}
-          beforeUpload={beforeUpload}
-          httpRequest={props.crop ? undefined : handleHttpRequest}
-          disabled={props.disabled || uploading.value}
+        <input
+          ref={inputRef}
+          type="file"
           accept={props.accept}
+          style="display: none;"
+          onChange={handleFileChange}
+        />
+
+        <div
+          class="avatar-uploader"
+          onClick={triggerFileInput}
         >
           {imageUrl.value ? (
             <div class="avatar-uploader-image-box">
               <img
                 class="avatar-image"
                 src={imageUrl.value}
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: 'cover', cursor: 'pointer' }}
+                onClick={(e: Event) => {
+                  e.stopPropagation();
+                  triggerFileInput();
+                }}
               />
               <span class="avatar-actions" onClick={(e: Event) => e.stopPropagation()}>
-                <i class="action-icon" onClick={handlePreview}>
+                <span class="action-icon action-icon-preview" onClick={handlePreview}>
                   <ZoomIn />
-                </i>
+                </span>
                 {!props.disabled && (
-                  <i class="action-icon" onClick={handleRemove}>
+                  <span class="action-icon action-icon-delete" onClick={handleRemove}>
                     <Delete />
-                  </i>
+                  </span>
                 )}
               </span>
             </div>
           ) : (
             <div class="avatar-uploader-placeholder">
-              <Plus class="placeholder-icon" />
-              <span class="placeholder-text">{props.placeholder}</span>
+              <span class="placeholder-icon">
+                <Plus />
+              </span>
             </div>
           )}
-        </ElUpload>
+        </div>
 
         {previewVisible.value && imageUrl.value && (
           <ElImageViewer
-            urlList={[imageUrl.value]}
+            url-list={[imageUrl.value]}
             onClose={() => previewVisible.value = false}
+            initial-index={0}
           />
         )}
 
-        {props.crop && pendingFile.value && (
-          <ImageCropper
-            visible={cropperVisible.value}
-            image={pendingFile.value}
-            ratio={props.cropRatio}
-            outputWidth={props.cropWidth}
-            outputHeight={props.cropHeight}
-            onConfirm={handleCropConfirm}
-            onCancel={handleCropCancel}
-          />
-        )}
+        <ImageCropper
+          visible={cropperVisible.value}
+          image={pendingFile.value || ''}
+          ratio={props.cropRatio}
+          outputWidth={props.cropWidth}
+          outputHeight={props.cropHeight}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
       </div>
     );
   },
