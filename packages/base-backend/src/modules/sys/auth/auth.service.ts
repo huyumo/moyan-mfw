@@ -112,7 +112,7 @@ export class AuthService {
       user: {
         username: user.username,
         nickname: user.nickname || user.username,
-        avatar: user.avatar || '',
+        avatar: user.avatar,
       },
     };
   }
@@ -194,7 +194,7 @@ export class AuthService {
       id: user.id,
       username: user.username,
       nickname: user.nickname || user.username,
-      avatar: user.avatar || '',
+      avatar: user.avatar,
       // 返回角色名称列表
       roles: userRoles.map((ur) => ur.role.roleName) || [],
     };
@@ -363,7 +363,7 @@ export class AuthService {
       user: {
         username: user.username,
         nickname: user.nickname || user.username,
-        avatar: user.avatar || '',
+        avatar: user.avatar,
       },
     };
   }

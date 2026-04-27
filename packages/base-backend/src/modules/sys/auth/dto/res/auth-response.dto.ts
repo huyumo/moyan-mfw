@@ -24,8 +24,8 @@ export class UserSummaryDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像 URL' })
-  avatar: string;
+  @ApiProperty({ description: '头像' })
+  avatar: { src: string; width: number; height: number };
 }
 
 /**
@@ -88,8 +88,8 @@ export class UserInfoDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像 URL' })
-  avatar: string;
+  @ApiProperty({ description: '头像' })
+  avatar: { src: string; width: number; height: number };
 
   /**
    * 角色列表
