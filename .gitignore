@@ -10,6 +10,5 @@ packages/*/test-results/
 
 # Claude worktrees
 .claude/worktrees/
-**/.env.example
 **/.env.test
 **/agent-memory/
