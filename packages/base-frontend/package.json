@@ -27,6 +27,7 @@
     "@vueuse/core": "^14.2.1",
     "axios": "^1.6.5",
     "element-plus": "^2.5.3",
+    "md-editor-v3": "^6.4.2",
     "moyan-api": "^2.1.18",
     "pinia": "^2.1.7",
     "reflect-metadata": "^0.2.2",
