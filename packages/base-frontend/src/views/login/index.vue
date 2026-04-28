@@ -13,9 +13,9 @@
     <div class="mfw-login-card">
       <div class="mfw-login-logo">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="10" fill="#409eff"/>
-          <path d="M24 12L32 20V28L24 36L16 28V20L24 12Z" fill="white"/>
-          <circle cx="24" cy="24" r="4" fill="#e6f7ff"/>
+          <rect width="48" height="48" rx="10" class="mfw-logo-bg"/>
+          <path d="M24 12L32 20V28L24 36L16 28V20L24 12Z" class="mfw-logo-path"/>
+          <circle cx="24" cy="24" r="4" class="mfw-logo-circle"/>
         </svg>
       </div>
 
@@ -66,7 +66,6 @@
 
       <div class="mfw-login-footer">
         <component :is="footerExtensionComponent" v-if="footerExtensionComponent" />
-        <p v-else class="mfw-login-tip">演示模式：任意账号密码即可登录</p>
       </div>
     </div>
   </div>

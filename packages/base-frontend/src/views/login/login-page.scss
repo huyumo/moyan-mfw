@@ -6,6 +6,10 @@
   background: #f0f2f5;
 }
 
+html.dark .mfw-login-page {
+  background: #0f172a;
+}
+
 .mfw-login-card {
   width: 400px;
   padding: 40px;
@@ -14,9 +18,38 @@
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
+html.dark .mfw-login-card {
+  background: #1e293b;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
 .mfw-login-logo {
   text-align: center;
   margin-bottom: 20px;
+}
+
+.mfw-logo-bg {
+  fill: #409eff;
+}
+
+.mfw-logo-path {
+  fill: #ffffff;
+}
+
+.mfw-logo-circle {
+  fill: #e6f7ff;
+}
+
+html.dark .mfw-logo-bg {
+  fill: #3b82f6;
+}
+
+html.dark .mfw-logo-path {
+  fill: #e2e8f0;
+}
+
+html.dark .mfw-logo-circle {
+  fill: #60a5fa;
 }
 
 .mfw-login-title {
@@ -26,6 +59,10 @@
   text-align: center;
   margin-bottom: 32px;
   letter-spacing: 1px;
+}
+
+html.dark .mfw-login-title {
+  color: #e2e8f0;
 }
 
 .mfw-login-methods {
@@ -39,6 +76,10 @@
 :deep(.el-input__wrapper) {
   background-color: transparent !important;
   box-shadow: 0 0 0 1px #dcdfe6 inset;
+}
+
+html.dark :deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px #475569 inset;
 }
 
 :deep(.el-input__wrapper:hover),
@@ -55,6 +96,10 @@
   color: rgba(0, 0, 0, 0.45);
   font-size: 13px;
   margin: 0;
+}
+
+html.dark .mfw-login-tip {
+  color: #94a3b8;
 }
 
 @media (max-width: 480px) {
