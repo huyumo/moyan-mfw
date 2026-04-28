@@ -5,6 +5,7 @@
 
 import type { Router, RouteLocationNormalized } from 'vue-router';
 import { useAuthStore, TOKEN_KEY } from '../store/auth-store';
+import { useAppLoadingStore } from '../store/app-loading-store';
 
 /** 白名单路由（无需登录即可访问） */
 const WHITE_LIST = ['/login', '/install', '/403', '/404'];
@@ -44,14 +45,12 @@ async function checkInitialized(): Promise<boolean> {
  * @param router Vue Router 实例
  */
 export function setupRouteGuard(router: Router): void {
-  // 全局前置守卫
   router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next) => {
     const authStore = useAuthStore();
+    const appLoadingStore = useAppLoadingStore();
 
-    // 0. 检查系统初始化状态
     const initialized = await checkInitialized();
 
-    // 0.1 系统未初始化时，只允许访问 /install 页面
     if (!initialized) {
       if (to.path !== '/install') {
         next({ path: '/install' });
@@ -61,29 +60,22 @@ export function setupRouteGuard(router: Router): void {
       return;
     }
 
-    // 0.2 系统已初始化时，禁止访问 /install 页面
     if (initialized && to.path === '/install') {
       next({ path: '/login' });
       return;
     }
 
-    // 1. 处理根路径 /
     if (to.path === '/' || (to.name === 'RootRedirect' && to.path === '/')) {
       const hasToken = localStorage.getItem(TOKEN_KEY);
       if (!hasToken) {
-        // 未认证，重定向到登录页
         next({ path: '/login' });
         return;
       }
-      // 已认证，重定向到仪表盘
       next({ path: '/dashboard' });
       return;
     }
 
-    // 1. 检查是否在白名单中
     if (WHITE_LIST.includes(to.path)) {
-      // 已登录用户访问登录页，且 Token 有效时重定向到首页
-      // 注意：使用 localStorage 直接检查，避免响应式延迟问题
       const hasToken = localStorage.getItem(TOKEN_KEY);
       if (to.path === '/login' && hasToken && authStore.isLoggedIn) {
         next({ path: '/' });
@@ -93,10 +85,8 @@ export function setupRouteGuard(router: Router): void {
       return;
     }
 
-    // 2. 检查是否有 Token
     const hasToken = localStorage.getItem(TOKEN_KEY);
     if (!hasToken) {
-      // 未登录，重定向到登录页
       next({
         path: '/login',
         query: { redirect: to.fullPath },
@@ -104,7 +94,6 @@ export function setupRouteGuard(router: Router): void {
       return;
     }
 
-    // 3. 首次访问时初始化认证状态
     if (!isInitialized) {
       isInitialized = true;
       
@@ -113,9 +102,12 @@ export function setupRouteGuard(router: Router): void {
         return;
       }
       
+      appLoadingStore.showLoading('正在初始化认证...');
+      
       try {
         const success = await authStore.initializeAuth();
         if (!success) {
+          appLoadingStore.hideLoading();
           next({
             path: '/login',
             query: { redirect: to.fullPath },
@@ -125,17 +117,18 @@ export function setupRouteGuard(router: Router): void {
       } catch (error) {
         console.error('[RouteGuard] 初始化认证状态失败:', error);
         authStore.clearToken();
+        appLoadingStore.hideLoading();
         next({
           path: '/login',
           query: { redirect: to.fullPath },
         });
         return;
       }
+      
+      appLoadingStore.hideLoading();
     }
 
-    // 4. 检查页面权限
     if (to.meta.requiresAuth !== false) {
-      // 检查是否有权限访问该页面
       const hasPermission = checkPagePermission(to, authStore);
       if (!hasPermission) {
         next({ path: '/403' });

@@ -143,9 +143,6 @@ export function useAdminLayout(): any {
   function confirmResetDefaults() {
     skipSettingsRollback.value = true;
     layoutStore.resetToDefaults();
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('mfw:layout:config', JSON.stringify(layoutStore.styleConfig));
-    }
     layoutStore.toggleSettingsPanel(false);
     resetConfirmVisible.value = false;
     ElMessage.success('\u5df2\u6062\u590d\u9ed8\u8ba4\u8bbe\u7f6e');
@@ -207,9 +204,6 @@ export function useAdminLayout(): any {
     skipSettingsRollback.value = true;
     layoutStore.patchStyleConfig(payload, { persist: false });
     layoutStore.persistPreferences();
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('mfw:layout:config', JSON.stringify(layoutStore.styleConfig));
-    }
     layoutStore.toggleSettingsPanel(false);
     ElMessage.success('\u504f\u597d\u8bbe\u7f6e\u5df2\u4fdd\u5b58');
   }
@@ -270,15 +264,6 @@ export function useAdminLayout(): any {
   );
   onMounted(() => {
     syncCssVars(layoutStore.styleConfig);
-    const savedConfig = typeof window !== 'undefined' ? window.localStorage.getItem('mfw:layout:config') : null;
-    if (savedConfig) {
-      try {
-        const parsed = JSON.parse(savedConfig);
-        layoutStore.patchStyleConfig(parsed, { persist: true });
-        syncCssVars(layoutStore.styleConfig);
-      } catch {
-      }
-    }
   });
   return {
     layoutStore,

@@ -24,5 +24,12 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { MfwPopupManager } from '../../../components';
+import { useAppLoadingStore } from '../../../store/app-loading-store';
+
+onMounted(() => {
+  const appLoadingStore = useAppLoadingStore();
+  appLoadingStore.hideLoading();
+});
 </script>
