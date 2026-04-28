@@ -65,3 +65,8 @@ description: "Use when working on moyan-mfw project code, creating modules or pa
 7. 审计拦截器当前仅输出日志，未写入 `sys_audit_logs`
 8. Redis 配置已预留但业务层未使用
 9. 获取用户信息用 `@User() user: UserDto` → 不要用 `@Request() req.user`
+10. `views/` 目录只允许存放页面路由组件 → 弹窗/面板/表单等非路由组件放 `components/`
+11. 导入路径必须从文件实际位置计算相对路径 → 移动文件后必须立即修正所有导入
+12. 组件默认导出用 `import X from`，命名导出用 `import { X } from` → 混淆会导致构建失败
+13. 文字颜色必须使用 `var(--el-text-color-*)` CSS 变量 → 禁止 `color: inherit` 依赖上下文
+14. 布局扩展组件（ProfilePanel/PasswordChangeForm 等）放 `components/layout/` → 不是 `views/`

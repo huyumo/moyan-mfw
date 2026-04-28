@@ -58,8 +58,7 @@ import {
   Moon,
   Sunny,
   FullScreen,
-  RefreshLeft,
-  RefreshRight,
+  ScaleToOriginal,
   Switch,
 } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
@@ -143,36 +142,36 @@ onUnmounted(() => {
 
 <template>
   <div class="header-actions">
-    <el-space :size="8">
+    <el-space :size="2">
       <!-- 搜索按钮 -->
-      <div class="action-icon-btn" @click="openSearch">
-        <el-icon :size="22"><Search /></el-icon>
-      </div>
+      <!-- <div class="action-icon-btn" @click="openSearch">
+        <el-icon :size="18"><Search /></el-icon>
+      </div> -->
 
       <!-- 主题切换 -->
       <div class="action-icon-btn" @click="toggleTheme">
-        <el-icon :size="22">
+        <el-icon :size="18">
           <component :is="isDark ? Sunny : Moon" />
         </el-icon>
       </div>
 
       <!-- 全屏切换 -->
       <div class="action-icon-btn" @click="toggleFullscreen">
-        <el-icon :size="22">
-          <component :is="isFullscreen ? RefreshLeft : FullScreen" />
+        <el-icon :size="18">
+          <component :is="isFullscreen ? ScaleToOriginal : FullScreen" />
         </el-icon>
       </div>
 
       <!-- 消息通知 -->
-      <el-badge :value="3" class="action-badge">
+      <!-- <el-badge :value="3" class="action-badge">
         <div class="action-icon-btn" @click="navigateTo('/monitor/overview')">
-          <el-icon :size="22"><Bell /></el-icon>
+          <el-icon :size="18"><Bell /></el-icon>
         </div>
-      </el-badge>
+      </el-badge> -->
 
       <!-- 布局设置 -->
       <div class="action-icon-btn" @click="openLayoutSettings">
-        <el-icon :size="22"><Setting /></el-icon>
+        <el-icon :size="18"><Setting /></el-icon>
       </div>
     </el-space>
   </div>
@@ -192,7 +191,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s ease;
   border-radius: 4px;
-  padding: 6px;
+  padding: 4px;
   font-weight: 600;
 
   &:hover {
