@@ -3,7 +3,7 @@
  */
 
 import { createBaseAdminApp } from 'moyan-mfw-base-frontend';
-import { HeaderAvatarPanel, HeaderCommonActions } from './components/Layout';
+import { HeaderCommonActions } from './components/Layout';
 import { businessRoutes } from './router';
 
 const admin = createBaseAdminApp({
@@ -22,7 +22,6 @@ const admin = createBaseAdminApp({
   },
   layoutExtensions: {
     headerCommon: HeaderCommonActions,
-    headerAvatar: HeaderAvatarPanel,
   },
 });
 

@@ -47,6 +47,16 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │       └── src/
 │           ├── apis/sys/           # API调用层（自动生成，禁止修改）
 │           ├── components/         # 通用组件库（Mfw前缀）
+│           │   ├── business/       #   业务组件（权限/角色/应用选择器等）
+│           │   ├── display/        #   展示组件（MfwDetailPanel/MfwFormat）
+│           │   ├── editor/         #   编辑器组件（MD/Quill/JSON）
+│           │   ├── feedback/       #   反馈组件（MfwPopup）
+│           │   ├── form/           #   表单组件（MfwFormCard）
+│           │   ├── layout/         #   布局扩展组件（ProfilePanel/PasswordChangeForm）
+│           │   ├── page/           #   页面组件（PageWrapper/ListPage/CardListPage）
+│           │   ├── picker/         #   选择器组件（AppSelector/IconPicker/UserPicker）
+│           │   ├── table/          #   表格组件（TableList/ActionButtons）
+│           │   └── upload/         #   上传组件（ImageSingle/ImageGallery）
 │           ├── composables/        # 组合式函数（useColorMode/useThemeSwitch）
 │           ├── directives/         # 自定义指令（v-permission）
 │           ├── hooks/              # 自定义钩子（usePermission）
@@ -58,7 +68,14 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │           ├── themes/             # 主题系统（9套主题包）
 │           ├── types/              # 类型定义
 │           ├── utils/              # 工具（权限位运算）
-│           └── views/              # 基础视图页面（login/dashboard/sys/...）
+│           └── views/              # 基础视图页面（仅路由页面，禁止放弹窗/面板组件）
+│               ├── dashboard/      #   仪表盘页面
+│               ├── login/          #   登录页面
+│               ├── forbidden/      #   403 页面
+│               ├── not-found/      #   404 页面
+│               ├── install/        #   安装向导页面
+│               ├── route-group/    #   路由分组页面
+│               └── sys/            #   系统管理页面（user/role/app/...）
 ├── frontend/                       # 业务前端应用（消费base-frontend）
 └── docs/                           # 项目文档
 ```
@@ -99,5 +116,6 @@ Moyan MFW 是一个**后台管理框架**，核心提供权限管理、用户管
 
 - ✋ 在 `apis/` 目录手动编写代码 → 详见 {{ref:shared/apis-redline}}
 - ✋ 在 `views/` 之外创建页面组件 → 路由扫描只扫描 `views/` 目录
+- ✋ 在 `views/` 目录放弹窗/面板/表单等非路由组件 → 非路由组件放 `components/` 对应子目录
 - ✋ 直接修改 `base-frontend` 的 `store/` 或 `router/` → 业务逻辑放 `frontend/` 应用
 - ✋ 忽略框架边界强行实现不支持的特性（如文件存储、WebSocket）→ 需要外部服务
