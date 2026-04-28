@@ -3,6 +3,7 @@
  * @description 更新用户的请求参数
  */
 
+import { ImageResourceDto } from '@/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEmail, Length } from 'class-validator';
 
@@ -38,9 +39,9 @@ export class UpdateUserDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像', required: false })
+  @ApiProperty({ description: '头像', required: false, type: ImageResourceDto })
   @IsOptional()
-  avatar?: { src: string; width: number; height: number };
+  avatar?: ImageResourceDto;
 
   /**
    * 性别 (0:未知 1:男 2:女)

@@ -14,6 +14,7 @@ import {
 } from '../apis/sys';
 import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
 import type { SideMenuItem } from '../types/layout-types';
+import { getImageSrc } from '../utils/image';
 
 /** Token 存储键名 */
 export const TOKEN_KEY = 'mfw:admin:token';
@@ -249,7 +250,7 @@ export const useAuthStore = defineStore('auth', () => {
         appId: app.appId,
         appName: app.appName,
         appCode: app.appCode,
-        appLogo: app.icon,
+        appLogo: getImageSrc(app.logo),
         isOwner: app.role === 'owner',
         appTypeId: app.appTypeId,
         appTypeCode: app.appTypeCode,

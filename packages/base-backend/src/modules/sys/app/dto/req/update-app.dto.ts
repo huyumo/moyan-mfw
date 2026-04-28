@@ -4,7 +4,9 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsInt, Min, IsUUID, IsBoolean } from 'class-validator';
+import { IsString, IsOptional, IsInt, Min, IsUUID, IsBoolean, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 更新应用请求 DTO
@@ -35,12 +37,13 @@ export class UpdateAppDto {
   appDesc?: string;
 
   /**
-   * 应用图标
+   * 应用 Logo
    */
-  @ApiProperty({ description: '应用图标 URL 或图标名称', required: false })
+  @ApiProperty({ description: '应用 Logo', required: false })
   @IsOptional()
-  @IsString()
-  icon?: string;
+  @ValidateNested()
+  @Type(() => ImageResourceDto)
+  logo?: ImageResourceDto;
 
   /**
    * 拥有者 ID（变更负责人时使用）

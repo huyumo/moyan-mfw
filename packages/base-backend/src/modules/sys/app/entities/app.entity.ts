@@ -5,6 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 应用实例实体
@@ -52,10 +53,10 @@ export class App extends Base {
   ownerId: string;
 
   /**
-   * 应用图标
+   * 应用 Logo
    */
-  @Column({ type: 'varchar', length: 255, nullable: true, comment: '应用图标 URL 地址' })
-  icon: string;
+  @Column({ type: 'json', nullable: true, comment: '应用 Logo - ImageResource 对象' })
+  logo: ImageResourceDto;
 
   /**
    * 应用状态

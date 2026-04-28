@@ -225,7 +225,7 @@ export class AuthService {
         sat.typeCode AS appTypeCode,
         sat.typeName AS appTypeName,
         IF(sa.ownerId = sam.userId, 'owner', 'member') AS role,
-        sa.icon
+        sa.logo
       FROM sys_app_members sam
       INNER JOIN sys_apps sa ON sa.id = sam.appId
       INNER JOIN sys_app_types sat ON sat.id = sa.appTypeId

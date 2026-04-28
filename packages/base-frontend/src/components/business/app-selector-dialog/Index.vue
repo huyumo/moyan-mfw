@@ -60,12 +60,12 @@
         @click="handleSelectApp(app)"
       >
         <!-- 应用图标 -->
-        <div class="app-icon placeholder" v-if="!app.icon">
+        <div class="app-icon placeholder" v-if="!getImageSrc(app.logo)">
           <el-icon :size="24">
             <Monitor />
           </el-icon>
         </div>
-        <img v-else class="app-icon" :src="app.icon" :alt="app.appName" />
+        <img v-else class="app-icon" :src="getImageSrc(app.logo)" :alt="app.appName" />
 
         <!-- 应用信息 -->
         <div class="app-info">
@@ -114,6 +114,7 @@ import { useLayoutStore } from '../../../store/layout-store'
 import type { PopupComponentProps } from '../../feedback/popup/types'
 import type { AppSelectorDialogData } from './types'
 import type { SideMenuItem } from '../../../types/layout-types'
+import { getImageSrc } from '../../../utils/image'
 
 defineOptions({ name: 'AppSelectorDialog' })
 
@@ -163,7 +164,7 @@ async function handleSelectApp(app: AppInstanceItemDto) {
       appId: app.appId,
       appName: app.appName,
       appCode: app.appCode,
-      appLogo: app.icon,
+      appLogo: getImageSrc(app.logo),
       isOwner: app.role === 'owner',
       appTypeId: app.appTypeId,
       appTypeCode: app.appTypeCode,

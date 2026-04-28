@@ -26,8 +26,8 @@
 <script setup lang="ts">
 import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { ElMessageBox, ElTag } from 'element-plus';
-import { Plus, View, Edit, Delete, User } from '@element-plus/icons-vue';
+import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
+import { Plus, View, Edit, Delete, User, Picture } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
@@ -36,9 +36,12 @@ import {
   ApiAppFindAll,
   ApiAppDelete,
   ApiAppTypeFindAllList,
+  ApiAppFindById,
 } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import AppForm from './AppForm.vue';
+import AppDetail from './AppDetail.vue';
+import { getImageSrc } from '../../../utils/image';
 
 /** 状态常量 */
 const STATUS = {
@@ -93,6 +96,13 @@ const searchTemplate = ref([
 
 /** 表格列 */
 const columns = [
+  {
+    prop: 'logo',
+    label: 'Logo',
+    width: 60,
+    align: 'center' as const,
+    render: ({ row }: { row: AppDetailResponseDto }) => h(ElAvatar, { size: 36, src: getImageSrc(row.logo), icon: Picture, shape: 'square' }),
+  },
   { prop: 'appName', label: '应用名称', minWidth: 150 },
   { prop: 'appCode', label: '应用编码', minWidth: 120 },
   {
@@ -169,8 +179,15 @@ const loadData = async (params: Record<string, unknown>) => {
 };
 
 /** 查看详情 */
-const handleDetail = (row: AppDetailResponseDto) => {
-  router.push(`/sys/app/${row.id}`);
+const handleDetail = async (row: AppDetailResponseDto) => {
+  const detail = await new ApiAppFindById({ params: { id: row.id } });
+  MfwPopup.open({
+    title: '应用详情',
+    type: 'drawer',
+    component: AppDetail,
+    data: detail,
+    popupProps: { width: 500 },
+  });
 };
 
 /** 新建 */

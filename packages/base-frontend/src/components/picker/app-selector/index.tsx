@@ -39,6 +39,7 @@ import {
   Search,
   OfficeBuilding
 } from '@element-plus/icons-vue';
+import { getImageSrc } from '../../../utils/image';
 import type {
   MfwAppSelectorProps,
   MfwAppSelectorEmits,
@@ -322,9 +323,9 @@ export default defineComponent({
         // 默认渲染
         return h('div', { class: 'mfw-app-selector__item' }, [
           // 应用图标
-          app.icon
+          getImageSrc(app.logo)
             ? h('img', {
-                src: app.icon,
+                src: getImageSrc(app.logo),
                 class: 'mfw-app-selector__icon',
                 alt: app.appName
               })

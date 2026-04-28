@@ -7,6 +7,7 @@ import { UserInfoDto } from '@/modules/sys/auth';
 import { RoleResponseDto } from '@/modules/sys/role';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 export class MemberUserInfoDto extends PickType(
   UserInfoDto, [
   'id',
@@ -108,11 +109,11 @@ export class MemberResponseDto {
   appName: string;
 
   /**
-   * 应用图标
+   * 应用 Logo
    */
-  @ApiProperty({ description: '应用图标' })
+  @ApiProperty({ description: '应用 Logo' })
   @Expose()
-  appIcon: string;
+  appLogo: ImageResourceDto;
 
   /**
    * 拥有者 ID

@@ -6,6 +6,7 @@ import type { MoMethod } from 'moyan-api'
 
 import type {
   LoginDto,
+  ImageResourceDto,
   UserSummaryDto,
   LoginResponseDto,
   UserInfoDto,
@@ -1076,33 +1077,6 @@ export class ApiAuditLogDeleteBeforeDate extends ApiCall<
 }
 
 /**
- * health|健康检查接口->健康检查
- */
-export class ApiHealthHealthCheck extends ApiCall<{}, unknown> {
-  readonly path = '/api/health'
-  readonly method: MoMethod = 'GET'
-  readonly auth = false
-}
-
-/**
- * health|健康检查接口->就绪检查
- */
-export class ApiHealthReadyCheck extends ApiCall<{}, unknown> {
-  readonly path = '/api/health/ready'
-  readonly method: MoMethod = 'GET'
-  readonly auth = false
-}
-
-/**
- * health|健康检查接口->存活检查
- */
-export class ApiHealthLiveCheck extends ApiCall<{}, unknown> {
-  readonly path = '/api/health/live'
-  readonly method: MoMethod = 'GET'
-  readonly auth = false
-}
-
-/**
  * 系统初始化->检查系统是否已初始化
  */
 export class ApiInstallGetStatus extends ApiCall<{}, InitStatusResponseDto> {
@@ -1123,4 +1097,36 @@ export class ApiInstallInitialize extends ApiCall<
   readonly path = '/api/install/init'
   readonly method: MoMethod = 'POST'
   readonly auth = false
+}
+
+/**
+ * upload|文件上传相关接口->上传单个文件
+ */
+export class ApiUploadFileUploadFile extends ApiCall<
+  {
+    query: {
+      businessType: string
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/upload-files'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * upload|文件上传相关接口->批量上传文件
+ */
+export class ApiUploadFileUploadFiles extends ApiCall<
+  {
+    query: {
+      businessType: string
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/upload-files/batch'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
 }

@@ -5,6 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 用户响应 DTO
@@ -48,9 +49,9 @@ export class UserResponseDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像' })
+  @ApiProperty({ description: '头像', type: ImageResourceDto })
   @Expose()
-  avatar: { src: string; width: number; height: number };
+  avatar: ImageResourceDto;
 
   /**
    * 性别 (0:未知 1:男 2:女)

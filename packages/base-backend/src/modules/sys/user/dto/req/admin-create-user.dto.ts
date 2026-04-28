@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, Length, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, Length, Matches, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 
 export class AdminCreateUserDto {
   @ApiProperty({ description: '用户名', example: 'zhangsan' })
@@ -23,9 +25,11 @@ export class AdminCreateUserDto {
   @Length(1, 64, { message: '昵称长度应在 1-64 字符之间' })
   nickname?: string;
 
-  @ApiProperty({ description: '头像', required: false })
+  @ApiProperty({ description: '头像', required: false, type: ImageResourceDto })
   @IsOptional()
-  avatar?: { src: string; width: number; height: number };
+  @ValidateNested()
+  @Type(() => ImageResourceDto)
+  avatar?: ImageResourceDto;
 
   @ApiProperty({ description: '性别 (0:未知 1:男 2:女)', default: 0, required: false })
   @IsOptional()

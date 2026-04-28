@@ -133,7 +133,7 @@ export class AppMemberService {
           u.username,
           a.appCode,
           a.appName,
-          a.icon as appIcon,
+          a.logo as appLogo,
           a.ownerId,
           a.sortOrder,
           a.appTypeId,
