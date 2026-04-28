@@ -77,6 +77,7 @@ import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive,
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../../store/auth-store';
 import { useLayoutStore } from '../../store/layout-store';
+import { useColorMode, useThemeSwitch } from '../../composables';
 import { MfwPopup } from '../../components/feedback/popup';
 import AppSelectorDialog from '../../components/business/app-selector-dialog/Index.vue';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
@@ -96,6 +97,8 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const layoutStore = useLayoutStore();
+const { initColorMode } = useColorMode();
+const { initTheme } = useThemeSwitch();
 const formRef = ref<FormInstance>();
 const usernameInputRef = ref<InputFocusInstance>();
 const passwordInputRef = ref<InputFocusInstance>();
@@ -222,7 +225,10 @@ async function submit() {
   }
 }
 
+initColorMode();
+
 onMounted(() => {
+  initTheme();
   void nextTick(() => { usernameInputRef.value?.focus(); });
 });
 </script>

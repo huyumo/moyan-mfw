@@ -77,7 +77,10 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
   layoutStore.setLoginExtensions(options.loginExtensions);
 
   if (options.layout) {
-    layoutStore.patchStyleConfig(options.layout);
+    const layoutConfig = { ...options.layout };
+    delete layoutConfig.colorMode;
+    delete layoutConfig.themePackage;
+    layoutStore.patchStyleConfig(layoutConfig);
   }
 
   // 合并基包路由和业务路由生成菜单树
