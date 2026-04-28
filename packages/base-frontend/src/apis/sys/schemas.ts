@@ -31,7 +31,7 @@ export type ImageResourceDto = {
 export type UserSummaryDto = {
   username: string // 用户名
   nickname: string // 昵称
-  avatar: any // 头像
+  avatar: ImageResourceDto // 头像
 }
 
 export type LoginResponseDto = {
@@ -39,14 +39,14 @@ export type LoginResponseDto = {
   refreshToken: string // 刷新 Token
   tokenType: string // Token 类型
   expiresIn: number // 过期时间（秒）
-  user: any // 用户信息
+  user: UserSummaryDto // 用户信息
 }
 
 export type UserInfoDto = {
   id: string // 用户 ID
   username: string // 用户名
   nickname: string // 昵称
-  avatar: any // 头像
+  avatar: ImageResourceDto // 头像
   roles: Array<string> // 角色列表
 }
 
@@ -58,7 +58,7 @@ export type AppInstanceItemDto = {
   appTypeCode: string // 应用类型编码
   appTypeName: string // 应用类型名称
   role: string // 用户身份
-  logo?: any // 应用 Logo
+  logo?: ImageResourceDto // 应用 Logo
 }
 
 export type PermissionTreeNodeDto = {
@@ -113,7 +113,7 @@ export type CreateUserDto = {
   nickname?: string // 昵称
   phone?: string // 手机号
   email?: string // 邮箱
-  avatar?: any // 头像
+  avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -124,7 +124,7 @@ export type UserResponseDto = {
   nickname: string // 昵称
   phone: string // 手机号
   email: string // 邮箱
-  avatar: any // 头像
+  avatar: ImageResourceDto // 头像
   gender: number // 性别 (0:未知 1:男 2:女)
   userStatus: number // 状态 (1:启用 0:禁用)
   isDeveloper: boolean // 是否开发者
@@ -136,7 +136,7 @@ export type AdminCreateUserDto = {
   username: string // 用户名
   phone: string // 手机号
   nickname?: string // 昵称
-  avatar?: any // 头像
+  avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -154,7 +154,7 @@ export type UpdateUserDto = {
   nickname?: string // 昵称
   phone?: string // 手机号
   email?: string // 邮箱
-  avatar?: any // 头像
+  avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -208,7 +208,7 @@ export type PermissionTreesDto = {
 }
 
 export type AssignPermissionsDto = {
-  permissionTrees: any // 权限树配置
+  permissionTrees: PermissionTreesDto // 权限树配置
 }
 
 export type RolePermissionTreesResponseDto = {
@@ -218,7 +218,7 @@ export type RolePermissionTreesResponseDto = {
 
 export type RolePermissionResponseDto = {
   roleId: string // 角色 ID
-  permissionTrees: any // 权限树配置
+  permissionTrees: RolePermissionTreesResponseDto // 权限树配置
 }
 
 export type CreatePermissionDto = {
@@ -318,11 +318,11 @@ export type PermissionTreesResponseDto = {
 
 export type PermissionPoolResponseDto = {
   appTypeId: string // 应用类型 ID
-  permissionTrees: any // 权限树配置
+  permissionTrees: PermissionTreesResponseDto // 权限树配置
 }
 
 export type UpdatePermissionPoolDto = {
-  permissionTrees: any // 权限树配置
+  permissionTrees: PermissionTreesDto // 权限树配置
 }
 
 export type UpdatePermissionPoolResponseDto = {
@@ -346,7 +346,7 @@ export type CreateAppDto = {
   appCode: string // 应用编码
   ownerId: string // 拥有者 ID
   appDesc?: string // 应用描述
-  logo?: any // 应用 Logo
+  logo?: ImageResourceDto // 应用 Logo
   sortOrder: number // 排序号
 }
 
@@ -357,7 +357,7 @@ export type AppDetailResponseDto = {
   appCode: string // 应用编码
   appDesc: string // 应用描述
   ownerId: string // 拥有者 ID
-  logo: any // 应用 Logo
+  logo: ImageResourceDto // 应用 Logo
   appStatus: number // 应用状态
   sortOrder: number // 排序号
   createdAt: string // 创建时间
@@ -370,7 +370,7 @@ export type UpdateAppDto = {
   appCode?: string // 应用编码
   appName?: string // 应用名称
   appDesc?: string // 应用描述
-  logo?: any // 应用 Logo
+  logo?: ImageResourceDto // 应用 Logo
   ownerId?: string // 拥有者 ID（变更负责人时使用）
   appStatus?: number // 应用状态 (1:启用 0:禁用)
   sortOrder?: number // 排序号
@@ -399,7 +399,7 @@ export type MemberResponseDto = {
   username: string // 用户名
   appCode: string // 应用编码
   appName: string // 应用名称
-  appLogo: any // 应用 Logo
+  appLogo: ImageResourceDto // 应用 Logo
   ownerId: string // 拥有者 ID
   sortOrder: number // 排序序号
   appTypeId: string // 应用类型 ID
