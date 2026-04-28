@@ -5,14 +5,33 @@
 import { INestApplication, Type } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { SwaggerGroupConfig } from '../types/app-config.types';
-import { SysModule } from '../modules/sys/sys.module';
+import { AuthModule } from '../modules/sys/auth/auth.module';
+import { UserModule } from '../modules/sys/user/user.module';
+import { RoleModule } from '../modules/sys/role/role.module';
+import { PermissionModule } from '../modules/sys/permission/permission.module';
+import { AppTypeModule } from '../modules/sys/app-type/app-type.module';
+import { AppModule as SysAppModule } from '../modules/sys/app/app.module';
+import { AuditLogModule } from '../modules/sys/audit-log/audit-log.module';
+import { InstallModule } from '../modules/sys/install/install.module';
+import { UploadFileModule } from '../modules/sys/upload/upload.module';
 
-/** 核心 API 文档配置 */
+const SYS_SWAGGER_MODULES = [
+  AuthModule,
+  UserModule,
+  RoleModule,
+  PermissionModule,
+  AppTypeModule,
+  SysAppModule,
+  AuditLogModule,
+  InstallModule,
+  UploadFileModule,
+];
+
 const SYS_SWAGGER_CONFIG: SwaggerGroupConfig = {
   name: 'sys',
   title: '核心API文档',
   description: 'base-backend 内置模块 API',
-  include: [SysModule],
+  include: SYS_SWAGGER_MODULES,
 };
 
 /**
