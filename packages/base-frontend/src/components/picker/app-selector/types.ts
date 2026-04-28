@@ -4,6 +4,7 @@
  */
 
 import type { VNode } from 'vue';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 数据模型类型 ==========
 
@@ -23,8 +24,8 @@ export interface AppInstanceItem {
   appTypeName: string;
   /** 用户身份：拥有者/成员 */
   role: 'owner' | 'member';
-  /** 应用图标 */
-  icon?: string;
+  /** 应用 Logo */
+  logo?: ImageResource;
   /** 应用状态：1-启用，0-禁用 */
   appStatus?: number;
 }

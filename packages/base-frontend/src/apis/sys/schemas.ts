@@ -22,10 +22,16 @@ export type LoginDto = {
   password: string // 密码
 }
 
+export type ImageResourceDto = {
+  src: string // 图片 URL
+  width: number // 图片宽度（像素）
+  height: number // 图片高度（像素）
+}
+
 export type UserSummaryDto = {
   username: string // 用户名
   nickname: string // 昵称
-  avatar: string // 头像 URL
+  avatar: any // 头像
 }
 
 export type LoginResponseDto = {
@@ -40,7 +46,7 @@ export type UserInfoDto = {
   id: string // 用户 ID
   username: string // 用户名
   nickname: string // 昵称
-  avatar: string // 头像 URL
+  avatar: any // 头像
   roles: Array<string> // 角色列表
 }
 
@@ -52,7 +58,7 @@ export type AppInstanceItemDto = {
   appTypeCode: string // 应用类型编码
   appTypeName: string // 应用类型名称
   role: string // 用户身份
-  icon?: string // 应用图标
+  logo?: any // 应用 Logo
 }
 
 export type PermissionTreeNodeDto = {
@@ -107,7 +113,7 @@ export type CreateUserDto = {
   nickname?: string // 昵称
   phone?: string // 手机号
   email?: string // 邮箱
-  avatar?: string // 头像 URL
+  avatar?: any // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -118,7 +124,7 @@ export type UserResponseDto = {
   nickname: string // 昵称
   phone: string // 手机号
   email: string // 邮箱
-  avatar: string // 头像 URL
+  avatar: any // 头像
   gender: number // 性别 (0:未知 1:男 2:女)
   userStatus: number // 状态 (1:启用 0:禁用)
   isDeveloper: boolean // 是否开发者
@@ -130,7 +136,7 @@ export type AdminCreateUserDto = {
   username: string // 用户名
   phone: string // 手机号
   nickname?: string // 昵称
-  avatar?: string // 头像 URL
+  avatar?: any // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -148,7 +154,7 @@ export type UpdateUserDto = {
   nickname?: string // 昵称
   phone?: string // 手机号
   email?: string // 邮箱
-  avatar?: string // 头像 URL
+  avatar?: any // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
   roleIds?: Array<string> // 角色 ID 列表
 }
@@ -340,7 +346,7 @@ export type CreateAppDto = {
   appCode: string // 应用编码
   ownerId: string // 拥有者 ID
   appDesc?: string // 应用描述
-  icon?: string // 应用图标 URL 或图标名称
+  logo?: any // 应用 Logo
   sortOrder: number // 排序号
 }
 
@@ -351,7 +357,7 @@ export type AppDetailResponseDto = {
   appCode: string // 应用编码
   appDesc: string // 应用描述
   ownerId: string // 拥有者 ID
-  icon: string // 应用图标
+  logo: any // 应用 Logo
   appStatus: number // 应用状态
   sortOrder: number // 排序号
   createdAt: string // 创建时间
@@ -364,7 +370,7 @@ export type UpdateAppDto = {
   appCode?: string // 应用编码
   appName?: string // 应用名称
   appDesc?: string // 应用描述
-  icon?: string // 应用图标 URL 或图标名称
+  logo?: any // 应用 Logo
   ownerId?: string // 拥有者 ID（变更负责人时使用）
   appStatus?: number // 应用状态 (1:启用 0:禁用)
   sortOrder?: number // 排序号
@@ -393,7 +399,7 @@ export type MemberResponseDto = {
   username: string // 用户名
   appCode: string // 应用编码
   appName: string // 应用名称
-  appIcon: string // 应用图标
+  appLogo: any // 应用 Logo
   ownerId: string // 拥有者 ID
   sortOrder: number // 排序序号
   appTypeId: string // 应用类型 ID

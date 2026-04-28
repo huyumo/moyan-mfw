@@ -4,7 +4,9 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, IsOptional, IsEmail, Length, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsEmail, Length, Matches, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 创建用户请求 DTO
@@ -60,9 +62,11 @@ export class CreateUserDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像', required: false })
+  @ApiProperty({ description: '头像', required: false, type: ImageResourceDto })
   @IsOptional()
-  avatar?: { src: string; width: number; height: number };
+  @ValidateNested()
+  @Type(() => ImageResourceDto)
+  avatar?: ImageResourceDto;
 
   /**
    * 性别 (0:未知 1:男 2:女)

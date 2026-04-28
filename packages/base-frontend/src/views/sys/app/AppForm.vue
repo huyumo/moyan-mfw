@@ -21,6 +21,7 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import MfwUserPicker from '../../../components/picker/user-picker';
+import MfwImageSingle from '../../../components/upload/image-single';
 
 /** 状态常量 */
 const STATUS = {
@@ -48,7 +49,7 @@ const form = reactive({
   appCode: '',
   ownerId: '',
   appDesc: '',
-  icon: '',
+  logo: undefined as any,
   appStatus: STATUS.ENABLED as 1 | 0,
 });
 
@@ -107,10 +108,16 @@ const baseTemplate: FormItemConfig[] = [
     },
   },
   {
-    key: 'icon',
-    label: '应用图标',
-    component: 'el-input',
-    placeholder: '请输入图标名称或 URL',
+    key: 'logo',
+    label: '应用Logo',
+    component: MfwImageSingle,
+    elProps: {
+      crop: true,
+      cropRatio: 1,
+      cropWidth: 200,
+      cropHeight: 200,
+      placeholder: '点击上传Logo',
+    },
   },
   {
     key: 'appStatus',
@@ -165,7 +172,7 @@ onMounted(async () => {
     form.appCode = props.appCode;
     form.ownerId = props.ownerId;
     form.appDesc = props.appDesc || '';
-    form.icon = props.icon || '';
+    form.logo = (props as any).logo || undefined;
     form.appStatus = props.appStatus as 1 | 0;
   }
 });
@@ -180,7 +187,7 @@ const onConfirm = async () => {
       body: {
         appName: form.appName,
         appDesc: form.appDesc,
-        icon: form.icon,
+        logo: form.logo,
         ownerId: form.ownerId,
         appStatus: form.appStatus,
       },
@@ -193,7 +200,7 @@ const onConfirm = async () => {
         appCode: form.appCode,
         ownerId: form.ownerId,
         appDesc: form.appDesc,
-        icon: form.icon,
+        logo: form.logo,
         sortOrder: 0,
       },
     }, { hintSuccess: true });

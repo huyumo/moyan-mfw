@@ -4,6 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 用户信息 DTO（登录响应中嵌套使用）
@@ -24,8 +25,8 @@ export class UserSummaryDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像' })
-  avatar: { src: string; width: number; height: number };
+  @ApiProperty({ description: '头像', type: ImageResourceDto })
+  avatar: ImageResourceDto;
 }
 
 /**
@@ -88,8 +89,8 @@ export class UserInfoDto {
   /**
    * 头像
    */
-  @ApiProperty({ description: '头像' })
-  avatar: { src: string; width: number; height: number };
+  @ApiProperty({ description: '头像', type: ImageResourceDto })
+  avatar: ImageResourceDto;
 
   /**
    * 角色列表
@@ -146,10 +147,10 @@ export class AppInstanceItemDto {
   role: 'owner' | 'member';
 
   /**
-   * 应用图标
+   * 应用 Logo
    */
-  @ApiProperty({ description: '应用图标', required: false })
-  icon?: string;
+  @ApiProperty({ description: '应用 Logo', required: false, type: ImageResourceDto })
+  logo?: ImageResourceDto;
 }
 
 /**

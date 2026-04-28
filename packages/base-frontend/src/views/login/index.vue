@@ -10,6 +10,12 @@
 -->
 <template>
   <div class="mfw-login-page">
+    <ParticleBackground
+      :particle-color="particleColor"
+      :line-color="lineColor"
+      :particle-count="60"
+      :line-distance="100"
+    />
     <div class="mfw-login-card">
       <div class="mfw-login-logo">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -79,6 +85,7 @@ import { useAuthStore } from '../../store/auth-store';
 import { useLayoutStore } from '../../store/layout-store';
 import { useColorMode, useThemeSwitch } from '../../composables';
 import { MfwPopup } from '../../components/feedback/popup';
+import { ParticleBackground } from '../../components/display';
 import AppSelectorDialog from '../../components/business/app-selector-dialog/Index.vue';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
@@ -97,12 +104,15 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const layoutStore = useLayoutStore();
-const { initColorMode } = useColorMode();
+const { initColorMode, isDark } = useColorMode();
 const { initTheme } = useThemeSwitch();
 const formRef = ref<FormInstance>();
 const usernameInputRef = ref<InputFocusInstance>();
 const passwordInputRef = ref<InputFocusInstance>();
 const loading = ref(false);
+
+const particleColor = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.6)' : 'rgba(64, 158, 255, 0.6)');
+const lineColor = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(64, 158, 255, 0.3)');
 
 const asyncExtensionCache = new WeakMap<AsyncExtensionComponent, Component>();
 let lastSubmitAt = 0;

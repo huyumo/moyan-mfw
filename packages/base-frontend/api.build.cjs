@@ -7,11 +7,11 @@ const configs = [
     output: './src/apis',
     dirname: 'sys'
   },
-  {
-    jsonurl: 'http://localhost:3000/api-docs/supplier-json',
-    output: './src/apis',
-    dirname: 'supplier'
-  },
+  // {
+  //   jsonurl: 'http://localhost:3000/api-docs/supplier-json',
+  //   output: './src/apis',
+  //   dirname: 'supplier'
+  // },
 ]
 
 const create = async () => {

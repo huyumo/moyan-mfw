@@ -5,6 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
+import { ImageResourceDto } from '@/common';
 
 /**
  * 应用响应 DTO
@@ -53,11 +54,11 @@ export class AppResponseDto {
   ownerId: string;
 
   /**
-   * 应用图标
+   * 应用 Logo
    */
-  @ApiProperty({ description: '应用图标' })
+  @ApiProperty({ description: '应用 Logo', type: ImageResourceDto })
   @Expose()
-  icon: string;
+  logo: ImageResourceDto;
 
   /**
    * 应用状态

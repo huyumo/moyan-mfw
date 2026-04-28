@@ -9,3 +9,6 @@ export type * from './mfw-format/types';
 // MfwDetail 详情展示组件
 export { MfwDetail, MfwDetailPanel, MfwUserFormat } from './mfw-detail/index';
 export type * from './mfw-detail/types';
+
+// ParticleBackground 粒子背景组件
+export { ParticleBackground } from './particle-background/index';

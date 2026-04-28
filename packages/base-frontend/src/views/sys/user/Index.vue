@@ -29,7 +29,7 @@ import type { DictItem } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
-import type { ImageResource } from '../../../components/upload/types';
+import { getImageSrc } from '../../../utils/image';
 import {
   ApiUserFindAll,
   ApiUserDelete,
@@ -38,12 +38,6 @@ import {
 } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
 import UserForm from './UserForm.vue';
-
-function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
-  if (!avatar) return undefined;
-  if (typeof avatar === 'string') return avatar;
-  return avatar.src;
-}
 
 /** 状态常量 */
 const STATUS = {
@@ -110,7 +104,7 @@ const columns = [
     label: '头像',
     width: 60,
     align: 'center' as const,
-    render: ({ row }: { row: UserResponseDto }) => h(ElAvatar, { size: 36, src: extractAvatarUrl(row.avatar), icon: User }),
+    render: ({ row }: { row: UserResponseDto }) => h(ElAvatar, { size: 36, src: getImageSrc(row.avatar), icon: User }),
   },
   { prop: 'username', label: '用户名', minWidth: 120 },
   { prop: 'nickname', label: '昵称', minWidth: 120 },
