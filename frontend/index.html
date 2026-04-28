@@ -10,16 +10,69 @@
           var raw = localStorage.getItem('mfw:base-frontend:layout-preferences');
           if (raw) {
             var prefs = JSON.parse(raw);
-            if (prefs && prefs.styleConfig && prefs.styleConfig.colorMode === 'dark') {
-              document.documentElement.classList.add('dark');
-              var placeholder = document.getElementById('loading-placeholder');
-              if (placeholder) {
-                placeholder.setAttribute('data-dark', 'true');
+            if (prefs && prefs.styleConfig) {
+              var styleConfig = prefs.styleConfig;
+              if (styleConfig.colorMode === 'dark') {
+                document.documentElement.classList.add('dark');
+                var placeholder = document.getElementById('loading-placeholder');
+                if (placeholder) {
+                  placeholder.setAttribute('data-dark', 'true');
+                }
+              }
+              var themeThemes = {
+                default: { primary: '#409eff', success: '#67c23a', warning: '#e6a23c', danger: '#f56c6c', info: '#909399' },
+                ocean: { primary: '#00a8cc', success: '#52c41a', warning: '#faad14', danger: '#ff4d4f', info: '#8c8c8c' },
+                graphite: { primary: '#5a5a5a', success: '#4a9c6d', warning: '#c9a227', danger: '#c45656', info: '#73767a' },
+                fintech: { primary: '#F59E0B', success: '#22C55E', warning: '#FBBF24', danger: '#EF4444', info: '#8B5CF6' },
+                tech: { primary: '#8B5CF6', success: '#10B981', warning: '#FBBF24', danger: '#F43F5E', info: '#6366F1' },
+                luxury: { primary: '#CA8A04', success: '#4ADE80', warning: '#FBBF24', danger: '#F87171', info: '#A8A29E' },
+                nature: { primary: '#059669', success: '#22C55E', warning: '#FBBF24', danger: '#EF4444', info: '#14B8A6' },
+                aurora: { primary: '#7c3aed', success: '#10b981', warning: '#f59e0b', danger: '#ef4444', info: '#6b7280', gradient: 'linear-gradient(135deg, #3b82f6 0%, #7c3aed 50%, #ec4899 100%)' },
+                sunset: { primary: '#f97316', success: '#22c55e', warning: '#eab308', danger: '#dc2626', info: '#78716c', gradient: 'linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #dc2626 100%)' }
+              };
+              var themeName = styleConfig.themePackage || 'default';
+              var colors = themeThemes[themeName] || themeThemes['default'];
+              if (colors) {
+                var root = document.documentElement;
+                function hexToRgb(hex) {
+                  var c = hex.replace('#', '');
+                  return [parseInt(c.substring(0,2),16), parseInt(c.substring(2,4),16), parseInt(c.substring(4,6),16)];
+                }
+                function rgbToHex(r, g, b) {
+                  var h = function(n) { var s = Math.round(Math.max(0,Math.min(255,n))).toString(16); return s.length===1?'0'+s:s; };
+                  return '#'+h(r)+h(g)+h(b);
+                }
+                function mixWhite(color, level) {
+                  var rgb = hexToRgb(color); var ratio = level / 10;
+                  return rgbToHex(Math.round(255*ratio+rgb[0]*(1-ratio)), Math.round(255*ratio+rgb[1]*(1-ratio)), Math.round(255*ratio+rgb[2]*(1-ratio)));
+                }
+                function mixBlack(color, level) {
+                  var rgb = hexToRgb(color); var ratio = level / 10;
+                  return rgbToHex(Math.round(rgb[0]*(1-ratio)), Math.round(rgb[1]*(1-ratio)), Math.round(rgb[2]*(1-ratio)));
+                }
+                var lightLevels = [3, 5, 7, 8, 9];
+                var darkLevels = [2];
+                Object.keys(colors).forEach(function(key) {
+                  var value = colors[key];
+                  if (key === 'gradient') {
+                    root.style.setProperty('--el-color-primary-gradient', value);
+                    root.style.setProperty('--mfw-gradient-primary', value);
+                    root.classList.add('mfw-theme-gradient');
+                    return;
+                  }
+                  root.style.setProperty('--el-color-' + key, value);
+                  lightLevels.forEach(function(level) {
+                    root.style.setProperty('--el-color-' + key + '-light-' + level, mixWhite(value, level));
+                  });
+                  darkLevels.forEach(function(level) {
+                    root.style.setProperty('--el-color-' + key + '-dark-' + level, mixBlack(value, level));
+                  });
+                });
               }
             }
           }
         } catch (e) {
-          console.warn('[Loading] Failed to read color mode preference:', e);
+          console.warn('[Loading] Failed to read preferences:', e);
         }
       })();
     </script>

@@ -29,7 +29,7 @@ html.dark .mfw-login-card {
 }
 
 .mfw-logo-bg {
-  fill: #409eff;
+  fill: var(--el-color-primary);
 }
 
 .mfw-logo-path {
@@ -37,11 +37,11 @@ html.dark .mfw-login-card {
 }
 
 .mfw-logo-circle {
-  fill: #e6f7ff;
+  fill: var(--el-color-primary-light-9);
 }
 
 html.dark .mfw-logo-bg {
-  fill: #3b82f6;
+  fill: var(--el-color-primary);
 }
 
 html.dark .mfw-logo-path {
@@ -49,7 +49,7 @@ html.dark .mfw-logo-path {
 }
 
 html.dark .mfw-logo-circle {
-  fill: #60a5fa;
+  fill: var(--el-color-primary-dark-2);
 }
 
 .mfw-login-title {
@@ -84,7 +84,7 @@ html.dark :deep(.el-input__wrapper) {
 
 :deep(.el-input__wrapper:hover),
 :deep(.el-input.is-focus .el-input__wrapper) {
-  box-shadow: 0 0 0 1px #409eff inset !important;
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
 }
 
 .mfw-login-footer {
