@@ -3,9 +3,14 @@ const Program = require('moyan-api/dist/program.js').Program
 
 const configs = [
   {
-    jsonurl: 'http://localhost:3000/api-docs-json', // 后端 OpenAPI JSON 文档地址
+    jsonurl: 'http://localhost:3000/api-docs/sys-json',
     output: './src/apis',
     dirname: 'sys'
+  },
+  {
+    jsonurl: 'http://localhost:3000/api-docs/supplier-json',
+    output: './src/apis',
+    dirname: 'supplier'
   },
 ]
 
