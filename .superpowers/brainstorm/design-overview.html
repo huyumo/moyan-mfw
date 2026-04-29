@@ -1,0 +1,167 @@
+<h2>应用管理页面改进方案</h2>
+<p class="subtitle">包含表单布局调整、Logo回显修复、详情卡片化、通用组件封装</p>
+
+<div class="section">
+  <h3>问题分析</h3>
+  <div class="pros-cons">
+    <div class="pros">
+      <h4>当前状态</h4>
+      <ul>
+        <li>表单Logo在末尾位置</li>
+        <li>Logo编辑时未正确回显</li>
+        <li>详情使用Descriptions组件</li>
+        <li>无通用卡片详情组件</li>
+      </ul>
+    </div>
+    <div class="cons">
+      <h4>改进目标</h4>
+      <ul>
+        <li>Logo移至表单第一行</li>
+        <li>修复Logo回显问题</li>
+        <li>详情采用卡片样式</li>
+        <li>封装通用卡片组件</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">当前表单布局</div>
+    <div class="mockup-body">
+      <div style="padding: 16px;">
+        <div class="mock-form-row">
+          <span class="mock-label">应用类型</span>
+          <span class="mock-input" style="width: 200px;">选择框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用名称</span>
+          <span class="mock-input" style="width: 200px;">输入框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用编码</span>
+          <span class="mock-input" style="width: 200px;">输入框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">拥有者</span>
+          <span class="mock-input" style="width: 200px;">选择框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用描述</span>
+          <span class="mock-input" style="width: 200px; height: 60px;">文本域</span>
+        </div>
+        <div class="mock-form-row" style="background: #ffebee; padding: 8px; border-radius: 4px;">
+          <span class="mock-label">应用Logo</span>
+          <span class="mock-placeholder" style="width: 80px; height: 80px; display: inline-flex; align-items: center; justify-content: center; border: 1px dashed #ccc;">+</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">状态</span>
+          <span class="mock-button">开关</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">改进后表单布局</div>
+    <div class="mockup-body">
+      <div style="padding: 16px;">
+        <div class="mock-form-row" style="background: #e8f5e9; padding: 8px; border-radius: 4px;">
+          <span class="mock-label">应用Logo</span>
+          <span class="mock-placeholder" style="width: 80px; height: 80px; display: inline-flex; align-items: center; justify-content: center; border: 1px dashed #ccc; background: #fff;">+</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用类型</span>
+          <span class="mock-input" style="width: 200px;">选择框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用名称</span>
+          <span class="mock-input" style="width: 200px;">输入框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用编码</span>
+          <span class="mock-input" style="width: 200px;">输入框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">拥有者</span>
+          <span class="mock-input" style="width: 200px;">选择框</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">应用描述</span>
+          <span class="mock-input" style="width: 200px; height: 60px;">文本域</span>
+        </div>
+        <div class="mock-form-row">
+          <span class="mock-label">状态</span>
+          <span class="mock-button">开关</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .mock-form-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .mock-label {
+    width: 80px;
+    font-size: 13px;
+    color: #666;
+  }
+  .mock-input {
+    background: #f5f5f5;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #999;
+  }
+  .mock-placeholder {
+    border-radius: 8px;
+    font-size: 20px;
+    color: #999;
+  }
+  .mock-button {
+    background: #e0e0e0;
+    padding: 4px 16px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+</style>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>Logo回显问题分析</h3>
+  <p style="color: #666; font-size: 14px;">问题根源：AppForm.vue 第175行使用 `(props as any).logo`，但 props 类型为 AppDetailResponseDto，logo 字段可能未正确定义或数据格式不匹配</p>
+  <div class="mockup" style="margin-top: 12px;">
+    <div class="mockup-header">修复方案</div>
+    <div class="mockup-body" style="padding: 16px; font-size: 13px;">
+      <p><strong>1. 检查 API 返回数据结构</strong></p>
+      <p style="color: #666;">确保 AppDetailResponseDto 包含 logo 字段，且格式为 ImageResource</p>
+      <p style="margin-top: 8px;"><strong>2. 正确初始化表单数据</strong></p>
+      <p style="color: #666;">将 logo 数据正确赋值给 form.logo，确保格式匹配 MfwImageSingle 组件的 modelValue</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>下一步：详情卡片设计</h3>
+  <p style="color: #666;">请确认以上分析是否正确，然后我将展示详情卡片的设计方案</p>
+</div>
+
+<div class="options" style="margin-top: 16px;">
+  <div class="option" data-choice="confirm" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>确认，继续下一步</h3>
+      <p>分析正确，请展示详情卡片设计</p>
+    </div>
+  </div>
+  <div class="option" data-choice="adjust" onclick="toggleSelect(this)">
+    <div class="letter">✎</div>
+    <div class="content">
+      <h3>需要调整</h3>
+      <p>请在终端说明需要调整的内容</p>
+    </div>
+  </div>
+</div>
