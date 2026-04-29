@@ -39,6 +39,7 @@ import { RequirePermission } from '../../../common/decorators/require-permission
 import { ApiResponseUtil } from '../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../common';
 import { PermissionTreeNodeDto } from '../permission';
+import { StatusDto } from '@/common/types/status.dto';
 
 /**
  * 应用类型控制器
@@ -214,9 +215,9 @@ export class AppTypeController {
   @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('status') status: number,
+    @Body() body: StatusDto,
   ) {
-    const result = await this.appTypeService.updateStatus(id, status);
+    const result = await this.appTypeService.updateStatus(id, body.status);
     return ApiResponseUtil.success(result, '更新成功');
   }
 }

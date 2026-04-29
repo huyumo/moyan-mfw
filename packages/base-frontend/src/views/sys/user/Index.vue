@@ -11,7 +11,7 @@
         <el-icon>
           <Plus />
         </el-icon>
-        新建用户
+        新建
       </el-button>
     </template>
 
