@@ -4,6 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 /**
  * 图片资源 DTO
@@ -11,12 +12,15 @@ import { ApiProperty } from '@nestjs/swagger';
  */
 export class ImageResourceDto {
   @ApiProperty({ description: '图片 URL', example: 'http://localhost:3000/uploads/avatar/uuid.jpg' })
+  @IsString()
   src: string;
 
   @ApiProperty({ description: '图片宽度（像素）', example: 800 })
+  @IsNumber()
   width: number;
 
   @ApiProperty({ description: '图片高度（像素）', example: 600 })
+  @IsNumber()
   height: number;
 }
 
