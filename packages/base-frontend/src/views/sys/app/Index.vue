@@ -151,11 +151,11 @@ const actionColumn = {
 
 /** 加载应用类型列表 */
 const loadAppTypes = async () => {
-  const result = await new ApiAppTypeFindAllList({ params: {} });
+  const result = await new ApiAppTypeFindAllList({});
   appTypeList.value = result || [];
 
   // 更新搜索模板的应用类型选项
-  const typeOptions = result.map((item: AppTypeResponseDto) => ({
+  const typeOptions = (result || []).map((item: AppTypeResponseDto) => ({
     label: item.typeName,
     value: item.id,
   }));
