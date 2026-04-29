@@ -79,14 +79,17 @@ export class RoleService {
    * @returns 分页结果
    */
   async findAll(query: QueryRoleDto): Promise<PaginationResult<any>> {
-    const { roleCode, roleName, roleStatus, appId ,appTypeId,isBuiltin} = query;
+    let { roleCode, roleName, roleStatus, appId, appTypeId } = query;
+
+    let isBuiltin = 0;
+    if (appId) appTypeId = undefined
+    if (appTypeId) isBuiltin = 1
 
     const whereBuilder = new WhereBuilder();
     whereBuilder
       .like('role.roleCode', roleCode)
       .like('role.roleName', roleName)
       .eq('role.roleStatus', roleStatus)
-      .eq('role.appTypeId', appTypeId)
       .eq('role.isBuiltin', isBuiltin);
 
     const pager = new PaginationX(this.entityManager.connection, query);
@@ -102,7 +105,7 @@ export class RoleService {
         return `
           SELECT ${select} FROM sys_roles role
           LEFT JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
-          WHERE role.appTypeId = @appTypeId
+          WHERE role.appTypeId = IF(@appTypeId IS NULL, '${appTypeId}', @appTypeId)
           ${whereClause.replace('WHERE', 'AND')}
           ${orderBy}
           ${limit}
