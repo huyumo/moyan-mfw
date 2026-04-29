@@ -158,7 +158,7 @@ const rules = {};
 
 /** 加载应用类型列表 */
 const loadAppTypes = async () => {
-  const result = await new ApiAppTypeFindAllList({ params: {} });
+  const result = await new ApiAppTypeFindAllList({});
   appTypeList.value = result || [];
 };
 
