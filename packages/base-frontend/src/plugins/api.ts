@@ -119,7 +119,6 @@ export class MoAxios {
         apiEntity.options.ext?.onprogress?.(e);
       };
     }
-    console.log('requestConfig', requestConfig);
     return this.$axios(requestConfig);
   }
 

@@ -54,10 +54,10 @@
       >
         <router-view v-slot="{ Component }">
           <Transition name="page-slide" @after-enter="onTransitionEnd" @after-leave="onTransitionEnd">
-            <keep-alive v-if="shouldKeepAlive">
-              <component :is="Component" :key="route.fullPath" />
+            <keep-alive v-if="route.meta?.keepAlive" :max="20">
+              <component :is="Component" :key="route.name" />
             </keep-alive>
-            <component :is="Component" v-else :key="route.fullPath" />
+            <component :is="Component" v-else :key="route.name" />
           </Transition>
         </router-view>
       </MainPanel>
@@ -88,8 +88,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref, computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onMounted, watch, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
@@ -140,7 +140,6 @@ onMounted(() => {
 });
 
 const route = useRoute();
-const router = useRouter();
 const isTransitioning = ref(false);
 
 watch(
@@ -161,10 +160,6 @@ const onTransitionEnd = () => {
     contentArea.classList.remove('page-transitioning');
   }
 };
-
-const shouldKeepAlive = computed(() => {
-  return route.meta?.keepAlive === true;
-});
 </script>
 
 <style scoped lang="scss">
