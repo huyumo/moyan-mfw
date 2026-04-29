@@ -13,3 +13,6 @@ export type { PermissionName, DefaultPermissionName, ExtensionPermissionName } f
 export { createBusinessPageConfigFn } from './utils/permissions';
 
 export * from './components';
+export * from './utils/image';
+export * from './components'
+export * from './composables'
