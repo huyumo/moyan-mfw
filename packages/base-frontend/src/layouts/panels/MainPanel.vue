@@ -56,5 +56,17 @@ const activeTabPath = computed({
   flex: 1;
   overflow: auto;
   padding: 0;
+  position: relative;
+}
+
+.mfw-admin-content-area.page-transitioning {
+  overflow: hidden !important;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 </style>
