@@ -12,7 +12,7 @@
     bordered
   >
     <template #appType="{ value }">
-      {{ value?.typeName || '--' }}
+      {{ formatAppType(value) }}
     </template>
     <template #owner="{ value }">
       {{ value?.nickname || value?.username || '--' }}
@@ -25,7 +25,7 @@ import { computed } from 'vue';
 import { MfwCardPanel } from '../../../components';
 import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
 import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
-import { Folder, User, Calendar, Document } from '@element-plus/icons-vue';
+import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
 
 const STATUS = {
   ENABLED: 1,
@@ -38,6 +38,12 @@ interface Props {
 
 const props = defineProps<Props>();
 defineOptions({ name: 'AppDetail' });
+
+const formatAppType = (value: any): string => {
+  if (!value) return '--';
+  if (typeof value === 'string') return value;
+  return value?.typeName || value?.name || '--';
+};
 
 const headerConfig = computed<CardPanelHeader>(() => ({
   image: props.data?.logo,
@@ -54,7 +60,7 @@ const infoItems: CardPanelItem[] = [
   { key: 'appType', label: '应用类型', icon: Folder },
   { key: 'owner', label: '拥有者', icon: User },
   { key: 'appDesc', label: '应用描述', icon: Document },
-  { key: 'sortOrder', label: '排序号' },
+  { key: 'sortOrder', label: '排序号', icon: Sort },
   { key: 'createdAt', label: '创建时间', icon: Calendar, format: 'date' },
   { key: 'updateAt', label: '更新时间', icon: Calendar, format: 'date' },
 ];
