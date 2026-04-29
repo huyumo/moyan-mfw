@@ -8,5 +8,6 @@ export default definePageConfig({
   icon: 'Grid',
   auth: true,
   order: 1,
+  keepAlive: true,
   permissions: ['编辑'],
 });
