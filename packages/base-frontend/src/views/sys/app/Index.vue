@@ -186,7 +186,7 @@ const handleDetail = async (row: AppDetailResponseDto) => {
     type: 'drawer',
     component: AppDetail,
     data: detail,
-    popupProps: { width: 500 },
+    popupProps: { size: 500 },
   });
 };
 

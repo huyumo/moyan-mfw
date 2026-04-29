@@ -20,7 +20,7 @@ export class AppService {
     @InjectRepository(App)
     private appRepository: Repository<App>,
     private dataSource: DataSource,
-  ) {}
+  ) { }
 
   /**
    * 创建应用实例
@@ -69,8 +69,8 @@ export class AppService {
     const app = result[0];
     return {
       ...app,
-      appType: app.appType ? JSON.parse(app.appType) : null,
-      owner: app.owner ? JSON.parse(app.owner) : null,
+      appType: app.appType,
+      owner: app.owner,
     };
   }
 
@@ -93,9 +93,9 @@ export class AppService {
     const result = await pager
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
-          const whereClause = wheres?.main || '';
-          return `SELECT ${select} FROM sys_apps app LEFT JOIN sys_app_types t ON app.appTypeId = t.id LEFT JOIN sys_users u ON app.ownerId = u.id ${whereClause} ${orderBy} ${limit}`;
-        })
+        const whereClause = wheres?.main || '';
+        return `SELECT ${select} FROM sys_apps app LEFT JOIN sys_app_types t ON app.appTypeId = t.id LEFT JOIN sys_users u ON app.ownerId = u.id ${whereClause} ${orderBy} ${limit}`;
+      })
       .select(`app.*, 
         JSON_OBJECT('id', t.id, 'typeName', t.typeName, 'typeCode', t.typeCode) as appType,
         JSON_OBJECT('id', u.id, 'username', u.username, 'nickname', u.nickname, 'avatar', u.avatar) as owner`)

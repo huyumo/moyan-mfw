@@ -14,8 +14,8 @@
       </div>
       <div class="card-header-info">
         <div>
-          <span class="card-title">{{ header.title }}</span>
-          <span v-if="header.subtitle" class="card-subtitle">{{ header.subtitle }}</span>
+          <div class="card-title">{{ header.title }}</div>
+          <div v-if="header.subtitle" class="card-subtitle">{{ header.subtitle }}</div>
         </div>
         <div class="card-status">
           <el-tag 

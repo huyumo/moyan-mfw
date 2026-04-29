@@ -58,7 +58,7 @@ export class AppController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '应用编码已存在' })
   @AuditLog({ module: AuditModule.APP, event: 'CREATE_APP', description: '创建应用实例' })
-  @RequirePermission({ permCode: 'pc_root:sys:app', permissionValue: ['发布'] })
+  @RequirePermission({ permCode: 'pc_root:sys:app', permissionValue: ['添加'] })
   async create(@Body() createAppDto: CreateAppDto) {
     const result = await this.appService.create(createAppDto);
     return ApiResponseUtil.success(result, '创建成功');

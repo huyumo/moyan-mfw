@@ -70,8 +70,7 @@ export default defineComponent({
             {
               params: { id: props.context.id },
               body: updateData,
-            },
-            { hintFail: false },
+            }
           );
         }
       } else {
@@ -84,7 +83,7 @@ export default defineComponent({
         if (props.onCreate) {
           result = await props.onCreate(createData);
         } else {
-          result = await new ApiUserAdminCreate({ body: createData }, { hintFail: false });
+          result = await new ApiUserAdminCreate({ body: createData });
         }
       }
 

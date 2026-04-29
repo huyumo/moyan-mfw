@@ -197,8 +197,7 @@ const MfwPopupDialog = defineComponent({
         item.value.on.confirm?.(componentRef.value);
         handleClose();
       } catch (error: any) {
-        const msg = error?.response?.data?.message || error?.message || '操作失败';
-        ElMessage.error(msg);
+        throw error;
       } finally {
         loading.value = false;
       }
