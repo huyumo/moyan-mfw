@@ -184,27 +184,33 @@ const onConfirm = async () => {
   const logoData = form.logo?.src ? form.logo : undefined;
 
   if (isEdit.value) {
+    const updateBody: any = {
+      appName: form.appName,
+      appDesc: form.appDesc,
+      ownerId: form.ownerId,
+      appStatus: form.appStatus,
+    };
+    if (logoData) {
+      updateBody.logo = logoData;
+    }
     await new ApiAppUpdate({
       params: { id: props.id },
-      body: {
-        appName: form.appName,
-        appDesc: form.appDesc,
-        logo: logoData,
-        ownerId: form.ownerId,
-        appStatus: form.appStatus,
-      },
+      body: updateBody,
     }, { hintSuccess: true });
   } else {
+    const createBody: any = {
+      appTypeId: form.appTypeId,
+      appName: form.appName,
+      appCode: form.appCode,
+      ownerId: form.ownerId,
+      appDesc: form.appDesc,
+      sortOrder: 0,
+    };
+    if (logoData) {
+      createBody.logo = logoData;
+    }
     await new ApiAppCreate({
-      body: {
-        appTypeId: form.appTypeId,
-        appName: form.appName,
-        appCode: form.appCode,
-        ownerId: form.ownerId,
-        appDesc: form.appDesc,
-        logo: logoData,
-        sortOrder: 0,
-      },
+      body: createBody,
     }, { hintSuccess: true });
   }
 };
