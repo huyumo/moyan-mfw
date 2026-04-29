@@ -172,13 +172,7 @@ onMounted(async () => {
     form.appCode = props.appCode;
     form.ownerId = props.ownerId;
     form.appDesc = props.appDesc || '';
-    if (props.logo) {
-      if (typeof props.logo === 'string') {
-        form.logo = { src: props.logo, width: 0, height: 0 };
-      } else {
-        form.logo = props.logo;
-      }
-    }
+    form.logo = props.logo || undefined;
     form.appStatus = props.appStatus as 1 | 0;
   }
 });
@@ -187,15 +181,13 @@ onMounted(async () => {
 const onConfirm = async () => {
   await formRef.value?.validate();
 
-  const logoData = form.logo?.src ? form.logo : undefined;
-
   if (isEdit.value) {
     await new ApiAppUpdate({
       params: { id: props.id },
       body: {
         appName: form.appName,
         appDesc: form.appDesc,
-        logo: logoData,
+        logo: form.logo,
         ownerId: form.ownerId,
         appStatus: form.appStatus,
       },
@@ -208,7 +200,7 @@ const onConfirm = async () => {
         appCode: form.appCode,
         ownerId: form.ownerId,
         appDesc: form.appDesc,
-        logo: logoData,
+        logo: form.logo,
         sortOrder: 0,
       },
     }, { hintSuccess: true });
