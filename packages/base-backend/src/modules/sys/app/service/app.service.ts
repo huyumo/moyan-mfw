@@ -49,7 +49,7 @@ export class AppService {
    * @param id - 应用实例 ID
    * @returns 应用实例信息
    */
-  async findById(id: string): Promise<App> {
+  async findById(id: string): Promise<any> {
     const app = await this.appRepository.findOne({
       where: { id },
     });
@@ -58,7 +58,25 @@ export class AppService {
       throw new NotFoundError('应用实例');
     }
 
-    return app;
+    const result = { ...app };
+
+    if (app.appTypeId) {
+      const appType = await this.dataSource.query(
+        `SELECT id, typeName, typeCode FROM sys_app_types WHERE id = ? AND deleteAt IS NULL`,
+        [app.appTypeId]
+      );
+      result.appType = appType[0] || null;
+    }
+
+    if (app.ownerId) {
+      const owner = await this.dataSource.query(
+        `SELECT id, username, nickname, avatar FROM sys_users WHERE id = ? AND deleteAt IS NULL`,
+        [app.ownerId]
+      );
+      result.owner = owner[0] || null;
+    }
+
+    return result;
   }
 
   /**
@@ -77,7 +95,7 @@ export class AppService {
       .eq('app.appStatus', appStatus);
 
     const pager = new PaginationX(this.dataSource, query);
-    return await pager
+    const result = await pager
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
@@ -86,6 +104,39 @@ export class AppService {
       .select('app.*')
       .defaultOrderBy('app.sortOrder ASC, app.createdAt DESC')
       .getData();
+
+    if (result.data && result.data.length > 0) {
+      const appTypeIds = result.data.filter((item: any) => item.appTypeId).map((item: any) => item.appTypeId);
+      const ownerIds = result.data.filter((item: any) => item.ownerId).map((item: any) => item.ownerId);
+
+      let appTypes: any[] = [];
+      let owners: any[] = [];
+
+      if (appTypeIds.length > 0) {
+        appTypes = await this.dataSource.query(
+          `SELECT id, typeName, typeCode FROM sys_app_types WHERE id IN (?) AND deleteAt IS NULL`,
+          [appTypeIds]
+        );
+      }
+
+      if (ownerIds.length > 0) {
+        owners = await this.dataSource.query(
+          `SELECT id, username, nickname, avatar FROM sys_users WHERE id IN (?) AND deleteAt IS NULL`,
+          [ownerIds]
+        );
+      }
+
+      const appTypeMap = new Map(appTypes.map((t: any) => [t.id, t]));
+      const ownerMap = new Map(owners.map((o: any) => [o.id, o]));
+
+      result.data = result.data.map((item: any) => ({
+        ...item,
+        appType: appTypeMap.get(item.appTypeId) || null,
+        owner: ownerMap.get(item.ownerId) || null,
+      }));
+    }
+
+    return result;
   }
 
   /**
