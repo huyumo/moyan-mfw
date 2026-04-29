@@ -70,26 +70,6 @@ function applyDarkMode(isDark: boolean) {
   }
 }
 
-let domWatcherInstalled = false;
-
-function ensureDomWatcherInstalled() {
-  if (domWatcherInstalled) return;
-  domWatcherInstalled = true;
-
-  const layoutStore = useLayoutStore();
-
-  watch(
-    () => layoutStore.styleConfig.colorMode,
-    (mode) => {
-      const isDark = mode === 'dark';
-      withViewTransition(() => {
-        applyDarkMode(isDark);
-      });
-    },
-    { flush: 'sync' }
-  );
-}
-
 export function useColorMode() {
   const layoutStore = useLayoutStore();
   const prefersDark = usePreferredDark();
@@ -101,7 +81,17 @@ export function useColorMode() {
     const savedMode = layoutStore.styleConfig.colorMode;
     const resolved = savedMode === 'dark';
     applyDarkMode(resolved);
-    ensureDomWatcherInstalled();
+
+    watch(
+      () => layoutStore.styleConfig.colorMode,
+      (mode) => {
+        const isDark = mode === 'dark';
+        withViewTransition(() => {
+          applyDarkMode(isDark);
+        });
+      },
+      { flush: 'sync' }
+    );
   };
 
   const setColorMode = (mode: ColorMode, options?: { persist?: boolean }) => {

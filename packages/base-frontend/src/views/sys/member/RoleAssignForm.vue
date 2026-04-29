@@ -89,4 +89,11 @@ defineExpose({ onConfirm });
   display: inline-block;
   margin-right: 16px;
 }
+
+:deep(.el-checkbox__label) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
 </style>
