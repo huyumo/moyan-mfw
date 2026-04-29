@@ -81,7 +81,7 @@ export class RoleService {
   async findAll(query: QueryRoleDto): Promise<PaginationResult<any>> {
     let { roleCode, roleName, roleStatus, appId, appTypeId } = query;
 
-    let isBuiltin = 0;
+    let isBuiltin: number | undefined;
     if (appId) appTypeId = undefined
     if (appTypeId) isBuiltin = 1
 
