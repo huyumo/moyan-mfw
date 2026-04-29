@@ -41,7 +41,7 @@ export class QueryRoleDto extends PaginationQueryDto {
   /**
    * 应用类型 ID
    */
-  @ApiProperty({ description: '应用类型 ID', required: false })
+  @ApiProperty({ description: '应用类型 ID，如果提供appId ，则appTypeId不必提供，以appId为准，否则提供appTypeId ，则只查询内置角色', required: false })
   @IsOptional()
   @IsString()
   appTypeId?: string;
@@ -49,7 +49,7 @@ export class QueryRoleDto extends PaginationQueryDto {
   /**
    * 应用 ID
    */
-  @ApiProperty({ description: '应用 ID', required: false })
+  @ApiProperty({ description: '应用 ID ，如果提供appId ，则appTypeId不必提供，以appId为准', required: false })
   @IsOptional()
   @IsString()
   appId?: string;
@@ -62,14 +62,4 @@ export class QueryRoleDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   sortField?: string = 'sortOrder';
-
-  /**
-   * 是否内置角色
-   */
-  @ApiProperty({ description: '是否内置角色', enum: [0, 1], required: false })
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  @Max(1)
-  isBuiltin?: boolean;
 }
