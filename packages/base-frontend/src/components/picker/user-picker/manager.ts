@@ -1,6 +1,7 @@
 import type { FormItemConfig } from '../../form/form-card/types'
 import type { UserResponseDto } from '../../../apis/sys/schemas'
 import type { UserPickerTheme, UserPickerThemeFn, SearchBy } from './types'
+import { MfwImageSingle } from '../../upload'
 
 export type { UserPickerTheme, UserPickerThemeFn, SearchBy }
 
@@ -66,6 +67,18 @@ export class UserPickerManager {
       title: '添加编辑账号',
       template: [
         {
+          key: 'avatar',
+          label: '头像',
+          component: MfwImageSingle,
+          elProps: {
+            crop: true,
+            cropRatio: 1,
+            cropWidth: 200,
+            cropHeight: 200,
+            placeholder: '点击上传头像',
+          },
+        },
+        {
           key: 'username',
           label: '用户名',
           type: 'el-input',
@@ -91,12 +104,6 @@ export class UserPickerManager {
           component: 'el-input',
           elProps: { maxlength: 11 },
           rules: [{ type: 'string', required: true, message: '手机号不能为空', trigger: 'blur' }]
-        },
-        {
-          key: 'avatar',
-          label: '头像',
-          type: 'upload-img',
-          component: 'upload-img'
         }
       ],
       helper: '',
