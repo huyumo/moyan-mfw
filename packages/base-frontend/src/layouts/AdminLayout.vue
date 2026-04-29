@@ -52,7 +52,9 @@
         @tab-remove="removeTab"
         @tab-command="handleTabCommand"
       >
-        <router-view />
+        <Transition name="page-slide" @after-enter="onTransitionEnd" @after-leave="onTransitionEnd">
+          <router-view :key="route.fullPath" />
+        </Transition>
       </MainPanel>
     </div>
 
@@ -81,7 +83,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, watch, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
@@ -130,6 +133,28 @@ initColorMode();
 onMounted(() => {
   initTheme();
 });
+
+const route = useRoute();
+const isTransitioning = ref(false);
+
+watch(
+  () => route.path,
+  () => {
+    isTransitioning.value = true;
+    const contentArea = document.querySelector('.mfw-admin-content-area');
+    if (contentArea) {
+      contentArea.classList.add('page-transitioning');
+    }
+  },
+);
+
+const onTransitionEnd = () => {
+  isTransitioning.value = false;
+  const contentArea = document.querySelector('.mfw-admin-content-area');
+  if (contentArea) {
+    contentArea.classList.remove('page-transitioning');
+  }
+};
 </script>
 
 <style scoped lang="scss">
@@ -141,5 +166,41 @@ onMounted(() => {
   flex-direction: column;
   overflow: hidden;
   background: var(--el-bg-color-page);
+  position: relative;
+}
+
+.page-slide-enter-active {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-leave-active {
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.page-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.page-slide-enter-to,
+.page-slide-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.page-transitioning {
+  overflow: hidden !important;
+  
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 </style>
