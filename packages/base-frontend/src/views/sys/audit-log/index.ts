@@ -7,5 +7,6 @@ export default definePageConfig({
   name: '审计日志',
   icon: 'Document',
   auth: true,
+  keepAlive: true,
   order: 7,
 });
