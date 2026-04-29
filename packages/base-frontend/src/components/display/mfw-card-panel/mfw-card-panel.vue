@@ -120,5 +120,5 @@ const formatValue = (item: CardPanelItem): string => {
 </script>
 
 <style scoped lang="scss">
-@import './style.scss';
+@use './style.scss';
 </style>
