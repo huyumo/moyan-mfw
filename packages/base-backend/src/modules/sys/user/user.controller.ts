@@ -34,6 +34,7 @@ import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.deco
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../common';
+import { StatusDto } from '@/common/types/status.dto';
 
 /**
  * 用户控制器
@@ -189,8 +190,9 @@ export class UserController {
   @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('status') status: number,
+    @Body() body: StatusDto,
   ) {
+    const { status } = body;
     // 验证状态值有效性
     if (status === undefined || status === null) {
       throw new BadRequestException('状态值不能为空');
