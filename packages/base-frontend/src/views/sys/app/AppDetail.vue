@@ -5,41 +5,27 @@
  */
 -->
 <template>
-  <MfwDetailPanel
+  <MfwCardPanel
+    :header="headerConfig"
+    :items="infoItems"
     :data="data"
-    :items="detailItems"
-    :columns="2"
     bordered
   >
-    <template #logo="{ value }">
-      <el-image
-        v-if="getImageSrc(value)"
-        :src="getImageSrc(value)"
-        :preview-src-list="[getImageSrc(value)!]"
-        fit="cover"
-        style="width: 80px; height: 80px; border-radius: 8px;"
-      />
-      <span v-else>{{ '--' }}</span>
-    </template>
-    <template #appStatus="{ value }">
-      <el-tag :type="value === STATUS.ENABLED ? 'success' : 'danger'" size="small">
-        {{ value === STATUS.ENABLED ? '启用' : '禁用' }}
-      </el-tag>
-    </template>
     <template #appType="{ value }">
-      {{ (value as any)?.typeName || '--' }}
+      {{ value?.typeName || '--' }}
     </template>
     <template #owner="{ value }">
-      {{ (value as any)?.nickname || (value as any)?.username || '--' }}
+      {{ value?.nickname || value?.username || '--' }}
     </template>
-  </MfwDetailPanel>
+  </MfwCardPanel>
 </template>
 
 <script setup lang="ts">
-import { MfwDetailPanel } from '../../../components';
-import type { DetailItem } from '../../../components/display/mfw-detail/types';
+import { computed } from 'vue';
+import { MfwCardPanel } from '../../../components';
+import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
 import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
-import { getImageSrc } from '../../../utils/image';
+import { Folder, User, Calendar, Document } from '@element-plus/icons-vue';
 
 const STATUS = {
   ENABLED: 1,
@@ -50,19 +36,26 @@ interface Props {
   data?: AppDetailResponseDto;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 defineOptions({ name: 'AppDetail' });
 
-const detailItems: DetailItem[] = [
-  { label: '应用Logo', key: 'logo', span: 2 },
-  { label: '应用名称', key: 'appName' },
-  { label: '应用编码', key: 'appCode' },
-  { label: '应用类型', key: 'appType' },
-  { label: '状态', key: 'appStatus' },
-  { label: '拥有者', key: 'owner' },
-  { label: '排序号', key: 'sortOrder' },
-  { label: '应用描述', key: 'appDesc', span: 2 },
-  { label: '创建时间', key: 'createdAt', format: 'date' },
-  { label: '更新时间', key: 'updateAt', format: 'date' },
+const headerConfig = computed<CardPanelHeader>(() => ({
+  image: props.data?.logo,
+  title: props.data?.appName || '--',
+  subtitle: props.data?.appCode,
+  status: props.data?.appStatus !== undefined ? {
+    value: props.data.appStatus,
+    type: props.data.appStatus === STATUS.ENABLED ? 'success' : 'danger',
+    text: props.data.appStatus === STATUS.ENABLED ? '启用' : '禁用',
+  } : undefined,
+}));
+
+const infoItems: CardPanelItem[] = [
+  { key: 'appType', label: '应用类型', icon: Folder },
+  { key: 'owner', label: '拥有者', icon: User },
+  { key: 'appDesc', label: '应用描述', icon: Document },
+  { key: 'sortOrder', label: '排序号' },
+  { key: 'createdAt', label: '创建时间', icon: Calendar, format: 'date' },
+  { key: 'updateAt', label: '更新时间', icon: Calendar, format: 'date' },
 ];
 </script>

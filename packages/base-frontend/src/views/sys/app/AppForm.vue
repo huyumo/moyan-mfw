@@ -56,6 +56,18 @@ const form = reactive({
 /** 基础表单项配置 */
 const baseTemplate: FormItemConfig[] = [
   {
+    key: 'logo',
+    label: '应用Logo',
+    component: MfwImageSingle,
+    elProps: {
+      crop: true,
+      cropRatio: 1,
+      cropWidth: 200,
+      cropHeight: 200,
+      placeholder: '点击上传Logo',
+    },
+  },
+  {
     key: 'appTypeId',
     label: '应用类型',
     component: 'el-select',
@@ -105,18 +117,6 @@ const baseTemplate: FormItemConfig[] = [
     elProps: {
       type: 'textarea',
       rows: 3,
-    },
-  },
-  {
-    key: 'logo',
-    label: '应用Logo',
-    component: MfwImageSingle,
-    elProps: {
-      crop: true,
-      cropRatio: 1,
-      cropWidth: 200,
-      cropHeight: 200,
-      placeholder: '点击上传Logo',
     },
   },
   {
@@ -172,7 +172,11 @@ onMounted(async () => {
     form.appCode = props.appCode;
     form.ownerId = props.ownerId;
     form.appDesc = props.appDesc || '';
-    form.logo = (props as any).logo || undefined;
+    if (props.logo) {
+      form.logo = typeof props.logo === 'string' 
+        ? { src: props.logo } 
+        : props.logo;
+    }
     form.appStatus = props.appStatus as 1 | 0;
   }
 });
