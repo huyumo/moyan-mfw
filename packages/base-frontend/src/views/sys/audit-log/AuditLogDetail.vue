@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <el-descriptions :column="1" border>
+  <el-descriptions :column="1" border :label-width="120">
     <el-descriptions-item label="日志ID">{{ data?.id }}</el-descriptions-item>
     <el-descriptions-item label="模块">{{ data?.module }}</el-descriptions-item>
     <el-descriptions-item label="事件">{{ data?.event }}</el-descriptions-item>

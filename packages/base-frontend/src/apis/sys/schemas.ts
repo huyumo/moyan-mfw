@@ -159,6 +159,10 @@ export type UpdateUserDto = {
   roleIds?: Array<string> // 角色 ID 列表
 }
 
+export type StatusDto = {
+  status: number // 状态,1:启用,0:禁用
+}
+
 export type ResetPasswordDto = {
   password: string // 新密码
 }

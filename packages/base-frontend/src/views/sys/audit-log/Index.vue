@@ -127,7 +127,7 @@ const handleViewDetail = async (row: AuditLogResponseDto) => {
     type: 'drawer',
     component: AuditLogDetail,
     data: detail,
-    popupProps: { width: 500 },
+    popupProps: { size: 800 },
   });
 };
 </script>

@@ -196,7 +196,7 @@ const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
   const status = enabled ? STATUS.ENABLED : STATUS.DISABLED;
   await new ApiUserUpdateStatus({
     params: { id: row.id },
-    query: { status }
+    body: { status }
   }, { hintSuccess: true, successMsg: () => enabled ? '已启用' : '已禁用', hintFail: true, failMsg: '状态更新失败' });
   listPage.value?.refresh();
 };

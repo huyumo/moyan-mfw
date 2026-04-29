@@ -7,8 +7,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '../../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, AuditInterceptor } from '../../src/common';
-import { Reflector } from '@nestjs/core';
+import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor } from '../../src/common';
 import request from 'supertest';
 
 /**
@@ -61,7 +60,6 @@ export async function createTestApp(
     app.useGlobalInterceptors(
       new LoggingInterceptor(),
       new TransformInterceptor(),
-      new AuditInterceptor(app.get(Reflector)),
     );
   }
 
