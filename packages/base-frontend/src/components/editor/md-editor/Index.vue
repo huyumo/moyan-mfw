@@ -133,5 +133,5 @@ defineExpose<MfwMdEditorInstance>({
 </script>
 
 <style scoped lang="scss">
-@import './style.scss';
+@use './style.scss';
 </style>
