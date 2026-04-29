@@ -50,33 +50,28 @@ export class AppService {
    * @returns 应用实例信息
    */
   async findById(id: string): Promise<any> {
-    const app = await this.appRepository.findOne({
-      where: { id },
-    });
+    const result = await this.dataSource.query(
+      `SELECT 
+        app.*,
+        JSON_OBJECT('id', t.id, 'typeName', t.typeName, 'typeCode', t.typeCode) as appType,
+        JSON_OBJECT('id', u.id, 'username', u.username, 'nickname', u.nickname, 'avatar', u.avatar) as owner
+      FROM sys_apps app
+      LEFT JOIN sys_app_types t ON app.appTypeId = t.id AND t.deleteAt IS NULL
+      LEFT JOIN sys_users u ON app.ownerId = u.id AND u.deleteAt IS NULL
+      WHERE app.id = ? AND app.deleteAt IS NULL`,
+      [id]
+    );
 
-    if (!app) {
+    if (!result || result.length === 0) {
       throw new NotFoundError('应用实例');
     }
 
-    const result = { ...app };
-
-    if (app.appTypeId) {
-      const appType = await this.dataSource.query(
-        `SELECT id, typeName, typeCode FROM sys_app_types WHERE id = ? AND deleteAt IS NULL`,
-        [app.appTypeId]
-      );
-      result.appType = appType[0] || null;
-    }
-
-    if (app.ownerId) {
-      const owner = await this.dataSource.query(
-        `SELECT id, username, nickname, avatar FROM sys_users WHERE id = ? AND deleteAt IS NULL`,
-        [app.ownerId]
-      );
-      result.owner = owner[0] || null;
-    }
-
-    return result;
+    const app = result[0];
+    return {
+      ...app,
+      appType: app.appType ? JSON.parse(app.appType) : null,
+      owner: app.owner ? JSON.parse(app.owner) : null,
+    };
   }
 
   /**
@@ -99,40 +94,19 @@ export class AppService {
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
-        return `SELECT ${select} FROM sys_apps app ${whereClause} ${orderBy} ${limit}`;
+        return `SELECT ${select} FROM sys_apps app LEFT JOIN sys_app_types t ON app.appTypeId = t.id LEFT JOIN sys_users u ON app.ownerId = u.id ${whereClause} ${orderBy} ${limit}`;
       })
-      .select('app.*')
+      .select(`app.*, 
+        JSON_OBJECT('id', t.id, 'typeName', t.typeName, 'typeCode', t.typeCode) as appType,
+        JSON_OBJECT('id', u.id, 'username', u.username, 'nickname', u.nickname, 'avatar', u.avatar) as owner`)
       .defaultOrderBy('app.sortOrder ASC, app.createdAt DESC')
       .getData();
 
     if (result.data && result.data.length > 0) {
-      const appTypeIds = result.data.filter((item: any) => item.appTypeId).map((item: any) => item.appTypeId);
-      const ownerIds = result.data.filter((item: any) => item.ownerId).map((item: any) => item.ownerId);
-
-      let appTypes: any[] = [];
-      let owners: any[] = [];
-
-      if (appTypeIds.length > 0) {
-        appTypes = await this.dataSource.query(
-          `SELECT id, typeName, typeCode FROM sys_app_types WHERE id IN (?) AND deleteAt IS NULL`,
-          [appTypeIds]
-        );
-      }
-
-      if (ownerIds.length > 0) {
-        owners = await this.dataSource.query(
-          `SELECT id, username, nickname, avatar FROM sys_users WHERE id IN (?) AND deleteAt IS NULL`,
-          [ownerIds]
-        );
-      }
-
-      const appTypeMap = new Map(appTypes.map((t: any) => [t.id, t]));
-      const ownerMap = new Map(owners.map((o: any) => [o.id, o]));
-
       result.data = result.data.map((item: any) => ({
         ...item,
-        appType: appTypeMap.get(item.appTypeId) || null,
-        owner: ownerMap.get(item.ownerId) || null,
+        appType: item.appType ? JSON.parse(item.appType) : null,
+        owner: item.owner ? JSON.parse(item.owner) : null,
       }));
     }
 
