@@ -56,7 +56,7 @@ export class AppService {
         JSON_OBJECT('id', t.id, 'typeName', t.typeName, 'typeCode', t.typeCode) as appType,
         JSON_OBJECT('id', u.id, 'username', u.username, 'nickname', u.nickname, 'avatar', u.avatar) as owner
       FROM sys_apps app
-      LEFT JOIN sys_app_types t ON app.appTypeId = t.id AND t.deleteAt IS NULL
+      LEFT JOIN sys_app_types t ON app.appTypeId = t.id
       LEFT JOIN sys_users u ON app.ownerId = u.id AND u.deleteAt IS NULL
       WHERE app.id = ? AND app.deleteAt IS NULL`,
       [id]
@@ -93,9 +93,9 @@ export class AppService {
     const result = await pager
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
-        const whereClause = wheres?.main || '';
-        return `SELECT ${select} FROM sys_apps app LEFT JOIN sys_app_types t ON app.appTypeId = t.id LEFT JOIN sys_users u ON app.ownerId = u.id ${whereClause} ${orderBy} ${limit}`;
-      })
+          const whereClause = wheres?.main || '';
+          return `SELECT ${select} FROM sys_apps app LEFT JOIN sys_app_types t ON app.appTypeId = t.id LEFT JOIN sys_users u ON app.ownerId = u.id ${whereClause} ${orderBy} ${limit}`;
+        })
       .select(`app.*, 
         JSON_OBJECT('id', t.id, 'typeName', t.typeName, 'typeCode', t.typeCode) as appType,
         JSON_OBJECT('id', u.id, 'username', u.username, 'nickname', u.nickname, 'avatar', u.avatar) as owner`)
