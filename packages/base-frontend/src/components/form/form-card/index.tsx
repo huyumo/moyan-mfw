@@ -149,18 +149,17 @@ export default defineComponent({
     // };
 
     // 监听 template 变化，重新初始化
-    // watch(() => props.template, (newTemplate) => {
-    //   formTemplate.value = (newTemplate || []).map(item => {
-    //     const newItem = { ...item };
-    //     // 深拷贝 elProps，避免多个实例共享同一引用
-    //     if (item.elProps) {
-    //       newItem.elProps = JSON.parse(JSON.stringify(item.elProps));
-    //     }
-    //     initTemplateItem(newItem);
-    //     return newItem;
-    //   });
-    //   // refreshComponent();
-    // }, { deep: true });
+    watch(() => props.template, (newTemplate) => {
+      formTemplate.value = (newTemplate || []).map(item => {
+        const newItem = { ...item };
+        // 深拷贝 elProps，避免多个实例共享同一引用
+        if (item.elProps) {
+          newItem.elProps = JSON.parse(JSON.stringify(item.elProps));
+        }
+        initTemplateItem(newItem);
+        return newItem;
+      });
+    }, { deep: true });
 
     // 监听 formData 变化，刷新组件
     // watch(() => props.formData, refreshComponent, { deep: true });

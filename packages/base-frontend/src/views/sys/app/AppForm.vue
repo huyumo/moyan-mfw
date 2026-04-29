@@ -29,8 +29,6 @@ const STATUS = {
   DISABLED: 0,
 } as const;
 
-
-
 const props = defineProps<AppDetailResponseDto>();
 
 /** 是否编辑模式 */
@@ -162,10 +160,8 @@ const loadAppTypes = async () => {
   appTypeList.value = result || [];
 };
 
-/** 初始化 */
-onMounted(async () => {
-  await loadAppTypes();
-
+/** 加载应用详情（编辑模式） */
+const loadAppDetail = () => {
   if (props.id) {
     form.appTypeId = props.appTypeId;
     form.appName = props.appName;
@@ -175,6 +171,12 @@ onMounted(async () => {
     form.logo = props.logo || undefined;
     form.appStatus = props.appStatus as 1 | 0;
   }
+};
+
+/** 初始化 */
+onMounted(async () => {
+  await loadAppTypes();
+  loadAppDetail();
 });
 
 /** 确认提交 */

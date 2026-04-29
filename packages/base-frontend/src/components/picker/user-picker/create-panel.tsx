@@ -1,11 +1,11 @@
-import './style.scss'
+import './style.scss';
 
-import { defineComponent, ref, type PropType } from 'vue'
-import { MfwFormCard } from '../../form/form-card/mod'
-import type { MfwFormCardInstance } from '../../form/form-card/types'
-import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys'
-import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
-import { UserPickerManager } from './manager'
+import { defineComponent, ref, type PropType } from 'vue';
+import { MfwFormCard } from '../../form/form-card/mod';
+import type { MfwFormCardInstance } from '../../form/form-card/types';
+import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
+import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas';
+import { UserPickerManager } from './manager';
 
 export default defineComponent({
   name: 'MfwUserPickerCreatePanel',
@@ -13,27 +13,27 @@ export default defineComponent({
   props: {
     context: {
       type: Object as PropType<UserResponseDto>,
-      default: undefined
+      default: undefined,
     },
     theme: {
       type: String,
-      default: 'default'
+      default: 'default',
     },
     onCreate: {
       type: Function as PropType<(data: AdminCreateUserDto) => Promise<UserResponseDto>>,
-      default: undefined
+      default: undefined,
     },
     onUpdate: {
       type: Function as PropType<(id: string, data: UpdateUserDto) => Promise<UserResponseDto>>,
-      default: undefined
-    }
+      default: undefined,
+    },
   },
 
   setup(props, { expose }) {
-    const manager = new UserPickerManager()
-    const formCardRef = ref<MfwFormCardInstance>()
+    const manager = new UserPickerManager();
+    const formCardRef = ref<MfwFormCardInstance>();
 
-    const themeConfig = manager.getTheme(props.theme, props.context)
+    const themeConfig = manager.getTheme(props.theme, props.context);
 
     const formData = ref<Record<string, any>>(
       props.context
@@ -41,48 +41,51 @@ export default defineComponent({
             username: props.context.username,
             nickname: props.context.nickname,
             phone: props.context.phone,
-            avatar: props.context.avatar
+            avatar: props.context.avatar,
           }
         : {
             username: '',
             nickname: '',
             phone: '',
-            avatar: ''
-          }
-    )
+            avatar: '',
+          },
+    );
 
     const onConfirm = async () => {
-      const valid = await formCardRef.value?.validate()
-      if (!valid) throw new Error('validate failed')
+      const valid = await formCardRef.value?.validate();
+      if (!valid) throw new Error('validate failed');
 
       if (props.context?.id) {
         const updateData: UpdateUserDto = {
           nickname: formData.value.nickname,
           phone: formData.value.phone,
-          avatar: formData.value.avatar
-        }
+          avatar: formData.value.avatar,
+        };
         if (props.onUpdate) {
-          return await props.onUpdate(props.context.id, updateData)
+          return await props.onUpdate(props.context.id, updateData);
         }
-        return await new ApiUserUpdate({
-          params: { id: props.context.id },
-          body: updateData
-        })
+        return await new ApiUserUpdate(
+          {
+            params: { id: props.context.id },
+            body: updateData,
+          },
+          { hintFail: false },
+        );
       }
 
       const createData: AdminCreateUserDto = {
         username: formData.value.username,
         phone: formData.value.phone,
         nickname: formData.value.nickname,
-        avatar: formData.value.avatar
-      }
+        avatar: formData.value.avatar,
+      };
       if (props.onCreate) {
-        return await props.onCreate(createData)
+        return await props.onCreate(createData);
       }
-      return await new ApiUserAdminCreate({ body: createData })
-    }
+      return await new ApiUserAdminCreate({ body: createData }, { hintFail: false });
+    };
 
-    expose({ onConfirm })
+    expose({ onConfirm });
 
     return () => (
       <MfwFormCard
@@ -91,6 +94,6 @@ export default defineComponent({
         template={themeConfig.template}
         formProps={{ labelWidth: '80px' }}
       />
-    )
-  }
-})
+    );
+  },
+});
