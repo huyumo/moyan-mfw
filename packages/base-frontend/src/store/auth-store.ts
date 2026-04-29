@@ -165,7 +165,7 @@ export const useAuthStore = defineStore('auth', () => {
         id: '', // API 未返回 id
         username: result.user?.username || '',
         nickname: result.user?.nickname || '',
-        avatar: result.user?.avatar || '',
+        avatar: getImageSrc(result.user?.avatar) || '',
         gender: 0,
         isDeveloper: false,
         userStatus: 1,
@@ -227,7 +227,7 @@ export const useAuthStore = defineStore('auth', () => {
       id: result.id,
       username: result.username,
       nickname: result.nickname,
-      avatar: result.avatar,
+      avatar: getImageSrc(result.avatar) || '',
       gender: 0,
       isDeveloper: false,
       userStatus: 1,
