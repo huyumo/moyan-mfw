@@ -19,7 +19,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
-import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
+import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
 import MfwUserPicker from '../../../components/picker/user-picker';
 import MfwImageSingle from '../../../components/upload/image-single';
 
@@ -49,7 +49,7 @@ const form = reactive({
   appCode: '',
   ownerId: '',
   appDesc: '',
-  logo: undefined as any,
+  logo: undefined as ImageResourceDto | undefined,
   appStatus: STATUS.ENABLED as 1 | 0,
 });
 
@@ -173,9 +173,11 @@ onMounted(async () => {
     form.ownerId = props.ownerId;
     form.appDesc = props.appDesc || '';
     if (props.logo) {
-      form.logo = typeof props.logo === 'string' 
-        ? { src: props.logo } 
-        : props.logo;
+      if (typeof props.logo === 'string') {
+        form.logo = { src: props.logo, width: 0, height: 0 };
+      } else {
+        form.logo = props.logo;
+      }
     }
     form.appStatus = props.appStatus as 1 | 0;
   }
