@@ -181,13 +181,15 @@ onMounted(async () => {
 const onConfirm = async () => {
   await formRef.value?.validate();
 
+  const logoData = form.logo?.src ? form.logo : undefined;
+
   if (isEdit.value) {
     await new ApiAppUpdate({
       params: { id: props.id },
       body: {
         appName: form.appName,
         appDesc: form.appDesc,
-        logo: form.logo,
+        logo: logoData,
         ownerId: form.ownerId,
         appStatus: form.appStatus,
       },
@@ -200,7 +202,7 @@ const onConfirm = async () => {
         appCode: form.appCode,
         ownerId: form.ownerId,
         appDesc: form.appDesc,
-        logo: form.logo,
+        logo: logoData,
         sortOrder: 0,
       },
     }, { hintSuccess: true });
