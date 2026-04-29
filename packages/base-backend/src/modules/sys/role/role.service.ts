@@ -79,13 +79,15 @@ export class RoleService {
    * @returns 分页结果
    */
   async findAll(query: QueryRoleDto): Promise<PaginationResult<any>> {
-    const { roleCode, roleName, roleStatus, appId } = query;
+    const { roleCode, roleName, roleStatus, appId ,appTypeId,isBuiltin} = query;
 
     const whereBuilder = new WhereBuilder();
     whereBuilder
       .like('role.roleCode', roleCode)
       .like('role.roleName', roleName)
-      .eq('role.roleStatus', roleStatus);
+      .eq('role.roleStatus', roleStatus)
+      .eq('role.appTypeId', appTypeId)
+      .eq('role.isBuiltin', isBuiltin);
 
     const pager = new PaginationX(this.entityManager.connection, query);
     return await pager

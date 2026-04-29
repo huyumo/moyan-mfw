@@ -62,4 +62,14 @@ export class QueryRoleDto extends PaginationQueryDto {
   @IsOptional()
   @IsString()
   sortField?: string = 'sortOrder';
+
+  /**
+   * 是否内置角色
+   */
+  @ApiProperty({ description: '是否内置角色', enum: [0, 1], required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  @Max(1)
+  isBuiltin?: boolean;
 }
