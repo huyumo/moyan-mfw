@@ -135,14 +135,10 @@ export default defineComponent({
         },
         on: {
           confirm: (componentRef: any) => {
-            const result = componentRef?.onConfirm?.()
-            if (result instanceof Promise) {
-              result.then((createdUser: UserResponseDto) => {
-                if (createdUser) {
-                  active.value = createdUser
-                  emitChange(createdUser)
-                }
-              })
+            const createdUser = componentRef?.createdUser as UserResponseDto | undefined
+            if (createdUser) {
+              active.value = createdUser
+              emitChange(createdUser)
             }
           }
         }

@@ -55,6 +55,8 @@ export default defineComponent({
       const valid = await formCardRef.value?.validate();
       if (!valid) throw new Error('validate failed');
 
+      let result: UserResponseDto | undefined;
+
       if (props.context?.id) {
         const updateData: UpdateUserDto = {
           nickname: formData.value.nickname,
@@ -62,30 +64,37 @@ export default defineComponent({
           avatar: formData.value.avatar,
         };
         if (props.onUpdate) {
-          return await props.onUpdate(props.context.id, updateData);
+          result = await props.onUpdate(props.context.id, updateData);
+        } else {
+          result = await new ApiUserUpdate(
+            {
+              params: { id: props.context.id },
+              body: updateData,
+            },
+            { hintFail: false },
+          );
         }
-        return await new ApiUserUpdate(
-          {
-            params: { id: props.context.id },
-            body: updateData,
-          },
-          { hintFail: false },
-        );
+      } else {
+        const createData: AdminCreateUserDto = {
+          username: formData.value.username,
+          phone: formData.value.phone,
+          nickname: formData.value.nickname,
+          avatar: formData.value.avatar,
+        };
+        if (props.onCreate) {
+          result = await props.onCreate(createData);
+        } else {
+          result = await new ApiUserAdminCreate({ body: createData }, { hintFail: false });
+        }
       }
 
-      const createData: AdminCreateUserDto = {
-        username: formData.value.username,
-        phone: formData.value.phone,
-        nickname: formData.value.nickname,
-        avatar: formData.value.avatar,
-      };
-      if (props.onCreate) {
-        return await props.onCreate(createData);
-      }
-      return await new ApiUserAdminCreate({ body: createData }, { hintFail: false });
+      // 将结果附加到组件实例，供 MfwPopup 的 confirm 事件使用
+      (instance as any).createdUser = result;
+      return result;
     };
 
-    expose({ onConfirm });
+    const instance = { onConfirm };
+    expose(instance);
 
     return () => (
       <MfwFormCard
