@@ -20,6 +20,7 @@ import type {
   AdminCreateUserDto,
   PageResponseDto,
   UpdateUserDto,
+  StatusDto,
   ResetPasswordDto,
   CreateRoleDto,
   RoleResponseDto,
@@ -310,11 +311,9 @@ export class ApiUserDelete extends ApiCall<
  */
 export class ApiUserUpdateStatus extends ApiCall<
   {
+    body: StatusDto
     params: {
-      id: string //用户 ID
-    }
-    query: {
-      status: number //状态 (1:启用 0:禁用)
+      id: string
     }
   },
   UserResponseDto
@@ -368,8 +367,8 @@ export class ApiRoleFindAll extends ApiCall<
       roleCode?: string //角色编码（模糊查询）
       roleName?: string //角色名称（模糊查询）
       roleStatus?: number //角色状态
-      appTypeId?: string //应用类型 ID
-      appId?: string //应用 ID
+      appTypeId?: string //应用类型 ID，如果提供appId ，则appTypeId不必提供，以appId为准，否则提供appTypeId ，则只查询内置角色
+      appId?: string //应用 ID ，如果提供appId ，则appTypeId不必提供，以appId为准
     }
   },
   PageResponseDto & {
@@ -750,6 +749,7 @@ export class ApiAppTypeUpdatePermissionPool extends ApiCall<
  */
 export class ApiAppTypeUpdateStatus extends ApiCall<
   {
+    body: StatusDto
     params: {
       id: string //应用类型 ID
     }

@@ -45,7 +45,7 @@ import { StatusDto } from '@/common/types/status.dto';
 @UseGuards(AuthGuard)
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   /**
    * 创建用户
@@ -179,13 +179,7 @@ export class UserController {
   @Put(':id/status')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '更新用户状态', description: '启用或禁用指定用户' })
-  @ApiParam({ name: 'id', description: '用户 ID' })
-  @ApiQuery({ name: 'status', description: '状态 (1:启用 0:禁用)', enum: [0, 1] })
-  @ApiResponse({
-    status: 200,
-    description: '更新成功',
-    type: UserResponseDto,
-  })
+  @ApiResponse({ status: 200, description: '更新成功', type: UserResponseDto })
   @AuditLog({ module: AuditModule.USER, event: 'UPDATE_USER_STATUS', description: '更新用户状态' })
   @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
   async updateStatus(

@@ -21,7 +21,7 @@ import {
 import { validateAppTypes, getBuiltinAppTypes } from './utils/app-type-validator';
 import { setupSwaggerGroups } from './utils/swagger-setup';
 import { HooksExecutor, createAppContext } from './utils/hooks-executor';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, AuditInterceptor, registerPermissionValues } from './common';
+import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, registerPermissionValues } from './common';
 import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
 import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from './app.module';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -62,7 +62,6 @@ export async function createBaseBackendApp(
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     new TransformInterceptor(),
-    new AuditInterceptor(app.get(Reflector)),
   );
 
   app.useGlobalPipes(
