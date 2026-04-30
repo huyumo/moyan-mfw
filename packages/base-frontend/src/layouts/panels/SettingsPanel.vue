@@ -107,6 +107,17 @@
                   <span class="mfw-admin-switch-label">{{ text.fixedHeader }}</span
                   ><el-switch v-model="draftStyleConfig.fixedHeader" />
                 </div>
+                <div class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">{{ text.searchTrigger }}</span>
+                  <el-radio-group v-model="draftStyleConfig.searchTrigger" size="small">
+                    <el-radio-button value="change">{{ text.searchTriggerChange }}</el-radio-button>
+                    <el-radio-button value="submit">{{ text.searchTriggerSubmit }}</el-radio-button>
+                  </el-radio-group>
+                </div>
+                <div class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">{{ text.pageCache }}</span
+                  ><el-switch v-model="draftStyleConfig.keepAlive" />
+                </div>
               </div>
             </div>
           </el-tab-pane>

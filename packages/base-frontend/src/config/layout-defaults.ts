@@ -20,6 +20,8 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   buttonRadius: 6,
   colorMode: 'light',
   themePackage: 'default',
+  searchTrigger: 'change',
+  keepAlive: true,
 };
 
 /** 默认导航配置。 */

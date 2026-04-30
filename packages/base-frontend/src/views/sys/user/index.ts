@@ -8,6 +8,5 @@ export default definePageConfig({
   icon: 'User',
   auth: true,
   order: 1,
-  keepAlive: true,
   permissions:['添加','删除','编辑']
 });

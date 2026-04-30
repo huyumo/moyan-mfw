@@ -1,24 +1,21 @@
 <template>
-  <router-view v-slot="{ Component }">
-    <keep-alive :include="keepAliveInclude" :max="20">
-      <component :is="Component" :key="route.name" />
+  <router-view v-slot="{ Component, route: viewRoute }">
+    <keep-alive v-if="keepAliveEnabled" :max="20">
+      <component :is="Component" :key="viewRoute.name" />
     </keep-alive>
+    <component v-else :is="Component" :key="viewRoute.name" />
   </router-view>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import { useLayoutStore } from '../store/layout-store';
 
 defineOptions({ name: 'MfwEmptyLayout' });
 
 const route = useRoute();
-const router = useRouter();
+const layoutStore = useLayoutStore();
 
-const keepAliveInclude = computed(() => {
-  return router.getRoutes()
-    .filter(r => r.meta?.keepAlive)
-    .map(r => (r.components?.default as any)?.name)
-    .filter((name): name is string => typeof name === 'string' && name.length > 0);
-});
+const keepAliveEnabled = computed(() => layoutStore.styleConfig.keepAlive);
 </script>

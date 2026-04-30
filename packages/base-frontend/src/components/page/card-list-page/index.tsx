@@ -17,6 +17,7 @@ import {
 import { ElPagination, ElEmpty } from 'element-plus';
 import MfwSearchPanel from '../search-panel';
 import MfwTableList from '../../table/table-list';
+import { useLayoutStore } from '../../../store/layout-store';
 import type {
   MfwCardListPageProps,
   MfwCardListPageEmits,
@@ -39,7 +40,7 @@ export default defineComponent({
     },
     searchTrigger: {
       type: String as PropType<'change' | 'submit'>,
-      default: 'change'
+      default: undefined
     },
     showSearch: {
       type: Boolean,
@@ -83,6 +84,8 @@ export default defineComponent({
   setup(props, { emit, expose, slots }) {
     const searchPanelRef = ref<any>();
     const tableRef = ref<any>();
+    const layoutStore = useLayoutStore();
+    const resolvedSearchTrigger = computed(() => props.searchTrigger ?? layoutStore.styleConfig.searchTrigger);
 
     const searchForm = ref<Record<string, any>>({});
     const pagination = ref({
@@ -196,7 +199,7 @@ export default defineComponent({
           <MfwSearchPanel
             ref={searchPanelRef}
             searchTemplate={props.searchTemplate}
-            searchTrigger={props.searchTrigger}
+            searchTrigger={resolvedSearchTrigger.value}
             loading={loading.value}
             onSearch={handleSearch}
             onReset={handleReset}

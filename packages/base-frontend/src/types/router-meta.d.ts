@@ -25,8 +25,6 @@ declare module 'vue-router' {
     menuOrder?: number;
     /** 是否固定标签页 */
     affix?: boolean;
-    /** 是否缓存页面 */
-    keepAlive?: boolean;
   }
 }
 
