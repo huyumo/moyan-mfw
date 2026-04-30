@@ -34,7 +34,7 @@
       <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-slot="{ Component, route: slotRoute }">
-          <transition name="fade-transverse" mode="out-in">
+          <transition name="fade-transverse">
             <keep-alive :max="20">
               <component :is="Component" :key="slotRoute.name" />
             </keep-alive>
