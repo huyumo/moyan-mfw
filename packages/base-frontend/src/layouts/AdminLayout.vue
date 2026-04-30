@@ -35,10 +35,9 @@
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-slot="{ Component }">
           <transition name="fade-transverse">
-            <keep-alive :max="20" v-if="route.meta.keepAlive">
+            <keep-alive :max="20">
               <component :is="Component" :key="route.name" />
             </keep-alive>
-            <component v-else :is="Component" :key="route.name" />
           </transition>
         </router-view>
       </MainPanel>
@@ -126,5 +125,25 @@ const route = useRoute();
   overflow: hidden;
   background: var(--el-bg-color-page);
   position: relative;
+}
+
+.fade-transverse-enter-active {
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-transverse-leave-active {
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-transverse-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
+}
+
+.fade-transverse-leave-to {
+  opacity: 0;
+  transform: translateX(-24px);
 }
 </style>
