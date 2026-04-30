@@ -30,6 +30,7 @@ import {
 } from 'element-plus';
 import MfwTableList from '../../table/table-list/index';
 import MfwSearchPanel from '../search-panel';
+import { useLayoutStore } from '../../../store/layout-store';
 import type {
   MfwListPageProps,
   MfwListPageEmits,
@@ -67,7 +68,7 @@ export default defineComponent({
     /** 筛选触发模式 */
     searchTrigger: {
       type: String as PropType<MfwListPageProps['searchTrigger']>,
-      default: 'submit'
+      default: undefined
     },
     /** 是否显示筛选面板 */
     showSearch: {
@@ -142,7 +143,9 @@ export default defineComponent({
   setup(props, { emit, expose, slots }) {
     const searchPanelRef = ref<MfwSearchPanelInstance>();
     const tableRef = ref<any>();
-    
+    const layoutStore = useLayoutStore();
+    const resolvedSearchTrigger = computed(() => props.searchTrigger ?? layoutStore.styleConfig.searchTrigger);
+
     const refreshContext = inject<{ registerRefresh: (callback: () => void | Promise<void>) => void }>(
       'mfw-page-refresh-context',
       { registerRefresh: () => {} }
@@ -334,7 +337,7 @@ export default defineComponent({
           h(MfwSearchPanel, {
             ref: searchPanelRef,
             searchTemplate: props.searchTemplate,
-            searchTrigger: props.searchTrigger,
+            searchTrigger: resolvedSearchTrigger.value,
             loading: loading.value,
             onSearch: handleSearch,
             onReset: handleReset

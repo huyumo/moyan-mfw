@@ -57,8 +57,6 @@ export interface PageConfig<T extends string = PermissionName> {
   permissions?: T[];
   /** 权限值（由 definePageConfig 根据 permissions 自动计算，请勿手动设置） */
   permissionValue?: bigint;
-  /** 是否缓存页面组件（keep-alive） */
-  keepAlive?: boolean;
   /** 子页面配置 */
   children?: PageConfig<T>[];
 }
@@ -165,7 +163,6 @@ export function buildRoutesFromConfigs(
         requiresAuth: config.auth ?? true,
         hidden: config.hidden,
         permissionValue: config.permissionValue?.toString(),
-        keepAlive: config.keepAlive,
       },
     } as RouteRecordRaw;
 

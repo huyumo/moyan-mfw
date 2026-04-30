@@ -35,9 +35,10 @@
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-slot="{ Component, route: slotRoute }">
           <transition name="fade-transverse">
-            <keep-alive :max="20">
+            <keep-alive v-if="layoutStore.styleConfig.keepAlive" :max="20">
               <component :is="Component" :key="slotRoute.name" />
             </keep-alive>
+            <component v-else :is="Component" :key="slotRoute.name" />
           </transition>
         </router-view>
       </MainPanel>

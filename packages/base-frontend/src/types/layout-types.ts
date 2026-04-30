@@ -22,6 +22,8 @@ export interface LayoutStyleConfig {
   buttonRadius: number;
   colorMode: ColorMode;
   themePackage: string;
+  searchTrigger: 'change' | 'submit';
+  keepAlive: boolean;
 }
 
 /** 顶部导航项。 */
