@@ -4,23 +4,13 @@
 -->
 <template>
   <div class="mfw-admin-shell" :class="shellClasses">
-    <HeaderPanel
-      :fixed-header="layoutStore.styleConfig.fixedHeader"
-      :show-sidebar="layoutStore.showSidebar"
-      :compact="layoutStore.styleConfig.compact"
-      :brand-name="layoutStore.navigation.brandName"
-      :brand-tagline="layoutStore.navigation.brandTagline"
-      :show-primary-top-menus="showPrimaryTopMenus"
-      :top-level-menus="topLevelMenus"
-      :active-top-menu-key="activeTopMenuKey"
-      :top-nav="layoutStore.navigation.topNav"
-      :layout-extensions="layoutStore.layoutExtensions"
-      @toggle-mobile-menu="toggleMobileMenu"
-      @toggle-compact="layoutStore.toggleCompact()"
-      @top-menu-click="handleTopMenuClick"
-      @open-settings="layoutStore.toggleSettingsPanel(true)"
-      @user-command="handleUserCommand"
-    >
+    <HeaderPanel :fixed-header="layoutStore.styleConfig.fixedHeader" :show-sidebar="layoutStore.showSidebar"
+      :compact="layoutStore.styleConfig.compact" :brand-name="layoutStore.navigation.brandName"
+      :brand-tagline="layoutStore.navigation.brandTagline" :show-primary-top-menus="showPrimaryTopMenus"
+      :top-level-menus="topLevelMenus" :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
+      :layout-extensions="layoutStore.layoutExtensions" @toggle-mobile-menu="toggleMobileMenu"
+      @toggle-compact="layoutStore.toggleCompact()" @top-menu-click="handleTopMenuClick"
+      @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand">
       <template v-if="$slots['header-common']" #header-common>
         <slot name="header-common" />
       </template>
@@ -33,47 +23,31 @@
     </HeaderPanel>
 
     <div class="mfw-admin-main">
-      <AsidePanel
-        :show-sidebar="layoutStore.showSidebar"
-        :mobile-menu-open="mobileMenuOpen"
-        :compact="layoutStore.styleConfig.compact"
-        :active-menu-path="activeMenuPath"
-        :displayed-side-menus="displayedSideMenus"
-      >
+      <AsidePanel :show-sidebar="layoutStore.showSidebar" :mobile-menu-open="mobileMenuOpen"
+        :compact="layoutStore.styleConfig.compact" :active-menu-path="activeMenuPath"
+        :displayed-side-menus="displayedSideMenus">
         <template v-if="$slots['sidebar-footer']" #sidebar-footer>
           <slot name="sidebar-footer" />
         </template>
       </AsidePanel>
 
-      <MainPanel
-        v-model="activeTabPath"
-        :show-tabs="layoutStore.styleConfig.showTabs"
-        :visited-tabs="layoutStore.visitedTabs"
-        @tab-remove="removeTab"
-        @tab-command="handleTabCommand"
-      >
+      <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
+        :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-slot="{ Component }">
-          <Transition name="page-slide" @after-enter="onTransitionEnd" @after-leave="onTransitionEnd">
-            <keep-alive v-if="route.meta?.keepAlive" :max="20">
+          <transition name="fade-transverse">
+            <keep-alive :max="20" v-if="route.meta.keepAlive">
               <component :is="Component" :key="route.name" />
             </keep-alive>
-            <component :is="Component" v-else :key="route.name" />
-          </Transition>
+            <component v-else :is="Component" :key="route.name" />
+          </transition>
         </router-view>
       </MainPanel>
     </div>
 
-    <SettingsPanel
-      v-model="layoutStore.settingsPanelOpen"
-      :is-mobile="isMobile"
-      :layout-mode-options="layoutModeOptions"
-      :theme-options="themeOptions"
-      :style-config="layoutStore.styleConfig"
-      :get-theme-color="getThemeColor"
-      @preview-change="handlePreviewChange"
-      @save-settings="handleSaveSettings"
-      @reset-defaults="handleResetDefaults"
-    />
+    <SettingsPanel v-model="layoutStore.settingsPanelOpen" :is-mobile="isMobile"
+      :layout-mode-options="layoutModeOptions" :theme-options="themeOptions" :style-config="layoutStore.styleConfig"
+      :get-theme-color="getThemeColor" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
+      @reset-defaults="handleResetDefaults" />
 
     <el-dialog v-model="resetConfirmVisible" :title="dialogText.title" width="320px" align-center>
       <span>{{ dialogText.body }}</span>
@@ -88,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, watch, ref } from 'vue';
+import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
@@ -140,26 +114,6 @@ onMounted(() => {
 });
 
 const route = useRoute();
-const isTransitioning = ref(false);
-
-watch(
-  () => route.path,
-  () => {
-    isTransitioning.value = true;
-    const contentArea = document.querySelector('.mfw-admin-content-area');
-    if (contentArea) {
-      contentArea.classList.add('page-transitioning');
-    }
-  },
-);
-
-const onTransitionEnd = () => {
-  isTransitioning.value = false;
-  const contentArea = document.querySelector('.mfw-admin-content-area');
-  if (contentArea) {
-    contentArea.classList.remove('page-transitioning');
-  }
-};
 </script>
 
 <style scoped lang="scss">
@@ -172,40 +126,5 @@ const onTransitionEnd = () => {
   overflow: hidden;
   background: var(--el-bg-color-page);
   position: relative;
-}
-
-.page-slide-enter-active {
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.page-slide-leave-active {
-  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.page-slide-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.page-slide-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
-}
-
-.page-slide-enter-to,
-.page-slide-leave-from {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.page-transitioning {
-  overflow: hidden !important;
-  
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 </style>
