@@ -33,10 +33,10 @@
 
       <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
-        <router-view v-slot="{ Component }">
-          <transition name="fade-transverse">
+        <router-view v-slot="{ Component, route: slotRoute }">
+          <transition name="fade-transverse" mode="out-in">
             <keep-alive :max="20">
-              <component :is="Component" :key="route.name" />
+              <component :is="Component" :key="slotRoute.name" />
             </keep-alive>
           </transition>
         </router-view>
@@ -62,7 +62,6 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue';
-import { useRoute } from 'vue-router';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
@@ -111,8 +110,6 @@ initColorMode();
 onMounted(() => {
   initTheme();
 });
-
-const route = useRoute();
 </script>
 
 <style scoped lang="scss">
@@ -126,7 +123,9 @@ const route = useRoute();
   background: var(--el-bg-color-page);
   position: relative;
 }
+</style>
 
+<style lang="scss">
 .fade-transverse-enter-active {
   transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
