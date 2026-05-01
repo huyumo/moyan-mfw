@@ -64,9 +64,7 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload: JwtPayload = await this.jwtService.verifyAsync(token, {
-        secret: 'test_jwt_secret_key_for_integration_testing_only',
-      });
+      const payload: JwtPayload = await this.jwtService.verifyAsync(token);
 
       // 将用户信息注入到请求中
       request['user'] = {

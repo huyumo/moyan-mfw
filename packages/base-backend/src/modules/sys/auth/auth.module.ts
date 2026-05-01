@@ -5,7 +5,6 @@
 
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { JwtModule } from '@nestjs/jwt';
 import { User } from '../user/entities/user.entity';
 import { UserRole } from '../role/entities/user-role.entity';
 import { Role } from '../role/entities/role.entity';
@@ -35,12 +34,6 @@ import { AuthController } from './auth.controller';
       Permission,
       RolePermission,
     ]),
-    JwtModule.register({
-      secret: 'test_jwt_secret_key_for_integration_testing_only',
-      signOptions: {
-        expiresIn: 7200,
-      },
-    }),
   ],
   providers: [AuthService],
   controllers: [AuthController],

@@ -23,7 +23,7 @@ tags: [测试, 单元测试, 集成测试, vitest, Jest, 前端, 后端]
 - 位置：`packages/base-backend/tests/integration/`
 - 命名：`xxx-api.spec.ts`（对应 `xxx.controller.ts`）
 - 框架：supertest + Jest
-- 运行：`cd packages/base-backend ; pnpm run test:e2e`
+- 运行：`cd packages/base-backend ; pnpm run test:integration`
 
 ### 标准模板
 

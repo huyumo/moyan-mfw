@@ -15,7 +15,7 @@
 | `ApiAuthLogin` | POST | `/api/auth/login` | 否 | 用户登录 |
 | `ApiAuthRefreshToken` | POST | `/api/auth/refresh` | 否 | 刷新 Token |
 | `ApiAuthGetCurrentUser` | POST | `/api/auth/userinfo` | 是 | 获取当前用户信息 |
-| `ApiAuthLogout` | POST | `/api/auth/logout` | 是 | 退出登录 |
+| `ApiAuthLogout` | POST | `/api/auth/logout` | 否 | 退出登录 |
 | `ApiAuthGetUserApps` | GET | `/api/auth/apps` | 是 | 获取用户应用列表 |
 | `ApiAuthGetUserPermissions` | GET | `/api/auth/permissions` | 是 | 获取用户权限菜单 |
 | `ApiAuthRegister` | POST | `/api/auth/register` | 否 | 用户注册 |
@@ -113,8 +113,8 @@
 
 | API 类 | 方法 | 路径 | 认证 | 功能 |
 |--------|------|------|------|------|
-| `ApiUploadFileUploadFile` | POST | `/api/upload-file/upload-file` | 是 | 单文件上传 |
-| `ApiUploadFileUploadFiles` | POST | `/api/upload-file/upload-files` | 是 | 多文件上传 |
+| `ApiUploadFileUploadFile` | POST | `/api/upload-files` | 是 | 单文件上传 |
+| `ApiUploadFileUploadFiles` | POST | `/api/upload-files/batch` | 是 | 多文件上传 |
 
 ### 系统初始化接口 (install)
 
