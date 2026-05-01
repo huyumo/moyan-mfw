@@ -3,3 +3,4 @@
  */
 
 export * from './table-list/mod';
+export * from './action-buttons';
