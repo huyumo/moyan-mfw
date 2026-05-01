@@ -34,6 +34,7 @@
       :active-top-menu-key="activeTopMenuKey"
       :top-nav="topNav"
       @top-menu-click="emit('top-menu-click', $event)"
+      @sub-menu-click="emit('sub-menu-click', $event)"
     />
 
     <div class="mfw-admin-header-actions">
@@ -90,6 +91,8 @@ const emit = defineEmits<{
   (e: 'toggle-compact'): void;
   /** 顶级菜单点击 */
   (e: 'top-menu-click', menu: SideMenuItem): void;
+  /** 子菜单点击 */
+  (e: 'sub-menu-click', payload: { parent: SideMenuItem; child: SideMenuItem }): void;
   /** 打开设置 */
   (e: 'open-settings'): void;
   /** 用户命令 */

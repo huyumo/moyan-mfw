@@ -134,6 +134,13 @@ export function useAdminLayout(): any {
       router.push(targetPath);
     }
   }
+  function handleSubMenuClick(payload: { parent: SideMenuItem; child: SideMenuItem }) {
+    layoutStore.setActiveTopMenuKey(payload.parent.key);
+    const targetPath = resolveMenuPath(payload.child.to) || resolveFirstLeafPath(payload.child);
+    if (targetPath && targetPath !== route.path) {
+      router.push(targetPath);
+    }
+  }
   function toggleMobileMenu() {
     mobileMenuOpen.value = !mobileMenuOpen.value;
   }
@@ -280,6 +287,7 @@ export function useAdminLayout(): any {
     activeMenuPath,
     activeTabPath,
     handleTopMenuClick,
+    handleSubMenuClick,
     toggleMobileMenu,
     handleResetDefaults,
     confirmResetDefaults,
