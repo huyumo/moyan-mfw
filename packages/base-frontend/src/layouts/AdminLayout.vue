@@ -10,6 +10,7 @@
       :top-level-menus="topLevelMenus" :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
       :layout-extensions="layoutStore.layoutExtensions" @toggle-mobile-menu="toggleMobileMenu"
       @toggle-compact="layoutStore.toggleCompact()" @top-menu-click="handleTopMenuClick"
+      @sub-menu-click="handleSubMenuClick"
       @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand">
       <template v-if="$slots['header-common']" #header-common>
         <slot name="header-common" />
@@ -96,6 +97,7 @@ const {
   activeMenuPath,
   activeTabPath,
   handleTopMenuClick,
+  handleSubMenuClick,
   toggleMobileMenu,
   handleResetDefaults,
   confirmResetDefaults,
