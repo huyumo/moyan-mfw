@@ -53,6 +53,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'typeName',
     label: '类型名称',
     component: 'el-input',
+    testId: 'app-type-name-input',
     placeholder: '请输入类型名称',
     rules: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
   },
@@ -60,17 +61,20 @@ const formTemplate: FormItemConfig[] = [
     key: 'typeCode',
     label: '类型编码',
     component: 'el-input',
+    testId: 'app-type-code-input',
     disabled: true,
   },
   {
     key: 'icon',
     label: '图标',
     component: MfwIconPicker,
+    testId: 'app-type-icon-picker',
   },
   {
     key: 'typeDesc',
     label: '描述',
     component: 'el-input',
+    testId: 'app-type-desc-input',
     placeholder: '请输入描述',
     elProps: {
       type: 'textarea',
@@ -81,6 +85,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'typeStatus',
     label: '状态',
     component: 'el-switch',
+    testId: 'app-type-status-switch',
     value: STATUS.ENABLED,
     disabled: () => Boolean(props.data?.typeCode === 'system' || props.data?.typeCode?.startsWith('sys')),
     elProps: {

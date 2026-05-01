@@ -14,7 +14,7 @@
     title="PC 权限树"
   >
     <template #toolbar-extra>
-      <el-button type="primary" @click="handleSync">
+      <el-button type="primary" data-testid="permission-sync-btn" @click="handleSync">
         <el-icon><Refresh /></el-icon>
         同步路由
       </el-button>

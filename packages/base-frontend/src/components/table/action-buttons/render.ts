@@ -40,6 +40,7 @@ function renderButton(btn: ActionButtonConfig, row: any): VNode {
     link: true,
     icon: btn.icon,
     disabled,
+    ...(btn.testId ? { 'data-testid': btn.testId } : {}),
     onClick: () => btn.onClick(row),
   }, () => btn.label);
 }

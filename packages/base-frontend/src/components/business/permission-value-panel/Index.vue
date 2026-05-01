@@ -9,7 +9,7 @@
     <p class="node-code">权限编码：{{ nodeCode }}</p>
     <el-divider />
     <div class="permission-actions">
-      <el-checkbox-group v-model="selectedActions">
+      <el-checkbox-group v-model="selectedActions" data-testid="perm-value-checkbox-group">
         <el-checkbox v-for="action in slefPermissionOptions" :key="action.value" :label="action.value" border
           class="permission-checkbox">
           <div class="checkbox-content">

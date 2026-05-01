@@ -13,7 +13,7 @@
       <slot name="toolbar-extra" />
 
       <!-- 关键词搜索 -->
-      <el-input v-model="keyword" placeholder="搜索权限名称/编码" style="width: 200px" clearable @input="handleSearch">
+      <el-input v-model="keyword" placeholder="搜索权限名称/编码" style="width: 200px" clearable data-testid="perm-search-input" @input="handleSearch">
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
@@ -64,6 +64,7 @@
                   link
                   size="small"
                   title="配置操作权限"
+                  data-testid="perm-config-btn"
                   @click.stop="handleConfigPermissionValue(data)"
                 >
                   <el-icon><Key /></el-icon>
@@ -76,6 +77,7 @@
                   link
                   size="small"
                   title="添加子节点"
+                  data-testid="perm-add-btn"
                   @click.stop="handleAddChild(data)"
                 >
                   <el-icon><Plus /></el-icon>
@@ -88,6 +90,7 @@
                   link
                   size="small"
                   title="编辑"
+                  data-testid="perm-edit-btn"
                   @click.stop="handleEdit(data)"
                 >
                   <el-icon><Edit /></el-icon>
@@ -99,6 +102,7 @@
                   link
                   size="small"
                   title="删除"
+                  data-testid="perm-delete-btn"
                   @click.stop="handleDelete(data)"
                 >
                   <el-icon><Delete /></el-icon>

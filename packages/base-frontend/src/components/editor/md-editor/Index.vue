@@ -22,6 +22,7 @@
           class="md-editor-toolbar-item"
           type="button"
           title="切换预览模式"
+          data-testid="editor-preview-toggle"
           @click="togglePreviewMode"
         >
           <el-icon>

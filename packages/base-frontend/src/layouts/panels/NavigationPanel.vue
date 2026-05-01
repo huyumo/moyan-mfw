@@ -12,6 +12,7 @@
       :class="{ 'is-active': menu.key === activeTopMenuKey }"
       type="button"
       :aria-label="menu.label"
+      :data-testid="`nav-menu-${menu.key}`"
       @click="emit('top-menu-click', menu)"
     >
       <el-icon><component :is="resolveIcon(menu.icon)" /></el-icon>

@@ -38,24 +38,28 @@ const searchTemplate = [
     key: 'module',
     label: '模块',
     type: 'input' as const,
+    testId: 'audit-search-module',
     placeholder: '请输入模块名称',
   },
   {
     key: 'event',
     label: '事件',
     type: 'input' as const,
+    testId: 'audit-search-event',
     placeholder: '请输入事件名称',
   },
   {
     key: 'operatorId',
     label: '操作人ID',
     type: 'input' as const,
+    testId: 'audit-search-operator',
     placeholder: '请输入操作人ID',
   },
   {
     key: 'startTime',
     label: '开始时间',
     type: 'date-picker' as const,
+    testId: 'audit-search-start-time',
     placeholder: '请选择开始时间',
     elProps: {
       type: 'datetime',
@@ -67,6 +71,7 @@ const searchTemplate = [
     key: 'endTime',
     label: '结束时间',
     type: 'date-picker' as const,
+    testId: 'audit-search-end-time',
     placeholder: '请选择结束时间',
     elProps: {
       type: 'datetime',
@@ -100,7 +105,7 @@ const actionColumn = {
   width: 80,
   fixed: 'right' as const,
   render: ({ row }: { row: AuditLogResponseDto }) => renderActionButtons([
-    { label: '详情', type: 'primary', icon: View, onClick: handleViewDetail },
+    { label: '详情', type: 'primary', icon: View, onClick: handleViewDetail, testId: 'audit-detail-btn' },
   ], {}, row),
 };
 

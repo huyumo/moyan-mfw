@@ -75,18 +75,21 @@ const searchTemplate = [
     key: 'username',
     label: '用户名',
     type: 'input' as const,
+    testId: 'user-search-name',
     placeholder: '请输入用户名',
   },
   {
     key: 'phone',
     label: '手机号',
     type: 'input' as const,
+    testId: 'user-search-phone',
     placeholder: '请输入手机号',
   },
   {
     key: 'userStatus',
     label: '状态',
     type: 'select' as const,
+    testId: 'user-search-status',
     placeholder: '请选择状态',
     elProps: {
       options: [
@@ -131,6 +134,7 @@ const columns = [
     render: ({ row }: { row: UserResponseDto }) => h(ElSwitch, {
       modelValue: row.userStatus === STATUS.ENABLED,
       size: 'small',
+      'data-testid': 'user-status-switch',
       onChange: (val: string | number | boolean) => handleStatusChange(row, Boolean(val)),
     }),
   },
@@ -149,9 +153,9 @@ const actionColumn = {
   width: 200,
   fixed: 'right' as const,
   render: ({ row }: { row: UserResponseDto }) => renderActionButtons([
-    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
-    { label: '重置密码', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['编辑'] },
-    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'user-edit-btn' },
+    { label: '重置密码', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['编辑'], testId: 'user-reset-pwd-btn' },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'user-delete-btn' },
   ], { maxVisible: 2 }, row),
 };
 

@@ -7,7 +7,7 @@
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-      <el-button type="primary" @click="handleAdd">
+      <el-button type="primary" data-testid="app-create-btn" @click="handleAdd">
         <el-icon><Plus /></el-icon>
         新建应用
       </el-button>
@@ -63,18 +63,21 @@ const searchTemplate = ref([
     key: 'appName',
     label: '应用名称',
     type: 'input' as const,
+    testId: 'app-search-name',
     placeholder: '请输入应用名称',
   },
   {
     key: 'appCode',
     label: '应用编码',
     type: 'input' as const,
+    testId: 'app-search-code',
     placeholder: '请输入应用编码',
   },
   {
     key: 'appTypeId',
     label: '应用类型',
     type: 'select' as const,
+    testId: 'app-search-type',
     placeholder: '请选择应用类型',
     elProps: {
       options: [] as { label: string; value: string }[],
@@ -84,6 +87,7 @@ const searchTemplate = ref([
     key: 'appStatus',
     label: '状态',
     type: 'select' as const,
+    testId: 'app-search-status',
     placeholder: '请选择状态',
     elProps: {
       options: [
@@ -142,10 +146,10 @@ const actionColumn = {
   width: 200,
   fixed: 'right' as const,
   render: ({ row }: { row: AppDetailResponseDto }) => renderActionButtons([
-    { label: '详情', type: 'primary', icon: View, onClick: handleDetail },
-    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
-    { label: '成员', type: 'primary', icon: User, onClick: handleMember, permission: ['编辑'] },
-    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
+    { label: '详情', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'app-edit-btn' },
+    { label: '成员', type: 'primary', icon: User, onClick: handleMember, permission: ['编辑'], testId: 'app-member-btn' },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'app-delete-btn' },
   ], { maxVisible: 2 }, row),
 };
 

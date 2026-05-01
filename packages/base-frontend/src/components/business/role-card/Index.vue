@@ -20,9 +20,9 @@
     </div>
 
     <div class="role-card__footer">
-      <el-button type="primary" size="small" link :disabled="!canEdit" v-permission="{ value: ['编辑'] }" @click="handlePermission">配置权限</el-button>
-      <el-button size="small" link :disabled="!canEdit" v-permission="{ value: ['编辑'] }" @click="handleEdit">编辑</el-button>
-      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" v-permission="{ value: ['删除'] }" @click="handleDelete">删除</el-button>
+      <el-button type="primary" size="small" link :disabled="!canEdit" data-testid="role-permission-btn" v-permission="{ value: ['编辑'] }" @click="handlePermission">配置权限</el-button>
+      <el-button size="small" link :disabled="!canEdit" data-testid="role-edit-btn" v-permission="{ value: ['编辑'] }" @click="handleEdit">编辑</el-button>
+      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" data-testid="role-delete-btn" v-permission="{ value: ['删除'] }" @click="handleDelete">删除</el-button>
     </div>
   </el-card>
 </template>

@@ -9,6 +9,7 @@
         class="mfw-admin-menu-toggle"
         type="button"
         aria-label="Toggle mobile menu"
+        data-testid="header-mobile-toggle"
         @click="emit('toggle-mobile-menu')"
       >
         <el-icon><Menu /></el-icon>
@@ -18,6 +19,7 @@
         class="mfw-admin-collapse-toggle"
         type="button"
         :aria-label="compact ? 'Expand sidebar' : 'Collapse sidebar'"
+        data-testid="header-compact-toggle"
         @click="emit('toggle-compact')"
       >
         <el-icon><component :is="compact ? Expand : Fold" /></el-icon>
@@ -40,7 +42,7 @@
     <div class="mfw-admin-header-actions">
       <slot name="header-common">
         <component :is="layoutExtensions.headerCommon" v-if="layoutExtensions.headerCommon" />
-        <el-button v-else text aria-label="Open layout settings" @click="emit('open-settings')">Layout</el-button>
+        <el-button v-else text aria-label="Open layout settings" data-testid="header-settings-btn" @click="emit('open-settings')">Layout</el-button>
       </slot>
 
       <UserPanel :layout-extensions="layoutExtensions" @user-command="emit('user-command', $event)">

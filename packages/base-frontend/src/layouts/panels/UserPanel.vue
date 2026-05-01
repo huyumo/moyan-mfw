@@ -2,7 +2,7 @@
   <slot name="header-avatar">
     <component :is="layoutExtensions.headerAvatar" v-if="layoutExtensions.headerAvatar" />
     <el-dropdown v-else trigger="click" @command="handleUserCommand">
-      <button class="mfw-admin-avatar-trigger" type="button" aria-label="Open user menu">
+      <button class="mfw-admin-avatar-trigger" type="button" aria-label="Open user menu" data-testid="user-avatar-trigger">
         <el-avatar :size="30" :src="avatarUrl">
           {{ displayName?.charAt(0) }}
         </el-avatar>

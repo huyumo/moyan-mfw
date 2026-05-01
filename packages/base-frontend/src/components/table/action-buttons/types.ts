@@ -10,6 +10,7 @@ export interface ActionButtonConfig {
   permission?: string[];
   disabled?: boolean | ((row: any) => boolean);
   visible?: boolean | ((row: any) => boolean);
+  testId?: string;
 }
 
 export interface ActionButtonsOptions {

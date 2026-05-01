@@ -12,7 +12,7 @@
 
     <div class="builtin-role-header">
       <span class="builtin-role-title">{{ typeName }} - 内置角色</span>
-      <el-button type="primary" size="small" @click="handleAddRole">新增角色</el-button>
+      <el-button type="primary" size="small" data-testid="builtin-role-add-btn" @click="handleAddRole">新增角色</el-button>
     </div>
 
     <div v-loading="loading" class="builtin-role-grid">

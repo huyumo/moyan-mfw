@@ -254,7 +254,8 @@ export default defineComponent({
         'onUpdate:modelValue': (val: any) => {
           formData[item.key] = val;
           handleItemChange(item.key, val);
-        }
+        },
+        ...(item.testId ? { 'data-testid': item.testId } : {})
       };
 
       // 根据类型渲染不同组件
