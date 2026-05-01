@@ -104,25 +104,22 @@ createBaseAdminApp({
 
 ## 自定义主题创建流程
 
-1. 在 `packages/base-frontend/src/themes/` 下创建新目录（如 `my-theme/`）
-2. 创建 `index.ts` 导出主题配置对象：
+1. 在 `packages/base-frontend/src/themes/packages/` 下创建新目录（如 `my-theme/`）
+2. 创建 `manifest.json` 主题清单文件：
 
-```typescript
-export default {
-  name: 'my-theme',
-  label: '我的主题',
-  colors: {
-    primary: '#E91E63',
-    success: '#4CAF50',
-    warning: '#FF9800',
-    danger: '#F44336',
-    info: '#00BCD4',
-  },
-  sidebar: {
-    bgColor: '#880E4F',
-    textColor: '#ffffff',
-  },
-};
+```json
+{
+  "name": "my-theme",
+  "label": "我的主题",
+  "description": "自定义主题描述",
+  "colors": {
+    "primary": "#E91E63",
+    "success": "#4CAF50",
+    "warning": "#FF9800",
+    "danger": "#F44336",
+    "info": "#00BCD4"
+  }
+}
 ```
 
 3. 在 `packages/base-frontend/src/themes/index.ts` 中注册主题

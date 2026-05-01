@@ -61,11 +61,14 @@ tags: [前端, 组件, API, 属性, MfwListPage, MfwPopup]
 
 | 组件 | 场景 | 类型定义 |
 |------|------|---------|
-| `PermissionManager` | 权限树管理 | `business/permission-manager/types.ts` |
-| `PermissionTree` / `TreeSelect` | 权限树选择 | `business/permission-tree/types.ts` |
-| `RoleCard` | 角色卡片展示 | `business/role-card/types.ts` |
-| `RoleForm` | 角色新增/编辑表单 | `business/rolo-form/types.ts` |
-| `RolePermissionPanel` | 角色权限配置面板 | `business/role-permission-panel/types.ts` |
+| `PermissionManager` | 权限树管理 | — |
+| `MfwPermissionTree` / `TreeSelect` | 权限树选择 | `business/permission-tree/types.ts` |
+| `BuiltinRoleDialog` | 内置角色弹窗 | — |
+| `PermissionPoolPanel` | 权限池面板 | — |
+| `MfwPermissionValuePanel` | 权限值面板 | — |
+| `RoleCard` | 角色卡片展示 | — |
+| `RoleForm` | 角色新增/编辑表单 | — |
+| `RolePermissionPanel` | 角色权限配置面板 | — |
 | `AppSelectorDialog` | 应用选择弹窗 | `business/app-selector-dialog/types.ts` |
 
 ## Upload 组件
@@ -110,4 +113,4 @@ tags: [前端, 组件, API, 属性, MfwListPage, MfwPopup]
 - ✋ 不使用 MfwListPage 自己手写表格+分页 → 使用 MfwListPage 统一列表页模式（例外：极度定制化的表格布局 MfwListPage 无法满足时，可手写，但须复用 `loadData` 分页模式）
 - ✋ 用 `v-if` 判断权限显示按钮 → 使用 `v-permission` 指令或 `renderActionButtons`（例外：权限需与其它业务条件组合判断时，可使用 `usePermission` + `v-if`，但权限部分必须通过 `usePermission` 获取）
 - ✋ 手动管理弹窗状态（visible/ref）→ 使用 `MfwPopup.open()` 命令式调用
-- ✋ 组件缺少 `mod.ts` 导出文件 → 每个组件目录必须有 mod.ts
+- ✋ 组件缺少 `mod.ts` 导出文件 → 每个组件目录必须有 mod.ts（例外：`permission-manager` 使用 `index.ts` 代替 mod.ts）

@@ -39,18 +39,46 @@ async findAll(query: QueryXxxDto): Promise<PaginationResult<XxxResponseDto>> {
 }
 ```
 
+## PaginationX 常用方法
+
+| 方法 | 说明 |
+|------|------|
+| `where(name, builder)` | 绑定 WhereBuilder，name 为条件标签 |
+| `sql(fn)` | 设置 SQL 生成函数，接收 `{ select, wheres, orderBy, limit }` |
+| `select(sql)` | 设置 SELECT 字段（默认 `*`） |
+| `defaultOrderBy(order)` | 设置默认排序（无用户排序时生效） |
+| `getData(processor?, before?)` | 执行查询并返回分页结果 |
+| `printSql()` | 打印 SQL 到控制台（调试用） |
+| `pipe(fn)` | 设置结果后处理函数 |
+| `setDbName(name)` | 设置数据库连接别名（默认 `default`） |
+| `unshiftSql(opts)` | 在 SQL 数组前面插入额外 SQL |
+| `pushSql(opts)` | 在 SQL 数组后面追加额外 SQL |
+| `getResultByTag(tag, isGetOne?)` | 根据 tag 获取已执行 SQL 的查询结果 |
+| `exec(done?)` | 执行 SQL 并返回 this（不自动分页） |
+
 ## WhereBuilder 常用方法
 
 | 方法 | 操作符 | 说明 |
 |------|--------|------|
-| `eq(field, val)` | = | 等于（undefined 自动跳过） |
-| `neq(field, val)` | != | 不等于 |
-| `like(field, val)` | LIKE %val% | 模糊查询 |
-| `likeLeft(field, val)` | LIKE val% | 左模糊 |
-| `in(field, vals)` | IN | IN 条件 |
-| `between(field, start, end)` | BETWEEN | 范围查询 |
-| `isNull(field)` | IS NULL | 空值判断 |
-| `group(builder, op)` | () | 条件分组（支持 OR） |
+| `eq(field, val, op?)` | = | 等于（undefined 自动跳过，op 为逻辑连接符 AND/OR） |
+| `neq(field, val, op?)` | != | 不等于 |
+| `gt(field, val, op?)` | > | 大于 |
+| `gte(field, val, op?)` | >= | 大于等于 |
+| `lt(field, val, op?)` | < | 小于 |
+| `lte(field, val, op?)` | <= | 小于等于 |
+| `like(field, val, op?)` | LIKE %val% | 模糊查询 |
+| `likeLeft(field, val, op?)` | LIKE val% | 左模糊 |
+| `likeRight(field, val, op?)` | LIKE %val | 右模糊 |
+| `in(field, vals, op?)` | IN | IN 条件 |
+| `notIn(field, vals, op?)` | NOT IN | NOT IN 条件 |
+| `between(field, min, max, op?)` | BETWEEN | 范围查询 |
+| `isNull(field, op?)` | IS NULL | 空值判断 |
+| `isNotNull(field, op?)` | IS NOT NULL | 非空判断 |
+| `custom(condition, params?, op?)` | 自定义 | 自定义条件字符串 |
+| `andWhere(field, operator, val)` | AND | 通用 AND 条件（自定义操作符） |
+| `orWhere(field, operator, val)` | OR | 通用 OR 条件（自定义操作符） |
+| `group(builder, op?)` | () | 条件分组（支持 OR） |
+| `reset()` | — | 重置构建器 |
 
 ## 条件分组示例
 

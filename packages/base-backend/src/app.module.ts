@@ -157,13 +157,17 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
       inject: [ConfigService],
     }),
 
-    // JWT 配置（硬编码值用于测试）
-    JwtModule.register({
+    // JWT 配置
+    JwtModule.registerAsync({
       global: true,
-      secret: 'test_jwt_secret_key_for_integration_testing_only',
-      signOptions: {
-        expiresIn: 7200,
-      },
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET', 'default_jwt_secret'),
+        signOptions: {
+          expiresIn: configService.get<number>('JWT_EXPIRES_IN', 7200),
+        },
+      }),
+      inject: [ConfigService],
     }),
 
     // 业务模块

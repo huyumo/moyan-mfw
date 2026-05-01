@@ -48,22 +48,22 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │           ├── apis/sys/           # API调用层（自动生成，禁止修改）
 │           ├── components/         # 通用组件库（Mfw前缀）
 │           │   ├── business/       #   业务组件（权限/角色/应用选择器等）
-│           │   ├── display/        #   展示组件（MfwDetailPanel/MfwFormat）
+│           │   ├── display/        #   展示组件（MfwDetailPanel/MfwFormat/MfwCardPanel/ParticleBackground）
 │           │   ├── editor/         #   编辑器组件（MD/Quill/JSON）
 │           │   ├── feedback/       #   反馈组件（MfwPopup）
 │           │   ├── form/           #   表单组件（MfwFormCard）
 │           │   ├── layout/         #   布局扩展组件（ProfilePanel/PasswordChangeForm）
 │           │   ├── page/           #   页面组件（PageWrapper/ListPage/CardListPage）
-│           │   ├── picker/         #   选择器组件（AppSelector/IconPicker/UserPicker）
+│           │   ├── picker/         #   选择器组件（AppSelector/IconPicker/UserPicker/RadioGroup）
 │           │   ├── table/          #   表格组件（TableList/ActionButtons）
-│           │   └── upload/         #   上传组件（ImageSingle/ImageGallery）
+│           │   └── upload/         #   上传组件（MfwUpload/ImageCropper/BaseUploader）
 │           ├── composables/        # 组合式函数（useColorMode/useThemeSwitch）
 │           ├── directives/         # 自定义指令（v-permission）
 │           ├── hooks/              # 自定义钩子（usePermission）
 │           ├── layouts/            # 布局系统（AdminLayout/EmptyLayout）
 │           ├── plugins/            # 插件（ElementPlus + moyan-api适配器）
 │           ├── router/             # 路由（自动扫描+守卫+菜单树）
-│           ├── store/              # 状态管理（auth-store + layout-store）
+│           ├── store/              # 状态管理（auth-store + layout-store + app-loading-store）
 │           ├── styles/             # 样式系统（含暗色模式）
 │           ├── themes/             # 主题系统（9套主题包）
 │           ├── types/              # 类型定义
@@ -76,6 +76,7 @@ moyan-mfw/                          # Monorepo 根 (pnpm workspace)
 │               ├── install/        #   安装向导页面
 │               ├── route-group/    #   路由分组页面
 │               └── sys/            #   系统管理页面（user/role/app/...）
+├── backend/                        # 业务后端应用（消费base-backend）
 ├── frontend/                       # 业务前端应用（消费base-frontend）
 └── docs/                           # 项目文档
 ```

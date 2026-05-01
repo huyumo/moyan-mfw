@@ -114,7 +114,7 @@ pnpm run db:clear
 | `pnpm run migration:generate` | 生成迁移文件 |
 | `pnpm run migration:run` | 执行迁移 |
 | `pnpm run migration:revert` | 回滚最后一次迁移 |
-| `pnpm run seed` | 运行种子数据 |
+| `pnpm run seed:run` | 运行种子数据 |
 | `pnpm run db:clear` | 清空数据库 |
 
 ## 反模式（Red Flags）— 立即停止
