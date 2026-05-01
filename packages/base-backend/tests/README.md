@@ -18,7 +18,14 @@ packages/base-backend/
 │   │   └── test-utils.ts   # 测试工具函数
 │   ├── integration/        # 集成测试用例
 │   │   ├── auth-api.spec.ts    # 认证模块测试
-│   │   └── user-api.spec.ts    # 用户模块测试
+│   │   ├── user-api.spec.ts    # 用户模块测试
+│   │   ├── role-api.spec.ts    # 角色模块测试
+│   │   ├── permission-api.spec.ts  # 权限模块测试
+│   │   ├── permission-pool-api.spec.ts  # 权限池模块测试
+│   │   ├── app-type-api.spec.ts    # 应用类型模块测试
+│   │   ├── app-api.spec.ts         # 应用实例模块测试
+│   │   ├── member-api.spec.ts      # 应用成员模块测试
+│   │   └── audit-log-api.spec.ts   # 审计日志模块测试
 │   └── e2e/              # E2E 测试（待添加）
 ├── jest.config.ts        # Jest 配置
 ├── tsconfig.test.json    # 测试 TypeScript 配置
@@ -92,6 +99,48 @@ pnpm test:cov
 | USER-05 | 3 | 删除用户测试 |
 | USER-06 | 3 | 更新用户状态测试 |
 | USER-07 | 2 | 重置密码测试 |
+
+### ROLE 模块测试 (role-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| ROLE-01 | - | 角色管理测试 |
+
+### PERMISSION 模块测试 (permission-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| PERM-01 | - | 权限管理测试 |
+
+### PERMISSION-POOL 模块测试 (permission-pool-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| PP-01 | - | 权限池管理测试 |
+
+### APP-TYPE 模块测试 (app-type-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| AT-01 | - | 应用类型管理测试 |
+
+### APP 模块测试 (app-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| APP-01 | - | 应用实例管理测试 |
+
+### MEMBER 模块测试 (member-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| MEM-01 | - | 应用成员管理测试 |
+
+### AUDIT-LOG 模块测试 (audit-log-api.spec.ts)
+
+| 测试组 | 场景数 | 说明 |
+|--------|--------|------|
+| AL-01 | - | 审计日志管理测试 |
 
 ---
 
@@ -223,9 +272,4 @@ expect(response.body.data.total).toBeGreaterThanOrEqual(1);
 
 ## 待办事项
 
-- [ ] 添加角色模块测试 (role-api.spec.ts)
-- [ ] 添加权限模块测试 (permission-api.spec.ts)
-- [ ] 添加应用类型模块测试 (app-type-api.spec.ts)
-- [ ] 添加应用实例模块测试 (app-api.spec.ts)
-- [ ] 添加审计日志模块测试 (audit-log-api.spec.ts)
 - [ ] 添加 E2E 测试配置

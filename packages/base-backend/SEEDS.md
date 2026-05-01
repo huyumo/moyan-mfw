@@ -44,44 +44,44 @@ npx ts-node -r tsconfig-paths/register src/database/run-seeds.ts
 | 管理后台 | admin | 企业内部管理后台系统 |
 | 用户端 | user | 面向用户的 C 端系统 |
 
-### 2. 权限（25 个）
+### 2. 权限
 
-#### 系统管理根节点
-- `system` - 系统管理（根节点）
+#### PC 端根节点
+- `pc_root` - PC 端权限根节点
+
+#### 首页
+- `pc_root:dashboard` - 首页
+
+#### 系统管理模块
+- `pc_root:sys` - 系统管理（模块节点）
 
 #### 用户管理
-- `system:user` - 用户管理（菜单）
-- `system:user:add` - 用户新增（按钮，permissionValue: 1）
-- `system:user:edit` - 用户编辑（按钮，permissionValue: 2）
-- `system:user:delete` - 用户删除（按钮，permissionValue: 4）
-- `system:user:view` - 用户查看（按钮，permissionValue: 32）
+- `pc_root:sys:user` - 用户管理（菜单，含添加/编辑/删除/查看等按钮权限）
 
 #### 角色管理
-- `system:role` - 角色管理（菜单）
-- `system:role:add` - 角色新增（按钮，permissionValue: 1）
-- `system:role:edit` - 角色编辑（按钮，permissionValue: 2）
-- `system:role:delete` - 角色删除（按钮，permissionValue: 4）
-- `system:role:view` - 角色查看（按钮，permissionValue: 32）
-- `system:role:assign` - 分配权限（按钮，permissionValue: 16）
+- `pc_root:sys:role` - 角色管理（菜单，含添加/编辑/删除/查看/分配权限等按钮权限）
 
 #### 权限管理
-- `system:permission` - 权限管理（菜单）
-- `system:permission:add` - 权限新增（按钮，permissionValue: 1）
-- `system:permission:edit` - 权限编辑（按钮，permissionValue: 2）
-- `system:permission:delete` - 权限删除（按钮，permissionValue: 4）
-- `system:permission:view` - 权限查看（按钮，permissionValue: 32）
+- `pc_root:sys:permission` - 权限管理（菜单，含添加/编辑/删除/查看等按钮权限）
+- `pc_root:sys:permission-pc` - PC 权限管理（菜单，含添加/编辑/删除/查看等按钮权限）
+
+#### 应用管理
+- `pc_root:sys:app` - 应用管理（菜单，含添加/编辑/删除/查看等按钮权限）
 
 #### 应用类型管理
-- `system:app-type` - 应用类型管理（菜单）
-- `system:app-type:add` - 应用类型新增（按钮，permissionValue: 1）
-- `system:app-type:edit` - 应用类型编辑（按钮，permissionValue: 2）
-- `system:app-type:delete` - 应用类型删除（按钮，permissionValue: 4）
-- `system:app-type:view` - 应用类型查看（按钮，permissionValue: 32）
+- `pc_root:sys:app-type` - 应用类型管理（菜单，含添加/编辑/删除/查看等按钮权限）
+
+#### 成员管理
+- `pc_root:sys:member` - 成员管理（菜单，含添加/编辑/删除/查看等按钮权限）
 
 #### 审计日志管理
-- `system:audit-log` - 审计日志管理（菜单）
-- `system:audit-log:view` - 审计日志查看（按钮，permissionValue: 32）
-- `system:audit-log:delete` - 审计日志删除（按钮，permissionValue: 4）
+- `pc_root:sys:audit-log` - 审计日志管理（菜单，含查看/删除等按钮权限）
+
+#### 文件上传
+- `pc_root:sys:upload` - 文件上传（菜单）
+
+#### 普通权限根节点
+- `normal_root` - 普通端权限根节点
 
 ### 3. 角色（3 个）
 

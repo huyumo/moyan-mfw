@@ -109,13 +109,12 @@
 | `ApiAuditLogFindByOperatorId` | GET | `/api/audit-logs/operator/{operatorId}` | 是 | 根据操作人ID查询 |
 | `ApiAuditLogDeleteBeforeDate` | DELETE | `/api/audit-logs/before/{beforeDate}` | 是 | 清理审计日志 |
 
-### 健康检查接口 (health)
+### 文件上传接口 (upload-file)
 
 | API 类 | 方法 | 路径 | 认证 | 功能 |
 |--------|------|------|------|------|
-| `ApiHealthHealthCheck` | GET | `/api/health` | 否 | 健康检查 |
-| `ApiHealthReadyCheck` | GET | `/api/health/ready` | 否 | 就绪检查 |
-| `ApiHealthLiveCheck` | GET | `/api/health/live` | 否 | 存活检查 |
+| `ApiUploadFileUploadFile` | POST | `/api/upload-file/upload-file` | 是 | 单文件上传 |
+| `ApiUploadFileUploadFiles` | POST | `/api/upload-file/upload-files` | 是 | 多文件上传 |
 
 ### 系统初始化接口 (install)
 
