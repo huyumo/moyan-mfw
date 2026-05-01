@@ -376,7 +376,7 @@ response = client.chat.completions.create(
 |--------|-----|
 | **服务商** | `OpenAI` |
 | **模型** | 点击"使用其他模型"，填写：`z-ai/glm-5.1` |
-| **API 密钥** | `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` |
+| **API 密钥** | `nvapi-your-api-key-here`（替换为你自己的 Key） |
 | **自定义请求地址** | `https://integrate.api.nvidia.com/v1` |
 
 #### 步骤3：保存并测试
@@ -397,7 +397,7 @@ response = client.chat.completions.create(
 │ 模型:          [使用其他模型...]         │
 │               → z-ai/glm-5.1           │
 │                                         │
-│ API 密钥:      nvapi-3aghn...           │
+│ API 密钥:      nvapi-your-api-key...  │
 │                                         │
 │ 自定义请求地址:                          │
 │               https://integrate.api.    │
