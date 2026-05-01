@@ -27,6 +27,7 @@
                   class="mfw-admin-layout-mode-card"
                   :class="{ 'is-active': draftStyleConfig.layoutMode === option.value }"
                   type="button"
+                  :data-testid="`settings-layout-mode-${option.value}`"
                   @click="draftStyleConfig.layoutMode = option.value"
                 >
                   <div class="mfw-admin-layout-mode-icon"><LayoutModeIcon :mode="option.value" /></div>
@@ -67,6 +68,7 @@
                   class="mfw-admin-theme-card"
                   :class="{ 'is-active': draftStyleConfig.themePackage === theme.name }"
                   type="button"
+                  :data-testid="`settings-theme-${theme.name}`"
                   @click="handleThemeSelect(theme.name)"
                 >
                   <div class="mfw-admin-theme-preview" :style="{ background: getThemeColor(theme.name) }"></div>
@@ -83,6 +85,7 @@
                   <span class="mfw-admin-switch-label">{{ text.darkMode }}</span>
                   <el-switch
                     :model-value="colorMode === 'dark'"
+                    data-testid="settings-dark-switch"
                     @change="handleDarkModeToggle"
                   />
                 </div>
@@ -97,26 +100,26 @@
               <div class="mfw-admin-switch-list">
                 <div class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.showTabs }}</span
-                  ><el-switch v-model="draftStyleConfig.showTabs" />
+                  ><el-switch v-model="draftStyleConfig.showTabs" data-testid="settings-tabs-switch" />
                 </div>
                 <div v-if="showSidebarInDraft" class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.compactSidebar }}</span
-                  ><el-switch v-model="draftStyleConfig.compact" />
+                  ><el-switch v-model="draftStyleConfig.compact" data-testid="settings-compact-switch" />
                 </div>
                 <div class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.fixedHeader }}</span
-                  ><el-switch v-model="draftStyleConfig.fixedHeader" />
+                  ><el-switch v-model="draftStyleConfig.fixedHeader" data-testid="settings-fixed-header-switch" />
                 </div>
                 <div class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.searchTrigger }}</span>
-                  <el-radio-group v-model="draftStyleConfig.searchTrigger" size="small">
+                  <el-radio-group v-model="draftStyleConfig.searchTrigger" size="small" data-testid="settings-search-trigger">
                     <el-radio-button value="change">{{ text.searchTriggerChange }}</el-radio-button>
                     <el-radio-button value="submit">{{ text.searchTriggerSubmit }}</el-radio-button>
                   </el-radio-group>
                 </div>
                 <div class="mfw-admin-switch-item">
                   <span class="mfw-admin-switch-label">{{ text.pageCache }}</span
-                  ><el-switch v-model="draftStyleConfig.keepAlive" />
+                  ><el-switch v-model="draftStyleConfig.keepAlive" data-testid="settings-keepalive-switch" />
                 </div>
               </div>
             </div>
@@ -124,15 +127,16 @@
         </el-tabs>
       </el-scrollbar>
       <div class="mfw-admin-settings-actions">
-        <el-button class="mfw-admin-settings-cancel" @click="drawerVisible = false">{{ text.cancel }}</el-button>
+        <el-button class="mfw-admin-settings-cancel" data-testid="settings-cancel-btn" @click="drawerVisible = false">{{ text.cancel }}</el-button>
         <el-button
           class="mfw-admin-settings-save"
           type="primary"
+          data-testid="settings-save-btn"
           @click="handleSaveSettings"
           :disabled="!hasUnsavedChanges"
           ><el-icon><Check /></el-icon>{{ text.save }}</el-button
         >
-        <el-button class="mfw-admin-settings-reset" type="danger" plain @click="emit('reset-defaults')"
+        <el-button class="mfw-admin-settings-reset" type="danger" plain data-testid="settings-reset-btn" @click="emit('reset-defaults')"
           ><el-icon><RefreshLeft /></el-icon>{{ text.reset }}</el-button
         >
       </div>

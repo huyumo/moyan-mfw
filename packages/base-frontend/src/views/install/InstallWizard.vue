@@ -21,6 +21,7 @@
               type="password"
               placeholder="请输入 8-32 位密码，包含字母和数字"
               show-password
+              data-testid="install-password-input"
               :class="{ 'is-error': !passwordValid && adminPassword }"
             />
           </el-form-item>
@@ -31,6 +32,7 @@
               type="password"
               placeholder="请再次输入密码"
               show-password
+              data-testid="install-confirm-password-input"
               :class="{ 'is-error': !passwordMatch }"
             />
             <div v-if="!passwordMatch" class="error-text">两次输入的密码不一致</div>
@@ -58,6 +60,7 @@
               size="large"
               :loading="loading"
               :disabled="!passwordValid || !passwordMatch"
+              data-testid="install-init-btn"
               @click="handleInit"
             >
               <template v-if="loading">

@@ -24,8 +24,8 @@
       <h1>404</h1>
       <p>你访问的页面不存在。</p>
       <el-space>
-        <el-button type="primary" @click="go('/dashboard')">返回首页</el-button>
-        <el-button @click="go('/login')">前往登录</el-button>
+        <el-button type="primary" data-testid="not-found-home-btn" @click="go('/dashboard')">返回首页</el-button>
+        <el-button data-testid="not-found-login-btn" @click="go('/login')">前往登录</el-button>
       </el-space>
     </el-card>
   </div>

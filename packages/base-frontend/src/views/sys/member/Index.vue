@@ -7,7 +7,7 @@
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-        <el-button type="primary" @click="handleAdd">
+        <el-button type="primary" data-testid="member-create-btn" @click="handleAdd">
           <el-icon><Plus /></el-icon>
           添加成员
         </el-button>
@@ -114,8 +114,8 @@ const actionColumn = {
   width: 150,
   fixed: 'right' as const,
   render: ({ row }: { row: MemberResponseDto }) => renderActionButtons([
-    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'], disabled: isNotOwner },
-    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'], disabled: isNotOwner },
+    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'], disabled: isNotOwner, testId: 'member-assign-role-btn' },
+    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'], disabled: isNotOwner, testId: 'member-remove-btn' },
   ], {}, row),
 };
 

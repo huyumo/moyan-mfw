@@ -12,6 +12,7 @@
             size="mini"
             v-if="data.checked && (data.nodeType === 'PAGE' || data.nodeType === 'TAG')"
             :icon="Key"
+            data-testid="tree-select-perm-btn"
             @click.stop="handlePermissionValue(data)"
           >
           </el-button>

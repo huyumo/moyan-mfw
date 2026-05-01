@@ -58,8 +58,8 @@
       <span>{{ dialogText.body }}</span>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="resetConfirmVisible = false">{{ dialogText.cancel }}</el-button>
-          <el-button type="primary" @click="confirmResetDefaults">{{ dialogText.confirm }}</el-button>
+          <el-button data-testid="reset-cancel-btn" @click="resetConfirmVisible = false">{{ dialogText.cancel }}</el-button>
+          <el-button type="primary" data-testid="reset-confirm-btn" @click="confirmResetDefaults">{{ dialogText.confirm }}</el-button>
         </span>
       </template>
     </el-dialog>

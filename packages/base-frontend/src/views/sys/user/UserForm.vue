@@ -43,6 +43,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'avatar',
     label: '头像',
     component: MfwImageSingle,
+    testId: 'user-avatar-upload',
     elProps: {
       crop: true,
       cropRatio: 1,
@@ -55,6 +56,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'username',
     label: '用户名',
     component: 'el-input',
+    testId: 'user-username-input',
     disabled: isEdit.value,
     rules: [
       { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -69,6 +71,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'nickname',
     label: '昵称',
     component: 'el-input',
+    testId: 'user-nickname-input',
     rules: [
       { max: 50, message: '昵称长度不能超过 50 个字符', trigger: 'blur' },
     ],
@@ -81,6 +84,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'phone',
     label: '手机号',
     component: 'el-input',
+    testId: 'user-phone-input',
     rules: [
       { required: true, message: '请输入手机号', trigger: 'blur' },
       { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
@@ -94,6 +98,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'gender',
     label: '性别',
     component: MfwRadioGroup,
+    testId: 'user-gender-radio',
     elProps: {
       options: [
         { label: '未知', value: 0 },

@@ -39,6 +39,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'userId',
     label: '选择用户',
     component: MfwUserPicker,
+    testId: 'add-member-user-picker',
     rules: [{ required: true, message: '请选择用户', trigger: 'change' }],
     elProps: {
       style: 'width: 100%',

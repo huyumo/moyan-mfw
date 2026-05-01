@@ -58,6 +58,7 @@
           selected: selectedAppId === app.appId
         }"
         @click="handleSelectApp(app)"
+        data-testid="app-selector-item"
       >
         <!-- 应用图标 -->
         <div class="app-icon placeholder" v-if="!getImageSrc(app.logo)">

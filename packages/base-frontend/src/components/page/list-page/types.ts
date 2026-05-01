@@ -26,6 +26,8 @@ export interface SearchTemplateItem {
   required?: boolean;
   /** 是否立即触发搜索（change 模式下） */
   immediate?: boolean;
+  /** 测试标识 */
+  testId?: string;
 }
 
 /** 加载参数 */

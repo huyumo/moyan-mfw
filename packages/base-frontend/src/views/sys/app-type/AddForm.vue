@@ -45,6 +45,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'typeName',
     label: '类型名称',
     component: 'el-input',
+    testId: 'app-type-name-input',
     placeholder: '请输入类型名称',
     rules: [{ required: true, message: '请输入类型名称', trigger: 'blur' }],
   },
@@ -52,6 +53,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'typeCode',
     label: '类型编码',
     component: 'el-input',
+    testId: 'app-type-code-input',
     placeholder: '请输入类型编码',
     rules: [{ required: true, message: '请输入类型编码', trigger: 'blur' }],
   },
@@ -59,11 +61,13 @@ const formTemplate: FormItemConfig[] = [
     key: 'icon',
     label: '图标',
     component: MfwIconPicker,
+    testId: 'app-type-icon-picker',
   },
   {
     key: 'typeDesc',
     label: '描述',
     component: 'el-input',
+    testId: 'app-type-desc-input',
     placeholder: '请输入描述',
     elProps: {
       type: 'textarea',
@@ -74,6 +78,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'multiAppEnabled',
     label: '支持多应用',
     component: 'el-switch',
+    testId: 'app-type-multi-app-switch',
     value: STATUS.ENABLED,
     elProps: {
       activeValue: STATUS.ENABLED,

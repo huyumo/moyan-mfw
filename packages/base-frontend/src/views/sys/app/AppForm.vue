@@ -57,6 +57,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'logo',
     label: '应用Logo',
     component: MfwImageSingle,
+    testId: 'app-logo-upload',
     elProps: {
       crop: true,
       cropRatio: 1,
@@ -69,6 +70,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appTypeId',
     label: '应用类型',
     component: 'el-select',
+    testId: 'app-type-select',
     placeholder: '请选择应用类型',
     rules: [{ required: true, message: '请选择应用类型', trigger: 'change' }],
     disabled: () => isEdit.value,
@@ -80,6 +82,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appName',
     label: '应用名称',
     component: 'el-input',
+    testId: 'app-name-input',
     placeholder: '请输入应用名称',
     rules: [{ required: true, message: '请输入应用名称', trigger: 'blur' }],
   },
@@ -87,6 +90,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appCode',
     label: '应用编码',
     component: 'el-input',
+    testId: 'app-code-input',
     placeholder: '请输入应用编码',
     rules: [{ required: true, message: '请输入应用编码', trigger: 'blur' }],
     show: () => !isEdit.value,
@@ -95,6 +99,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appCode',
     label: '应用编码',
     component: 'el-input',
+    testId: 'app-code-input',
     disabled: true,
     show: () => isEdit.value,
   },
@@ -102,6 +107,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'ownerId',
     label: '拥有者',
     component: MfwUserPicker,
+    testId: 'app-owner-picker',
     rules: [{ required: true, message: '请选择拥有者', trigger: 'change' }],
     elProps: {
       style: 'width: 100%',
@@ -111,6 +117,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appDesc',
     label: '应用描述',
     component: 'el-input',
+    testId: 'app-desc-input',
     placeholder: '请输入应用描述',
     elProps: {
       type: 'textarea',
@@ -121,6 +128,7 @@ const baseTemplate: FormItemConfig[] = [
     key: 'appStatus',
     label: '状态',
     component: 'el-switch',
+    testId: 'app-status-switch',
     show: () => isEdit.value,
     value: STATUS.ENABLED,
     elProps: {

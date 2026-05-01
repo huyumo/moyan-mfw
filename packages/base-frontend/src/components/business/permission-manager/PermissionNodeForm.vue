@@ -13,7 +13,7 @@
       label-width="100px"
     >
       <el-form-item label="权限名称" prop="permName">
-        <el-input v-model="form.permName" placeholder="请输入权限名称" />
+        <el-input v-model="form.permName" placeholder="请输入权限名称" data-testid="perm-name-input" />
       </el-form-item>
 
       <el-form-item label="权限编码" prop="permCode">
@@ -23,6 +23,7 @@
             v-model="form.permCode"
             :placeholder="permCodePlaceholder"
             :disabled="isEdit"
+            data-testid="perm-code-input"
             class="perm-code-input-field"
           />
         </div>
@@ -36,6 +37,7 @@
           v-model="form.nodeType"
           placeholder="请选择节点类型"
           style="width: 100%"
+          data-testid="perm-type-select"
           :disabled="isEdit"
         >
           <el-option
@@ -53,11 +55,12 @@
           type="textarea"
           :rows="2"
           placeholder="请输入权限描述"
+          data-testid="perm-desc-input"
         />
       </el-form-item>
 
       <el-form-item label="显示模式" prop="showMode">
-        <el-radio-group v-model="form.showMode">
+        <el-radio-group v-model="form.showMode" data-testid="perm-showmode-radio">
           <el-radio-button label="NORMAL">普通</el-radio-button>
           <el-radio-button label="DEV">开发</el-radio-button>
         </el-radio-group>
@@ -70,6 +73,7 @@
           :inactive-value="0"
           active-text="启用"
           inactive-text="禁用"
+          data-testid="perm-enabled-switch"
         />
       </el-form-item>
     </el-form>

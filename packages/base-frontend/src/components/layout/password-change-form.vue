@@ -32,6 +32,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'oldPassword',
     label: '当前密码',
     component: 'el-input',
+    testId: 'password-old-input',
     rules: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
     elProps: { type: 'password', showPassword: true, placeholder: '请输入当前密码', clearable: false },
   },
@@ -39,6 +40,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'newPassword',
     label: '新密码',
     component: 'el-input',
+    testId: 'password-new-input',
     rules: [
       { required: true, message: '请输入新密码', trigger: 'blur' },
       { pattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/, message: '密码须包含字母和数字，至少6位', trigger: 'blur' },
@@ -49,6 +51,7 @@ const formTemplate: FormItemConfig[] = [
     key: 'confirmPassword',
     label: '确认密码',
     component: 'el-input',
+    testId: 'password-confirm-input',
     rules: [
       { required: true, message: '请再次输入新密码', trigger: 'blur' },
       {

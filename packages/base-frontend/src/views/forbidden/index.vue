@@ -24,8 +24,8 @@
       <h1>403</h1>
       <p>你没有权限访问该资源。</p>
       <el-space>
-        <el-button type="primary" @click="go('/dashboard')">返回首页</el-button>
-        <el-button @click="go('/login')">切换账号</el-button>
+        <el-button type="primary" data-testid="forbidden-home-btn" @click="go('/dashboard')">返回首页</el-button>
+        <el-button data-testid="forbidden-switch-btn" @click="go('/login')">切换账号</el-button>
       </el-space>
     </el-card>
   </div>

@@ -6,7 +6,7 @@
 -->
 <template>
   <div class="role-assign-form">
-    <el-checkbox-group v-model="selectedRoleIds">
+    <el-checkbox-group v-model="selectedRoleIds" data-testid="role-assign-checkbox-group">
       <div v-for="role in availableRoles" :key="role.id" class="role-item">
         <el-checkbox :label="role.id" :disabled="role.isOwner === STATUS.ENABLED">
           {{ role.roleName }}

@@ -44,11 +44,11 @@
     <slot name="extra" :user-info="userInfo" />
 
     <div class="profile-actions">
-      <el-button type="primary" @click="handleEditProfile">
+      <el-button type="primary" data-testid="profile-edit-btn" @click="handleEditProfile">
         <el-icon><Edit /></el-icon>
         编辑资料
       </el-button>
-      <el-button @click="handleChangePassword">
+      <el-button data-testid="profile-password-btn" @click="handleChangePassword">
         <el-icon><Lock /></el-icon>
         修改密码
       </el-button>

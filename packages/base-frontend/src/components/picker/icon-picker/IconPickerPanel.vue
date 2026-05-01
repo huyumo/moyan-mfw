@@ -12,6 +12,7 @@
         placeholder="搜索图标..."
         clearable
         prefix-icon="Search"
+        data-testid="icon-picker-search"
       />
     </div>
     <el-scrollbar max-height="400px" class="icon-picker-scrollbar">
@@ -25,6 +26,7 @@
           class="icon-picker-item"
           :class="{ selected: selectedIcon === icon.name }"
           @click="handleSelect(icon.name)"
+          data-testid="icon-picker-item"
         >
           <el-icon :size="panelIconSize">
             <component :is="getIconComponent(icon.name)" />
@@ -34,7 +36,7 @@
       </div>
     </el-scrollbar>
     <div v-if="selectedIcon" class="icon-picker-footer">
-      <el-tag size="small" type="info" @click="handleClear">
+      <el-tag size="small" type="info" data-testid="icon-picker-clear" @click="handleClear">
         清空
       </el-tag>
     </div>

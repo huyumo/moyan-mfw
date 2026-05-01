@@ -63,6 +63,7 @@ export default defineComponent({
           link
           icon={btn.icon}
           disabled={disabled}
+          {...(btn.testId ? { 'data-testid': btn.testId } : {})}
           onClick={() => btn.onClick(props.row)}
         >
           {btn.label}

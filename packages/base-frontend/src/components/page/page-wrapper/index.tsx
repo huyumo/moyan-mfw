@@ -173,6 +173,7 @@ export default defineComponent({
               type="primary"
               icon={Search}
               loading={ctx.loading.value}
+              data-testid="search-btn"
               onClick={ctx.doSearch}
               circle
             />
@@ -181,6 +182,7 @@ export default defineComponent({
             <ElButton
               icon={Refresh}
               loading={ctx.loading.value}
+              data-testid="search-reset-btn"
               onClick={ctx.reset}
               circle
             />
@@ -189,6 +191,7 @@ export default defineComponent({
             <ElTooltip content={ctx.expanded.value ? '收起' : '展开'} placement="top">
               <ElButton
                 icon={ctx.expanded.value ? ArrowUp : ArrowDown}
+                data-testid="search-expand-btn"
                 onClick={ctx.toggleExpand}
                 circle
               />

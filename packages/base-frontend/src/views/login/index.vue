@@ -40,6 +40,7 @@
             clearable
             :disabled="loading"
             aria-label="用户名"
+            data-testid="login-username-input"
             @keyup.enter="submit"
           />
         </el-form-item>
@@ -52,6 +53,7 @@
             placeholder="请输入密码"
             :disabled="loading"
             aria-label="密码"
+            data-testid="login-password-input"
             @keyup.enter="submit"
           />
         </el-form-item>
@@ -64,6 +66,7 @@
             :loading="loading"
             :disabled="loading"
             aria-label="登录"
+            data-testid="login-submit-btn"
           >
             {{ loading ? '登录中...' : '登 录' }}
           </el-button>

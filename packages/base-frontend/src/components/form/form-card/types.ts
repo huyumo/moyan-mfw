@@ -40,6 +40,8 @@ export interface FormItemConfig {
   helperType?: string;
   /** ref 名称 */
   ref?: string;
+  /** 测试标识 */
+  testId?: string;
 }
 
 /** 分组配置 */

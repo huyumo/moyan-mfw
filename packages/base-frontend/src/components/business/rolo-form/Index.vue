@@ -45,6 +45,7 @@ const formTemplate: FormItemConfig[] = [
     label: '角色名称',
     type: 'input',
     component: 'el-input',
+    testId: 'role-name-input',
     rules: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
   },
   {
@@ -52,6 +53,7 @@ const formTemplate: FormItemConfig[] = [
     label: '角色编码',
     type: 'input',
     component: 'el-input',
+    testId: 'role-code-input',
     rules: [
       { required: true, message: '请输入角色编码', trigger: 'blur' },
       {
@@ -66,6 +68,7 @@ const formTemplate: FormItemConfig[] = [
     label: '角色描述',
     type: 'input',
     component: 'el-input',
+    testId: 'role-desc-input',
     elProps: { type: 'textarea', rows: 4 },
     rules: [{ max: 200, message: '角色描述不能超过 200 个字符', trigger: 'blur' }],
   },
@@ -74,6 +77,7 @@ const formTemplate: FormItemConfig[] = [
     label: '排序',
     type: 'number',
     component: 'el-input-number',
+    testId: 'role-sort-input',
     rules: [{ required: true, message: '请输入排序', trigger: 'blur' }],
   },
 ];

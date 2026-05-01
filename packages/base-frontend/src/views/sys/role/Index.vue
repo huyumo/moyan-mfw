@@ -7,7 +7,7 @@
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-      <el-button type="primary" @click="handleAdd">
+      <el-button type="primary" data-testid="role-create-btn" @click="handleAdd">
         <el-icon>
           <Plus />
         </el-icon>
@@ -49,18 +49,21 @@ const searchTemplate = [
     key: 'roleName',
     label: '角色名称',
     type: 'input' as const,
+    testId: 'role-search-name',
     placeholder: '请输入角色名称',
   },
   {
     key: 'roleCode',
     label: '角色编码',
     type: 'input' as const,
+    testId: 'role-search-code',
     placeholder: '请输入角色编码',
   },
   {
     key: 'roleStatus',
     label: '状态',
     type: 'select' as const,
+    testId: 'role-search-status',
     placeholder: '请选择状态',
     elProps: {
       options: [

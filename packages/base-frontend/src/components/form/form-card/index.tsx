@@ -332,6 +332,7 @@ export default defineComponent({
 
           return h(component, {
             ...propsData,
+            ...(item.testId ? { 'data-testid': item.testId } : {}),
             ref: (el: any) => {
               componentRefs.set(item.key, el);
             }
