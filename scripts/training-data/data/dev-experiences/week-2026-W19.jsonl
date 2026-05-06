@@ -1,0 +1,1 @@
+{"conversations":[{"role":"user","content":"moyan-mfw 开发中遇到问题：MfwPopup 的 confirm 回调不执行，原因是什么？如何修复？"},{"role":"assistant","content":"问题：MfwPopup 的 confirm 回调不执行\n\n根本原因：弹窗组件未通过 on.confirm 绑定回调，而是用了 @confirm 事件\n\n修复方法：使用 MfwPopup.open({ on: { confirm: handleConfirm } }) 命令式调用\n\n预防措施：禁止手动管理弹窗 visible 状态，必须使用 MfwPopup.open()"}]}

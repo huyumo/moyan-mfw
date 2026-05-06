@@ -1,0 +1,27 @@
+{
+  "name": "moyan-mfw-training-data",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract": "tsx src/index.ts",
+    "extract:batch1": "tsx src/index.ts --batch 1",
+    "extract:batch2": "tsx src/index.ts --batch 2",
+    "extract:batch3": "tsx src/index.ts --batch 3",
+    "validate": "tsx src/index.ts --validate-only",
+    "stats": "tsx src/index.ts --stats",
+    "exp:list": "tsx src/capture.ts list",
+    "exp:bug": "tsx src/capture.ts bug",
+    "exp:lesson": "tsx src/capture.ts lesson",
+    "exp:decision": "tsx src/capture.ts decision",
+    "exp:qa": "tsx src/capture.ts qa"
+  },
+  "dependencies": {
+    "ts-morph": "^21.0.0",
+    "gray-matter": "^4.0.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
