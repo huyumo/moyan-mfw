@@ -22,12 +22,8 @@
     <div class="app-type-card__body">
       <p class="app-type-card__desc">{{ data.typeDesc || '暂无描述' }}</p>
       <div class="app-type-card__tags">
-        <el-tag :type="data.typeStatus === StatusDict.ENABLED ? 'success' : 'danger'" size="small">
-          {{ data.typeStatus === StatusDict.ENABLED ? '启用' : '禁用' }}
-        </el-tag>
-        <el-tag :type="data.multiAppEnabled === MultiAppEnabledDict.YES ? 'primary' : 'info'" size="small">
-          {{ data.multiAppEnabled === MultiAppEnabledDict.YES ? '多应用' : '单应用' }}
-        </el-tag>
+        <MfwDictFormat :value="data.typeStatus" :dict="toItems(StatusDict)" as-tag />
+        <MfwDictFormat :value="data.multiAppEnabled" :dict="toItems(MultiAppEnabledDict)" as-tag />
       </div>
     </div>
 
@@ -47,7 +43,8 @@ import { computed } from 'vue';
 import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-import { StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
+import { MfwDictFormat } from '../../../components';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'AppTypeCard' });
 

@@ -8,7 +8,7 @@
         <span class="header-name">{{ displayName }}</span>
         <span class="header-status">
           <el-icon><CircleCheck /></el-icon>
-          {{ statusText }}
+          <MfwDictFormat :value="userInfo?.userStatus" :dict="toItems(StatusDict)" />
         </span>
       </div>
     </div>
@@ -66,6 +66,8 @@ import { ApiUserFindById } from '../../apis/sys';
 import type { UserResponseDto } from '../../apis/sys/schemas';
 import UserForm from '../../views/sys/user/UserForm.vue';
 import PasswordChangeForm from './password-change-form.vue';
+import { MfwDictFormat } from '..';
+import { toItems, StatusDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'ProfilePanel' });
 
@@ -91,7 +93,6 @@ const avatarUrl = computed(() => {
 });
 
 const genderText = computed(() => GENDER_MAP[userInfo.value?.gender ?? 0] || '未知');
-const statusText = computed(() => userInfo.value?.userStatus === 1 ? '启用' : '禁用');
 
 async function fetchUserInfo() {
   const userId = authStore.user?.id;

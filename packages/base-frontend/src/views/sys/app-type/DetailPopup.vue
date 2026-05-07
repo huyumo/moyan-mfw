@@ -20,14 +20,10 @@
         {{ data?.icon || '-' }}
       </el-descriptions-item>
       <el-descriptions-item label="支持多应用">
-        <el-tag :type="data?.multiAppEnabled === MultiAppEnabledDict.YES ? 'success' : 'info'" size="small">
-          {{ data?.multiAppEnabled === MultiAppEnabledDict.YES ? '是' : '否' }}
-        </el-tag>
+        <MfwDictFormat :value="data?.multiAppEnabled" :dict="toItems(MultiAppEnabledDict)" as-tag />
       </el-descriptions-item>
       <el-descriptions-item label="状态">
-        <el-tag :type="data?.typeStatus === StatusDict.ENABLED ? 'success' : 'danger'" size="small">
-          {{ data?.typeStatus === StatusDict.ENABLED ? '启用' : '禁用' }}
-        </el-tag>
+        <MfwDictFormat :value="data?.typeStatus" :dict="toItems(StatusDict)" as-tag />
       </el-descriptions-item>
       <el-descriptions-item label="排序">
         {{ data?.sortOrder || '-' }}
@@ -44,7 +40,8 @@
 
 <script setup lang="ts">
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-import { StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
+import { MfwDictFormat } from '../../../components';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
 
 defineProps<{
   data?: AppTypeResponseDto | null;
