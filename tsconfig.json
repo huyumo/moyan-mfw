@@ -24,7 +24,7 @@
       "moyan-mfw-base-backend": ["./packages/base-backend/dist"],
       "moyan-mfw-base-frontend": ["./packages/base-frontend/dist"],
       "moyan-mfw-base-api": ["./packages/base-api/dist"],
-      "moyan-shared-dict": ["./packages/shared-dict/src"]
+      "moyan-shared-dict": ["./packages/shared-dict/dist"]
     }
   },
   "exclude": ["node_modules", "dist", "scripts"]

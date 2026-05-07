@@ -2,8 +2,13 @@
   "name": "moyan-shared-dict",
   "version": "0.1.0",
   "description": "Shared dictionary definitions for moyan frontend and backend",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "pnpm run build"
+  },
   "dependencies": {
     "reflect-metadata": "^0.2.2"
   },

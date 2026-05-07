@@ -192,6 +192,9 @@ importers:
       moyan-shared-dict:
         specifier: workspace:*
         version: link:../packages/shared-dict
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
     devDependencies:
       typescript:
         specifier: ^5.1.3
