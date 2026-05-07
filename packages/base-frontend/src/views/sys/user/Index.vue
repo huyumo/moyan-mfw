@@ -67,7 +67,7 @@ const searchTemplate = [
     testId: 'user-search-status',
     placeholder: '请选择状态',
     elProps: {
-      options: toItems(StatusDict).map(({ value, label }) => ({ value, label })),
+      options: toItems(StatusDict)
     },
   },
 ];
