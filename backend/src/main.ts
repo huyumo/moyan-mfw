@@ -7,6 +7,7 @@ import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
 import { SupplierModule } from './modules/supplier/supplier.module';
 import './permissions';
+import 'business-dict';
 
 const swaggerGroups: SwaggerGroupConfig[] = [
   {
