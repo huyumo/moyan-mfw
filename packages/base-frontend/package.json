@@ -29,6 +29,8 @@
     "element-plus": "^2.5.3",
     "md-editor-v3": "^6.4.2",
     "moyan-api": "^2.1.19",
+    "business-dict": "workspace:*",
+    "moyan-shared-dict": "workspace:*",
     "pinia": "^2.1.7",
     "quill": "^2.0.3",
     "reflect-metadata": "^0.2.2",

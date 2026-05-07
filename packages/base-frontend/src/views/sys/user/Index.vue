@@ -25,8 +25,9 @@ import { ref, h } from 'vue';
 import { ElMessageBox, ElSwitch, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete, Lock, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
-import type { DictItem } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { toItems, StatusDict } from 'moyan-shared-dict'
+import { GenderDict, DeveloperDict } from 'business-dict'
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
 import { getImageSrc } from '../../../utils/image';
@@ -38,32 +39,6 @@ import {
 } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
 import UserForm from './UserForm.vue';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
-
-/** 性别常量 */
-const GENDER = {
-  UNKNOWN: 0,
-  MALE: 1,
-  FEMALE: 2,
-} as const;
-
-/** 性别字典 */
-const GENDER_DICT: DictItem[] = [
-  { value: GENDER.UNKNOWN, label: '未知', type: 'info' },
-  { value: GENDER.MALE, label: '男', type: 'primary' },
-  { value: GENDER.FEMALE, label: '女', type: 'danger' },
-];
-
-/** 开发者字典 */
-const DEVELOPER_DICT: DictItem[] = [
-  { value: 1, label: '是', type: 'success' },
-  { value: 0, label: '否', type: 'info' },
-];
 
 defineOptions({ name: 'MfwUserList' });
 
@@ -92,10 +67,7 @@ const searchTemplate = [
     testId: 'user-search-status',
     placeholder: '请选择状态',
     elProps: {
-      options: [
-        { label: '启用', value: STATUS.ENABLED },
-        { label: '禁用', value: STATUS.DISABLED },
-      ],
+      options: toItems(StatusDict).map(({ value, label }) => ({ value, label })),
     },
   },
 ];
@@ -118,21 +90,21 @@ const columns = [
     label: '性别',
     width: 80,
     align: 'center' as const,
-    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.gender, dict: GENDER_DICT, asTag: true }),
+    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.gender, dict: toItems(GenderDict), asTag: true }),
   },
   {
     prop: 'isDeveloper',
     label: '开发者',
     width: 80,
     align: 'center' as const,
-    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.isDeveloper ? 1 : 0, dict: DEVELOPER_DICT, asTag: true }),
+    render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: Number(row.isDeveloper), dict: toItems(DeveloperDict), asTag: true }),
   },
   {
     prop: 'userStatus',
     label: '状态',
     width: 100,
     render: ({ row }: { row: UserResponseDto }) => h(ElSwitch, {
-      modelValue: row.userStatus === STATUS.ENABLED,
+      modelValue: row.userStatus === StatusDict.ENABLED,
       size: 'small',
       'data-testid': 'user-status-switch',
       onChange: (val: string | number | boolean) => handleStatusChange(row, Boolean(val)),
@@ -197,7 +169,7 @@ const handleEdit = (row: UserResponseDto) => {
 
 /** 状态切换 */
 const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
-  const status = enabled ? STATUS.ENABLED : STATUS.DISABLED;
+  const status = enabled ? StatusDict.ENABLED : StatusDict.DISABLED;
   await new ApiUserUpdateStatus({
     params: { id: row.id },
     body: { status }
