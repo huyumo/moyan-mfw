@@ -128,13 +128,6 @@ export function setupRouteGuard(router: Router): void {
       appLoadingStore.hideLoading();
     }
 
-    // 主动刷新即将过期的 Token（不阻塞导航）
-    if (hasToken && authStore.isTokenExpiringSoon()) {
-      authStore.refreshAccessToken().catch(() => {
-        // 静默失败，由 401 拦截器兜底处理
-      });
-    }
-
     if (to.meta.requiresAuth !== false) {
       const hasPermission = checkPagePermission(to, authStore);
       if (!hasPermission) {
