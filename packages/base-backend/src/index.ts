@@ -47,3 +47,6 @@ export { runSeeds } from './database/seeds/index';
 
 // === 应用类型同步 ===
 export { syncAppTypesConfig } from './modules/sys/app-type/app-type-sync';
+
+// === 数据字典种子 ===
+export { seedDicts } from './database/seeds/dict.seeder';
