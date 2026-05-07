@@ -207,7 +207,7 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     const result = await new ApiAuthRefreshToken({
-      params: { refreshToken: refreshTokenValue.value },
+      body: { refreshToken: refreshTokenValue.value },
     });
 
     saveToken(result.accessToken, result.refreshToken, result.expiresIn);

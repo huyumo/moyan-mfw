@@ -12,6 +12,15 @@ import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../store/auth-sto
 
 const AXIOS = Symbol('mo#Api#axios');
 
+/** Token 刷新状态 */
+let isRefreshing = false;
+/** 等待 Token 刷新的请求队列 */
+let pendingRequests: Array<{
+  resolve: (value: unknown) => void;
+  reject: (reason?: unknown) => void;
+  config: AxiosRequestConfig;
+}> = [];
+
 /** API 配置 */
 interface ApiConfig {
   baseURL: string;
@@ -67,6 +76,74 @@ export class MoAxios {
         return res.data;
       },
       async (error) => {
+        const originalRequest = error.config;
+
+        // 401 自动刷新重试
+        if (error?.response?.status === 401 && !originalRequest._retry) {
+          // 避免刷新接口自身进入无限循环
+          if (originalRequest.url?.includes('/api/auth/refresh')) {
+            error.message = '登录已过期，请重新登录';
+            throw error;
+          }
+
+          // 并发控制：刷新进行中则排队等待
+          if (isRefreshing) {
+            return new Promise((resolve, reject) => {
+              pendingRequests.push({ resolve, reject, config: originalRequest });
+            });
+          }
+
+          originalRequest._retry = true;
+          isRefreshing = true;
+
+          const refreshToken = localStorage.getItem(REFRESH_TOKEN_KEY);
+          if (!refreshToken) {
+            isRefreshing = false;
+            error.message = '登录已过期，请重新登录';
+            throw error;
+          }
+
+          try {
+            const baseURL = this.$axios.defaults.baseURL || '';
+            const response = await fetch(`${baseURL}/api/auth/refresh`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refreshToken }),
+            });
+
+            if (!response.ok) {
+              throw new Error('Refresh token invalid');
+            }
+
+            const result = await response.json();
+            const data = result.data || result;
+
+            // 保存新 Token
+            localStorage.setItem(TOKEN_KEY, data.accessToken);
+            if (data.refreshToken) {
+              localStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
+            }
+
+            // 重试所有排队请求
+            this.retryPendingRequests(data.accessToken);
+
+            // 重试原始请求
+            if (!originalRequest.headers) {
+              originalRequest.headers = {} as Record<string, string>;
+            }
+            originalRequest.headers['Authorization'] = `Bearer ${data.accessToken}`;
+            return this.$axios(originalRequest);
+          } catch {
+            // 刷新失败，拒绝所有排队请求
+            this.rejectPendingRequests(new Error('Token 刷新失败'));
+            error.message = '登录已过期，请重新登录';
+            throw error;
+          } finally {
+            isRefreshing = false;
+          }
+        }
+
+        // 非 401 或其他状态码的错误提示
         if (error?.response) {
           switch (error.response.status) {
             case 401:
@@ -89,6 +166,28 @@ export class MoAxios {
         throw error;
       }
     );
+  }
+
+  /** 用新 Token 重试所有排队请求 */
+  retryPendingRequests(newToken: string) {
+    const requests = pendingRequests;
+    pendingRequests = [];
+    for (const { resolve, reject, config } of requests) {
+      if (!config.headers) {
+        config.headers = {} as Record<string, string>;
+      }
+      config.headers['Authorization'] = `Bearer ${newToken}`;
+      this.$axios(config).then(resolve).catch(reject);
+    }
+  }
+
+  /** 拒绝所有排队请求 */
+  rejectPendingRequests(error: Error) {
+    const requests = pendingRequests;
+    pendingRequests = [];
+    for (const { reject } of requests) {
+      reject(error);
+    }
   }
 
   /**
