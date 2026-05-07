@@ -1,9 +1,9 @@
 # moyan-shared-dict 共享字典方案设计规格
 
-> 版本: v2.0  
+> 版本: v2.1  
 > 日期: 2026-05-07  
 > 作者: Agent  
-> 状态: Draft → Review
+> 状态: Implemented ✅
 
 ---
 
@@ -586,7 +586,7 @@ modelValue: row.userStatus === StatusDict.ENABLED,
 | **注册表单例** | `moyan-shared-dict` 中的 `Map` 是模块级单例，所有 import 同一个包实例的消费者共享同一份注册表 |
 | **`item_value` 类型** | 统一存储为 `VARCHAR(64)`，避免 tinyint/bigint/string 混用 |
 | **uuid 生成** | seeder 使用 `uuid` 包；Entity 使用 TypeORM 的 `@PrimaryGeneratedColumn('uuid')` |
-| **装饰器 target 一致性** | `@DictMeta`（ClassDecorator）和 `@DictEntry`（静态属性 PropertyDecorator）的 target 都是 constructor 本身，metadata 存储位置一致，无需特殊处理 |
+| **装饰器 target 一致性** | `@DictMeta`（ClassDecorator）和 `@DictEntry`（静态属性 PropertyDecorator）的 target 都是 constructor 本身，`toItems()` 直接从 `dictClass` 读取 metadata（不从 `prototype` 读取） |
 
 ---
 
@@ -598,19 +598,25 @@ modelValue: row.userStatus === StatusDict.ENABLED,
 {
   "name": "moyan-shared-dict",
   "version": "0.1.0",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
+      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+    }
+  },
   "dependencies": {
     "reflect-metadata": "^0.2.2"
   },
-  "peerDependencies": {},
   "devDependencies": {
     "typescript": "^5.x"
   }
 }
 ```
 
-> `"private"` 字段在开发期间可保留，发布到 npm 前移除。
+> 双格式输出（ESM + CJS），前端 Vite 使用 `import` 条件获取 ESM，后端 Node.js 使用 `require` 条件获取 CJS。
 
 ### 11.2 `business-dict/package.json`（业务层，private）
 
@@ -619,9 +625,17 @@ modelValue: row.userStatus === StatusDict.ENABLED,
   "name": "business-dict",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": { "types": "./dist/esm/index.d.ts", "default": "./dist/esm/index.js" },
+      "require": { "types": "./dist/cjs/index.d.ts", "default": "./dist/cjs/index.js" }
+    }
+  },
   "dependencies": {
+    "reflect-metadata": "^0.2.2",
     "moyan-shared-dict": "workspace:*"
   },
   "devDependencies": {
