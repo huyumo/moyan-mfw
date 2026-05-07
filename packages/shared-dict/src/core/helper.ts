@@ -2,9 +2,9 @@ import 'reflect-metadata'
 import { META_KEY, ITEMS_KEY } from './decorator'
 import type { DictItem, DictMetaOptions } from './types'
 
-export function toItems<T>(dictClass: T): DictItem[] {
+export function toItems<T extends Object>(dictClass: T): DictItem[] {
   const entries: Array<{ key: string; item: Omit<DictItem, 'value'> }> =
-    Reflect.getOwnMetadata(ITEMS_KEY, (dictClass as any).prototype ?? dictClass) || []
+    Reflect.getOwnMetadata(ITEMS_KEY, dictClass) || []
 
   return entries.map(({ key, item }) => ({
     ...item,
@@ -12,7 +12,7 @@ export function toItems<T>(dictClass: T): DictItem[] {
   }))
 }
 
-export function getLabel<T>(dictClass: T, value: string | number): string {
+export function getLabel<T extends Object>(dictClass: T, value: string | number): string {
   return toItems(dictClass).find(i => i.value === value)?.label ?? '--'
 }
 
@@ -27,6 +27,6 @@ export function toDescription<T extends Object>(dictClass: T): string {
   return `${name}: ${mapping}`
 }
 
-export function toDbItems<T>(dictClass: T): Array<{ value: string | number; label: string }> {
+export function toDbItems<T extends Object>(dictClass: T): Array<{ value: string | number; label: string }> {
   return toItems(dictClass).map(({ value, label }) => ({ value, label }))
 }
