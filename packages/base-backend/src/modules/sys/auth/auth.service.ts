@@ -102,7 +102,8 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload);
 
-    const refreshToken = await this.jwtService.signAsync(payload);
+    const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
+    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
 
     return {
       accessToken,
@@ -150,12 +151,14 @@ export class AuthService {
         iat: Date.now() / 1000, // 使用当前时间戳
       };
 
+      const accessExpiresIn = parseInt(process.env.JWT_EXPIRES_IN || '7200', 10);
       const accessToken = await this.jwtService.signAsync(newPayload, {
-        expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+        expiresIn: accessExpiresIn,
       });
 
+      const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
       const newRefreshToken = await this.jwtService.signAsync(newPayload, {
-        expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+        expiresIn: refreshExpiresIn,
       });
 
       return {
@@ -353,7 +356,9 @@ export class AuthService {
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
-    const refreshToken = await this.jwtService.signAsync(payload);
+
+    const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
+    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
 
     return {
       accessToken,
