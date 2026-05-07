@@ -3,6 +3,7 @@
  */
 
 import 'reflect-metadata';
+import 'business-dict';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { runSeeds } from 'moyan-base-backend';
@@ -20,6 +21,7 @@ import {
 } from 'moyan-base-backend';
 
 import { SupplierMemberProfile } from '../modules/supplier/entities/supplier-member-profile.entity';
+import { seedDicts } from 'moyan-base-backend';
 
 const entities = [
   UserEntity,
@@ -50,6 +52,7 @@ async function main(): Promise<void> {
     await AppDataSource.initialize();
     process.stdout.write('数据库连接成功\n');
     await runSeeds(AppDataSource, process.env.ADMIN_DEFAULT_PASSWORD);
+    await seedDicts(AppDataSource);
     await AppDataSource.destroy();
     process.stdout.write('完成\n');
   } catch (error) {
