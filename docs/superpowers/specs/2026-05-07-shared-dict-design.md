@@ -1,6 +1,6 @@
-# @moyan/shared-dict 共享字典包设计规格
+# moyan-shared-dict 共享字典方案设计规格
 
-> 版本: v1.0  
+> 版本: v2.0  
 > 日期: 2026-05-07  
 > 作者: Agent  
 > 状态: Draft → Review
@@ -23,9 +23,12 @@
 
 1. **单一数据源**：一份字典定义，前后端及数据库共享
 2. **统一渲染**：所有字典字段统一使用 `MfwDictFormat` 组件 + `toItems()` 获取数据
-3. **数据库同步**：通过 seeder 将共享包字典导入 `sys_dict_types` / `sys_dict_items` 表，支持 JOIN 查询
-4. **零依赖共享包**：`@moyan/shared-dict` 不依赖 Vue、NestJS、TypeORM、Element Plus 等任何业务框架
-5. **分层管理**：`base/` 基座层（跨业务通用字典）+ `business/` 业务层字典
+3. **数据库同步**：通过 seeder 将字典导入 `sys_dict_types` / `sys_dict_items` 表，支持 JOIN 查询
+4. **零依赖共享包**：框架包 `moyan-shared-dict` 不依赖 Vue、NestJS、TypeORM、Element Plus 等任何业务框架
+5. **三层分层管理**：
+   - `packages/shared-dict/base/` → 框架内置通用字典（可发布到 npm）
+   - `business-dict/src/` → 本项目业务字典（private，不发布）
+   - 消费者 `src/dicts/` → npm 用户自定义业务字典（不发布）
 
 ### 1.3 设计原则
 
@@ -38,50 +41,79 @@
 ## 2. 架构总览
 
 ```
-┌─ @moyan/shared-dict (packages/shared-dict/) ──────────────┐
-│                                                             │
-│  core/                   base/            business/         │
-│  ├── types.ts            ├── status.ts    ├── user.ts       │
-│  ├── decorator.ts        └── index.ts     └── index.ts      │
-│  ├── helper.ts                                               │
-│  ├── registry.ts                                             │
-│  └── index.ts                                                │
-│                                                             │
-│  依赖: reflect-metadata (运行时)                              │
-│  无其他业务依赖                                               │
-└─────────────────────────────────────────────────────────────┘
-         │                              │
-         ▼                              ▼
-  ┌─ base-frontend ──┐         ┌─ base-backend ─────────────┐
-  │ toItems()        │         │ seeder → sys_dict_types    │
-  │ getLabel()       │         │          sys_dict_items    │
-  │ MfwDictFormat    │         │ JOIN 查询字典表             │
-  └──────────────────┘         │ Entity @Column(comment:)   │
-                               └────────────────────────────┘
+┌─ moyan-shared-dict (packages/shared-dict/  → npm 发布) ─────┐
+│                                                               │
+│  core/                   base/                                │
+│  ├── types.ts            ├── status.ts   (StatusDict)         │
+│  ├── decorator.ts        └── index.ts    (BoolDict)           │
+│  ├── helper.ts                                                │
+│  ├── registry.ts     ← 全局单例 Map，收集所有注册的字典        │
+│  └── index.ts                                                 │
+│                                                               │
+│  依赖: reflect-metadata (运行时)                               │
+│  无其他业务依赖                                                │
+└───────────────────────────────────────────────────────────────┘
+         │                    │                    │
+         │ import { DictMeta }│                    │ import { DictMeta }
+         ▼                    ▼                    ▼
+  ┌─ base-frontend ──┐ ┌─ business-dict ─┐ ┌─ 消费者 src/dicts/ ─┐
+  │ toItems()        │ │ (根层级,不发布) │ │ (自定义,不发布)      │
+  │ MfwDictFormat    │ │ GenderDict      │ │ OrderStatusDict      │
+  └──────────────────┘ │ DeveloperDict   │ │ PaymentMethodDict    │
+                       └─────────────────┘ └──────────────────────┘
+         │                    │                    │
+         │    registerDict() 写入 同一个 全局 Map (单例)        │
+         ▼                    ▼                    ▼
+  ┌─ base-backend ──────────────────────────────────────────────┐
+  │ getAllDicts() → seeder → sys_dict_types / sys_dict_items    │
+  │ Entity @Column({ comment: toDescription(GenderDict) })      │
+  │ JOIN 查询字典表                                              │
+  └──────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 3. 目录结构
 
+### 3.1 框架层 — `packages/shared-dict/`（发布到 npm）
+
 ```
 packages/shared-dict/
-├── package.json
+├── package.json              # name: "moyan-shared-dict"
 ├── tsconfig.json
 └── src/
     ├── core/
-    │   ├── types.ts         # DictItem, DictMetaOptions 等类型
-    │   ├── decorator.ts     # @DictMeta, @DictEntry 装饰器
-    │   ├── helper.ts        # toItems, getLabel, toDescription, toDbItems
-    │   ├── registry.ts      # registerDict, getAllDicts
-    │   └── index.ts         # 统一导出 core 全部内容
+    │   ├── types.ts           # DictItem, DictMetaOptions 等类型
+    │   ├── decorator.ts       # @DictMeta, @DictEntry 装饰器
+    │   ├── helper.ts          # toItems, getLabel, toDescription, toDbItems
+    │   ├── registry.ts        # registerDict, getAllDicts
+    │   └── index.ts           # 统一导出 core 全部内容
     ├── base/
-    │   ├── status.ts        # StatusDict, BoolDict
+    │   ├── status.ts          # StatusDict, BoolDict（框架内置通用字典）
     │   └── index.ts
-    ├── business/
-    │   ├── user.ts          # GenderDict, DeveloperDict
-    │   └── index.ts
-    └── index.ts             # 顶层统一导出
+    └── index.ts               # 顶层统一导出
+```
+
+### 3.2 业务层 — `business-dict/`（private，不发布）
+
+```
+business-dict/                 ← 与 backend/、frontend/ 同级目录
+├── package.json               # name: "business-dict", "private": true
+├── tsconfig.json
+└── src/
+    ├── user.ts                # GenderDict, DeveloperDict
+    ├── supplier.ts            # SupplierStatusDict（示例）
+    └── index.ts               # barrel export → import 时触发所有装饰器
+```
+
+### 3.3 消费者扩展 — 任意项目 `src/dicts/`（不发布）
+
+```
+consumer-project/
+└── src/
+    └── dicts/
+        ├── order.ts           # @DictMeta → registerDict() 写入同一全局 Map
+        └── index.ts
 ```
 
 ---
@@ -177,15 +209,24 @@ export function toDbItems<T>(dictClass: T): Array<{ value: string | number; labe
 ### 4.4 `core/registry.ts` — 全局注册表
 
 ```typescript
+import { META_KEY, ITEMS_KEY } from './decorator'
+import type { DictItem, DictMetaOptions } from './types'
+
+const registry = new Map<string, any>()
+
 /**
  * 由 @DictMeta 内部调用，注册字典类引用。
  * 不对外暴露，仅通过 getAllDicts() 消费。
  */
-export function registerDict(dictClass: any): void
+export function registerDict(dictClass: any): void {
+  registry.set(dictClass.name, dictClass)
+}
 
 /**
  * 获取所有已注册字典的完整信息。
  * 供 seeder 使用，一次调用即可获取全部字典数据。
+ *
+ * 实现要点：直接读取 metadata，无需依赖 helper.ts，避免循环引用。
  *
  * @returns { key, label, module, items }[]
  */
@@ -194,18 +235,35 @@ export function getAllDicts(): Array<{
   label: string
   module?: string
   items: DictItem[]
-}>
+}> {
+  return Array.from(registry.values()).map(cls => {
+    const meta: DictMetaOptions | undefined = Reflect.getOwnMetadata(META_KEY, cls)
+    const entries: Array<{ key: string; item: Omit<DictItem, 'value'> }> =
+      Reflect.getOwnMetadata(ITEMS_KEY, cls) || []
+
+    return {
+      key: meta?.key ?? '',
+      label: meta?.label ?? '',
+      module: meta?.module,
+      items: entries.map(({ key, item }) => ({
+        ...item,
+        value: cls[key],
+      })),
+    }
+  })
+}
 ```
 
 **设计约束**：
-- `getAllDicts()` 内部动态 `require('./helper')` 避免循环依赖
+- `registry.ts` 仅依赖 `decorator.ts`（获取 Symbol key），无循环依赖
 - 注册表使用 `Map<string, any>`，key 为类名
+- `getAllDicts()` 直接内联读取 metadata 并组装结果，不调用 `helper.ts`
 
 ---
 
 ## 5. 字典定义
 
-### 5.1 `base/status.ts` — 基座层
+### 5.1 框架内置字典 — `packages/shared-dict/src/base/status.ts`
 
 ```typescript
 import { DictMeta, DictEntry } from '../core/decorator'
@@ -223,10 +281,10 @@ export class BoolDict {
 }
 ```
 
-### 5.2 `business/user.ts` — 业务层（初始迁移）
+### 5.2 本项目业务字典 — `business-dict/src/user.ts`
 
 ```typescript
-import { DictMeta, DictEntry } from '../core/decorator'
+import { DictMeta, DictEntry } from 'moyan-shared-dict'
 
 @DictMeta({ key: 'gender', label: '性别', module: '用户管理' })
 export class GenderDict {
@@ -239,6 +297,19 @@ export class GenderDict {
 export class DeveloperDict {
   @DictEntry({ label: '是', type: 'success' })  static YES = 1
   @DictEntry({ label: '否', type: 'info'   })  static NO  = 0
+}
+```
+
+### 5.3 消费者自定义字典示例 — `src/dicts/order.ts`
+
+```typescript
+import { DictMeta, DictEntry } from 'moyan-shared-dict'
+
+@DictMeta({ key: 'order_status', label: '订单状态', module: '订单管理' })
+export class OrderStatusDict {
+  @DictEntry({ label: '待支付', type: 'warning' })  static PENDING   = 0
+  @DictEntry({ label: '已支付', type: 'success' })  static PAID      = 1
+  @DictEntry({ label: '已取消', type: 'info'   })  static CANCELLED = 2
 }
 ```
 
@@ -279,7 +350,7 @@ CREATE TABLE sys_dict_items (
 文件位置: `packages/base-backend/src/database/seeds/dict.seeder.ts`
 
 ```typescript
-import { getAllDicts } from '@moyan/shared-dict'
+import { getAllDicts } from 'moyan-shared-dict'
 import type { DataSource } from 'typeorm'
 import { v4 as uuid } from 'uuid'
 
@@ -328,10 +399,33 @@ LEFT JOIN sys_dict_items di
 
 ## 7. 后端改造
 
-### 7.1 Entity 字段注释
+### 7.1 入口注入
+
+`backend/src/main.ts` 顶层一行即可触发业务字典注册：
 
 ```typescript
-import { GenderDict, StatusDict, toDescription } from '@moyan/shared-dict'
+import 'reflect-metadata'
+import 'business-dict'   // ← 触发所有 @DictMeta → registerDict() 注册到全局 Map
+```
+
+执行链路：
+```
+import 'business-dict'
+  → 加载 src/index.ts
+    → 加载 src/user.ts
+      → @DictMeta({ key: 'gender', ... }) → registerDict(GenderDict)
+    → 加载 src/supplier.ts
+      → @DictMeta({ key: 'supplier_status', ... }) → registerDict(SupplierStatusDict)
+
+getAllDicts()
+  → [StatusDict, BoolDict, GenderDict, DeveloperDict, SupplierStatusDict]
+```
+
+### 7.2 Entity 字段注释
+
+```typescript
+import { StatusDict, toDescription } from 'moyan-shared-dict'
+import { GenderDict, DeveloperDict } from 'business-dict'
 
 @Entity('sys_users')
 export class User {
@@ -358,10 +452,11 @@ export class User {
 }
 ```
 
-### 7.2 DTO 校验
+### 7.3 DTO 校验
 
 ```typescript
-import { GenderDict, toItems } from '@moyan/shared-dict'
+import { toItems } from 'moyan-shared-dict'
+import { GenderDict } from 'business-dict'
 import { IsIn } from 'class-validator'
 
 export class UpdateUserDto {
@@ -370,7 +465,7 @@ export class UpdateUserDto {
 }
 ```
 
-### 7.3 `isDeveloper` 类型统一
+### 7.4 `isDeveloper` 类型统一
 
 - 后端 Entity: `number` (tinyint)
 - 后端 ResponseDto: `number`
@@ -402,7 +497,8 @@ render: ({ row }) => h(MfwDictFormat, { value: row.isDeveloper ? 1 : 0, dict: DE
 
 **改造后**:
 ```typescript
-import { GenderDict, DeveloperDict, toItems } from '@moyan/shared-dict'
+import { toItems } from 'moyan-shared-dict'
+import { GenderDict, DeveloperDict } from 'business-dict'
 
 render: ({ row }) => h(MfwDictFormat, { value: row.gender, dict: toItems(GenderDict), asTag: true }),
 render: ({ row }) => h(MfwDictFormat, { value: row.isDeveloper, dict: toItems(DeveloperDict), asTag: true }),
@@ -420,7 +516,7 @@ elProps: {
 },
 
 // 改后：使用 toItems()
-import { StatusDict, toItems } from '@moyan/shared-dict'
+import { StatusDict, toItems } from 'moyan-shared-dict'
 
 elProps: {
   options: toItems(StatusDict).map(({ value, label }) => ({ value, label })),
@@ -435,7 +531,7 @@ const STATUS = { ENABLED: 1, DISABLED: 0 } as const;
 modelValue: row.userStatus === STATUS.ENABLED,
 
 // 改后
-import { StatusDict } from '@moyan/shared-dict'
+import { StatusDict } from 'moyan-shared-dict'
 modelValue: row.userStatus === StatusDict.ENABLED,
 ```
 
@@ -446,25 +542,32 @@ modelValue: row.userStatus === StatusDict.ENABLED,
 ### 9.1 Phase 1: 基础设施搭建
 
 1. 创建 `packages/shared-dict/` 包，配置 `package.json` + `tsconfig.json`
-2. 实现 `core/` 全部文件
-3. 实现 `base/status.ts` 基座层字典
-4. 确保 `base-frontend` 和 `base-backend` 能正确引入
+2. 实现 `core/` 全部文件（types, decorator, helper, registry）
+3. 实现 `base/status.ts` 框架内置字典（`StatusDict`、`BoolDict`）
+4. 创建 `business-dict/` 业务字典目录，配置 `package.json` + `tsconfig.json`
+5. 在 `pnpm-workspace.yaml` 中添加 `business-dict` workspace
+6. `backend/package.json` 和 `frontend/package.json` 添加依赖：
+   ```json
+   { "moyan-shared-dict": "workspace:*", "business-dict": "workspace:*" }
+   ```
+7. 确保前后端都能正确引入
 
 ### 9.2 Phase 2: 业务字典迁移
 
-1. 将现有内联 `DictItem[]` 逐一定义为 `@DictMeta` 静态类（`business/user.ts`）
-2. 全局搜索替换前端引用：`GENDER_DICT` → `toItems(GenderDict)`
+1. 将现有内联 `DictItem[]` 迁移为 `business-dict/src/` 下的 `@DictMeta` 静态类
+2. 全局搜索替换前端引用：`GENDER_DICT` → `toItems(GenderDict)`，导入源改为 `business-dict`
 3. 统一 `isDeveloper` 类型为 `number`
+4. 在 `backend/src/main.ts` 添加 `import 'business-dict'` 入口注入
 
 ### 9.3 Phase 3: 数据库同步
 
 1. 创建 Migration: `sys_dict_types` + `sys_dict_items` 表
-2. 实现 `dict.seeder.ts`
-3. 集成到系统初始化流程（`seeds/index.ts` 中调用 `seedDicts()`）
+2. 实现 `dict.seeder.ts`（使用 `getAllDicts()` 自动发现所有已注册字典）
+3. `backend/src/database/run-seeds.ts` 中先 `import 'business-dict'` 确保业务字典已注册，再调用 seeder
 
 ### 9.4 Phase 4: 全面推广
 
-1. 排查项目中所有内联字典定义，逐一迁移到 `shared-dict`
+1. 排查项目中所有内联字典定义，逐一迁移到 `business-dict`
 2. 后端 Entity 统一使用 `toDescription()` 生成 comment
 3. DTO 校验统一使用 `toItems()` 生成 `@IsIn` 约束
 
@@ -478,23 +581,23 @@ modelValue: row.userStatus === StatusDict.ENABLED,
 | **`type` 字段是 UI 概念** | 保留在 `DictItem` 中，后端使用 `toDbItems()` 剥离，不做区分 |
 | **字典 key 唯一性** | `DictMetaOptions.key` 作为唯一标识 + 数据库 `UNIQUE` 约束 |
 | **自动注册** | `@DictMeta` 装饰器内调用 `registerDict()`，`getAllDicts()` 一次获取全部 |
-| **业务层 vs 基座层** | 目录分离 + `module` 字段标识；数据库不区分层级，仅通过 `module` 字段区分 |
-| **新增字典** | 在 `base/` 或 `business/` 新增一个 `@DictMeta` 类即可，seeder 自动感知并入库 |
+| **业务层 vs 框架层** | 框架通用字典在 `packages/shared-dict/base/`；业务字典在根层级 `business-dict/`（private）；消费者自定义在 `src/dicts/` |
+| **新增字典** | 在对应层新增一个 `@DictMeta` 类即可，装饰器自动注册到全局 Map，seeder 自动感知 |
+| **注册表单例** | `moyan-shared-dict` 中的 `Map` 是模块级单例，所有 import 同一个包实例的消费者共享同一份注册表 |
 | **`item_value` 类型** | 统一存储为 `VARCHAR(64)`，避免 tinyint/bigint/string 混用 |
 | **uuid 生成** | seeder 使用 `uuid` 包；Entity 使用 TypeORM 的 `@PrimaryGeneratedColumn('uuid')` |
-| **装饰器 target 差异** | `@DictMeta` 的 target 是 constructor，`@DictEntry` 的 target 是 `{ constructor }`，需在 `helper.ts` 中兼容处理 |
+| **装饰器 target 一致性** | `@DictMeta`（ClassDecorator）和 `@DictEntry`（静态属性 PropertyDecorator）的 target 都是 constructor 本身，metadata 存储位置一致，无需特殊处理 |
 
 ---
 
 ## 11. 依赖清单
 
-### 11.1 `packages/shared-dict/package.json`
+### 11.1 `packages/shared-dict/package.json`（框架层）
 
 ```json
 {
-  "name": "@moyan/shared-dict",
+  "name": "moyan-shared-dict",
   "version": "0.1.0",
-  "private": true,
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
@@ -507,7 +610,46 @@ modelValue: row.userStatus === StatusDict.ENABLED,
 }
 ```
 
-### 11.2 Consumer 需要的配置
+> `"private"` 字段在开发期间可保留，发布到 npm 前移除。
+
+### 11.2 `business-dict/package.json`（业务层，private）
+
+```json
+{
+  "name": "business-dict",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "moyan-shared-dict": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.x"
+  }
+}
+```
+
+### 11.3 消费者依赖声明
+
+```json
+// backend/package.json  & frontend/package.json
+{
+  "dependencies": {
+    "moyan-shared-dict": "workspace:*",
+    "business-dict": "workspace:*"
+  }
+}
+
+// pnpm-workspace.yaml
+packages:
+  - "packages/*"
+  - "backend"
+  - "frontend"
+  - "business-dict"       # ← 新增
+```
+
+### 11.4 Consumer 需要的配置
 
 **TypeScript** (`tsconfig.json`):
 ```json
@@ -529,9 +671,11 @@ import 'reflect-metadata'
 ## 12. 风险与待定项
 
 1. **`reflect-metadata` 兼容性**：需确认前端 Vite 构建和后端 NestJS 已配置该特性（通常 NestJS 已默认启用）
-2. **`getAllDicts()` 动态 require**：使用 CJS `require()` 可能导致 ESM 环境报错，需根据项目模块系统选择静态 `import` 或 `import()` 动态导入
-3. **字典 key 命名规范**：需统一约定 `key` 的命名风格（snake_case / camelCase / kebab-case），建议 `camelCase`
-4. **`DictItem.type` 颜色体系**：当前绑定 Element Plus 的 tag type，若后续换 UI 库，需重新定义颜色映射
+2. **字典 key 命名规范**：需统一约定 `key` 的命名风格（snake_case / camelCase / kebab-case），建议 `camelCase`
+3. **`DictItem.type` 颜色体系**：当前绑定 Element Plus 的 tag type，若后续换 UI 库，需重新定义颜色映射
+4. **`getAllDicts()` 与 `@DictMeta` 的执行顺序**：仅当所有字典类文件被 import 后（装饰器已执行），`getAllDicts()` 才能返回完整结果。需确保 seeder / 调用入口先 `import` 所有字典类
+5. **npm 发布包名**：`moyan-shared-dict` 需确认在 npm registry 中未被占用
+6. **workspace 协议兼容**：`pnpm-workspace.yaml` 中 `business-dict` 需正确配置，确保 IDE（VS Code）能识别 workspace 依赖
 
 ---
 
@@ -546,10 +690,51 @@ import 'reflect-metadata'
 | `packages/shared-dict/src/core/index.ts` | core 统一导出 |
 | `packages/shared-dict/src/base/status.ts` | `StatusDict` / `BoolDict` |
 | `packages/shared-dict/src/base/index.ts` | base 统一导出 |
-| `packages/shared-dict/src/business/user.ts` | `GenderDict` / `DeveloperDict` |
-| `packages/shared-dict/src/business/index.ts` | business 统一导出 |
 | `packages/shared-dict/src/index.ts` | 顶层统一导出 |
-| `packages/shared-dict/package.json` | 包配置 |
+| `packages/shared-dict/package.json` | 框架包配置（name: `moyan-shared-dict`） |
 | `packages/shared-dict/tsconfig.json` | TS 配置 |
+| `business-dict/src/user.ts` | `GenderDict` / `DeveloperDict` |
+| `business-dict/src/supplier.ts` | `SupplierStatusDict`（示例） |
+| `business-dict/src/index.ts` | barrel export |
+| `business-dict/package.json` | 业务包配置（`"private": true`） |
+| `business-dict/tsconfig.json` | TS 配置 |
 | `packages/base-backend/src/database/seeds/dict.seeder.ts` | 字典数据入库 |
 | `packages/base-backend/src/database/migrations/xxx-add-dict-tables.ts` | 字典表 DDL |
+| `backend/src/main.ts` | 添加 `import 'business-dict'` 入口注入 |
+
+## 附录 B: 外部消费者快速开始
+
+```
+# 安装框架包
+npm install moyan-shared-dict reflect-metadata
+
+# 创建业务字典
+mkdir -p src/dicts
+```
+
+`src/dicts/order.ts`:
+```typescript
+import { DictMeta, DictEntry } from 'moyan-shared-dict'
+
+@DictMeta({ key: 'order_status', label: '订单状态' })
+export class OrderStatusDict {
+  @DictEntry({ label: '待支付', type: 'warning' }) static PENDING = 0
+  @DictEntry({ label: '已支付', type: 'success' }) static PAID    = 1
+}
+```
+
+`src/main.ts` (Vue 前端):
+```typescript
+import 'reflect-metadata'
+import 'moyan-shared-dict/base'   // ← 框架内置字典
+import './dicts/order'            // ← 自定义业务字典
+```
+
+`src/main.ts` (NestJS 后端):
+```typescript
+import 'reflect-metadata'
+import 'moyan-shared-dict/base'
+import './dicts/order'
+
+// getAllDicts() → StatusDict + BoolDict + OrderStatusDict
+```
