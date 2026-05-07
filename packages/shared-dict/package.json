@@ -1,0 +1,14 @@
+{
+  "name": "moyan-shared-dict",
+  "version": "0.1.0",
+  "description": "Shared dictionary definitions for moyan frontend and backend",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "reflect-metadata": "^0.2.2"
+  },
+  "peerDependencies": {},
+  "devDependencies": {
+    "typescript": "^5.1.3"
+  }
+}

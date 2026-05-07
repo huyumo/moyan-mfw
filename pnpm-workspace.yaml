@@ -2,6 +2,7 @@ packages:
   - packages/base-backend
   - packages/base-frontend
   - packages/component-demo
+  - packages/shared-dict
   - frontend
   - backend
   - examples
