@@ -263,12 +263,18 @@ importers:
       bcrypt:
         specifier: ^5.1.0
         version: 5.1.1
+      business-dict:
+        specifier: workspace:*
+        version: link:../../business-dict
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
       class-validator:
         specifier: ^0.14.0
         version: 0.14.4
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../shared-dict
       multer:
         specifier: ^2.1.1
         version: 2.1.1
@@ -381,6 +387,9 @@ importers:
       axios:
         specifier: ^1.6.5
         version: 1.13.6
+      business-dict:
+        specifier: workspace:*
+        version: link:../../business-dict
       element-plus:
         specifier: ^2.5.3
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
@@ -390,6 +399,9 @@ importers:
       moyan-api:
         specifier: ^2.1.19
         version: 2.1.19
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../shared-dict
       pinia:
         specifier: ^2.1.7
         version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
