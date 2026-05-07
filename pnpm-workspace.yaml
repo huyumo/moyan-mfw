@@ -8,6 +8,7 @@ packages:
   - examples
   - docs
   - .harness
+  - business-dict
 
 ignoredBuiltDependencies:
   - '@nestjs/core'

@@ -1,0 +1,14 @@
+{
+  "name": "business-dict",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Business-specific dictionary definitions for this moyan project",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "moyan-shared-dict": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.3"
+  }
+}

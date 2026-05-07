@@ -181,6 +181,16 @@ importers:
         specifier: ^5.1.3
         version: 5.9.3
 
+  business-dict:
+    dependencies:
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../packages/shared-dict
+    devDependencies:
+      typescript:
+        specifier: ^5.1.3
+        version: 5.9.3
+
   frontend:
     dependencies:
       '@element-plus/icons-vue':
