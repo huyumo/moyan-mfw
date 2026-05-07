@@ -92,6 +92,9 @@ importers:
       bcrypt:
         specifier: ^5.1.0
         version: 5.1.1
+      business-dict:
+        specifier: workspace:*
+        version: link:../business-dict
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -104,6 +107,9 @@ importers:
       moyan-base-backend:
         specifier: workspace:*
         version: link:../packages/base-backend
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../packages/shared-dict
       mysql2:
         specifier: ^3.6.0
         version: 3.20.0(@types/node@20.19.37)
@@ -196,12 +202,18 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.1
         version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      business-dict:
+        specifier: workspace:*
+        version: link:../business-dict
       element-plus:
         specifier: ^2.5.3
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       moyan-mfw-base-frontend:
         specifier: workspace:*
         version: link:../packages/base-frontend
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../packages/shared-dict
       vue-router:
         specifier: ^4.2.5
         version: 4.6.4(vue@3.5.30(typescript@5.9.3))
