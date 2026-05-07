@@ -35,6 +35,7 @@ description: "Use when working on moyan-mfw project code, creating modules or pa
 | 编写测试 / 单元测试 / 集成测试                        | {{ref:testing-guide}}        |
 | 数据库迁移 / Entity 变更 / 种子数据                  | {{ref:migration-guide}}      |
 | 错误排查 / 构建失败 / 启动失败 / API 生成失败             | {{ref:error-diagnosis}}      |
+| 字典定义 / 共享字典 / MfwDictFormat / toItems / toDescription | {{ref:dict-guide}}           |
 
 ## 完成前验证（每次任务必须逐项检查）
 
@@ -62,7 +63,7 @@ description: "Use when working on moyan-mfw project code, creating modules or pa
 2. PowerShell 不支持 `&&` → 用 `;` 分隔命令
 3. 删除操作必须 `ElMessageBox.confirm` 二次确认，`catch` 后 `return`
 4. API 删除操作传 `{ hintSuccess: true }` 参数
-5. 状态常量统一定义：`const STATUS = { ENABLED: 1, DISABLED: 0 } as const`
+5. 状态/字典值统一使用 `moyan-shared-dict` 导出的字典类 → 禁止内联 `const STATUS = { ENABLED: 1 } as const`
 6. 前端路由自动扫描 → 页面放在 `views/` 下配置 `index.ts` 即自动注册
 7. 审计拦截器当前仅输出日志，未写入 `sys_audit_logs`
 8. Redis 配置已预留但业务层未使用
