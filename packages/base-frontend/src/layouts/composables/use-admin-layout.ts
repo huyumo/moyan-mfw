@@ -1,7 +1,7 @@
 /**
  * @fileoverview 布局组合逻辑。
  */
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
 import { ApiAuthLogout } from '../../apis/sys';
@@ -44,7 +44,6 @@ export function useAdminLayout(): any {
   const route = useRoute();
   const router = useRouter();
   const mobileMenuOpen = ref(false);
-  const resetConfirmVisible = ref(false);
   const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200);
   const settingsSnapshot = ref<LayoutStyleConfig | null>(null);
   const skipSettingsRollback = ref(false);
@@ -145,14 +144,16 @@ export function useAdminLayout(): any {
     mobileMenuOpen.value = !mobileMenuOpen.value;
   }
   function handleResetDefaults() {
-    resetConfirmVisible.value = true;
-  }
-  function confirmResetDefaults() {
-    skipSettingsRollback.value = true;
-    layoutStore.resetToDefaults();
-    layoutStore.toggleSettingsPanel(false);
-    resetConfirmVisible.value = false;
-    ElMessage.success('\u5df2\u6062\u590d\u9ed8\u8ba4\u8bbe\u7f6e');
+    ElMessageBox.confirm(
+      '是否恢复全部布局偏好为默认值？',
+      '恢复默认设置',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning' },
+    ).then(() => {
+      skipSettingsRollback.value = true;
+      layoutStore.resetToDefaults();
+      layoutStore.toggleSettingsPanel(false);
+      ElMessage.success('已恢复默认设置');
+    }).catch(() => {});
   }
   function removeTab(name: string | number) {
     const nextPath = layoutStore.closeTab(String(name));
@@ -275,7 +276,6 @@ export function useAdminLayout(): any {
   return {
     layoutStore,
     mobileMenuOpen,
-    resetConfirmVisible,
     isMobile,
     layoutModeOptions,
     themeOptions,
@@ -290,7 +290,6 @@ export function useAdminLayout(): any {
     handleSubMenuClick,
     toggleMobileMenu,
     handleResetDefaults,
-    confirmResetDefaults,
     removeTab,
     handleTabCommand,
     handleUserCommand,
