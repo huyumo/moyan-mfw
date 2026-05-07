@@ -35,16 +35,12 @@
       <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
-          <transition name="fade-transverse">
-            <keep-alive :max="20">
-              <component :is="Component" :key="slotRoute.name" />
-            </keep-alive>
-          </transition>
+          <keep-alive :max="20">
+            <component :is="Component" :key="slotRoute.name" />
+          </keep-alive>
         </router-view>
         <router-view v-else v-slot="{ Component, route: slotRoute }">
-          <transition name="fade-transverse">
-            <component :is="Component" :key="slotRoute.name" />
-          </transition>
+          <component :is="Component" :key="slotRoute.name" />
         </router-view>
       </MainPanel>
     </div>
@@ -53,16 +49,6 @@
       :layout-mode-options="layoutModeOptions" :theme-options="themeOptions" :style-config="layoutStore.styleConfig"
       :get-theme-color="getThemeColor" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
       @reset-defaults="handleResetDefaults" />
-
-    <el-dialog v-model="resetConfirmVisible" :title="dialogText.title" width="320px" align-center>
-      <span>{{ dialogText.body }}</span>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button data-testid="reset-cancel-btn" @click="resetConfirmVisible = false">{{ dialogText.cancel }}</el-button>
-          <el-button type="primary" data-testid="reset-confirm-btn" @click="confirmResetDefaults">{{ dialogText.confirm }}</el-button>
-        </span>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -75,17 +61,9 @@ import SettingsPanel from './panels/SettingsPanel.vue';
 import { useAdminLayout } from './composables/use-admin-layout';
 import { useColorMode, useThemeSwitch } from '../composables';
 
-const dialogText = {
-  title: '\u6062\u590d\u9ed8\u8ba4\u8bbe\u7f6e',
-  body: '\u662f\u5426\u6062\u590d\u5168\u90e8\u5e03\u5c40\u504f\u597d\u4e3a\u9ed8\u8ba4\u503c\uff1f',
-  cancel: '\u53d6\u6d88',
-  confirm: '\u786e\u8ba4',
-} as const;
-
 const {
   layoutStore,
   mobileMenuOpen,
-  resetConfirmVisible,
   isMobile,
   layoutModeOptions,
   themeOptions,
@@ -100,7 +78,6 @@ const {
   handleSubMenuClick,
   toggleMobileMenu,
   handleResetDefaults,
-  confirmResetDefaults,
   removeTab,
   handleTabCommand,
   handleUserCommand,
@@ -133,23 +110,19 @@ onMounted(() => {
 </style>
 
 <style lang="scss">
-.fade-transverse-enter-active {
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.mfw-admin-content-area > :first-child {
+  animation: mfw-page-enter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.fade-transverse-leave-active {
-  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+@keyframes mfw-page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
 
-.fade-transverse-enter-from {
-  opacity: 0;
-  transform: translateX(24px);
-}
-
-.fade-transverse-leave-to {
-  opacity: 0;
-  transform: translateX(-24px);
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 </style>

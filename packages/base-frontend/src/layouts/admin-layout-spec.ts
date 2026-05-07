@@ -36,7 +36,6 @@ vi.mock('./composables/use-admin-layout', () => ({
       toggleSettingsPanel: vi.fn(),
     },
     mobileMenuOpen: ref(false),
-    resetConfirmVisible: ref(false),
     isMobile: ref(false),
     layoutModeOptions: [
       { label: '侧边栏', value: 'sidebar' },
@@ -55,7 +54,6 @@ vi.mock('./composables/use-admin-layout', () => ({
     handleTopMenuClick: vi.fn(),
     toggleMobileMenu: vi.fn(),
     handleResetDefaults: vi.fn(),
-    confirmResetDefaults: vi.fn(),
     removeTab: vi.fn(),
     handleTabCommand: vi.fn(),
     handleUserCommand: vi.fn(),
@@ -92,8 +90,6 @@ describe('AdminLayout', () => {
               </div>
             `,
           },
-          ElDialog: { template: '<div><slot /><slot name="footer" /></div>' },
-          ElButton: { template: '<button><slot /></button>' },
           RouterView: { template: '<div />' },
         },
       },
