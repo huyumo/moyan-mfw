@@ -20,13 +20,13 @@
         {{ data?.icon || '-' }}
       </el-descriptions-item>
       <el-descriptions-item label="支持多应用">
-        <el-tag :type="data?.multiAppEnabled === STATUS.ENABLED ? 'success' : 'info'" size="small">
-          {{ data?.multiAppEnabled === STATUS.ENABLED ? '是' : '否' }}
+        <el-tag :type="data?.multiAppEnabled === MultiAppEnabledDict.YES ? 'success' : 'info'" size="small">
+          {{ data?.multiAppEnabled === MultiAppEnabledDict.YES ? '是' : '否' }}
         </el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="状态">
-        <el-tag :type="data?.typeStatus === STATUS.ENABLED ? 'success' : 'danger'" size="small">
-          {{ data?.typeStatus === STATUS.ENABLED ? '启用' : '禁用' }}
+        <el-tag :type="data?.typeStatus === StatusDict.ENABLED ? 'success' : 'danger'" size="small">
+          {{ data?.typeStatus === StatusDict.ENABLED ? '启用' : '禁用' }}
         </el-tag>
       </el-descriptions-item>
       <el-descriptions-item label="排序">
@@ -44,12 +44,7 @@
 
 <script setup lang="ts">
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
 
 defineProps<{
   data?: AppTypeResponseDto | null;

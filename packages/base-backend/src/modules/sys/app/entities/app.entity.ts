@@ -6,6 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
+import { toDescription, StatusDict } from 'moyan-shared-dict';
 
 /**
  * 应用实例实体
@@ -61,7 +62,7 @@ export class App extends Base {
   /**
    * 应用状态
    */
-  @Column({ type: 'tinyint', default: 1, comment: '状态 - 1:启用 0:禁用' })
+  @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
   appStatus: number;
 

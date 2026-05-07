@@ -42,12 +42,7 @@ import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys
 import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
 import { getImageSrc } from '../../../utils/image';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { StatusDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'MfwAppList' });
 
@@ -91,8 +86,8 @@ const searchTemplate = ref([
     placeholder: '请选择状态',
     elProps: {
       options: [
-        { label: '启用', value: STATUS.ENABLED },
-        { label: '禁用', value: STATUS.DISABLED },
+        { label: '启用', value: StatusDict.ENABLED },
+        { label: '禁用', value: StatusDict.DISABLED },
       ],
     },
   },
@@ -126,9 +121,9 @@ const columns = [
     label: '状态',
     width: 80,
     render: ({ row }: { row: AppDetailResponseDto }) => h(ElTag, {
-      type: row.appStatus === STATUS.ENABLED ? 'success' : 'danger',
+      type: row.appStatus === StatusDict.ENABLED ? 'success' : 'danger',
       size: 'small',
-    }, () => row.appStatus === STATUS.ENABLED ? '启用' : '禁用'),
+    }, () => row.appStatus === StatusDict.ENABLED ? '启用' : '禁用'),
   },
   { prop: 'sortOrder', label: '排序', width: 80 },
   {

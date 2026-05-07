@@ -22,11 +22,11 @@
     <div class="app-type-card__body">
       <p class="app-type-card__desc">{{ data.typeDesc || '暂无描述' }}</p>
       <div class="app-type-card__tags">
-        <el-tag :type="data.typeStatus === STATUS.ENABLED ? 'success' : 'danger'" size="small">
-          {{ data.typeStatus === STATUS.ENABLED ? '启用' : '禁用' }}
+        <el-tag :type="data.typeStatus === StatusDict.ENABLED ? 'success' : 'danger'" size="small">
+          {{ data.typeStatus === StatusDict.ENABLED ? '启用' : '禁用' }}
         </el-tag>
-        <el-tag :type="data.multiAppEnabled === STATUS.ENABLED ? 'primary' : 'info'" size="small">
-          {{ data.multiAppEnabled === STATUS.ENABLED ? '多应用' : '单应用' }}
+        <el-tag :type="data.multiAppEnabled === MultiAppEnabledDict.YES ? 'primary' : 'info'" size="small">
+          {{ data.multiAppEnabled === MultiAppEnabledDict.YES ? '多应用' : '单应用' }}
         </el-tag>
       </div>
     </div>
@@ -47,11 +47,7 @@ import { computed } from 'vue';
 import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'AppTypeCard' });
 

@@ -20,12 +20,7 @@ import MfwFormCard from '../../../components/form/form-card';
 import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeCreate } from '../../../apis/sys';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { MultiAppEnabledDict } from 'moyan-shared-dict';
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
@@ -36,7 +31,7 @@ const form = reactive({
   typeCode: '',
   icon: '',
   typeDesc: '',
-  multiAppEnabled: STATUS.ENABLED as 1 | 0,
+  multiAppEnabled: MultiAppEnabledDict.YES as 1 | 0,
 });
 
 /** 表单项配置 */
@@ -79,10 +74,10 @@ const formTemplate: FormItemConfig[] = [
     label: '支持多应用',
     component: 'el-switch',
     testId: 'app-type-multi-app-switch',
-    value: STATUS.ENABLED,
+    value: MultiAppEnabledDict.YES,
     elProps: {
-      activeValue: STATUS.ENABLED,
-      inactiveValue: STATUS.DISABLED,
+      activeValue: MultiAppEnabledDict.YES,
+      inactiveValue: MultiAppEnabledDict.NO,
     },
   },
 ];

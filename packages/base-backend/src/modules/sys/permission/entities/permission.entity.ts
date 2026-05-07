@@ -14,6 +14,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
+import { toDescription, StatusDict, PermissionTypeDict, NodeTypeDict, IsAutoSyncDict, IsVisibleDict, IsCacheDict, ShowModeDict } from 'moyan-shared-dict';
 
 /**
  * 权限类型枚举
@@ -86,7 +87,7 @@ export class Permission extends Base {
    * 权限类型
    * @description PC-平台权限 / NORMAL-普通权限
    */
-  @Column({ type: 'enum', enum: PermissionType, comment: '权限类型 - PC:平台权限/NORMAL:普通权限' })
+  @Column({ type: 'enum', enum: PermissionType, comment: toDescription(PermissionTypeDict) })
   @Index()
   permissionType: PermissionType;
 
@@ -94,7 +95,7 @@ export class Permission extends Base {
    * 节点类型
    * @description MENU-菜单/PAGE-页面/TAG-标签
    */
-  @Column({ type: 'enum', enum: NodeType, nullable: true, comment: '节点类型 - MENU:菜单/PAGE:页面/TAG:标签' })
+  @Column({ type: 'enum', enum: NodeType, nullable: true, comment: toDescription(NodeTypeDict) })
   nodeType: NodeType;
 
   /**
@@ -132,7 +133,7 @@ export class Permission extends Base {
    * 是否自动同步
    * @description 是否由系统自动同步生成
    */
-  @Column({ type: 'tinyint', default: 0, comment: '是否自动同步 - 由系统自动同步生成' })
+  @Column({ type: 'tinyint', default: IsAutoSyncDict.NO, comment: toDescription(IsAutoSyncDict) })
   @Index()
   isAutoSync: number;
 
@@ -161,28 +162,28 @@ export class Permission extends Base {
    * 是否可见
    * @description 是否在前端菜单中显示
    */
-  @Column({ type: 'tinyint', default: 1, comment: '是否可见 - 是否在前端菜单中显示' })
+  @Column({ type: 'tinyint', default: IsVisibleDict.YES, comment: toDescription(IsVisibleDict) })
   isVisible: number;
 
   /**
    * 是否缓存
    * @description 是否缓存页面
    */
-  @Column({ type: 'tinyint', default: 1, comment: '是否缓存 - 是否缓存页面' })
+  @Column({ type: 'tinyint', default: IsCacheDict.YES, comment: toDescription(IsCacheDict) })
   isCache: number;
 
   /**
    * 显示模式
    * @description NORMAL-正常显示 / DEV-开发者模式显示
    */
-  @Column({ type: 'enum', enum: ShowMode, default: ShowMode.NORMAL, comment: '显示模式 - NORMAL:正常/DEV:开发者模式' })
+  @Column({ type: 'enum', enum: ShowMode, default: ShowMode.NORMAL, comment: toDescription(ShowModeDict) })
   showMode: ShowMode;
 
   /**
    * 权限状态
    * @description 状态 - 1:启用 0:禁用 - 控制权限是否可用
    */
-  @Column({ type: 'tinyint', default: 1, comment: '状态 - 1:启用 0:禁用 - 控制权限是否可用' })
+  @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
   permStatus: number;
 

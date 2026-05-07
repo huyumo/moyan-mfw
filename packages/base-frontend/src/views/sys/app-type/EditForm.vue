@@ -21,12 +21,7 @@ import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeUpdate } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { StatusDict } from 'moyan-shared-dict';
 
 /** Props */
 interface Props {
@@ -44,7 +39,7 @@ const form = reactive({
   typeCode: '',
   icon: '',
   typeDesc: '',
-  typeStatus: STATUS.ENABLED as 1 | 0,
+  typeStatus: StatusDict.ENABLED as 1 | 0,
 });
 
 /** 表单项配置 */
@@ -86,11 +81,11 @@ const formTemplate: FormItemConfig[] = [
     label: '状态',
     component: 'el-switch',
     testId: 'app-type-status-switch',
-    value: STATUS.ENABLED,
+    value: StatusDict.ENABLED,
     disabled: () => Boolean(props.data?.typeCode === 'system' || props.data?.typeCode?.startsWith('sys')),
     elProps: {
-      activeValue: STATUS.ENABLED,
-      inactiveValue: STATUS.DISABLED,
+      activeValue: StatusDict.ENABLED,
+      inactiveValue: StatusDict.DISABLED,
       activeText: '启用',
       inactiveText: '禁用',
     },

@@ -5,6 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
 import { AuditModule } from '../../../../common/decorators/audit-log.decorator';
+import { toDescription, AuditModuleDict } from 'moyan-shared-dict';
 
 /**
  * 审计日志实体
@@ -21,7 +22,7 @@ export class AuditLog {
   /**
    * 所属模块
    */
-  @Column({ type: 'enum', enum: AuditModule, comment: '所属模块' })
+  @Column({ type: 'enum', enum: AuditModule, comment: toDescription(AuditModuleDict) })
   @Index()
   module: AuditModule | string;
 
