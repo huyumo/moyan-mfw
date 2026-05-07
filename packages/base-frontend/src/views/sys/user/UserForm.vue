@@ -20,6 +20,8 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
+import { toItems } from 'moyan-shared-dict';
+import { GenderDict } from 'business-dict';
 
 const props = defineProps<UserResponseDto>();
 
@@ -100,11 +102,7 @@ const formTemplate: FormItemConfig[] = [
     component: MfwRadioGroup,
     testId: 'user-gender-radio',
     elProps: {
-      options: [
-        { label: '未知', value: 0 },
-        { label: '男', value: 1 },
-        { label: '女', value: 2 },
-      ],
+      options: toItems(GenderDict),
     },
   }
 ];

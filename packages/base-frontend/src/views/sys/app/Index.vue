@@ -85,10 +85,7 @@ const searchTemplate = ref([
     testId: 'app-search-status',
     placeholder: '请选择状态',
     elProps: {
-      options: [
-        { label: '启用', value: StatusDict.ENABLED },
-        { label: '禁用', value: StatusDict.DISABLED },
-      ],
+      options: toItems(StatusDict),
     },
   },
 ]);

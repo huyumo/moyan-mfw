@@ -32,7 +32,7 @@ import { MfwPopup } from '../../../components/feedback';
 import { ApiRoleFindAll } from '../../../apis/sys';
 import { RoleForm, RoleCard } from '../../../components/business';
 import { useAuthStore } from '../../../store/auth-store';
-import { StatusDict } from 'moyan-shared-dict';
+import { toItems, StatusDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'MfwRoleList' });
 
@@ -62,10 +62,7 @@ const searchTemplate = [
     testId: 'role-search-status',
     placeholder: '请选择状态',
     elProps: {
-      options: [
-        { label: '启用', value: StatusDict.ENABLED },
-        { label: '禁用', value: StatusDict.DISABLED },
-      ],
+      options: toItems(StatusDict),
     },
   },
 ];

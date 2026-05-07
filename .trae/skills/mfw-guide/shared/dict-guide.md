@@ -106,8 +106,21 @@ h(MfwDictFormat, { value: row.isBuiltin, dict: toItems(IsBuiltinDict), asTag: tr
 <!-- ❌ 禁止：内联 STATUS 常量 -->
 const STATUS = { ENABLED: 1, DISABLED: 0 } as const
 
+<!-- ❌ 禁止：硬编码 options 数组 -->
+elProps: {
+  options: [
+    { label: '启用', value: 1 },
+    { label: '禁用', value: 0 },
+  ],
+}
+
 <!-- ✅ 正确：使用 MfwDictFormat -->
 <MfwDictFormat :value="row.status" :dict="toItems(StatusDict)" as-tag />
+
+<!-- ✅ 正确：使用 toItems() 获取 options -->
+elProps: {
+  options: toItems(StatusDict),
+}
 ```
 
 ## 编译与构建
