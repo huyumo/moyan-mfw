@@ -415,6 +415,16 @@ importers:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.9.3)
 
+  packages/shared-dict:
+    dependencies:
+      reflect-metadata:
+        specifier: ^0.2.2
+        version: 0.2.2
+    devDependencies:
+      typescript:
+        specifier: ^5.1.3
+        version: 5.9.3
+
 packages:
 
   '@ampproject/remapping@2.3.0':
