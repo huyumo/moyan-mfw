@@ -166,6 +166,7 @@ const currentIcon = computed(() => {
   &__meta {
     font-size: 12px;
     color: var(--el-text-color-secondary);
+    white-space: nowrap;
   }
 
   &__actions {
