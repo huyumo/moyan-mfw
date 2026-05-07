@@ -40,18 +40,13 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
   if (!avatar) return undefined;
   if (typeof avatar === 'string') return avatar;
   return avatar.src;
 }
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
 
 defineOptions({ name: 'MfwMemberList' });
 
@@ -96,7 +91,7 @@ const columns = [
       (row.roles || []).map((r) =>
         h(ElTag, {
           key: r.roleId,
-          type: r.isBuiltin === STATUS.ENABLED ? 'warning' : 'primary',
+          type: r.isBuiltin === IsBuiltinDict.YES ? 'warning' : 'primary',
           size: 'small',
           style: 'margin-right: 4px',
         }, () => r.roleName)
@@ -106,7 +101,7 @@ const columns = [
 ];
 
 /** 操作列 */
-const isNotOwner = (row: MemberResponseDto) => Number(row.isOwner) === STATUS.ENABLED;
+const isNotOwner = (row: MemberResponseDto) => Number(row.isOwner) === IsOwnerDict.YES;
 
 const actionColumn = {
   prop: 'action',

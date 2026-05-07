@@ -8,9 +8,9 @@
   <div class="role-assign-form">
     <el-checkbox-group v-model="selectedRoleIds" data-testid="role-assign-checkbox-group">
       <div v-for="role in availableRoles" :key="role.id" class="role-item">
-        <el-checkbox :label="role.id" :disabled="role.isOwner === STATUS.ENABLED">
+        <el-checkbox :label="role.id" :disabled="role.isOwner === IsOwnerDict.YES">
           {{ role.roleName }}
-          <el-tag v-if="role.isBuiltin === STATUS.ENABLED" type="warning" size="small">内置</el-tag>
+          <el-tag v-if="role.isBuiltin === IsBuiltinDict.YES" type="warning" size="small">内置</el-tag>
         </el-checkbox>
       </div>
     </el-checkbox-group>
@@ -21,12 +21,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
 import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
 
 /** Props */
 interface Props {
@@ -61,7 +56,7 @@ onMounted(async () => {
   }
 });
 
-const isMemberOwner = computed(() => Number(props.member.isOwner) === STATUS.ENABLED);
+const isMemberOwner = computed(() => Number(props.member.isOwner) === IsOwnerDict.YES);
 
 /** 确认提交 */
 const onConfirm = async () => {

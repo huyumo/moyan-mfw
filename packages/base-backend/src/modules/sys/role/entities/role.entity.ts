@@ -6,6 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import type { Permission } from '../../permission/entities/permission.entity';
+import { toDescription, StatusDict, IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
 
 /**
  * 角色实体类
@@ -62,14 +63,14 @@ export class Role extends Base {
    * 是否内置
    * @description 是否系统内置角色 - 内置角色不允许删除
    */
-  @Column({ type: 'tinyint', default: 0, comment: '是否系统内置角色 - 内置角色不允许删除' })
+  @Column({ type: 'tinyint', default: IsBuiltinDict.NO, comment: toDescription(IsBuiltinDict) })
   isBuiltin: number;
 
   /**
    * 是否拥有者角色
    * @description 是否拥有者角色 - 拥有者拥有应用的全部权限
    */
-  @Column({ type: 'tinyint', default: 0, comment: '是否拥有者角色 - 拥有者拥有应用的全部权限' })
+  @Column({ type: 'tinyint', default: IsOwnerDict.NO, comment: toDescription(IsOwnerDict) })
   @Index()
   isOwner: number;
 
@@ -77,7 +78,7 @@ export class Role extends Base {
    * 角色状态
    * @description 状态 - 1:启用 0:禁用 - 控制角色是否可用
    */
-  @Column({ type: 'tinyint', default: 1, comment: '状态 - 1:启用 0:禁用 - 控制角色是否可用' })
+  @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
   roleStatus: number;
 

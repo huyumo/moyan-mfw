@@ -11,7 +11,7 @@
         <el-icon :size="20"><User /></el-icon>
       </div>
       <span class="role-card__name">{{ data.roleName }}</span>
-      <el-tag v-if="data.isBuiltin === STATUS.ENABLED" type="warning" size="small">内置</el-tag>
+      <el-tag v-if="data.isBuiltin === IsBuiltinDict.YES" type="warning" size="small">内置</el-tag>
     </div>
 
     <div class="role-card__body">
@@ -36,11 +36,7 @@ import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'RoleCard' });
 
@@ -53,8 +49,8 @@ const emit = defineEmits<{
   (e: 'refresh'): void;
 }>();
 
-const isBuiltin = computed(() => props.data.isBuiltin === STATUS.ENABLED);
-const isOwner = computed(()=> props.data.isOwner === STATUS.ENABLED)
+const isBuiltin = computed(() => props.data.isBuiltin === IsBuiltinDict.YES);
+const isOwner = computed(()=> props.data.isOwner === IsOwnerDict.YES)
 const canEdit = computed(() => !isBuiltin.value || props.canEditBuiltin);
 
 const handlePermission = () => {

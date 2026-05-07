@@ -22,12 +22,7 @@ import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis
 import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
 import MfwUserPicker from '../../../components/picker/user-picker';
 import MfwImageSingle from '../../../components/upload/image-single';
-
-/** 状态常量 */
-const STATUS = {
-  ENABLED: 1,
-  DISABLED: 0,
-} as const;
+import { StatusDict } from 'moyan-shared-dict';
 
 const props = defineProps<AppDetailResponseDto>();
 
@@ -48,7 +43,7 @@ const form = reactive({
   ownerId: '',
   appDesc: '',
   logo: undefined as ImageResourceDto | undefined,
-  appStatus: STATUS.ENABLED as 1 | 0,
+  appStatus: StatusDict.ENABLED as 1 | 0,
 });
 
 /** 基础表单项配置 */
@@ -130,10 +125,10 @@ const baseTemplate: FormItemConfig[] = [
     component: 'el-switch',
     testId: 'app-status-switch',
     show: () => isEdit.value,
-    value: STATUS.ENABLED,
+    value: StatusDict.ENABLED,
     elProps: {
-      activeValue: STATUS.ENABLED,
-      inactiveValue: STATUS.DISABLED,
+      activeValue: StatusDict.ENABLED,
+      inactiveValue: StatusDict.DISABLED,
       activeText: '启用',
       inactiveText: '禁用',
     },

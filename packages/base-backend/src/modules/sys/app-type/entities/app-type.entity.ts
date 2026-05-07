@@ -6,6 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ClassConstructor } from 'class-transformer';
+import { toDescription, StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
 
 /**
  * 应用类型实体
@@ -47,13 +48,13 @@ export class AppType {
   /**
    * 是否支持多应用
    */
-  @Column({ type: 'tinyint', default: 0, comment: '是否支持多应用 - 1:支持 0:不支持' })
+  @Column({ type: 'tinyint', default: MultiAppEnabledDict.NO, comment: toDescription(MultiAppEnabledDict) })
   multiAppEnabled: number;
 
   /**
    * 类型状态
    */
-  @Column({ type: 'tinyint', default: 1, comment: '状态 - 1:启用 0:禁用' })
+  @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
   typeStatus: number;
 
