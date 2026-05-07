@@ -68,11 +68,11 @@ export class UserResponseDto {
   userStatus: number;
 
   /**
-   * 是否开发者
+   * 是否开发者 (1:是 0:否)
    */
-  @ApiProperty({ description: '是否开发者' })
+  @ApiProperty({ description: '是否开发者 (1:是 0:否)' })
   @Expose()
-  isDeveloper: boolean;
+  isDeveloper: number;
 
   /**
    * 创建时间

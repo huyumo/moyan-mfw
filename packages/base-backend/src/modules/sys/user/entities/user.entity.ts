@@ -6,6 +6,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
+import { StatusDict, toDescription } from 'moyan-shared-dict'
+import { GenderDict, DeveloperDict } from 'business-dict'
 
 /**
  * 用户实体类
@@ -68,23 +70,23 @@ export class User extends Base {
    * 性别
    * @description 性别 - 0:未知 1:男 2:女
    */
-  @Column({ type: 'tinyint', default: 0, comment: '性别 - 0:未知 1:男 2:女' })
-  gender: number;
+  @Column({ type: 'tinyint', default: GenderDict.UNKNOWN, comment: toDescription(GenderDict) })
+  gender: number
 
   /**
    * 用户状态
    * @description 状态 - 1:启用 0:禁用 - 控制用户是否可登录系统
    */
-  @Column({ type: 'tinyint', default: 1, comment: '状态 - 1:启用 0:禁用 - 控制用户是否可登录系统' })
+  @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
-  userStatus: number;
+  userStatus: number
 
   /**
    * 是否开发者
    * @description 是否开发者标记 - 开发者拥有系统全部权限
    */
-  @Column({ type: 'tinyint', default: 0, comment: '是否开发者标记 - 开发者拥有系统全部权限' })
-  isDeveloper: number;
+  @Column({ type: 'tinyint', default: DeveloperDict.NO, comment: toDescription(DeveloperDict) })
+  isDeveloper: number
 
   /**
    * 关联角色
