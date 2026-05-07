@@ -26,7 +26,7 @@ import { MfwCardPanel } from '../../../components';
 import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
 import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
 import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
-import { StatusDict } from 'moyan-shared-dict';
+import { toItems, getLabel, StatusDict } from 'moyan-shared-dict';
 
 interface Props {
   data?: AppDetailResponseDto;
@@ -47,8 +47,8 @@ const headerConfig = computed<CardPanelHeader>(() => ({
   subtitle: props.data?.appCode,
   status: props.data?.appStatus !== undefined ? {
     value: props.data.appStatus,
-    type: props.data.appStatus === StatusDict.ENABLED ? 'success' : 'danger',
-    text: props.data.appStatus === StatusDict.ENABLED ? '启用' : '禁用',
+    type: (toItems(StatusDict).find(i => i.value === props.data!.appStatus)?.type || 'primary') as 'success' | 'warning' | 'danger' | 'info',
+    text: getLabel(StatusDict, props.data.appStatus),
   } : undefined,
 }));
 

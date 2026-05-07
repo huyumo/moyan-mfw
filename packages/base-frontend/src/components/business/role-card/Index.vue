@@ -11,7 +11,7 @@
         <el-icon :size="20"><User /></el-icon>
       </div>
       <span class="role-card__name">{{ data.roleName }}</span>
-      <el-tag v-if="data.isBuiltin === IsBuiltinDict.YES" type="warning" size="small">内置</el-tag>
+      <MfwDictFormat v-if="data.isBuiltin === IsBuiltinDict.YES" :value="data.isBuiltin" :dict="toItems(IsBuiltinDict)" as-tag />
     </div>
 
     <div class="role-card__body">
@@ -36,7 +36,8 @@ import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
+import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });
 

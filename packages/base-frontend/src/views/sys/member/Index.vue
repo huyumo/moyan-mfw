@@ -27,7 +27,7 @@
 import { ref, h, computed } from 'vue';
 import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage } from '../../../components';
+import { MfwPageWrapper, MfwListPage, MfwDictFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -40,7 +40,7 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
-import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
   if (!avatar) return undefined;
@@ -89,10 +89,11 @@ const columns = [
     minWidth: 200,
     render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'role-tags' },
       (row.roles || []).map((r) =>
-        h(ElTag, {
+        h(MfwDictFormat, {
+          value: r.isBuiltin,
+          dict: toItems(IsBuiltinDict),
+          asTag: true,
           key: r.roleId,
-          type: r.isBuiltin === IsBuiltinDict.YES ? 'warning' : 'primary',
-          size: 'small',
           style: 'margin-right: 4px',
         }, () => r.roleName)
       ),

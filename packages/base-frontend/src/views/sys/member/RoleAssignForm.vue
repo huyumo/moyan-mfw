@@ -10,7 +10,7 @@
       <div v-for="role in availableRoles" :key="role.id" class="role-item">
         <el-checkbox :label="role.id" :disabled="role.isOwner === IsOwnerDict.YES">
           {{ role.roleName }}
-          <el-tag v-if="role.isBuiltin === IsBuiltinDict.YES" type="warning" size="small">内置</el-tag>
+          <MfwDictFormat v-if="role.isBuiltin === IsBuiltinDict.YES" :value="role.isBuiltin" :dict="toItems(IsBuiltinDict)" as-tag />
         </el-checkbox>
       </div>
     </el-checkbox-group>
@@ -21,7 +21,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
 import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
-import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
+import { MfwDictFormat } from '../../../components';
 
 /** Props */
 interface Props {

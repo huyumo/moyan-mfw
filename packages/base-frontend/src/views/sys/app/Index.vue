@@ -28,7 +28,7 @@ import { ref, h, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, View, Edit, Delete, User, Picture } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
@@ -42,7 +42,7 @@ import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys
 import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
 import { getImageSrc } from '../../../utils/image';
-import { StatusDict } from 'moyan-shared-dict';
+import { toItems, StatusDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'MfwAppList' });
 
@@ -120,10 +120,7 @@ const columns = [
     prop: 'appStatus',
     label: '状态',
     width: 80,
-    render: ({ row }: { row: AppDetailResponseDto }) => h(ElTag, {
-      type: row.appStatus === StatusDict.ENABLED ? 'success' : 'danger',
-      size: 'small',
-    }, () => row.appStatus === StatusDict.ENABLED ? '启用' : '禁用'),
+    render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDictFormat, { value: row.appStatus, dict: toItems(StatusDict), asTag: true }),
   },
   { prop: 'sortOrder', label: '排序', width: 80 },
   {
