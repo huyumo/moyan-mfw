@@ -25,7 +25,6 @@
 
 <script setup lang="ts">
 import { ref, h, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
 import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, View, Edit, Delete, User, Picture } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
@@ -47,7 +46,6 @@ import { toItems, StatusDict } from 'moyan-shared-dict';
 
 defineOptions({ name: 'MfwAppList' });
 
-const router = useRouter();
 const listPage = ref<MfwListPageInstance>();
 
 /** 应用类型列表（用于搜索模板） */
@@ -138,7 +136,6 @@ const actionColumn = {
   render: ({ row }: { row: AppDetailResponseDto }) => renderActionButtons([
     { label: '详情', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'app-edit-btn' },
-    { label: '成员', type: 'primary', icon: User, onClick: handleMember, permission: ['编辑'], testId: 'app-member-btn' },
     { label: '拥有者', type: 'warning', icon: User, onClick: handleOwner, permission: ['编辑'], testId: 'app-owner-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
     { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'app-delete-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
   ], { maxVisible: 2 }, row),
@@ -207,11 +204,6 @@ const handleEdit = (row: AppDetailResponseDto) => {
     popupProps: { width: 550 },
     on: { confirm: listPage.value?.refresh },
   });
-};
-
-/** 成员管理 */
-const handleMember = (row: AppDetailResponseDto) => {
-  router.push(`/sys/member?appId=${row.id}`);
 };
 
 /** 删除 */

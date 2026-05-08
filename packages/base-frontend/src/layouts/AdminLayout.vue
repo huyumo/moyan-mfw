@@ -4,13 +4,13 @@
 -->
 <template>
   <div class="mfw-admin-shell" :class="shellClasses">
-    <HeaderPanel :fixed-header="layoutStore.styleConfig.fixedHeader" :show-sidebar="layoutStore.showSidebar"
-      :compact="layoutStore.styleConfig.compact" :brand-name="headerBrandName"
-      :brand-tagline="headerBrandTagline" :show-app-switcher="showAppSwitcher"
+    <HeaderPanel :fixed-header="layoutStore.styleConfig.fixedHeader"
+      :brand-name="headerBrandName"
+      :brand-tagline="headerBrandTagline" :brand-logo="headerBrandLogo" :show-app-switcher="showAppSwitcher"
       :show-primary-top-menus="showPrimaryTopMenus" :top-level-menus="topLevelMenus"
       :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
       :layout-extensions="layoutStore.layoutExtensions" @toggle-mobile-menu="toggleMobileMenu"
-      @toggle-compact="layoutStore.toggleCompact()" @top-menu-click="handleTopMenuClick"
+      @top-menu-click="handleTopMenuClick"
       @sub-menu-click="handleSubMenuClick"
       @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand"
       @brand-click="openAppDrawer">
@@ -29,7 +29,8 @@
       <AsidePanel :show-sidebar="layoutStore.showSidebar" :mobile-menu-open="mobileMenuOpen"
         :compact="layoutStore.styleConfig.compact" :active-menu-path="activeMenuPath"
         :displayed-side-menus="displayedSideMenus"
-        :no-apps="noApps">
+        :no-apps="noApps"
+        @toggle-compact="layoutStore.toggleCompact()">
         <template v-if="$slots['sidebar-footer']" #sidebar-footer>
           <slot name="sidebar-footer" />
         </template>
@@ -112,6 +113,11 @@ const appDrawerVisible = ref(false);
 /** 头部显示的应用名称 */
 const headerBrandName = computed(() =>
   authStore.currentApp?.appName || layoutStore.navigation.brandName
+);
+
+/** 头部显示的应用 Logo */
+const headerBrandLogo = computed(() =>
+  authStore.currentApp?.appLogo || ''
 );
 
 /** 头部显示的应用副标题 */

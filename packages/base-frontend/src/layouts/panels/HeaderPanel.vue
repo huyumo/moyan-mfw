@@ -14,16 +14,9 @@
       >
         <el-icon><Menu /></el-icon>
       </button>
-      <button
-        v-if="showSidebar"
-        class="mfw-admin-collapse-toggle"
-        type="button"
-        :aria-label="compact ? 'Expand sidebar' : 'Collapse sidebar'"
-        data-testid="header-compact-toggle"
-        @click="emit('toggle-compact')"
-      >
-        <el-icon><component :is="compact ? Expand : Fold" /></el-icon>
-      </button>
+      <div class="mfw-admin-brand-logo" v-if="brandLogo">
+        <img :src="brandLogo" alt="" class="mfw-admin-brand-logo-img" />
+      </div>
       <div
         class="mfw-admin-brand-text"
         :class="{ 'is-clickable': showAppSwitcher }"
@@ -68,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { Expand, Fold, Menu } from '@element-plus/icons-vue';
+import { Menu } from '@element-plus/icons-vue';
 import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../types/layout-types';
 import NavigationPanel from './NavigationPanel.vue';
 import UserPanel from './UserPanel.vue';
@@ -76,14 +69,12 @@ import UserPanel from './UserPanel.vue';
 defineProps<{
   /** 是否固定头部 */
   fixedHeader: boolean;
-  /** 是否显示侧边栏 */
-  showSidebar: boolean;
-  /** 是否紧凑模式 */
-  compact: boolean;
   /** 品牌名称 */
   brandName: string;
   /** 品牌标语 */
   brandTagline: string;
+  /** 品牌 Logo */
+  brandLogo?: string;
   /** 是否显示应用切换入口（多应用时启用） */
   showAppSwitcher?: boolean;
   /** 是否显示主导航菜单 */
@@ -101,8 +92,6 @@ defineProps<{
 const emit = defineEmits<{
   /** 切换移动端菜单 */
   (e: 'toggle-mobile-menu'): void;
-  /** 切换紧凑模式 */
-  (e: 'toggle-compact'): void;
   /** 顶级菜单点击 */
   (e: 'top-menu-click', menu: SideMenuItem): void;
   /** 子菜单点击 */

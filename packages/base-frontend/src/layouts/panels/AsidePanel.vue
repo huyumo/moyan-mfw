@@ -22,6 +22,15 @@
     </el-scrollbar>
 
     <div class="mfw-admin-sidebar-footer">
+      <button
+        class="mfw-admin-collapse-toggle"
+        type="button"
+        :aria-label="compact ? '展开侧边栏' : '折叠侧边栏'"
+        data-testid="sidebar-compact-toggle"
+        @click="emit('toggle-compact')"
+      >
+        <el-icon><component :is="compact ? Expand : Fold" /></el-icon>
+      </button>
       <slot name="sidebar-footer">
         <span></span>
       </slot>
@@ -30,7 +39,7 @@
 </template>
 
 <script setup lang="ts">
-import { WarningFilled } from '@element-plus/icons-vue';
+import { WarningFilled, Expand, Fold } from '@element-plus/icons-vue';
 import MenuTreeNode from '../components/menu/MenuTreeNode.vue';
 import type { SideMenuItem } from '../../types/layout-types';
 
@@ -47,5 +56,9 @@ defineProps<{
   displayedSideMenus: SideMenuItem[];
   /** 是否无应用可访问 */
   noApps?: boolean;
+}>();
+
+const emit = defineEmits<{
+  (e: 'toggle-compact'): void;
 }>();
 </script>
