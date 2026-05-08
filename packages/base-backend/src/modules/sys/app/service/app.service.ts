@@ -159,6 +159,10 @@ export class AppService {
       throw new NotFoundError('应用实例');
     }
 
+    if (app.appCode === 'system-instance') {
+      throw new BadRequestException('系统内置应用不可删除');
+    }
+
     // 使用软删除
     await this.appRepository.softDelete(id);
   }
@@ -176,6 +180,10 @@ export class AppService {
 
     if (!app) {
       throw new NotFoundError('应用实例');
+    }
+
+    if (app.appCode === 'system-instance') {
+      throw new BadRequestException('系统内置应用不可更换拥有者');
     }
 
     if (app.ownerId === ownerId) {

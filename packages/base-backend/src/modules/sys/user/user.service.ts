@@ -252,6 +252,10 @@ export class UserService {
       throw new NotFoundError('用户');
     }
 
+    if (user.username === 'admin') {
+      throw new BadRequestException('admin 用户不可删除');
+    }
+
     // 使用软删除
     await this.userRepository.softDelete(id);
   }

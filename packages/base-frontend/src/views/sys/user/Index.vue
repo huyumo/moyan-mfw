@@ -126,7 +126,7 @@ const actionColumn = {
   render: ({ row }: { row: UserResponseDto }) => renderActionButtons([
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'user-edit-btn' },
     { label: '重置密码', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['编辑'], testId: 'user-reset-pwd-btn' },
-    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'user-delete-btn' },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'user-delete-btn', visible: (row: UserResponseDto) => row.username !== 'admin' },
   ], { maxVisible: 2 }, row),
 };
 
