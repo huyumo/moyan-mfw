@@ -24,7 +24,17 @@
       >
         <el-icon><component :is="compact ? Expand : Fold" /></el-icon>
       </button>
-      <div class="mfw-admin-brand-text">
+      <div
+        class="mfw-admin-brand-text"
+        :class="{ 'is-clickable': showAppSwitcher }"
+        :role="showAppSwitcher ? 'button' : undefined"
+        :tabindex="showAppSwitcher ? 0 : undefined"
+        :aria-label="showAppSwitcher ? `切换应用实例，当前应用: ${brandName}` : undefined"
+        data-testid="header-brand-area"
+        @click="showAppSwitcher && emit('brand-click')"
+        @keydown.enter="showAppSwitcher && emit('brand-click')"
+        @keydown.space.prevent="showAppSwitcher && emit('brand-click')"
+      >
         <span class="mfw-admin-brand-name">{{ brandName }}</span>
         <small class="mfw-admin-brand-tagline">{{ brandTagline }}</small>
       </div>
@@ -74,6 +84,8 @@ defineProps<{
   brandName: string;
   /** 品牌标语 */
   brandTagline: string;
+  /** 是否显示应用切换入口（多应用时启用） */
+  showAppSwitcher?: boolean;
   /** 是否显示主导航菜单 */
   showPrimaryTopMenus: boolean;
   /** 顶级菜单项 */
@@ -99,5 +111,7 @@ const emit = defineEmits<{
   (e: 'open-settings'): void;
   /** 用户命令 */
   (e: 'user-command', command: string | number | object): void;
+  /** 品牌区域点击（应用切换） */
+  (e: 'brand-click'): void;
 }>();
 </script>

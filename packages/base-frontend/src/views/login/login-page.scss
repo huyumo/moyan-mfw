@@ -110,11 +110,21 @@ html.dark .mfw-login-tip {
   color: #94a3b8;
 }
 
+.mfw-login-card--app {
+  width: 680px;
+  max-width: 90vw;
+}
+
 @media (max-width: 480px) {
   .mfw-login-card {
     width: auto;
     margin: 16px;
     padding: 28px 24px;
     border-radius: 0;
+  }
+
+  .mfw-login-card--app {
+    width: auto;
+    max-width: none;
   }
 }

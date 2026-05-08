@@ -16,66 +16,78 @@
       :particle-count="60"
       :line-distance="100"
     />
-    <div class="mfw-login-card">
-      <div class="mfw-login-logo">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="48" height="48" rx="10" class="mfw-logo-bg"/>
-          <path d="M24 12L32 20V28L24 36L16 28V20L24 12Z" class="mfw-logo-path"/>
-          <circle cx="24" cy="24" r="4" class="mfw-logo-circle"/>
-        </svg>
-      </div>
+    <div class="mfw-login-card" :class="{ 'mfw-login-card--app': selectingApp }">
+      <!-- 登录表单 -->
+      <template v-if="!selectingApp">
+        <div class="mfw-login-logo">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="48" height="48" rx="10" class="mfw-logo-bg"/>
+            <path d="M24 12L32 20V28L24 36L16 28V20L24 12Z" class="mfw-logo-path"/>
+            <circle cx="24" cy="24" r="4" class="mfw-logo-circle"/>
+          </svg>
+        </div>
 
-      <h1 class="mfw-login-title">{{ layoutStore.navigation.brandName || '墨焱管理后台' }}</h1>
+        <h1 class="mfw-login-title">{{ layoutStore.navigation.brandName || '墨焱管理后台' }}</h1>
 
-      <div class="mfw-login-methods">
-        <component :is="methodsExtensionComponent" v-if="methodsExtensionComponent" />
-      </div>
+        <div class="mfw-login-methods">
+          <component :is="methodsExtensionComponent" v-if="methodsExtensionComponent" />
+        </div>
 
-      <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="submit">
-        <el-form-item prop="username">
-          <el-input
-            ref="usernameInputRef"
-            v-model="form.username"
-            placeholder="请输入用户名"
-            clearable
-            :disabled="loading"
-            aria-label="用户名"
-            data-testid="login-username-input"
-            @keyup.enter="submit"
-          />
-        </el-form-item>
+        <el-form ref="formRef" :model="form" :rules="rules" label-position="top" size="large" @submit.prevent="submit">
+          <el-form-item prop="username">
+            <el-input
+              ref="usernameInputRef"
+              v-model="form.username"
+              placeholder="请输入用户名"
+              clearable
+              :disabled="loading"
+              aria-label="用户名"
+              data-testid="login-username-input"
+              @keyup.enter="submit"
+            />
+          </el-form-item>
 
-        <el-form-item prop="password">
-          <el-input
-            ref="passwordInputRef"
-            v-model="form.password"
-            show-password
-            placeholder="请输入密码"
-            :disabled="loading"
-            aria-label="密码"
-            data-testid="login-password-input"
-            @keyup.enter="submit"
-          />
-        </el-form-item>
+          <el-form-item prop="password">
+            <el-input
+              ref="passwordInputRef"
+              v-model="form.password"
+              show-password
+              placeholder="请输入密码"
+              :disabled="loading"
+              aria-label="密码"
+              data-testid="login-password-input"
+              @keyup.enter="submit"
+            />
+          </el-form-item>
 
-        <el-form-item>
-          <el-button
-            type="primary"
-            class="mfw-login-submit"
-            native-type="submit"
-            :loading="loading"
-            :disabled="loading"
-            aria-label="登录"
-            data-testid="login-submit-btn"
-          >
-            {{ loading ? '登录中...' : '登 录' }}
-          </el-button>
-        </el-form-item>
-      </el-form>
+          <el-form-item>
+            <el-button
+              type="primary"
+              class="mfw-login-submit"
+              native-type="submit"
+              :loading="loading"
+              :disabled="loading"
+              aria-label="登录"
+              data-testid="login-submit-btn"
+            >
+              {{ loading ? '登录中...' : '登 录' }}
+            </el-button>
+          </el-form-item>
+        </el-form>
 
-      <div class="mfw-login-footer">
-        <component :is="footerExtensionComponent" v-if="footerExtensionComponent" />
-      </div>
+        <div class="mfw-login-footer">
+          <component :is="footerExtensionComponent" v-if="footerExtensionComponent" />
+        </div>
+      </template>
+
+      <!-- 应用选择面板 -->
+      <AppSelectorPanel
+        v-else
+        :apps="loginApps"
+        :loading="false"
+        :selected-app-id="selectingAppId"
+        @select="handleAppSelect"
+      />
     </div>
   </div>
 </template>
@@ -84,12 +96,11 @@
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '../../store/auth-store';
+import { useAuthStore, type AppInstance } from '../../store/auth-store';
 import { useLayoutStore } from '../../store/layout-store';
 import { useColorMode, useThemeSwitch } from '../../composables';
-import { MfwPopup } from '../../components/feedback/popup';
 import { ParticleBackground } from '../../components/display';
-import AppSelectorDialog from '../../components/business/app-selector-dialog/Index.vue';
+import AppSelectorPanel from '../../components/business/app-selector-panel/Index.vue';
 import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
 interface LoginFormState {
@@ -113,6 +124,8 @@ const formRef = ref<FormInstance>();
 const usernameInputRef = ref<InputFocusInstance>();
 const passwordInputRef = ref<InputFocusInstance>();
 const loading = ref(false);
+const selectingApp = ref(false);
+const selectingAppId = ref<string>('');
 
 const particleColor = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.6)' : 'rgba(64, 158, 255, 0.6)');
 const lineColor = computed(() => isDark.value ? 'rgba(255, 255, 255, 0.3)' : 'rgba(64, 158, 255, 0.3)');
@@ -219,20 +232,8 @@ async function submit() {
       return;
     }
 
-    MfwPopup.open({
-      title: '选择应用实例',
-      type: 'dialog',
-      component: AppSelectorDialog,
-      data: { forceSelect: true },
-      popupProps: { width: '600px' },
-      footer: false,
-      on: {
-        close: () => {
-          const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
-          router.replace(redirect);
-        },
-      },
-    });
+    // 多个应用需要选择 → 在登录页内嵌展示选择面板
+    selectingApp.value = true;
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || error?.message || '登录失败');
   } finally {
@@ -240,10 +241,67 @@ async function submit() {
   }
 }
 
+/** 登录页应用列表（转换为 AppListItem 格式） */
+const loginApps = computed(() =>
+  authStore.apps.map((app: AppInstance) => ({
+    appId: app.appId,
+    appName: app.appName,
+    appCode: app.appCode,
+    appLogo: app.appLogo,
+    isOwner: app.isOwner,
+    role: app.isOwner ? 'owner' : 'member',
+    appTypeName: app.appTypeName,
+  }))
+);
+
+/** 处理应用选择 */
+async function handleAppSelect(app: { appId: string; appName: string; appCode: string; appLogo?: string; isOwner: boolean; appTypeName?: string }) {
+  selectingAppId.value = app.appId;
+  try {
+    await authStore.selectApp({
+      appId: app.appId,
+      appName: app.appName,
+      appCode: app.appCode,
+      appLogo: app.appLogo,
+      isOwner: app.isOwner,
+      appTypeName: app.appTypeName,
+    });
+    ElMessage.success(`已进入应用: ${app.appName}`);
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+    await router.replace(redirect);
+  } catch (error: any) {
+    selectingAppId.value = '';
+    ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');
+  }
+}
+
 initColorMode();
 
-onMounted(() => {
+onMounted(async () => {
   initTheme();
+
+  // 已登录但尚未选择应用 → 初始化认证并展示选择面板
+  if (authStore.isLoggedIn && authStore.needSelectApp) {
+    if (authStore.apps.length === 0) {
+      try {
+        await authStore.fetchUserInfo();
+        await authStore.fetchUserApps();
+      } catch {
+        // 获取失败则回退到登录表单
+      }
+    }
+    if (authStore.apps.length > 0) {
+      const autoSelected = await authStore.autoSelectApp();
+      if (autoSelected) {
+        const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
+        await router.replace(redirect);
+        return;
+      }
+      selectingApp.value = true;
+      return;
+    }
+  }
+
   void nextTick(() => { usernameInputRef.value?.focus(); });
 });
 </script>

@@ -100,6 +100,24 @@
   opacity: 0.82;
 }
 
+.mfw-admin-brand-text.is-clickable {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 4px 10px;
+  margin: -4px -10px;
+  transition: background 0.2s ease;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--el-fill-color-light);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary-light-5);
+    outline-offset: -2px;
+  }
+}
+
 .mfw-admin-menu-toggle,
 .mfw-admin-collapse-toggle {
   display: inline-grid;

@@ -5,13 +5,15 @@
 <template>
   <div class="mfw-admin-shell" :class="shellClasses">
     <HeaderPanel :fixed-header="layoutStore.styleConfig.fixedHeader" :show-sidebar="layoutStore.showSidebar"
-      :compact="layoutStore.styleConfig.compact" :brand-name="layoutStore.navigation.brandName"
-      :brand-tagline="layoutStore.navigation.brandTagline" :show-primary-top-menus="showPrimaryTopMenus"
-      :top-level-menus="topLevelMenus" :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
+      :compact="layoutStore.styleConfig.compact" :brand-name="headerBrandName"
+      :brand-tagline="headerBrandTagline" :show-app-switcher="showAppSwitcher"
+      :show-primary-top-menus="showPrimaryTopMenus" :top-level-menus="topLevelMenus"
+      :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
       :layout-extensions="layoutStore.layoutExtensions" @toggle-mobile-menu="toggleMobileMenu"
       @toggle-compact="layoutStore.toggleCompact()" @top-menu-click="handleTopMenuClick"
       @sub-menu-click="handleSubMenuClick"
-      @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand">
+      @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand"
+      @brand-click="openAppDrawer">
       <template v-if="$slots['header-common']" #header-common>
         <slot name="header-common" />
       </template>
@@ -52,16 +54,26 @@
       :layout-mode-options="layoutModeOptions" :theme-options="themeOptions" :style-config="layoutStore.styleConfig"
       :get-theme-color="getThemeColor" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
       @reset-defaults="handleResetDefaults" />
+
+    <AppSelectorDrawer
+      v-model:visible="appDrawerVisible"
+      :apps="drawerApps"
+      :current-app-id="authStore.currentApp?.appId"
+      @select="handleAppSwitch"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import { ElMessage } from 'element-plus';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
 import SettingsPanel from './panels/SettingsPanel.vue';
 import NoAppsEmpty from '../components/business/no-apps-empty/Index.vue';
+import AppSelectorDrawer from '../components/business/app-selector-drawer/Index.vue';
+import type { AppListItem } from '../components/business/app-selector-panel/Index.vue';
 import { useAdminLayout } from './composables/use-admin-layout';
 import { useColorMode, useThemeSwitch } from '../composables';
 import { useAuthStore } from '../store/auth-store';
@@ -94,6 +106,65 @@ const {
 } = useAdminLayout();
 
 const noApps = computed(() => authStore.isAuthenticated && !authStore.hasApps);
+
+const appDrawerVisible = ref(false);
+
+/** 头部显示的应用名称 */
+const headerBrandName = computed(() =>
+  authStore.currentApp?.appName || layoutStore.navigation.brandName
+);
+
+/** 头部显示的应用副标题 */
+const headerBrandTagline = computed(() => {
+  if (authStore.currentApp) {
+    const parts: string[] = [];
+    if (authStore.currentApp.appTypeName) {
+      parts.push(authStore.currentApp.appTypeName);
+    }
+    parts.push(authStore.currentApp.isOwner ? '拥有者' : '成员');
+    return parts.join(' · ');
+  }
+  return layoutStore.navigation.brandTagline;
+});
+
+/** 是否显示应用切换入口 */
+const showAppSwitcher = computed(() => authStore.apps.length > 1);
+
+/** 抽屉中的应用列表数据 */
+const drawerApps = computed<AppListItem[]>(() =>
+  authStore.apps.map(app => ({
+    appId: app.appId,
+    appName: app.appName,
+    appCode: app.appCode,
+    appLogo: app.appLogo,
+    isOwner: app.isOwner,
+    role: app.isOwner ? 'owner' : 'member',
+    appTypeName: app.appTypeName,
+  }))
+);
+
+/** 打开应用切换抽屉 */
+function openAppDrawer() {
+  appDrawerVisible.value = true;
+}
+
+/** 从抽屉中切换应用 */
+async function handleAppSwitch(app: AppListItem) {
+  try {
+    await authStore.selectApp({
+      appId: app.appId,
+      appName: app.appName,
+      appCode: app.appCode,
+      appLogo: app.appLogo,
+      isOwner: app.isOwner,
+      appTypeName: app.appTypeName,
+    });
+    appDrawerVisible.value = false;
+    ElMessage.success(`已切换到应用: ${app.appName}`);
+  } catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');
+  }
+}
 
 const { initColorMode } = useColorMode();
 const { initTheme } = useThemeSwitch();
