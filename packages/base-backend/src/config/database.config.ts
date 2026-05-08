@@ -72,7 +72,7 @@ export default () => ({
    * 是否开启 SQL 日志
    * @type {boolean}
    */
-  logging: process.env.NODE_ENV === 'development',
+  logging: ['error'],
 
   /**
    * 记录 SQL 日志到 console

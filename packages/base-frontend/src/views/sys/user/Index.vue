@@ -26,8 +26,7 @@ import { ElMessageBox, ElSwitch, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete, Lock, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
-import { toItems, StatusDict } from 'moyan-shared-dict'
-import { GenderDict, DeveloperDict } from 'business-dict'
+import { toItems, StatusDict, GenderDict, DeveloperDict } from 'moyan-shared-dict'
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
 import { getImageSrc } from '../../../utils/image';
