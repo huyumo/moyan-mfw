@@ -90,11 +90,19 @@ export class AppMemberService {
       .like('u.nickname', nickname)
       .like('u.username', username)
 
+    // 角色范围过滤：仅返回当前应用或同应用类型下的角色
+    const roleScopeBuilder = new WhereBuilder();
+    roleScopeBuilder
+      .eq('r.appId', appId)
+      .eq('r.appTypeId', app.appTypeId, 'OR');
+
     const pager = new PaginationX(this.dataSource, query);
     return await pager
       .where('main', whereBuilder)
+      .where('roleScope', roleScopeBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
+        const roleScopeClause = wheres?.roleScope || '';
         return `
         WITH rj AS(
           SELECT 
@@ -109,6 +117,7 @@ export class AppMemberService {
             ) AS roles
           FROM sys_user_roles ur
           INNER JOIN sys_roles r ON ur.roleId = r.id
+          ${roleScopeClause}
           GROUP BY ur.userId
         )
         SELECT
