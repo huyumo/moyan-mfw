@@ -14,22 +14,24 @@
       >
         <el-icon><Menu /></el-icon>
       </button>
-      <div class="mfw-admin-brand-logo" v-if="brandLogo">
-        <img :src="brandLogo" alt="" class="mfw-admin-brand-logo-img" />
-      </div>
       <div
         class="mfw-admin-brand-text"
         :class="{ 'is-clickable': showAppSwitcher }"
         :role="showAppSwitcher ? 'button' : undefined"
         :tabindex="showAppSwitcher ? 0 : undefined"
-        :aria-label="showAppSwitcher ? `切换应用实例，当前应用: ${brandName}` : undefined"
+        :aria-label="showAppSwitcher ? `切换应用，当前应用: ${brandName}` : undefined"
         data-testid="header-brand-area"
         @click="showAppSwitcher && emit('brand-click')"
         @keydown.enter="showAppSwitcher && emit('brand-click')"
         @keydown.space.prevent="showAppSwitcher && emit('brand-click')"
       >
-        <span class="mfw-admin-brand-name">{{ brandName }}</span>
-        <small class="mfw-admin-brand-tagline">{{ brandTagline }}</small>
+        <div class="mfw-admin-brand-logo" v-if="brandLogo">
+          <img :src="brandLogo" alt="" class="mfw-admin-brand-logo-img" />
+        </div>
+        <div class="mfw-admin-brand-text-inner">
+          <span class="mfw-admin-brand-name">{{ brandName }}</span>
+          <small class="mfw-admin-brand-tagline">{{ brandTagline }}</small>
+        </div>
       </div>
     </div>
 

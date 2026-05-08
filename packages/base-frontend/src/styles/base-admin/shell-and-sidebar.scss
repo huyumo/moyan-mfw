@@ -95,8 +95,15 @@
 
 .mfw-admin-brand-text {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 10px;
+
+  .mfw-admin-brand-text-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
 }
 
 .mfw-admin-brand-name {

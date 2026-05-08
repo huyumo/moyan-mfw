@@ -1,6 +1,7 @@
 <!--
 /**
- * @fileoverview 鐢啫鐪€圭懓娅掔紒鍕閵? */
+ * @fileoverview 管理布局主组件
+ */
 -->
 <template>
   <div class="mfw-admin-shell" :class="shellClasses">
@@ -60,13 +61,16 @@
       v-model:visible="appDrawerVisible"
       :apps="drawerApps"
       :current-app-id="authStore.currentApp?.appId"
+      :default-app-id="authStore.defaultAppId || undefined"
       @select="handleAppSwitch"
+      @toggle-default="handleToggleDefault"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
@@ -80,6 +84,7 @@ import { useColorMode, useThemeSwitch } from '../composables';
 import { useAuthStore } from '../store/auth-store';
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 const {
   layoutStore,
@@ -167,8 +172,21 @@ async function handleAppSwitch(app: AppListItem) {
     });
     appDrawerVisible.value = false;
     ElMessage.success(`已切换到应用: ${app.appName}`);
+    router.push('/');
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');
+  }
+}
+
+/** 切换默认应用 */
+function handleToggleDefault(app: AppListItem) {
+  const currentDefault = authStore.getDefaultAppId();
+  if (currentDefault === app.appId) {
+    authStore.clearDefaultApp();
+    ElMessage.success('已取消默认应用');
+  } else {
+    authStore.setDefaultApp(app.appId);
+    ElMessage.success(`已设为默认应用: ${app.appName}`);
   }
 }
 

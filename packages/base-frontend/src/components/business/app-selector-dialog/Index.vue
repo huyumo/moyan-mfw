@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview 应用实例选择器弹窗组件
- * @description 用于用户登录后选择应用实例，支持弹窗模式展示
+ * @fileoverview 应用选择器弹窗组件
+ * @description 用于用户登录后选择应用，支持弹窗模式展示
  *
  * @example
  * ```vue
@@ -10,7 +10,7 @@
  * import AppSelectorDialog from '@/components/business/app-selector-dialog'
  *
  * MfwPopup.open({
- *   title: '选择应用实例',
+ *   title: '选择应用',
  *   type: 'dialog',
  *   component: AppSelectorDialog,
  *   data: { forceSelect: true },
@@ -27,8 +27,8 @@
   <div class="app-selector-dialog">
     <!-- 头部 -->
     <div class="dialog-header">
-      <h3 class="dialog-title">选择应用实例</h3>
-      <p class="dialog-subtitle">请选择要进入的应用实例，不同应用实例的权限相互隔离</p>
+      <h3 class="dialog-title">选择应用</h3>
+      <p class="dialog-subtitle">请选择要进入的应用，不同应用的权限相互隔离</p>
     </div>
 
     <!-- 加载状态 -->
@@ -38,14 +38,14 @@
 
     <!-- 空状态 -->
     <div v-else-if="appList.length === 0" class="empty-state">
-      <el-empty description="暂无可用应用实例">
+      <el-empty description="暂无可用应用">
         <template #image>
           <el-icon class="empty-icon" :size="48">
             <Monitor />
           </el-icon>
         </template>
       </el-empty>
-      <p class="empty-text">请联系管理员为您分配应用实例</p>
+      <p class="empty-text">请联系管理员为您分配应用</p>
     </div>
 
     <!-- 应用列表 -->
@@ -99,7 +99,7 @@
 
     <!-- 底部提示 -->
     <div v-if="!loading && appList.length > 0" class="dialog-footer">
-      <p class="footer-tip">切换应用实例无需重新登录，权限将自动刷新</p>
+      <p class="footer-tip">切换应用无需重新登录，权限将自动刷新</p>
     </div>
   </div>
 </template>
@@ -244,8 +244,8 @@ async function loadAppList() {
  */
 function onCancel() {
   if (dialogData.value.forceSelect && appList.value.length > 0) {
-    ElMessage.warning('请选择一个应用实例')
-    throw new Error('请选择一个应用实例')
+    ElMessage.warning('请选择一个应用')
+    throw new Error('请选择一个应用')
   }
   dialogData.value.onClose?.()
 }
