@@ -78,6 +78,11 @@ export function setupRouteGuard(router: Router): void {
     if (WHITE_LIST.includes(to.path)) {
       const hasToken = localStorage.getItem(TOKEN_KEY);
       if (to.path === '/login' && hasToken && authStore.isLoggedIn) {
+        // 已登录但尚未选择应用 → 留在登录页展示选择面板
+        if (authStore.needSelectApp) {
+          next();
+          return;
+        }
         next({ path: '/' });
         return;
       }
@@ -107,6 +112,16 @@ export function setupRouteGuard(router: Router): void {
       try {
         const success = await authStore.initializeAuth();
         if (!success) {
+          appLoadingStore.hideLoading();
+          next({
+            path: '/login',
+            query: { redirect: to.fullPath },
+          });
+          return;
+        }
+
+        // 多应用且未选择 → 跳转登录页展示选择面板
+        if (authStore.needSelectApp) {
           appLoadingStore.hideLoading();
           next({
             path: '/login',
