@@ -18,7 +18,7 @@
         </svg>
       </div>
       <h2 class="mfw-admin-no-apps-title">欢迎使用 {{ title }}</h2>
-      <p class="mfw-admin-no-apps-desc">您尚未加入任何应用实例</p>
+      <p class="mfw-admin-no-apps-desc">您尚未加入任何应用</p>
       <div class="mfw-admin-no-apps-actions">
         <slot name="actions">
           <el-button type="primary" @click="handleLogout">

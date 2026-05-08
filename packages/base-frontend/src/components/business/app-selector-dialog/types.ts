@@ -1,6 +1,6 @@
 /**
- * @fileoverview 应用实例选择器弹窗类型定义
- * @description 用于用户登录后选择应用实例
+ * @fileoverview 应用选择器弹窗类型定义
+ * @description 用于用户登录后选择应用
  */
 
 import type { AppInstanceItemDto } from '../../../apis/sys/schemas'
@@ -25,7 +25,7 @@ export interface AppSelectorDialogData {
 
 /** 应用列表项渲染数据 */
 export interface AppListItemRender {
-  /** 应用实例数据 */
+  /** 应用数据 */
   app: AppInstanceItemDto
   /** 是否选中 */
   selected: boolean

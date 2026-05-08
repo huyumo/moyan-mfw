@@ -1,6 +1,6 @@
 /**
  * @fileoverview 认证状态管理
- * @description 处理用户登录、Token 管理、用户信息、应用实例选择
+ * @description 处理用户登录、Token 管理、用户信息、应用选择
  */
 
 import { defineStore } from 'pinia';
@@ -20,6 +20,7 @@ import { getImageSrc } from '../utils/image';
 export const TOKEN_KEY = 'mfw:admin:token';
 export const REFRESH_TOKEN_KEY = 'mfw:admin:refresh_token';
 export const CURRENT_APP_KEY = 'mfw:admin:current_app';
+export const DEFAULT_APP_KEY = 'mfw:admin:default_app';
 
 /** 用户信息接口 */
 export interface UserInfo {
@@ -35,7 +36,7 @@ export interface UserInfo {
   roles: string[];
 }
 
-/** 应用实例信息 */
+/** 应用信息 */
 export interface AppInstance {
   appId: string;
   appName: string;
@@ -76,6 +77,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserInfo | null>(null);
   const apps = ref<AppInstance[]>([]);
   const currentApp = ref<AppInstance | null>(null);
+  const defaultAppId = ref<string>('');
   const permissionMenu = ref<PermissionMenuItem[]>([]);
   const tokenExpiresAt = ref<number>(0);
   const loading = ref<boolean>(false);
@@ -107,6 +109,8 @@ export const useAuthStore = defineStore('auth', () => {
           // 忽略解析错误
         }
       }
+
+      defaultAppId.value = localStorage.getItem(DEFAULT_APP_KEY) || '';
       return true;
     }
     return false;
@@ -120,6 +124,9 @@ export const useAuthStore = defineStore('auth', () => {
 
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
+
+    // 恢复默认应用设置
+    defaultAppId.value = localStorage.getItem(DEFAULT_APP_KEY) || '';
   }
 
   /** 清除 Token */
@@ -129,12 +136,14 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null;
     apps.value = [];
     currentApp.value = null;
+    defaultAppId.value = '';
     permissionMenu.value = [];
     tokenExpiresAt.value = 0;
 
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(CURRENT_APP_KEY);
+    // DEFAULT_APP_KEY 是用户偏好，登出时不清除以便下次登录自动选择
   }
 
   /** 检查 Token 是否即将过期（10 分钟内） */
@@ -237,7 +246,7 @@ export const useAuthStore = defineStore('auth', () => {
     return user.value;
   }
 
-  // ============== 应用实例列表 ==============
+  // ============== 应用列表 ==============
 
   /** 获取用户可访问的应用列表 */
   async function fetchUserApps(): Promise<AppInstance[]> {
@@ -265,9 +274,9 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  // ============== 应用实例选择 ==============
+  // ============== 应用选择 ==============
 
-  /** 选择应用实例 */
+  /** 选择应用 */
   async function selectApp(app: AppInstance): Promise<void> {
     currentApp.value = app;
     localStorage.setItem(CURRENT_APP_KEY, JSON.stringify(app));
@@ -368,13 +377,21 @@ export const useAuthStore = defineStore('auth', () => {
       return false;
     }
 
-    // 只有一个应用，自动选择
     if (apps.value.length === 1) {
       await selectApp(apps.value[0]);
       return true;
     }
 
-    // 多个应用，检查是否有已保存的选择
+    // 优先使用默认应用
+    if (defaultAppId.value) {
+      const defaultApp = apps.value.find(a => a.appId === defaultAppId.value);
+      if (defaultApp) {
+        await selectApp(defaultApp);
+        return true;
+      }
+    }
+
+    // 检查是否有已保存的选择
     const savedAppCode = currentApp.value?.appCode;
     if (savedAppCode) {
       const saved = apps.value.find(a => a.appCode === savedAppCode);
@@ -384,8 +401,24 @@ export const useAuthStore = defineStore('auth', () => {
       }
     }
 
-    // 需要用户选择
     return false;
+  }
+
+  /** 设置默认应用 */
+  function setDefaultApp(appId: string): void {
+    defaultAppId.value = appId;
+    localStorage.setItem(DEFAULT_APP_KEY, appId);
+  }
+
+  /** 取消默认应用 */
+  function clearDefaultApp(): void {
+    defaultAppId.value = '';
+    localStorage.removeItem(DEFAULT_APP_KEY);
+  }
+
+  /** 获取默认应用 ID */
+  function getDefaultAppId(): string {
+    return defaultAppId.value;
   }
 
   // ============== 权限菜单 ==============
@@ -434,6 +467,7 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     apps,
     currentApp,
+    defaultAppId,
     permissionMenu,
     tokenExpiresAt,
     loading,
@@ -458,6 +492,9 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserApps,
     selectApp,
     autoSelectApp,
+    setDefaultApp,
+    clearDefaultApp,
+    getDefaultAppId,
     loadPermissions,
     setPermissionMenu,
     initializeAuth,

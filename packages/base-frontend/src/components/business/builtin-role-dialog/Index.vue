@@ -7,7 +7,7 @@
 <template>
   <div class="builtin-role-dialog">
     <el-alert title="内置角色说明" type="info" :closable="false" show-icon class="mb-4">
-      <p>内置角色是与应用类型绑定的预设角色，创建应用实例时自动继承。</p>
+      <p>内置角色是与应用类型绑定的预设角色，创建应用时自动继承。</p>
     </el-alert>
 
     <div class="builtin-role-header">

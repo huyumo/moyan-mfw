@@ -1,17 +1,11 @@
 <!--
 /**
- * @fileoverview 应用实例选择面板（纯 UI 组件）
- * @description 展示用户可访问的应用实例列表，支持选择操作。可用于登录页内嵌、抽屉等场景。
+ * @fileoverview 应用选择面板（纯 UI 组件）
+ * @description 展示用户可访问的应用列表，支持选择操作。可用于登录页内嵌、抽屉等场景。
  */
 -->
 <template>
   <div class="app-selector-panel">
-    <!-- 头部 -->
-    <div class="panel-header">
-      <h3 class="panel-title">选择应用实例</h3>
-      <p class="panel-subtitle">请选择要进入的应用实例，不同应用实例的权限相互隔离</p>
-    </div>
-
     <!-- 加载状态 -->
     <div v-if="loading" class="loading-state">
       <el-skeleton :rows="4" animated />
@@ -19,14 +13,14 @@
 
     <!-- 空状态 -->
     <div v-else-if="apps.length === 0" class="empty-state">
-      <el-empty description="暂无可用应用实例">
+      <el-empty description="暂无可用应用">
         <template #image>
           <el-icon class="empty-icon" :size="48">
             <Monitor />
           </el-icon>
         </template>
       </el-empty>
-      <p class="empty-text">请联系管理员为您分配应用实例</p>
+      <p class="empty-text">请联系管理员为您分配应用</p>
     </div>
 
     <!-- 应用列表 -->
@@ -69,20 +63,26 @@
             </el-icon>
             {{ app.appTypeName }}
           </div>
-          <div class="app-code">编码: {{ app.appCode }}</div>
         </div>
 
-        <!-- 选中图标 -->
-        <el-icon v-if="selectedAppId === app.appId" class="check-icon">
-          <Check />
-        </el-icon>
+        <!-- 右侧操作区 -->
+        <div class="app-actions" @click.stop>
+          <el-icon v-if="selectedAppId === app.appId" class="check-icon">
+            <Check />
+          </el-icon>
+          <span v-else class="check-icon-placeholder"></span>
+          <el-switch
+            v-if="showDefaultToggle"
+            :model-value="defaultAppId === app.appId"
+            size="small"
+            inline-prompt
+            active-text="默认"
+            @change="emit('toggle-default', app)"
+          />
+        </div>
       </div>
     </div>
 
-    <!-- 底部提示 -->
-    <div v-if="!loading && apps.length > 0" class="panel-footer">
-      <p class="footer-tip">切换应用实例无需重新登录，权限将自动刷新</p>
-    </div>
   </div>
 </template>
 
@@ -106,10 +106,13 @@ defineProps<{
   apps: AppListItem[]
   loading?: boolean
   selectedAppId?: string
+  defaultAppId?: string
+  showDefaultToggle?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'select', app: AppListItem): void
+  (e: 'toggle-default', app: AppListItem): void
 }>()
 
 function handleClick(app: AppListItem) {
@@ -119,24 +122,6 @@ function handleClick(app: AppListItem) {
 
 <style scoped lang="scss">
 .app-selector-panel {
-  .panel-header {
-    text-align: center;
-    margin-bottom: 24px;
-
-    .panel-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--el-text-color-primary);
-      margin: 0 0 8px;
-    }
-
-    .panel-subtitle {
-      font-size: 14px;
-      color: var(--el-text-color-secondary);
-      margin: 0;
-    }
-  }
-
   .app-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -157,12 +142,11 @@ function handleClick(app: AppListItem) {
 
       &:hover:not(.disabled) {
         border-color: var(--el-color-primary-light-5);
-        background: var(--el-fill-color-light);
+        background: var(--el-fill-color);
       }
 
       &.selected {
         border-color: var(--el-color-primary);
-        background: var(--el-color-primary-light-9);
       }
 
       &.disabled {
@@ -213,16 +197,24 @@ function handleClick(app: AppListItem) {
           align-items: center;
           gap: 4px;
         }
+      }
 
-        .app-code {
-          font-size: 12px;
-          color: var(--el-text-color-placeholder);
-        }
+      .app-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
       }
 
       .check-icon {
         color: var(--el-color-primary);
         font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      .check-icon-placeholder {
+        width: 20px;
+        height: 20px;
         flex-shrink: 0;
       }
     }
@@ -246,17 +238,6 @@ function handleClick(app: AppListItem) {
 
   .loading-state {
     padding: 40px 20px;
-  }
-
-  .panel-footer {
-    margin-top: 20px;
-    text-align: center;
-
-    .footer-tip {
-      font-size: 13px;
-      color: var(--el-text-color-secondary);
-      margin: 0;
-    }
   }
 }
 </style>

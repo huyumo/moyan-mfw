@@ -236,7 +236,7 @@ export class MoAxios {
       headers['Authorization'] = `Bearer ${token || ''}`;
     }
 
-    // 当前选中应用实例 ID（请求头优先级最低，业务参数可覆盖）
+    // 当前选中应用 ID（请求头优先级最低，业务参数可覆盖）
     const appId = this.getCurrentAppId();
     if (appId) {
       headers['X-App-Id'] = appId;
@@ -256,7 +256,7 @@ export class MoAxios {
     );
   }
 
-  /** 获取当前选中的应用实例 ID */
+  /** 获取当前选中的应用 ID */
   getCurrentAppId(): string {
     try {
       const saved = localStorage.getItem(CURRENT_APP_KEY);
