@@ -1,5 +1,6 @@
 export * from './app-selector-dialog'
 export * from './builtin-role-dialog'
+export * from './owner-changer'
 export * from './permission-manager'
 export * from './permission-pool-panel'
 export * from './permission-tree'

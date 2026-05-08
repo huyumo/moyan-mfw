@@ -37,14 +37,6 @@ export class CreateAppDto {
   appCode: string;
 
   /**
-   * 拥有者 ID
-   */
-  @ApiProperty({ description: '拥有者 ID' })
-  @IsNotEmpty({ message: '拥有者 ID 不能为空' })
-  @IsUUID()
-  ownerId: string;
-
-  /**
    * 应用描述
    */
   @ApiProperty({ description: '应用描述', required: false })

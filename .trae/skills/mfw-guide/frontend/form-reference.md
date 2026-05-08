@@ -104,6 +104,37 @@ const currentTemplate = computed(() =>
 );
 ```
 
+## 表单预填
+
+编辑模式通过 `props` 传入数据后，`reactive` 初始值必须从 `props` 取值预填：
+
+```typescript
+// ✅ 正确：用 props 初始值预填
+const form = reactive({
+  appName: props.appName,
+  appCode: props.appCode,
+  ownerId: props.currentOwnerId || '',
+});
+
+// ❌ 错误：给空值，不回显已有数据
+const form = reactive({
+  appName: '',
+  ownerId: '',
+});
+```
+
+## el-form label-width
+
+中文标签（4 字）需 100px 宽度，80px 会导致换行：
+
+```html
+<!-- ✅ 正确：100px -->
+<el-form label-width="100px">
+
+<!-- ❌ 错误：80px 中文换行 -->
+<el-form label-width="80px">
+```
+
 ## SFC 文件结构标准
 
 ```vue

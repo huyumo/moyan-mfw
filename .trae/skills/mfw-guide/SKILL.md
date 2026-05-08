@@ -36,6 +36,27 @@ description: "Use when working on moyan-mfw project code, creating modules or pa
 | 数据库迁移 / Entity 变更 / 种子数据                  | {{ref:migration-guide}}      |
 | 错误排查 / 构建失败 / 启动失败 / API 生成失败             | {{ref:error-diagnosis}}      |
 | 字典定义 / 共享字典 / MfwDictFormat / toItems / toDescription | {{ref:dict-guide}}           |
+| 基础层接口分离 / 业务扩展表 / owner 独立管理                   | {{ref:new-backend-module}}   |
+
+## 基础层与业务层分离
+
+基础接口保持通用，不耦合业务字段。业务专属逻辑通过独立接口处理：
+
+```
+✅ 分离方式（推荐）：
+  POST /api/apps  { appName, appCode, ... }     // 纯基础字段
+  PUT  /api/apps/:id/owner  { ownerId }          // 拥有者独立管理
+
+❌ 耦合方式：
+  POST /api/apps  { ..., ownerId }               // 创建时耦合业务字段
+```
+
+业务层调用基础层示例：
+```typescript
+const app = await appService.create({ appName, appCode, appTypeId });  // 基础层
+await bizAppService.createExt({ appId: app.id, ...bizFields });        // 业务扩展
+await appService.changeOwner(app.id, ownerId);                          // 独立管理
+```
 
 ## 完成前验证（每次任务必须逐项检查）
 

@@ -20,7 +20,6 @@ import MfwFormCard from '../../../components/form/form-card';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
-import MfwUserPicker from '../../../components/picker/user-picker';
 import MfwImageSingle from '../../../components/upload/image-single';
 import { StatusDict } from 'moyan-shared-dict';
 
@@ -40,7 +39,6 @@ const form = reactive({
   appTypeId: '',
   appName: '',
   appCode: '',
-  ownerId: '',
   appDesc: '',
   logo: undefined as ImageResourceDto | undefined,
   appStatus: StatusDict.ENABLED as 1 | 0,
@@ -97,16 +95,6 @@ const baseTemplate: FormItemConfig[] = [
     testId: 'app-code-input',
     disabled: true,
     show: () => isEdit.value,
-  },
-  {
-    key: 'ownerId',
-    label: '拥有者',
-    component: MfwUserPicker,
-    testId: 'app-owner-picker',
-    rules: [{ required: true, message: '请选择拥有者', trigger: 'change' }],
-    elProps: {
-      style: 'width: 100%',
-    },
   },
   {
     key: 'appDesc',
@@ -169,7 +157,6 @@ const loadAppDetail = () => {
     form.appTypeId = props.appTypeId;
     form.appName = props.appName;
     form.appCode = props.appCode;
-    form.ownerId = props.ownerId;
     form.appDesc = props.appDesc || '';
     form.logo = props.logo || undefined;
     form.appStatus = props.appStatus as 1 | 0;
@@ -192,7 +179,6 @@ const onConfirm = async () => {
     const updateBody: any = {
       appName: form.appName,
       appDesc: form.appDesc,
-      ownerId: form.ownerId,
       appStatus: form.appStatus,
     };
     if (logoData) {
@@ -207,7 +193,6 @@ const onConfirm = async () => {
       appTypeId: form.appTypeId,
       appName: form.appName,
       appCode: form.appCode,
-      ownerId: form.ownerId,
       appDesc: form.appDesc,
       sortOrder: 0,
     };
