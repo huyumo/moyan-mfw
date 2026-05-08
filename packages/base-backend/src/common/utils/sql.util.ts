@@ -23,6 +23,7 @@ export async function executeRawSql<T = any>(
   entityManager: EntityManager | DataSource,
   sql: string,
   params: Record<string, any>,
+  printSql: boolean = false,
 ): Promise<T[]> {
   let processedSql = sql;
 
@@ -43,6 +44,10 @@ export async function executeRawSql<T = any>(
     }
 
     processedSql = processedSql.replace(new RegExp(placeholder, 'g'), replacement);
+  }
+
+  if (printSql) {
+    console.log('执行 SQL:', processedSql);
   }
 
   return entityManager.query(processedSql);

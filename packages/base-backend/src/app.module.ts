@@ -93,7 +93,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
 
   return {
     type: 'mysql',
-    host: dbConfig?.host || process.env.DB_HOST || '47.109.38.249',
+    host: dbConfig?.host || process.env.DB_HOST || '127.0.0.1',
     port: dbConfig?.port || parseInt(process.env.DB_PORT || '3306', 10),
     username: dbConfig?.username || process.env.DB_USERNAME || 'moyan_mfw',
     password: dbConfig?.password || process.env.DB_PASSWORD || 'moyan_mfw',
@@ -127,6 +127,8 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
       bigNumberStrings: false,
       // 时区配置
       timezone: 'Z',
+      // 允许多条 SQL 语句执行
+      multipleStatements: true,
     },
     // 自动重连
     autoLoadEntities: false,

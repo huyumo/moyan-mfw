@@ -57,7 +57,7 @@ export class AuthService {
     private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   private getJwtConfig() {
     return this.configService.get<any>('jwt', {
@@ -256,6 +256,7 @@ export class AuthService {
   ): Promise<UserPermissionsResponseDto> {
 
     const sql = `
+    SELECT @appTypeId := sa.appTypeId appTypeId FROM sys_apps sa WHERE sa.id = :appId ;
     SELECT 
       sp.id,
       sp.permCode,
@@ -275,15 +276,18 @@ export class AuthService {
     INNER JOIN sys_roles sr ON sur.roleId = sr.id
     INNER JOIN sys_role_permissions srp ON srp.roleId = sr.id
     INNER JOIN sys_permissions sp ON sp.id = srp.permissionId
-    WHERE sur.userId = :userId AND sp.isVisible = 1
+    WHERE 
+      sur.userId = :userId AND 
+      sp.isVisible = 1 AND
+      (sr.appTypeId = @appTypeId OR sr.appId = :appId)
     GROUP BY sp.permCode
     ORDER BY sp.sortOrder ASC;
     `
 
-    const result = await executeRawSql(this.entityManager, sql, { userId });
-    const menuTree = flatToTree(result)
-    const permissions = result.map((item)=>item.permCode)
-    const appTypeId = result[0]?.appTypeId || ''
+    const [appTypeIdResult, result] = await executeRawSql(this.entityManager, sql, { userId, appId }, true);
+    const menuTree = flatToTree(result as any[])
+    const permissions = result.map((item) => item.permCode)
+    const appTypeId = appTypeIdResult[0]?.appTypeId || ''
 
     // 构建 permissionValueMap
     const permissionValueMap: Record<string, string> = {};
