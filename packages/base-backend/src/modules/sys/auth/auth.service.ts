@@ -256,7 +256,7 @@ export class AuthService {
   ): Promise<UserPermissionsResponseDto> {
 
     const sql = `
-    SELECT @appTypeId := sa.appTypeId appTypeId FROM sys_apps sa WHERE sa.id = :appId ;
+    SELECT sa.appTypeId appTypeId FROM sys_apps sa WHERE sa.id = :appId ;
     SELECT 
       sp.id,
       sp.permCode,
@@ -278,8 +278,8 @@ export class AuthService {
     INNER JOIN sys_permissions sp ON sp.id = srp.permissionId
     WHERE 
       sur.userId = :userId AND 
-      sp.isVisible = 1 AND
-      (sr.appTypeId = @appTypeId OR sr.appId = :appId)
+      sur.appId = :appId AND
+      sp.isVisible = 1
     GROUP BY sp.permCode
     ORDER BY sp.sortOrder ASC;
     `

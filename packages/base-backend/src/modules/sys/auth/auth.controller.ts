@@ -14,7 +14,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { User, UserDto } from '../../../common';
+import { User, UserDto, AppId } from '../../../common';
 import {
   ApiTags,
   ApiOperation,
@@ -27,7 +27,6 @@ import {
   LoginResponseDto,
   UserInfoDto,
   AppInstanceItemDto,
-  UserPermissionsDto,
   UserPermissionsResponseDto,
   RegisterDto,
   CheckAvailabilityDto,
@@ -159,23 +158,19 @@ export class AuthController {
   @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: '获取用户权限菜单',
-    description: '获取用户在指定应用实例下的权限菜单树，用于前端导航渲染',
+    description: '获取用户在当前应用实例下的权限菜单树，appId 从请求头 X-App-Id 获取',
   })
   @ApiResponse({
     status: 200,
     description: '获取成功',
     type: UserPermissionsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
   async getUserPermissions(
     @User() user: UserDto,
-    @Query() query: UserPermissionsDto,
+    @AppId() appId: string,
   ) {
     const userId = user.id;
-    if (!query.appId) {
-      throw new BadRequestException('appId 参数不能为空');
-    }
-    const result = await this.authService.getUserPermissions(userId, query.appId);
+    const result = await this.authService.getUserPermissions(userId, appId);
     return ApiResponseUtil.success(result, '获取成功');
   }
 
@@ -256,23 +251,19 @@ export class AuthController {
   @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: '同步权限',
-    description: '重新加载用户在指定应用实例下的权限',
+    description: '重新加载用户在当前应用实例下的权限',
   })
   @ApiResponse({
     status: 200,
     description: '同步成功',
     type: UserPermissionsResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'appId 参数不能为空' })
   async syncPermissions(
     @User() user: UserDto,
-    @Body() body: { appId: string },
+    @AppId() appId: string,
   ) {
     const userId = user.id;
-    if (!body.appId) {
-      throw new BadRequestException('appId 参数不能为空');
-    }
-    const result = await this.authService.syncPermissions(userId, body.appId);
+    const result = await this.authService.syncPermissions(userId, appId);
     return ApiResponseUtil.success(result, '权限同步成功');
   }
 }

@@ -590,11 +590,12 @@ async function seedAppMembers(dataSource: DataSource): Promise<void> {
     process.stdout.write(`    √ 拥有者绑定已存在：admin → ${systemApp.appName}\n`);
   }
 
-  // 2. 创建 sys_user_role 记录（如果不存在）
+  // 2. 创建 sys_user_role 记录（如果不存在），绑定到系统应用实例
   const userRoleExists = await dataSource.manager.findOne(UserRole, {
     where: {
       userId: adminUser.id,
       roleId: superAdminRole.id,
+      appId: systemApp.id,
     },
   });
 
@@ -602,9 +603,10 @@ async function seedAppMembers(dataSource: DataSource): Promise<void> {
     await dataSource.manager.save(UserRole, {
       userId: adminUser.id,
       roleId: superAdminRole.id,
+      appId: systemApp.id,
       createdAt: new Date(),
     });
-    process.stdout.write(`    ✓ 绑定 admin 用户为超级管理员角色\n`);
+    process.stdout.write(`    ✓ 绑定 admin 用户为超级管理员角色（应用实例：${systemApp.appName}）\n`);
   } else {
     process.stdout.write(`    √ 用户角色绑定已存在：admin → 超级管理员\n`);
   }

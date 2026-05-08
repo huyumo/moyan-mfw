@@ -236,6 +236,12 @@ export class MoAxios {
       headers['Authorization'] = `Bearer ${token || ''}`;
     }
 
+    // 当前选中应用实例 ID（请求头优先级最低，业务参数可覆盖）
+    const appId = this.getCurrentAppId();
+    if (appId) {
+      headers['X-App-Id'] = appId;
+    }
+
     return headers;
   }
 
@@ -248,6 +254,18 @@ export class MoAxios {
       sessionStorage.getItem('access_token') ||
       ''
     );
+  }
+
+  /** 获取当前选中的应用实例 ID */
+  getCurrentAppId(): string {
+    try {
+      const saved = localStorage.getItem(CURRENT_APP_KEY);
+      if (saved) {
+        const app = JSON.parse(saved);
+        return app?.appId || '';
+      }
+    } catch {}
+    return '';
   }
 }
 

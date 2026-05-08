@@ -8,7 +8,6 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,10 +24,12 @@ import {
   buildPerValue,
 } from '../constants/permissions';
 import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';
+import { UserRole } from '../../modules/sys/role/entities/user-role.entity';
+import { resolveAppId } from '../decorators/app-id.decorator';
 
 /**
  * 权限守卫
- * @description 基于位运算验证用户权限
+ * @description 基于位运算验证用户权限，支持 appId 级别的角色作用域过滤
  *
  * **支持多装饰器 OR 检查**：如果一个接口有多个 @RequirePermission 装饰器，
  * 用户只要匹配其中任意一个权限即可访问。
@@ -48,6 +49,8 @@ export class PermissionGuard implements CanActivate {
     private reflector: Reflector,
     @InjectRepository(RolePermission)
     private rolePermissionRepository: Repository<RolePermission>,
+    @InjectRepository(UserRole)
+    private userRoleRepository: Repository<UserRole>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -93,13 +96,19 @@ export class PermissionGuard implements CanActivate {
       throw new ForbiddenException('权限不足');
     }
 
-    // 查询用户所有角色的权限（从数据库）
-    const userRolePermissions = await this.rolePermissionRepository.find({
-      where: request.user.roleIds && request.user.roleIds.length > 0
-        ? { roleId: In(request.user.roleIds) }
-        : undefined,
-      relations: ['permission'],
-    });
+    // 提取当前请求的 appId，按应用实例过滤有效角色
+    const appId = resolveAppId(request);
+    const effectiveRoleIds = appId
+      ? await this.resolveEffectiveRoleIds(user.id, appId)
+      : user.roleIds;
+
+    // 查询用户当前应用下的有效角色权限
+    const userRolePermissions = effectiveRoleIds.length > 0
+      ? await this.rolePermissionRepository.find({
+          where: { roleId: In(effectiveRoleIds) },
+          relations: ['permission'],
+        })
+      : [];
 
     // 构建用户权限映射：permCode → permissionValue (位运算合并)
     const userPermissionMap = new Map<string, bigint>();
@@ -165,5 +174,16 @@ export class PermissionGuard implements CanActivate {
       permCode: options.permCode,
       permissionValue,
     };
+  }
+
+  /**
+   * 解析用户在指定应用实例下的有效角色 ID
+   * @description 查询 sys_user_roles 获取该用户在此应用下被分配的角色
+   */
+  private async resolveEffectiveRoleIds(userId: string, appId: string): Promise<string[]> {
+    const userRoles = await this.userRoleRepository.find({
+      where: { userId, appId },
+    });
+    return userRoles.map((ur) => ur.roleId);
   }
 }
