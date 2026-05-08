@@ -105,7 +105,7 @@ export class RoleService {
         return `
           SELECT ${select} FROM sys_roles role
           LEFT JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
-          WHERE role.appTypeId = IF(@appTypeId IS NULL, '${appTypeId}', @appTypeId)
+          WHERE role.appTypeId = IFNULL(@appTypeId,'${appTypeId}')
           ${whereClause.replace('WHERE', 'AND')}
           ${orderBy}
           ${limit}
