@@ -4,7 +4,6 @@
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
-import { ApiAuthLogout } from '../../apis/sys';
 import { useLayoutStore } from '../../store/layout-store';
 import { useAuthStore } from '../../store/auth-store';
 import { resetRouteGuard } from '../../router/guard';

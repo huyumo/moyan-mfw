@@ -319,6 +319,18 @@
   color: var(--el-text-color-secondary);
 }
 
+.mfw-admin-sidebar-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 12px;
+  text-align: center;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
 .mfw-admin-menu-toggle:focus-visible,
 .mfw-admin-collapse-toggle:focus-visible,
 .mfw-admin-primary-link:focus-visible,
