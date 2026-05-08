@@ -145,7 +145,7 @@ async function createDynamicAppModule(
             timezone: dbConfig.timezone || '+08:00',
             poolSize: dbConfig.poolSize || 100,
             synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development'),
-            logging: dbConfig.logging ?? (process.env.NODE_ENV === 'development'),
+            logging: dbConfig.logging ?? false,
             entities: entities,
             keepConnectionAlive: true,
             retryAttempts: 10,

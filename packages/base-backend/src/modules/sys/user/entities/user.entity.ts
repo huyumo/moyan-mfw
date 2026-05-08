@@ -6,8 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
-import { StatusDict, toDescription } from 'moyan-shared-dict'
-import { GenderDict, DeveloperDict } from 'business-dict'
+import { StatusDict, GenderDict, DeveloperDict, toDescription } from 'moyan-shared-dict'
 
 /**
  * 用户实体类

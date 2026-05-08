@@ -104,7 +104,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     // 测试环境启用 synchronize 以自动创建表（不 dropSchema，由 global-setup 管理）
     synchronize: dbConfig?.synchronize ?? (process.env.NODE_ENV === 'test' || process.env.NODE_ENV === 'development'),
     dropSchema: false,
-    logging: dbConfig?.logging ?? (process.env.NODE_ENV === 'development'),
+    logging: dbConfig?.logging ?? false,
     // 使用直接导入的实体数组，而不是 glob 模式
     entities: entities,
     migrations: [__dirname + '/database/migrations/*{.ts,.js}'],

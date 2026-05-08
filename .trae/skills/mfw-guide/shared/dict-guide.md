@@ -10,11 +10,11 @@
 
 ```
 packages/shared-dict/   ← 框架层（npm 发布，零业务依赖）
-  src/base/             ← 框架内置字典：StatusDict, BoolDict, IsBuiltinDict...
+  src/base/             ← 框架内置字典：StatusDict, BoolDict, GenderDict, DeveloperDict, IsBuiltinDict...
   src/core/             ← 装饰器、注册表、工具函数
 
 business-dict/          ← 业务层（项目私有，不进 npm）
-  src/                  ← 业务字典：GenderDict, DeveloperDict, SupplierStatusDict...
+  src/                  ← 业务字典：SupplierStatusDict...
 
 src/dicts/              ← 消费层（开发者自定义，npm 用户扩展）
 ```
@@ -155,6 +155,8 @@ cd business-dict && pnpm run build
 |--------|-----|------|
 | `StatusDict` | `status` | 1=启用, 0=禁用 |
 | `BoolDict` | `bool` | 1=是, 0=否 |
+| `GenderDict` | `gender` | 0=未知, 1=男, 2=女 |
+| `DeveloperDict` | `developer` | 1=是, 0=否 |
 | `IsBuiltinDict` | `is_builtin` | 1=是, 0=否 |
 | `IsOwnerDict` | `is_owner` | 1=是, 0=否 |
 | `MultiAppEnabledDict` | `multi_app_enabled` | 1=支持, 0=不支持 |
