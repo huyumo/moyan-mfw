@@ -40,6 +40,7 @@ export {
 } from './decorators/audit-log.decorator';
 export { ApiPaginatedResponse } from './decorators/api-paginated-response.decorator';
 export { User } from './decorators/user.decorator';
+export { AppId } from './decorators/app-id.decorator';
 
 // Utils
 export { hashPassword, verifyPassword } from './utils/encrypt';

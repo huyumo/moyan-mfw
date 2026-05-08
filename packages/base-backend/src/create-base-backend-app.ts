@@ -27,6 +27,7 @@ import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from
 import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 import { RolePermission } from './modules/sys/role/entities/role-permission.entity';
+import { UserRole } from './modules/sys/role/entities/user-role.entity';
 
 config({ path: '.env' });
 
@@ -181,7 +182,8 @@ async function createDynamicAppModule(
         provide: 'APP_GUARD',
         useFactory: (reflector: Reflector, dataSource: DataSource) => {
           const rolePermissionRepository = dataSource.getRepository(RolePermission);
-          return new PermissionGuard(reflector, rolePermissionRepository);
+          const userRoleRepository = dataSource.getRepository(UserRole);
+          return new PermissionGuard(reflector, rolePermissionRepository, userRoleRepository);
         },
         inject: [Reflector, DataSource],
       },

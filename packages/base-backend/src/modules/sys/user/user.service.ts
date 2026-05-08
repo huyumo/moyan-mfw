@@ -34,7 +34,7 @@ export class UserService {
    * @returns 创建的用户
    */
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const { username, password, roleIds, ...rest } = createUserDto;
+    const { username, password, ...rest } = createUserDto;
 
     // 检查用户名是否存在
     const existingUser = await this.userRepository.findOne({
@@ -57,54 +57,13 @@ export class UserService {
 
       await manager.save(user);
 
-      if (roleIds && roleIds.length > 0) {
-        const userRoles = roleIds.map((roleId) =>
-          manager.create(UserRole, {
-            userId: user.id,
-            roleId,
-          }),
-        );
-        await manager.save(userRoles);
-      }
-
       return user;
     });
   }
 
   async adminCreate(dto: AdminCreateUserDto): Promise<User> {
-    const { username, phone, roleIds, ...rest } = dto;
-
-    const existingUser = await this.userRepository.findOne({ where: { username } });
-    if (existingUser) {
-      throw new ConflictException('用户名已存在');
-    }
-
-    const password = this.resolveDefaultPassword(phone);
-
-    return this.dataSource.transaction(async (manager) => {
-      const hashedPassword = await hashPassword(password);
-
-      const user = manager.create(User, {
-        username,
-        password: hashedPassword,
-        phone,
-        ...rest,
-      });
-
-      await manager.save(user);
-
-      if (roleIds && roleIds.length > 0) {
-        const userRoles = roleIds.map((roleId) =>
-          manager.create(UserRole, {
-            userId: user.id,
-            roleId,
-          }),
-        );
-        await manager.save(userRoles);
-      }
-
-      return user;
-    });
+    const password = this.resolveDefaultPassword(dto.phone);
+    return this.create({ ...dto, password } as CreateUserDto);
   }
 
   private resolveDefaultPassword(phone: string): string {
@@ -209,8 +168,6 @@ export class UserService {
    * @returns 更新后的用户
    */
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const { roleIds, ...rest } = updateUserDto;
-
     return this.dataSource.transaction(async (manager) => {
       const user = await manager.findOne(User, { where: { id } });
 
@@ -218,22 +175,8 @@ export class UserService {
         throw new NotFoundError('用户');
       }
 
-      Object.assign(user, rest);
+      Object.assign(user, updateUserDto);
       await manager.save(user);
-
-      if (roleIds) {
-        await manager.delete(UserRole, { userId: user.id });
-
-        if (roleIds.length > 0) {
-          const userRoles = roleIds.map((roleId) =>
-            manager.create(UserRole, {
-              userId: user.id,
-              roleId,
-            }),
-          );
-          await manager.save(userRoles);
-        }
-      }
 
       return user;
     });

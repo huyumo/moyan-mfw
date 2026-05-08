@@ -117,7 +117,7 @@ export class AppMemberService {
             ) AS roles
           FROM sys_user_roles ur
           INNER JOIN sys_roles r ON ur.roleId = r.id
-          ${roleScopeClause}
+          WHERE ur.appId = '${appId}' ${roleScopeClause.replace('WHERE', 'AND')}
           GROUP BY ur.userId
         )
         SELECT
@@ -200,22 +200,17 @@ export class AppMemberService {
     // 使用事务更新角色
     await this.dataSource.transaction(async (manager) => {
       await manager.query(
-        `
-        DELETE ur FROM sys_user_roles ur
-        INNER JOIN sys_roles r ON ur.roleId = r.id
-        WHERE ur.userId = ? AND (r.appId = ? OR r.appTypeId = ?)
-        AND r.isOwner = 0
-        `,
-        [userId, appId, app.appTypeId],
+        `DELETE FROM sys_user_roles WHERE userId = ? AND appId = ? AND roleId NOT IN (SELECT id FROM sys_roles WHERE isOwner = 1)`,
+        [userId, appId],
       );
 
       if (roleIds.length > 0) {
         const insertValues = roleIds.map((roleId) => {
           const id = randomUUID();
-          return [id, userId, roleId];
+          return [id, userId, roleId, appId];
         });
         await manager.query(
-          `INSERT INTO sys_user_roles (id, userId, roleId) VALUES ?`,
+          `INSERT INTO sys_user_roles (id, userId, roleId, appId) VALUES ?`,
           [insertValues],
         );
       }
@@ -250,8 +245,8 @@ export class AppMemberService {
     // 使用事务删除成员和角色关联
     await this.dataSource.transaction(async (manager) => {
       await manager.query(
-        `DELETE FROM sys_user_roles WHERE userId = ?`,
-        [userId],
+        `DELETE FROM sys_user_roles WHERE userId = ? AND appId = ?`,
+        [userId, appId],
       );
 
       await manager.delete(AppMember, { appId, userId });

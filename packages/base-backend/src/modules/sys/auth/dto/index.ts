@@ -6,9 +6,8 @@
 // Request DTOs
 export { LoginDto } from './req/login.dto';
 export { RefreshTokenDto } from './req/refresh-token.dto';
-export { UserPermissionsDto } from './req/user-permissions.dto';
-export { RegisterDto } from './req/register.dto';
 export { CheckAvailabilityDto, CheckAvailabilityResponseDto } from './req/check-availability.dto';
+export { RegisterDto } from './req/register.dto';
 
 // Response DTOs
 export {

@@ -189,7 +189,8 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
       provide: APP_GUARD,
       useFactory: (reflector: Reflector, dataSource: DataSource) => {
         const rolePermissionRepository = dataSource.getRepository(RolePermission);
-        return new PermissionGuard(reflector, rolePermissionRepository);
+        const userRoleRepository = dataSource.getRepository(UserRole);
+        return new PermissionGuard(reflector, rolePermissionRepository, userRoleRepository);
       },
       inject: [Reflector, DataSource],
     },
