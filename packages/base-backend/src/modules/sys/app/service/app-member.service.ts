@@ -142,7 +142,6 @@ export class AppMemberService {
           IF(a.ownerId = am.userId,1,0) isOwner
         `)
       .defaultOrderBy('createdAt DESC')
-      .printSql()
       .getData();
   }
 
