@@ -41,6 +41,7 @@ import {
 import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
+import { OwnerChanger } from '../../../components/business';
 import { getImageSrc } from '../../../utils/image';
 import { toItems, StatusDict } from 'moyan-shared-dict';
 
@@ -138,6 +139,7 @@ const actionColumn = {
     { label: '详情', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'app-edit-btn' },
     { label: '成员', type: 'primary', icon: User, onClick: handleMember, permission: ['编辑'], testId: 'app-member-btn' },
+    { label: '拥有者', type: 'warning', icon: User, onClick: handleOwner, permission: ['编辑'], testId: 'app-owner-btn' },
     { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'app-delete-btn' },
   ], { maxVisible: 2 }, row),
 };
@@ -225,6 +227,24 @@ const handleDelete = async (row: AppDetailResponseDto) => {
   }
   await new ApiAppDelete({ params: { id: row.id } }, { hintSuccess: true });
   listPage.value?.refresh();
+};
+
+/** 拥有者管理 */
+const handleOwner = (row: AppDetailResponseDto) => {
+  const owner = (row.owner as any) || {};
+  MfwPopup.open({
+    title: `变更拥有者 — ${row.appName}`,
+    type: 'dialog',
+    component: OwnerChanger,
+    data: {
+      appId: row.id,
+      appName: row.appName,
+      currentOwnerId: owner.id || row.ownerId,
+      currentOwnerName: owner.nickname || owner.username || '',
+    },
+    popupProps: { width: 480 },
+    on: { confirm: listPage.value?.refresh },
+  });
 };
 
 onMounted(() => {

@@ -3,9 +3,9 @@
  * @description 处理应用实例相关业务逻辑
  */
 
-import { Injectable, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import { App } from '../entities/app.entity';
 import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
 import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
@@ -20,6 +20,7 @@ export class AppService {
     @InjectRepository(App)
     private appRepository: Repository<App>,
     private dataSource: DataSource,
+
   ) { }
 
   /**
@@ -177,8 +178,30 @@ export class AppService {
       throw new NotFoundError('应用实例');
     }
 
-    app.ownerId = ownerId;
-    return this.appRepository.save(app);
+    if (app.ownerId === ownerId) {
+      return app;
+    }
+
+    await this.dataSource.transaction(async (manager) => {
+      const users = await manager.query(
+        `SELECT id FROM sys_users WHERE id = ? AND deleteAt IS NULL`,
+        [ownerId],
+      );
+      if (!users || users.length === 0) {
+        throw new BadRequestException('用户不存在');
+      }
+
+      app.ownerId = ownerId;
+      await manager.save(app);
+
+      await manager.query(
+        `INSERT IGNORE INTO sys_app_members (id, appId, userId, createdAt, updateAt)
+         VALUES (UUID(), ?, ?, NOW(), NOW())`,
+        [app.id, ownerId],
+      );
+    });
+
+    return app;
   }
 
   /**

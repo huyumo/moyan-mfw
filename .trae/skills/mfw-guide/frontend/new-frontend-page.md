@@ -142,7 +142,7 @@ const handleDelete = async (row: XxxResponseDto) => {
     ref="formRef"
     :form-data="form"
     :template="formTemplate"
-    :form-props="{ labelWidth: '80px' }"
+    :form-props="{ labelWidth: '100px' }"
   />
 </template>
 
@@ -249,14 +249,43 @@ export default defineModuleConfig({
 });
 ```
 
+## 业务组件目录与导出链
+
+可复用的业务弹窗/面板组件放在 `components/business/<name>/`：
+
+```
+business/owner-changer/
+├── index.ts    # export * from './mod'
+├── mod.ts      # export { default as OwnerChanger } from './Index.vue'
+└── Index.vue   # 组件主体（defineOptions({ name: 'OwnerChanger' })）
+```
+
+**导出链路**：
+
+```
+外部 import { OwnerChanger } from '@/components/business'
+  → business/index.ts         export * from './owner-changer'
+    → owner-changer/index.ts   export * from './mod'
+      → owner-changer/mod.ts   export { default as OwnerChanger } from './Index.vue'
+```
+
+**规则**：
+- `mod.ts` 负责 `default → 具名` 重导出
+- `index.ts` 只做 `export * from './mod'` 透传
+- `business/index.ts` 按字母序添加 `export * from './<name>'`
+- 视图层页面（`views/`）**不可**直接引用 `.vue`，统一从 `@/components/business` 导入
+
 ## 组件导出规范
 
-每个组件目录必须有 `mod.ts`：
+每个组件目录必须有 `index.ts` 统一导出：
 
 ```typescript
-export { default as MfwXxx } from './index';
+// ✅ 通用组件（components/form/、components/picker/ 等）
+export { default as MfwXxx } from './Xxx.vue';
 export type * from './types';
 ```
+
+业务组件使用 `mod.ts` 中转模式（见上节「业务组件目录与导出链」）。
 
 ## 新增前端页面清单
 

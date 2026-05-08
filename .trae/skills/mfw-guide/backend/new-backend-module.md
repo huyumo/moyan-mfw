@@ -145,20 +145,11 @@ export class XxxService {
     const existing = await this.xxxRepository.findOne({ where: { code: dto.code } });
     if (existing) throw new ConflictException('编码已存在');
 
-    const qr = this.dataSource.createQueryRunner();
-    await qr.connect();
-    await qr.startTransaction();
-    try {
-      const entity = qr.manager.create(Xxx, dto);
-      await qr.manager.save(entity);
-      await qr.commitTransaction();
-      return entity;
-    } catch (error) {
-      await qr.rollbackTransaction();
-      throw error;
-    } finally {
-      await qr.release();
-    }
+    const entity = this.xxxRepository.create(dto);
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(entity);
+    });
+    return entity;
   }
 
   async delete(id: string): Promise<void> {
@@ -170,7 +161,8 @@ export class XxxService {
 ```
 
 Service 必须遵守：
-- 多表操作必须使用事务（createQueryRunner + try/commit/catch/rollback/finally/release）
+- 多表操作必须使用事务：`await this.dataSource.transaction(async (manager) => { ... })` — 回调正常结束自动提交，throw 自动回滚
+- 事务内用 `manager.query()` / `manager.save()` 代替 `repository`，确保同一连接
 - 删除统一使用 `softDelete`
 - 资源不存在使用 `NotFoundError`（来自 common/exceptions）
 - 密码使用 `hashPassword` / `verifyPassword`（来自 common/utils/encrypt）
@@ -239,6 +231,7 @@ export class QueryXxxDto extends PaginationQueryDto {
 - ✋ 忘记在 Controller 写操作方法上加 `@RequirePermission` → CUD 操作必加（例外：同上，内部方法须标记 `@Public()` 且加注释）
 - ✋ 使用 `@PrimaryGeneratedColumn()` 自增主键 → 使用 UUID：`@PrimaryColumn('uuid') { default: () => 'UUID()' }`
 - ✋ 使用硬删除 `repository.remove()` / `repository.delete()` → 使用 `softDelete()`（例外：中间表/关联表的清理操作可硬删除，须加注释说明原因）
+- ✋ 手写 `createQueryRunner() + connect + startTransaction + try/catch/finally + release` → 使用 `this.dataSource.transaction(callback)`，TypeORM 内部处理 begin/commit/rollback/release
 - ✋ 响应不使用 `ApiResponseUtil.success()` → 统一包装响应
 - ✋ 新增模块后忘记运行 `pnpm run api:build` → 修改后端后必须重新生成前端 API
 

@@ -46,14 +46,6 @@ export class UpdateAppDto {
   logo?: ImageResourceDto;
 
   /**
-   * 拥有者 ID（变更负责人时使用）
-   */
-  @ApiProperty({ description: '拥有者 ID（变更负责人时使用）', required: false })
-  @IsOptional()
-  @IsUUID()
-  ownerId?: string;
-
-  /**
    * 应用状态
    */
   @ApiProperty({ description: '应用状态 (1:启用 0:禁用)', required: false, enum: [0, 1] })

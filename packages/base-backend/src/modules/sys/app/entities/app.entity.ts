@@ -49,7 +49,7 @@ export class App extends Base {
   /**
    * 负责人 ID
    */
-  @Column({ type: 'char', length: 36, comment: '负责人 ID - 应用负责人的用户 ID' })
+  @Column({ type: 'char', length: 36, nullable: true, comment: '负责人 ID - 应用负责人的用户 ID' })
   @Index()
   ownerId: string;
 
