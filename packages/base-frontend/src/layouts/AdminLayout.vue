@@ -36,11 +36,11 @@
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <router-view v-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
           <keep-alive :max="20">
-            <component :is="Component" :key="slotRoute.name" />
+            <component :is="Component" :key="slotRoute.fullPath" />
           </keep-alive>
         </router-view>
         <router-view v-else v-slot="{ Component, route: slotRoute }">
-          <component :is="Component" :key="slotRoute.name" />
+          <component :is="Component" :key="slotRoute.fullPath" />
         </router-view>
       </MainPanel>
     </div>

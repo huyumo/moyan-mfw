@@ -41,6 +41,7 @@ import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
 import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
+import { useRoute, useRouter } from 'vue-router';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
   if (!avatar) return undefined;
@@ -49,10 +50,14 @@ function extractAvatarUrl(avatar: string | ImageResource | undefined): string | 
 }
 
 defineOptions({ name: 'MfwMemberList' });
+const route = useRoute();
 
 const authStore = useAuthStore();
 const listPage = ref<MfwListPageInstance>();
-const appId = computed(() => authStore.currentApp?.appId || '');
+const appId = computed(() => 
+  route.query.appId as string | undefined || 
+  authStore.currentApp?.appId || ''
+);
 
 /** 表格列 */
 const columns = [

@@ -34,7 +34,7 @@ export default () => ({
    * 数据库密码
    * @type {string}
    */
-  password: process.env.DB_PASSWORD || 'moyan_mfw',
+  password: process.env.DB_PASSWORD || '',
 
   /**
    * 数据库名称

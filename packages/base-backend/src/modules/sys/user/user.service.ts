@@ -46,42 +46,29 @@ export class UserService {
     }
 
     // 使用事务创建用户
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 加密密码
+    return this.dataSource.transaction(async (manager) => {
       const hashedPassword = await hashPassword(password);
 
-      // 创建用户
-      const user = queryRunner.manager.create(User, {
+      const user = manager.create(User, {
         username,
         password: hashedPassword,
         ...rest,
       });
 
-      await queryRunner.manager.save(user);
+      await manager.save(user);
 
-      // 绑定角色
       if (roleIds && roleIds.length > 0) {
         const userRoles = roleIds.map((roleId) =>
-          queryRunner.manager.create(UserRole, {
+          manager.create(UserRole, {
             userId: user.id,
             roleId,
           }),
         );
-        await queryRunner.manager.save(userRoles);
+        await manager.save(userRoles);
       }
 
-      await queryRunner.commitTransaction();
       return user;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   async adminCreate(dto: AdminCreateUserDto): Promise<User> {
@@ -94,46 +81,36 @@ export class UserService {
 
     const password = this.resolveDefaultPassword(phone);
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
+    return this.dataSource.transaction(async (manager) => {
       const hashedPassword = await hashPassword(password);
 
-      const user = queryRunner.manager.create(User, {
+      const user = manager.create(User, {
         username,
         password: hashedPassword,
         phone,
         ...rest,
       });
 
-      await queryRunner.manager.save(user);
+      await manager.save(user);
 
       if (roleIds && roleIds.length > 0) {
         const userRoles = roleIds.map((roleId) =>
-          queryRunner.manager.create(UserRole, {
+          manager.create(UserRole, {
             userId: user.id,
             roleId,
           }),
         );
-        await queryRunner.manager.save(userRoles);
+        await manager.save(userRoles);
       }
 
-      await queryRunner.commitTransaction();
       return user;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   private resolveDefaultPassword(phone: string): string {
     const userConfig = this.configService.get<any>('userConfig');
-    const type = userConfig?.defaultPassword?.type || process.env.ADMIN_DEFAULT_PASSWORD_TYPE || 'fixed';
-    const value = userConfig?.defaultPassword?.value || process.env.ADMIN_DEFAULT_PASSWORD || 'Admin@123';
+    const type = userConfig?.defaultPassword?.type || 'fixed';
+    const value = userConfig?.defaultPassword?.value || 'Admin@123';
 
     if (type === 'phone') {
       if (!phone || phone.length < 8) {
@@ -234,50 +211,32 @@ export class UserService {
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const { roleIds, ...rest } = updateUserDto;
 
-    // 查找用户
-    const user = await this.userRepository.findOne({
-      where: { id },
-    });
+    return this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, { where: { id } });
 
-    if (!user) {
-      throw new NotFoundError('用户');
-    }
+      if (!user) {
+        throw new NotFoundError('用户');
+      }
 
-    // 使用事务更新用户
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 更新用户信息
       Object.assign(user, rest);
-      await queryRunner.manager.save(user);
+      await manager.save(user);
 
-      // 更新角色关联
       if (roleIds) {
-        // 删除旧的角色关联
-        await queryRunner.manager.delete(UserRole, { userId: user.id });
+        await manager.delete(UserRole, { userId: user.id });
 
-        // 添加新的角色关联
         if (roleIds.length > 0) {
           const userRoles = roleIds.map((roleId) =>
-            queryRunner.manager.create(UserRole, {
+            manager.create(UserRole, {
               userId: user.id,
               roleId,
             }),
           );
-          await queryRunner.manager.save(userRoles);
+          await manager.save(userRoles);
         }
       }
 
-      await queryRunner.commitTransaction();
       return user;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   /**
@@ -331,8 +290,7 @@ export class UserService {
     }
 
     const hashedPassword = await hashPassword(newPassword);
-    console.log('hashedPassword:', hashedPassword);
-    
+
     await this.userRepository.update(id, { password: hashedPassword });
   }
 }

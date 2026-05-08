@@ -3,7 +3,7 @@
  * @description 处理角色相关业务逻辑
  */
 
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { Role } from './entities/role.entity';
@@ -80,6 +80,10 @@ export class RoleService {
    */
   async findAll(query: QueryRoleDto): Promise<PaginationResult<any>> {
     let { roleCode, roleName, roleStatus, appId, appTypeId } = query;
+
+    if (appId && !/^[a-f0-9-]{36}$/.test(appId)) {
+      throw new BadRequestException('无效的 appId 格式');
+    }
 
     let isBuiltin: number | undefined;
     if (appId) appTypeId = undefined
@@ -207,8 +211,6 @@ export class RoleService {
           permissionValue: item.permissionValue ? BigInt(item.permissionValue) : 0n,
         })
       })
-      console.log(datas);
-
       await manager.save(datas);
     });
   }

@@ -248,7 +248,6 @@ export class AppTypeService {
     const pcTree = this.buildPermissionTreeFromRows(pcRows);
     const normalTree = this.buildPermissionTreeFromRows(normalRows);
 
-    console.log('********:::::',pcRows);
     return {
       appTypeId,
       permissionTrees: {
@@ -307,9 +306,6 @@ export class AppTypeService {
           entitiesToInsert.push(entity);
         }
       }
-      console.log(entitiesToInsert);
-      
-
       if (entitiesToInsert.length > 0) {
         await manager.save(entitiesToInsert);
         updatedCount = entitiesToInsert.length;

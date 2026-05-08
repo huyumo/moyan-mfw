@@ -2,11 +2,10 @@
  * @fileoverview 供应商控制器
  */
 
-import { Controller, Get, Post, Body, Param, Put, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { SupplierService } from './supplier.service';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
-import { UserDto } from 'moyan-base-backend';
 import { Permission } from '../../permissions';
 
 @ApiTags('supplier')
@@ -22,9 +21,7 @@ export class SupplierController {
   async createProfile(
     @Param('memberId') memberId: string,
     @Body() dto: CreateSupplierDto,
-    @Request() req: any,
   ) {
-    const user = req.user as UserDto;
     return this.supplierService.createSupplierProfile(memberId, dto);
   }
 
