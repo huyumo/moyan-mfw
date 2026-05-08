@@ -147,6 +147,9 @@ async function createDynamicAppModule(
             synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development'),
             logging: dbConfig.logging ?? false,
             entities: entities,
+            extra: {
+              multipleStatements: true,
+            },
             keepConnectionAlive: true,
             retryAttempts: 10,
             retryDelay: 3000,
