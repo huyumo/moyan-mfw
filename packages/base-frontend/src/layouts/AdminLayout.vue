@@ -26,7 +26,8 @@
     <div class="mfw-admin-main">
       <AsidePanel :show-sidebar="layoutStore.showSidebar" :mobile-menu-open="mobileMenuOpen"
         :compact="layoutStore.styleConfig.compact" :active-menu-path="activeMenuPath"
-        :displayed-side-menus="displayedSideMenus">
+        :displayed-side-menus="displayedSideMenus"
+        :no-apps="noApps">
         <template v-if="$slots['sidebar-footer']" #sidebar-footer>
           <slot name="sidebar-footer" />
         </template>
@@ -34,7 +35,9 @@
 
       <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
-        <router-view v-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
+        <NoAppsEmpty v-if="noApps" :brand-name="layoutStore.navigation.brandName"
+          @logout="authStore.logout()" />
+        <router-view v-else-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
           <keep-alive :max="20">
             <component :is="Component" :key="slotRoute.fullPath" />
           </keep-alive>
@@ -53,13 +56,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
 import SettingsPanel from './panels/SettingsPanel.vue';
+import NoAppsEmpty from '../components/business/no-apps-empty/Index.vue';
 import { useAdminLayout } from './composables/use-admin-layout';
 import { useColorMode, useThemeSwitch } from '../composables';
+import { useAuthStore } from '../store/auth-store';
+
+const authStore = useAuthStore();
 
 const {
   layoutStore,
@@ -85,6 +92,8 @@ const {
   handleSaveSettings,
   getThemeColor,
 } = useAdminLayout();
+
+const noApps = computed(() => authStore.isAuthenticated && !authStore.hasApps);
 
 const { initColorMode } = useColorMode();
 const { initTheme } = useThemeSwitch();

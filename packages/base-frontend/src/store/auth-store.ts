@@ -417,6 +417,9 @@ export const useAuthStore = defineStore('auth', () => {
         return true;
       }
 
+      // 无应用时清空侧边栏菜单，防止暴露 createBaseAdminApp 初始化的全量默认菜单
+      const { useLayoutStore } = await import('./layout-store');
+      useLayoutStore().setNavigation({ sideMenu: [] }, { clearTabs: true });
       return true;
     } catch (error) {
       clearToken();

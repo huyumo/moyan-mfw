@@ -205,6 +205,8 @@ async function submit() {
     ElMessage.success('登录成功');
 
     if (authStore.apps.length === 0) {
+      // 无应用时清空侧边栏菜单，防止暴露 createBaseAdminApp 初始化的全量默认菜单
+      layoutStore.setNavigation({ sideMenu: [] }, { clearTabs: true });
       const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
       await router.replace(redirect);
       return;
