@@ -372,9 +372,32 @@ export class PaginationX<T extends PagerReq> {
     }
 
     if (this.isPrintSql) {
-      const formattedSqls = this.sqls.map((item) => PaginationXUtils.formatSql(item.sql));
-      const sql = formattedSqls.join(';') + ';';
+      const formattedSqls = this.sqls.map((item) => {
+        let sql = item.sql;
+        if (item.params) {
+          for (const [key, value] of Object.entries(item.params)) {
+            const placeholder = `:${key}`;
+            let replacement: string;
+            if (typeof value === 'string') {
+              replacement = `'${value.replace(/'/g, "''")}'`;
+            } else if (typeof value === 'bigint') {
+              replacement = value.toString();
+            } else if (typeof value === 'number') {
+              replacement = value.toString();
+            } else if (value === null) {
+              replacement = 'NULL';
+            } else {
+              replacement = String(value);
+            }
+            sql = sql.replace(new RegExp(placeholder, 'g'), replacement);
+          }
+        }
+        return PaginationXUtils.formatSql(sql);
+      });
+      const sql = formattedSqls.join(';\n') + ';';
+      console.log('=== SQL DEBUG ===');
       console.log(sql);
+      console.log('=== SQL END ===');
     }
 
     const results: any[] = [];

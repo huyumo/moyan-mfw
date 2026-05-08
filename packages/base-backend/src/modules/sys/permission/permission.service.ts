@@ -353,16 +353,11 @@ export class PermissionService {
       }
     }
 
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
+    return this.dataSource.transaction(async (manager) => {
       const createdPermissions: Permission[] = [];
 
       for (const perm of permissions) {
-        // 检查权限编码是否存在
-        const existingPermission = await queryRunner.manager.findOne(Permission, {
+        const existingPermission = await manager.findOne(Permission, {
           where: { permCode: perm.permCode },
         });
 
@@ -370,19 +365,13 @@ export class PermissionService {
           throw new ConflictException(`权限编码 ${perm.permCode} 已存在`);
         }
 
-        const permission = queryRunner.manager.create(Permission, perm);
-        const saved = await queryRunner.manager.save(permission);
+        const permission = manager.create(Permission, perm);
+        const saved = await manager.save(permission);
         createdPermissions.push(saved);
       }
 
-      await queryRunner.commitTransaction();
       return createdPermissions;
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   /**

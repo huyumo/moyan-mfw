@@ -22,7 +22,7 @@ import { validateAppTypes, getBuiltinAppTypes } from './utils/app-type-validator
 import { setupSwaggerGroups } from './utils/swagger-setup';
 import { HooksExecutor, createAppContext } from './utils/hooks-executor';
 import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, registerPermissionValues } from './common';
-import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
+import { databaseConfig, appConfig, redisConfig, userConfig, jwtConfig } from './config';
 import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from './app.module';
 import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
@@ -127,7 +127,7 @@ async function createDynamicAppModule(
       ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],
-        load: [databaseConfig, appConfig, redisConfig, userConfig],
+        load: [databaseConfig, appConfig, redisConfig, userConfig, jwtConfig],
         ignoreEnvFile: false,
       }),
       TypeOrmModule.forRootAsync({
@@ -156,7 +156,7 @@ async function createDynamicAppModule(
       }),
       JwtModule.register({
         global: true,
-        secret: options.jwt?.secret || process.env.JWT_SECRET || 'default_jwt_secret',
+        secret: options.jwt?.secret || process.env.JWT_SECRET || '',
         signOptions: {
           expiresIn: options.jwt?.expiresIn || 7200,
         },

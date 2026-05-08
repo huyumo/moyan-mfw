@@ -9,9 +9,9 @@ import {
   Get,
   Body,
   Query,
+  Headers,
   HttpCode,
   HttpStatus,
-  Request,
   BadRequestException,
 } from '@nestjs/common';
 import { User, UserDto } from '../../../common';
@@ -121,8 +121,8 @@ export class AuthController {
   @ApiBearerAuth('Authorization')
   @ApiOperation({ summary: '退出登录', description: '使当前 Token 失效（可选认证）' })
   @ApiResponse({ status: 200, description: '退出成功' })
-  async logout(@Request() req: any) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
+  async logout(@Headers('authorization') authHeader: string) {
+    const token = authHeader?.replace('Bearer ', '');
     await this.authService.logout(token);
     return ApiResponseUtil.success(null, '退出成功');
   }

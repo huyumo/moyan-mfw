@@ -5,6 +5,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { InjectDataSource, InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { User } from '../user/entities/user.entity';
@@ -55,7 +56,15 @@ export class AuthService {
     @InjectRepository(AppTypePermissionEntity)
     private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
+
+  private getJwtConfig() {
+    return this.configService.get<any>('jwt', {
+      expiresIn: 7200,
+      refreshExpiresIn: 7200,
+    });
+  }
 
   /**
    * 用户登录
@@ -102,14 +111,15 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload);
 
-    const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
+    const jwtConfig = this.getJwtConfig();
+    const refreshExpiresIn = jwtConfig.refreshExpiresIn;
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
 
     return {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
-      expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+      expiresIn: jwtConfig.expiresIn,
       user: {
         username: user.username,
         nickname: user.nickname || user.username,
@@ -125,10 +135,8 @@ export class AuthService {
    */
   async refreshToken(refreshToken: string): Promise<LoginResponseDto> {
     try {
-      // 验证刷新 Token
       const payload = await this.jwtService.verifyAsync(refreshToken);
 
-      // 查找用户
       const user = await this.userRepository.findOne({
         where: { id: payload.sub },
       });
@@ -137,26 +145,25 @@ export class AuthService {
         throw new BusinessException('用户不存在', 404);
       }
 
-      // 查询用户角色
       const userRoles = await this.userRoleRepository.find({
         where: { userId: user.id },
         relations: ['role'],
       });
 
-      // 生成新的 Token（使用当前时间戳确保 token 唯一）
       const newPayload = {
         sub: user.id,
         username: user.username,
         roleIds: userRoles.map((ur) => ur.roleId),
-        iat: Date.now() / 1000, // 使用当前时间戳
+        iat: Date.now() / 1000,
       };
 
-      const accessExpiresIn = parseInt(process.env.JWT_EXPIRES_IN || '7200', 10);
+      const jwtConfig = this.getJwtConfig();
+      const accessExpiresIn = jwtConfig.expiresIn;
       const accessToken = await this.jwtService.signAsync(newPayload, {
         expiresIn: accessExpiresIn,
       });
 
-      const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
+      const refreshExpiresIn = jwtConfig.refreshExpiresIn;
       const newRefreshToken = await this.jwtService.signAsync(newPayload, {
         expiresIn: refreshExpiresIn,
       });
@@ -165,7 +172,7 @@ export class AuthService {
         accessToken,
         refreshToken: newRefreshToken,
         tokenType: 'Bearer',
-        expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+        expiresIn: jwtConfig.expiresIn,
       };
     } catch (error) {
       // Token 验证失败，返回 401 错误码
@@ -357,14 +364,15 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload);
 
-    const refreshExpiresIn = parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10);
+    const jwtConfig = this.getJwtConfig();
+    const refreshExpiresIn = jwtConfig.refreshExpiresIn;
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
 
     return {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
-      expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+      expiresIn: jwtConfig.expiresIn,
       user: {
         username: user.username,
         nickname: user.nickname || user.username,

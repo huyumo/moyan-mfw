@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { AppMember } from '../entities/app-member.entity';
 import { Role } from '../../role/entities/role.entity';
 import { User } from '../../user/entities/user.entity';
@@ -141,6 +142,7 @@ export class AppMemberService {
           IF(a.ownerId = am.userId,1,0) isOwner
         `)
       .defaultOrderBy('createdAt DESC')
+      .printSql()
       .getData();
   }
 
@@ -188,13 +190,8 @@ export class AppMemberService {
     }
 
     // 使用事务更新角色
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 删除现有角色关联（排除拥有者角色）
-      await queryRunner.manager.query(
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
         `
         DELETE ur FROM sys_user_roles ur
         INNER JOIN sys_roles r ON ur.roleId = r.id
@@ -204,25 +201,17 @@ export class AppMemberService {
         [userId, appId, app.appTypeId],
       );
 
-      // 添加新角色关联
       if (roleIds.length > 0) {
         const insertValues = roleIds.map((roleId) => {
-          const id = require('crypto').randomUUID();
+          const id = randomUUID();
           return [id, userId, roleId];
         });
-        await queryRunner.manager.query(
+        await manager.query(
           `INSERT INTO sys_user_roles (id, userId, roleId) VALUES ?`,
           [insertValues],
         );
       }
-
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    });
   }
 
   /**
@@ -251,27 +240,14 @@ export class AppMemberService {
     }
 
     // 使用事务删除成员和角色关联
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // 删除角色关联
-      await queryRunner.manager.query(
+    await this.dataSource.transaction(async (manager) => {
+      await manager.query(
         `DELETE FROM sys_user_roles WHERE userId = ?`,
         [userId],
       );
 
-      // 删除成员关联
-      await this.appMemberRepository.delete({ appId, userId });
-
-      await queryRunner.commitTransaction();
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+      await manager.delete(AppMember, { appId, userId });
+    });
   }
 
   /**
