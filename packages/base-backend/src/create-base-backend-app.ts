@@ -93,10 +93,26 @@ export async function createBaseBackendApp(
 
   await hooksExecutor.onAppInit();
 
-  // 根据配置决定是否同步应用类型
+  // 根据配置决定是否同步应用类型（仅已初始化的系统才执行）
   if (options.syncAppTypes && allAppTypes.length > 0) {
-    const { syncAppTypesConfig } = await import('./modules/sys/app-type/app-type-sync');
-    await syncAppTypesConfig(dataSource, allAppTypes);
+    try {
+      const appTypeRepo = dataSource.getRepository(
+        (await import('./modules/sys/app-type/entities/app-type.entity')).AppType,
+      );
+      const isInitialized = (await appTypeRepo.count()) > 0;
+      if (isInitialized) {
+        const { syncAppTypesConfig } = await import('./modules/sys/app-type/app-type-sync');
+        await syncAppTypesConfig(dataSource, allAppTypes);
+      } else {
+        process.stdout.write('⏳ 系统未初始化，跳过业务应用类型同步\n');
+      }
+    } catch (error: any) {
+      if (error.message?.includes('ER_NO_SUCH_TABLE')) {
+        process.stdout.write('⏳ 数据库表未创建，跳过业务应用类型同步\n');
+      } else {
+        throw error;
+      }
+    }
   }
 
   return {
