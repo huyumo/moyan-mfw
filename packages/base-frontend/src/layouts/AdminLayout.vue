@@ -43,11 +43,11 @@
           @logout="authStore.logout()" />
         <router-view v-else-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
           <keep-alive :max="20">
-            <component :is="Component" :key="slotRoute.fullPath" />
+            <component :is="Component" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
           </keep-alive>
         </router-view>
         <router-view v-else v-slot="{ Component, route: slotRoute }">
-          <component :is="Component" :key="slotRoute.fullPath" />
+          <component :is="Component" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
         </router-view>
       </MainPanel>
     </div>
@@ -115,6 +115,9 @@ const noApps = computed(() => authStore.isAuthenticated && !authStore.hasApps);
 
 const appDrawerVisible = ref(false);
 
+/** 强制刷新 router-view key，切换应用时递增以清除 keep-alive 缓存 */
+const keepAliveKey = ref(0);
+
 /** 头部显示的应用名称 */
 const headerBrandName = computed(() =>
   authStore.currentApp?.appName || layoutStore.navigation.brandName
@@ -170,6 +173,7 @@ async function handleAppSwitch(app: AppListItem) {
       isOwner: app.isOwner,
       appTypeName: app.appTypeName,
     });
+    keepAliveKey.value++;
     appDrawerVisible.value = false;
     ElMessage.success(`已切换到应用: ${app.appName}`);
     router.push('/');
