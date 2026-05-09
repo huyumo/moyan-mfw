@@ -7,10 +7,14 @@
 <template>
   <div class="role-assign-form">
     <el-checkbox-group v-model="selectedRoleIds" data-testid="role-assign-checkbox-group">
-      <div v-for="role in availableRoles" :key="role.id" class="role-item">
+      <div
+        v-for="role in availableRoles"
+        :key="role.id"
+        class="role-item"
+        :class="{ 'is-builtin': role.isBuiltin === IsBuiltinDict.YES }"
+      >
         <el-checkbox :label="role.id" :disabled="role.isOwner === IsOwnerDict.YES">
           {{ role.roleName }}
-          <MfwDictFormat v-if="role.isBuiltin === IsBuiltinDict.YES" :value="role.isBuiltin" :dict="toItems(IsBuiltinDict)" as-tag />
         </el-checkbox>
       </div>
     </el-checkbox-group>
@@ -21,8 +25,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
 import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
-import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
-import { MfwDictFormat } from '../../../components';
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
 
 /** Props */
 interface Props {
@@ -84,6 +87,11 @@ defineExpose({ onConfirm });
 .role-item {
   display: inline-block;
   margin-right: 16px;
+
+  &.is-builtin :deep(.el-checkbox__label) {
+    color: var(--el-color-success);
+    font-weight: 500;
+  }
 }
 
 :deep(.el-checkbox__label) {
