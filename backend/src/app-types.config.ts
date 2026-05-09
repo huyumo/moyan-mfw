@@ -15,7 +15,7 @@ export const appTypesConfig: AppTypeConfig[] = [
     typeDesc: '供应商应用类型，用于管理供应商相关业务',
     multiAppEnabled: 1,
     builtinRole: [
-      { roleCode: 'supplier_admin', roleName: '供应商管理员' },
+      { roleCode: 'supplier_admin', roleName: '供应商管理员', isOwner: 1 },
       { roleCode: 'supplier_member', roleName: '供应商成员' },
     ],
   },

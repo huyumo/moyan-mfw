@@ -50,6 +50,13 @@ export interface LoggerConfig {
   format?: string;
 }
 
+/** 内置角色配置 */
+export interface RoleConfig {
+  roleCode: string;
+  roleName: string;
+  isOwner?: number;
+}
+
 /** 应用类型配置 */
 export interface AppTypeConfig {
   typeName: string;
@@ -57,10 +64,7 @@ export interface AppTypeConfig {
   typeDesc?: string;
   icon?: string;
   multiAppEnabled: number;
-  builtinRole: Array<{
-    roleCode: string;
-    roleName: string;
-  }>;
+  builtinRole: RoleConfig[];
 }
 
 /** 用户扩展属性配置 */
