@@ -3,12 +3,7 @@
  * @description 处理应用成员相关业务逻辑
  */
 
-import {
-  Injectable,
-  ConflictException,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { randomUUID } from 'crypto';
@@ -16,6 +11,7 @@ import { AppMember } from '../entities/app-member.entity';
 import { Role } from '../../role/entities/role.entity';
 import { User } from '../../user/entities/user.entity';
 import { App } from '../entities/app.entity';
+import { AppType } from '../../app-type/entities/app-type.entity';
 import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
 import { PaginationX, WhereBuilder, PaginationResult } from '../../../../common';
 
@@ -33,6 +29,8 @@ export class AppMemberService {
     private userRepository: Repository<User>,
     @InjectRepository(App)
     private appRepository: Repository<App>,
+    @InjectRepository(AppType)
+    private appTypeRepository: Repository<AppType>,
     private dataSource: DataSource,
   ) {}
 
@@ -45,19 +43,35 @@ export class AppMemberService {
   async addMember(appId: string, addMemberDto: AddMemberDto): Promise<AppMember> {
     const { userId } = addMemberDto;
 
-    // 检查应用是否存在
     const app = await this.appRepository.findOne({ where: { id: appId } });
     if (!app) {
       throw new NotFoundException('应用不存在');
     }
 
-    // 检查用户是否存在
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('用户不存在');
     }
 
-    // 检查成员是否已存在
+    const appType = await this.appTypeRepository.findOne({
+      where: { id: app.appTypeId },
+    });
+
+    if (appType && appType.multiAppEnabled === 0) {
+      const sameTypeMembers = await this.dataSource.query(
+        `SELECT sa.appName FROM sys_app_members sam
+         INNER JOIN sys_apps sa ON sa.id = sam.appId AND sa.deleteAt IS NULL
+         WHERE sam.userId = ? AND sa.appTypeId = ? AND sam.appId != ?`,
+        [userId, app.appTypeId, appId],
+      );
+
+      if (sameTypeMembers && sameTypeMembers.length > 0) {
+        throw new BadRequestException(
+          `应用类型 "${appType.typeName}" 不支持多应用，该用户已是实例 "${sameTypeMembers[0].appName}" 的成员`,
+        );
+      }
+    }
+
     const existingMember = await this.appMemberRepository.findOne({
       where: { appId, userId },
     });
@@ -66,7 +80,6 @@ export class AppMemberService {
       throw new ConflictException('该用户已是应用成员');
     }
 
-    // 创建成员关联（初始不分配角色）
     const member = this.appMemberRepository.create({ appId, userId });
     return this.appMemberRepository.save(member);
   }

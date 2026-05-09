@@ -4,7 +4,7 @@
  */
 
 import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { App } from '../entities/app.entity';
@@ -32,7 +32,6 @@ export class AppService {
   async create(createAppDto: CreateAppDto): Promise<App> {
     const { appCode } = createAppDto;
 
-    // 检查应用编码是否存在
     const existingApp = await this.appRepository.findOne({
       where: { appCode },
     });
@@ -41,7 +40,6 @@ export class AppService {
       throw new ConflictException('应用编码已存在');
     }
 
-    // 创建应用实例
     const app = this.appRepository.create(createAppDto);
     return this.appRepository.save(app);
   }
