@@ -1,6 +1,6 @@
 ---
 version: "1.0"
-last_updated: "2026-04-25"
+last_updated: "2026-05-09"
 scope: backend
 triggers:
   - 新增后端模块
@@ -234,6 +234,8 @@ export class QueryXxxDto extends PaginationQueryDto {
 - ✋ 手写 `createQueryRunner() + connect + startTransaction + try/catch/finally + release` → 使用 `this.dataSource.transaction(callback)`，TypeORM 内部处理 begin/commit/rollback/release
 - ✋ 响应不使用 `ApiResponseUtil.success()` → 统一包装响应
 - ✋ 新增模块后忘记运行 `pnpm run api:build` → 修改后端后必须重新生成前端 API
+- ✋ Service 新增 `@InjectRepository(X)` → 必须同步在该 Service 所属 Module 的 `TypeOrmModule.forFeature([...])` 中注册实体 `X`，否则运行时 DI 报错 `can't resolve dependencies`
+- ✋ `packages/base-backend` 类型/接口定义变更后忘记 `npx nest build` → `backend/` 通过 `workspace:*` 从 `dist/` 解析类型，不重建则业务端类型检查报错
 
 ## 新增后端模块清单
 

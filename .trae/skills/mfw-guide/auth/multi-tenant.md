@@ -1,6 +1,6 @@
 ---
 version: "1.0"
-last_updated: "2026-04-25"
+last_updated: "2026-05-09"
 scope: auth
 triggers:
   - 多租户
@@ -108,3 +108,39 @@ tags: [多租户, 应用类型, 应用实例, 成员管理, 权限池, 角色]
 - ✋ 权限池未配置就分配角色权限 → 角色权限不能超出权限池范围
 - ✋ 应用实例不设置 `ownerId` → 拥有者是应用管理员，必须指定
 - ✋ 直接操作 `sys_user_roles` 表绕过 API → 使用角色管理接口确保数据一致性
+
+## multiAppEnabled 语义
+
+`multiAppEnabled` 是**用户维度**约束，不是全局实例数限制：
+
+| 值 | 语义 | 约束点 |
+|----|------|--------|
+| 1 | 支持多应用 — 用户可成为同类型多个实例的成员 | 无限制 |
+| 0 | 不支持多应用 — 用户只能成为同类型一个实例的成员 | `AppMemberService.addMember()` |
+
+`AppService.create()` **不**检查 `multiAppEnabled`，因为不同用户可以各自创建一个同类型应用实例。
+
+## 变更负责人 (changeOwner)
+
+`AppService.changeOwner()` 完整交接规则：
+
+1. 删旧 owner 的 `sys_user_roles`（本应用范围）
+2. 删旧 owner 的 `sys_app_members`（彻底移除与应用的关联）
+3. 改 `app.ownerId`
+4. `INSERT IGNORE` 新 owner 到 `sys_app_members`
+5. 查 `sys_roles WHERE isOwner=1 AND (appId=? OR appTypeId=?)`，将拥有者角色 `INSERT IGNORE` 给新 owner
+
+全部包在一个 `dataSource.transaction()` 中，任一步骤失败则回滚。
+
+## PermissionGuard 成员关系校验
+
+`PermissionGuard` 仅通过 `sys_user_roles WHERE userId AND appId` 查询角色，**不会**验证 `sys_app_members` 中是否存在该用户的成员记录。如果用户角色残留但成员关系已被移除，仍可通过权限校验。
+
+## 应用类型同步
+
+`syncBuiltinRoles` / `createBuiltinRoles` 使用配置中的 `isOwner` 字段（`roleConfig.isOwner ?? 0`），按 `roleCode` 查 DB：
+
+- 已存在 → 跳过（不更新任何字段）
+- 不存在 → `INSERT` 新角色
+
+`AppTypeConfig.builtinRole` 中必须有且仅有一个 `isOwner: 1` 的角色，`validateOwnerRole()` 在启动时强制执行此约束。
