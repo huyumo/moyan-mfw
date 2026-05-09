@@ -3,12 +3,6 @@
  */
 
 import { createBusinessPageConfigFn } from 'moyan-mfw-base-frontend';
-
-export const BUSINESS_PERMISSION_VALUES = [
-  '发货',
-  '充值',
-  '接待',
-  '指派',
-] as const;
+import { BUSINESS_PERMISSION_VALUES } from 'business-dict';
 
 export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES);
