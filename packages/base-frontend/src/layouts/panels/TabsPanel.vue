@@ -5,7 +5,7 @@
 -->
 <template>
   <div class="mfw-admin-tabs-wrap">
-    <el-tabs v-model="activeTabPath"  type="card" class="mfw-admin-tabs" @tab-remove="emit('tab-remove', $event)">
+    <el-tabs v-model="activeTabPath" type="card" class="mfw-admin-tabs" data-testid="tabs-panel" @tab-remove="emit('tab-remove', $event)">
       <el-tab-pane v-for="tab in visitedTabs" :key="tab.key" :name="tab.fullPath" :closable="tab.closable">
         <template #label>
           <span class="mfw-admin-tab-label">{{ tab.title }}</span>
@@ -18,11 +18,11 @@
         </el-icon>
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item command="closeCurrent">关闭当前</el-dropdown-item>
-          <el-dropdown-item command="closeLeft">关闭左侧</el-dropdown-item>
-          <el-dropdown-item command="closeRight">关闭右侧</el-dropdown-item>
-          <el-dropdown-item command="closeOther">关闭其他</el-dropdown-item>
-          <el-dropdown-item command="closeAll">关闭全部</el-dropdown-item>
+          <el-dropdown-item command="closeCurrent" data-testid="tab-close-current">关闭当前</el-dropdown-item>
+          <el-dropdown-item command="closeLeft" data-testid="tab-close-left">关闭左侧</el-dropdown-item>
+          <el-dropdown-item command="closeRight" data-testid="tab-close-right">关闭右侧</el-dropdown-item>
+          <el-dropdown-item command="closeOther" data-testid="tab-close-other">关闭其他</el-dropdown-item>
+          <el-dropdown-item command="closeAll" data-testid="tab-close-all">关闭全部</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>

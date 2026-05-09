@@ -29,7 +29,7 @@
  */
 -->
 <template>
-  <el-sub-menu v-if="hasChildren" :index="subMenuIndex">
+  <el-sub-menu v-if="hasChildren" :index="subMenuIndex" :data-testid="`menu-node-${item.key}`">
     <template #title>
       <el-icon><component :is="resolveIcon(item.icon)" /></el-icon>
       <span>{{ item.label }}</span>
@@ -38,7 +38,7 @@
     <MenuTreeNode v-for="child in item.children" :key="child.key" :item="child" />
   </el-sub-menu>
 
-  <el-menu-item v-else :index="menuItemIndex">
+  <el-menu-item v-else :index="menuItemIndex" :data-testid="`menu-node-${item.key}`">
     <el-icon><component :is="resolveIcon(item.icon)" /></el-icon>
     <span>{{ item.label }}</span>
     <el-tag v-if="item.badge" size="small" type="primary" effect="plain">{{ item.badge }}</el-tag>

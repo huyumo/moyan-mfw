@@ -13,7 +13,7 @@
  */
 -->
 <template>
-  <el-tabs v-model="activeTab">
+  <el-tabs v-model="activeTab" data-testid="perm-tree-tabs">
     <el-tab-pane label="PC 权限" name="pcTree">
       <TreeSelect v-model="pcTreeData" />
     </el-tab-pane>

@@ -11,7 +11,9 @@
  * */
 -->
 <template>
-  <MfwPermissionTree :data="data" />
+  <div data-testid="role-perm-panel">
+    <MfwPermissionTree :data="data" />
+  </div>
 </template>
 
 <script setup lang="ts">

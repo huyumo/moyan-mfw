@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <el-table :data="syncDetails" max-height="400">
+  <el-table :data="syncDetails" max-height="400" data-testid="sync-preview-table">
     <el-table-column prop="type" label="类型" width="100">
       <template #default="{ row }">
         <el-tag :type="getSyncTypeTag(row.type)">{{ row.type }}</el-tag>
@@ -62,7 +62,7 @@ const getSyncTypeTag = (type: string) => {
 
 /** 确认提交 */
 const onConfirm = async () => {
-  // TODO: 实现同步确认逻辑
+  // TODO-TASK-2026-05-09-001: 实现同步确认逻辑
   await new Promise(resolve => setTimeout(resolve, 1000));
   ElMessage.success('同步成功');
 };

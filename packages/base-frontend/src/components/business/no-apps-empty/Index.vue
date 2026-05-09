@@ -21,7 +21,7 @@
       <p class="mfw-admin-no-apps-desc">您尚未加入任何应用</p>
       <div class="mfw-admin-no-apps-actions">
         <slot name="actions">
-          <el-button type="primary" @click="handleLogout">
+          <el-button type="primary" data-testid="no-apps-relogin-btn" @click="handleLogout">
             <el-icon><SwitchButton /></el-icon>
             重新登录
           </el-button>

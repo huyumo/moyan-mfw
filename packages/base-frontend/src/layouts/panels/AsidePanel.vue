@@ -10,7 +10,7 @@
     :class="{ 'is-mobile-open': mobileMenuOpen, 'is-hidden': !showSidebar }"
   >
     <el-scrollbar class="mfw-admin-sidebar-scroll">
-      <el-menu :default-active="activeMenuPath" router class="mfw-admin-menu">
+      <el-menu :default-active="activeMenuPath" router class="mfw-admin-menu" data-testid="sidebar-menu">
         <template v-if="noApps">
           <div class="mfw-admin-sidebar-empty">
             <el-icon :size="36"><WarningFilled /></el-icon>

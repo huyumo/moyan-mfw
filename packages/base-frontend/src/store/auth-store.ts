@@ -83,6 +83,7 @@ export const useAuthStore = defineStore('auth', () => {
   const loading = ref<boolean>(false);
   const permissionValueMap = ref<Record<string, string>>({});
   const routePermCodeMap = ref<Map<string, string>>(new Map());
+  let loadPermissionsVersion = 0;
 
   // ============== 计算属性 ==============
   const isAuthenticated = computed(() => !!token.value && !!user.value);
@@ -162,23 +163,18 @@ export const useAuthStore = defineStore('auth', () => {
     return await new ApiAuthLogin({
       body: { username: params.username, password: params.password },
     }).then((response) => {
-      // API 返回格式: {code, data: {accessToken, refreshToken, user, ...}, message}
-      // moyan-api 可能返回 response.data 或 response.data.data
-
-      const result = response;
-      // 保存 Token (API 返回 accessToken)
+      const result = (response as any)?.data || response;
       saveToken(result.accessToken, result.refreshToken, result.expiresIn);
 
-      // 保存用户基本信息
       user.value = {
-        id: '', // API 未返回 id
+        id: result.user?.id || '',
         username: result.user?.username || '',
         nickname: result.user?.nickname || '',
         avatar: getImageSrc(result.user?.avatar) || '',
-        gender: 0,
-        isDeveloper: false,
-        userStatus: 1,
-        roles: [],
+        gender: result.user?.gender || 0,
+        isDeveloper: result.user?.isDeveloper || false,
+        userStatus: result.user?.userStatus ?? 1,
+        roles: result.user?.roles || [],
       };
 
       return true;
@@ -215,10 +211,11 @@ export const useAuthStore = defineStore('auth', () => {
       throw new Error('No refresh token available');
     }
 
-    const result = await new ApiAuthRefreshToken({
+    const response = await new ApiAuthRefreshToken({
       body: { refreshToken: refreshTokenValue.value },
     });
 
+    const result = (response as any)?.data || response;
     saveToken(result.accessToken, result.refreshToken, result.expiresIn);
     return result.accessToken;
   }
@@ -252,9 +249,9 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchUserApps(): Promise<AppInstance[]> {
     try {
       const response = await new ApiAuthGetUserApps({});
-      const appsData = Array.isArray(response) ? response : (response as any)?.list || [];
+      const result = (response as any)?.data || response;
+      const appsData = Array.isArray(result) ? result : (result as any)?.list || [];
 
-      // 转换为 AppInstance 格式
       apps.value = appsData.map((app: AppInstanceItemDto) => ({
         appId: app.appId,
         appName: app.appName,
@@ -281,7 +278,23 @@ export const useAuthStore = defineStore('auth', () => {
     currentApp.value = app;
     localStorage.setItem(CURRENT_APP_KEY, JSON.stringify(app));
 
-    // 加载该应用下的权限菜单
+    const { useLayoutStore } = await import('./layout-store');
+    const layoutStore = useLayoutStore();
+    layoutStore.setCurrentApp({
+      appId: app.appId,
+      appName: app.appName,
+      appCode: app.appCode,
+      appLogo: app.appLogo,
+    });
+    layoutStore.setUserApps(
+      apps.value.map(a => ({
+        appId: a.appId,
+        appName: a.appName,
+        appCode: a.appCode,
+        appLogo: a.appLogo,
+      }))
+    );
+
     await loadPermissions(app.appId);
   }
 
@@ -302,21 +315,34 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 加载用户在指定应用下的权限菜单 */
   async function loadPermissions(appId: string): Promise<PermissionMenuItem[]> {
+    const version = ++loadPermissionsVersion;
+
+    permissionMenu.value = [];
+    permissionValueMap.value = {};
+    routePermCodeMap.value.clear();
+
+    const { useLayoutStore } = await import('./layout-store');
+    const layoutStore = useLayoutStore();
+    layoutStore.setNavigation({ sideMenu: [] }, { clearTabs: true });
+
     try {
       const response = await new ApiAuthGetUserPermissions({
         query: { appId },
       });
 
-      const menuNodes = response.menuTree || [];
+      if (version !== loadPermissionsVersion) {
+        console.warn('loadPermissions: 版本过期，丢弃旧请求结果');
+        return [];
+      }
+
+      const result = (response as any)?.data || response;
+      const menuNodes = result.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
-      permissionValueMap.value = (response.permissionValueMap || {}) as Record<string, string>;
+      permissionValueMap.value = (result.permissionValueMap || {}) as Record<string, string>;
       buildRoutePermCodeMap(menuNodes);
 
       console.log('加载权限菜单:', permissionMenu.value);
 
-      // 同步到侧边栏菜单
-      const { useLayoutStore } = await import('./layout-store');
-      const layoutStore = useLayoutStore();
       const sideMenu = transformPermissionMenuToSideMenu(permissionMenu.value);
       layoutStore.setNavigation({ sideMenu }, { clearTabs: true });
 
@@ -324,10 +350,14 @@ export const useAuthStore = defineStore('auth', () => {
 
       return permissionMenu.value;
     } catch (error) {
+      if (version !== loadPermissionsVersion) {
+        return [];
+      }
       console.error('加载权限菜单失败:', error);
       permissionMenu.value = [];
       permissionValueMap.value = {};
       routePermCodeMap.value.clear();
+      layoutStore.setNavigation({ sideMenu: [] }, { clearTabs: true });
       return [];
     }
   }
