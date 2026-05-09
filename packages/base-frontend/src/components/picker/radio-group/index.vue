@@ -8,6 +8,7 @@
   <el-radio-group
     :model-value="modelValue"
     :disabled="disabled"
+    :data-testid="testId"
     @update:model-value="handleChange"
   >
     <template v-if="buttonMode">
@@ -39,6 +40,7 @@ const props = withDefaults(defineProps<{
   options?: RadioOption[];
   disabled?: boolean;
   buttonMode?: boolean;
+  testId?: string;
 }>(), {
   modelValue: undefined,
   options: () => [],

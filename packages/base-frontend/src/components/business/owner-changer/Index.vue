@@ -5,12 +5,12 @@
  */
 -->
 <template>
-  <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" @submit.prevent>
+  <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" data-testid="owner-change-form" @submit.prevent>
     <el-form-item label="当前拥有者">
       <el-tag type="info" size="large">{{ currentOwnerLabel }}</el-tag>
     </el-form-item>
     <el-form-item label="新拥有者" prop="newOwnerId">
-      <MfwUserPicker v-model="form.newOwnerId" :style="{ width: '100%' }" />
+      <MfwUserPicker v-model="form.newOwnerId" data-testid="owner-new-picker" :style="{ width: '100%' }" />
     </el-form-item>
   </el-form>
 </template>

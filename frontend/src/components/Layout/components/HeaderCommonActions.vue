@@ -149,14 +149,14 @@ onUnmounted(() => {
       </div> -->
 
       <!-- 主题切换 -->
-      <div class="action-icon-btn" @click="toggleTheme">
+      <div class="action-icon-btn" data-testid="header-theme-btn" @click="toggleTheme">
         <el-icon :size="18">
           <component :is="isDark ? Sunny : Moon" />
         </el-icon>
       </div>
 
       <!-- 全屏切换 -->
-      <div class="action-icon-btn" @click="toggleFullscreen">
+      <div class="action-icon-btn" data-testid="header-fullscreen-btn" @click="toggleFullscreen">
         <el-icon :size="18">
           <component :is="isFullscreen ? ScaleToOriginal : FullScreen" />
         </el-icon>
@@ -170,7 +170,7 @@ onUnmounted(() => {
       </el-badge> -->
 
       <!-- 布局设置 -->
-      <div class="action-icon-btn" @click="openLayoutSettings">
+      <div class="action-icon-btn" data-testid="header-settings-btn" @click="openLayoutSettings">
         <el-icon :size="18"><Setting /></el-icon>
       </div>
     </el-space>

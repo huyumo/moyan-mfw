@@ -11,8 +11,8 @@
         <slot name="header-user-menu">
           <component :is="layoutExtensions.headerUserMenu" v-if="layoutExtensions.headerUserMenu" />
           <el-dropdown-menu v-else>
-            <el-dropdown-item command="profile">我的资料</el-dropdown-item>
-            <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+            <el-dropdown-item command="profile" data-testid="user-profile-menu">我的资料</el-dropdown-item>
+            <el-dropdown-item command="logout" divided data-testid="user-logout-menu">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </slot>
       </template>

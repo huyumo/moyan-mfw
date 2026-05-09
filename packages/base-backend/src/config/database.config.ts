@@ -85,7 +85,7 @@ export default () => ({
    * @type {boolean}
    * @default false
    */
-  synchronize: process.env.NODE_ENV === 'development',
+  synchronize: process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test',
 
   /**
    * 实体路径

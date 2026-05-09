@@ -12,7 +12,7 @@
 
         <el-form label-width="120px" class="password-form">
           <el-form-item label="管理员账号">
-            <el-input value="admin" disabled />
+            <el-input value="admin" disabled data-testid="install-admin-input" />
           </el-form-item>
 
           <el-form-item label="密码" required>
