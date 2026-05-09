@@ -259,6 +259,7 @@ export type {
   CreateBaseBackendAppOptions,
   BaseBackendAppInstance,
   AppTypeConfig,
+  RoleConfig,
   HookConfig,
   AppContext,
   DatabaseConfig,

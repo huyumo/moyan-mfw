@@ -6,7 +6,7 @@
 import { DataSource, EntityManager } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { Role } from '../role/entities/role.entity';
-import { AppTypeConfig } from '../../../types/app-config.types';
+import { AppTypeConfig, RoleConfig } from '../../../types/app-config.types';
 import { BUILTIN_APP_TYPES } from '../../../utils/app-type-validator';
 
 /**
@@ -107,7 +107,7 @@ async function syncSingleAppType(
 async function syncBuiltinRoles(
   manager: EntityManager,
   appTypeId: string,
-  builtinRoles: Array<{ roleCode: string; roleName: string }>,
+  builtinRoles: RoleConfig[],
 ): Promise<void> {
   const roleRepo = manager.getRepository(Role);
 
@@ -128,7 +128,7 @@ async function syncBuiltinRoles(
         roleDesc: `${roleConfig.roleName}（内置角色）`,
         appTypeId,
         isBuiltin: 1,
-        isOwner: 0,
+        isOwner: roleConfig.isOwner ?? 0,
         roleStatus: 1,
         sortOrder: 0,
       });
@@ -149,7 +149,7 @@ async function syncBuiltinRoles(
 async function createBuiltinRoles(
   manager: EntityManager,
   appTypeId: string,
-  builtinRoles: Array<{ roleCode: string; roleName: string }>,
+  builtinRoles: RoleConfig[],
 ): Promise<void> {
   const roleRepo = manager.getRepository(Role);
 
@@ -161,7 +161,7 @@ async function createBuiltinRoles(
         roleDesc: `${roleConfig.roleName}（内置角色）`,
         appTypeId,
         isBuiltin: 1,
-        isOwner: 0,
+        isOwner: roleConfig.isOwner ?? 0,
         roleStatus: 1,
         sortOrder: 0,
       });

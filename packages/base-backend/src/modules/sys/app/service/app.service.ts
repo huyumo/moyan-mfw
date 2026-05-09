@@ -6,6 +6,7 @@
 import { Injectable, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
+import { randomUUID } from 'crypto';
 import { App } from '../entities/app.entity';
 import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
 import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
@@ -169,6 +170,7 @@ export class AppService {
 
   /**
    * 变更负责人
+   * @description 完整移交应用所有权：移除原拥有者的成员身份和角色，为新拥有者分配拥有者权限
    * @param id - 应用实例 ID
    * @param ownerId - 新负责人 ID
    * @returns 更新后的应用实例
@@ -190,6 +192,8 @@ export class AppService {
       return app;
     }
 
+    const oldOwnerId = app.ownerId;
+
     await this.dataSource.transaction(async (manager) => {
       const users = await manager.query(
         `SELECT id FROM sys_users WHERE id = ? AND deleteAt IS NULL`,
@@ -197,6 +201,22 @@ export class AppService {
       );
       if (!users || users.length === 0) {
         throw new BadRequestException('用户不存在');
+      }
+
+      const ownerRoles: { id: string }[] = await manager.query(
+        `SELECT id FROM sys_roles WHERE isOwner = 1 AND (appId = ? OR appTypeId = ?)`,
+        [app.id, app.appTypeId],
+      );
+
+      if (oldOwnerId) {
+        await manager.query(
+          `DELETE FROM sys_user_roles WHERE userId = ? AND appId = ?`,
+          [oldOwnerId, app.id],
+        );
+        await manager.query(
+          `DELETE FROM sys_app_members WHERE userId = ? AND appId = ?`,
+          [oldOwnerId, app.id],
+        );
       }
 
       app.ownerId = ownerId;
@@ -207,6 +227,19 @@ export class AppService {
          VALUES (UUID(), ?, ?, NOW(), NOW())`,
         [app.id, ownerId],
       );
+
+      if (ownerRoles.length > 0) {
+        const insertValues = ownerRoles.map((r) => [
+          randomUUID(),
+          ownerId,
+          r.id,
+          app.id,
+        ]);
+        await manager.query(
+          `INSERT IGNORE INTO sys_user_roles (id, userId, roleId, appId) VALUES ?`,
+          [insertValues],
+        );
+      }
     });
 
     return app;
