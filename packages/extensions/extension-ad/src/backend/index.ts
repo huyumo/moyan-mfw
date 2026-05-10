@@ -1,8 +1,14 @@
 /**
  * @fileoverview 广告扩展包后端入口
- * @description 导出 NestJS 模块、实体、生命周期钩子
+ * @description 导出 CoreModule（仅 Service+Entity）、完整 AdModule、实体、DTO
  */
 
+export { AdCoreModule } from './ad-core.module'
 export { AdModule, AdModule as default } from './ad.module'
 export { AdPlacementType, AdPlacement, Ad } from './entities'
 export { AdPlacementTypeService, AdPlacementService, AdService } from './service'
+export {
+  CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto,
+  CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto,
+  CreateAdDto, UpdateAdDto, QueryAdDto,
+} from './dto'

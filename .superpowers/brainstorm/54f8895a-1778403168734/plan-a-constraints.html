@@ -1,0 +1,42 @@
+<h2>确认方案 A，但需补充 3 个设计约束</h2>
+<p class="subtitle">生成到扩展包内部 + 约束机制解决路由冲突 / npm 发布 / 内部页面调用</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>约束 1：命名空间路由前缀</h3>
+      <p>每个扩展包在 <code>extension.json</code> 声明 <code>routePrefix: "/ext/ad"</code></p>
+      <p>所有 <code>definePageConfig.path</code> 必须以此为前缀</p>
+      <p>框架 CI / 启动时校验：重复前缀 → 报错</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>约束 2：扩展包内置 API 生成</h3>
+      <p>每个扩展包自带 <code>api.build.cjs</code>，从自己的 Swagger JSON 生成到 <code>src/frontend/apis/</code></p>
+      <p>通过 <code>package.json exports</code> 暴露 <code>./frontend/apis</code></p>
+      <p>业务层：<code>import { ApiAdFindAll } from 'moyan-extension-ad/frontend/apis'</code></p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>约束 3：路由按组拆分导出</h3>
+      <p><code>export const adTypeRoutes</code> / <code>adPlacementRoutes</code> / <code>adContentRoutes</code></p>
+      <p>业务层按需引入，自定义页面可替换某一组</p>
+      <p>全量导出 <code>adRoutes</code> 向后兼容</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top: 24px; padding: 16px; background: var(--bg-secondary, #f5f5f5); border-radius: 8px;">
+  <h3 style="margin-top:0">完整调用链</h3>
+  <pre style="background:var(--bg-primary,#fff);padding:12px;border-radius:4px;overflow-x:auto">
+扩展包内部 Vue 组件
+  └─ import { ApiAdFindAll } from '../../apis'  ← 就近引用
+
+业务层自定义页面
+  └─ import { ApiAdFindAll } from 'moyan-extension-ad/frontend/apis'
+
+业务层 Service
+  └─ import { AdService } from 'moyan-extension-ad/backend'  ← 直接注入</pre>
+</div>

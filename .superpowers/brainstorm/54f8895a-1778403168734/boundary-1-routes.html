@@ -1,0 +1,33 @@
+<h2>🔴 #1：npm 发布后，import.meta.glob 失效 → 路由如何预构建？</h2>
+<p class="subtitle">当前 extension-ad 用 <code>import.meta.glob('./views/**/index.{ts,tsx}')</code> 扫描路由<br/>这在 workspace 模式正常工作，但 npm 发布后代码已被 tsc 编译，glob 不会出现在产物中。</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：构建时生成静态路由数组（推荐）</h3>
+      <p>扩展包 <code>package.json</code> prebuild 钩子执行脚本，扫描 views 目录生成 <code>routes.gen.ts</code></p>
+      <p style="margin-top:8px"><strong>产物：</strong></p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px">// extension-ad/src/frontend/routes.gen.ts（自动生成）
+import PlacementList from './views/placement/Index.vue'
+export const routes = [
+  { page: PlacementList, path: 'ext/ad/placement', name: '广告位管理', ... },
+]</pre>
+      <p style="margin-top:8px"><strong>优点：</strong>运行时零开销，npm 完全兼容</p>
+      <p><strong>代价：</strong>加页面后必须跑构建，不跑就是旧路由</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：延迟注册机制</h3>
+      <p>npm 包只暴露 <code>RouteRecordRaw[]</code>，路由数据在 <code>extension.json</code> 中声明</p>
+      <p style="margin-top:8px"><strong>做法：</strong><code>extension.json</code> 新增 <code>routes</code> 字段，列出每个页面的路径和组件名</p>
+      <p><strong>缺点：</strong>手动维护清单，容易漏；组件路径映射复杂</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A</h3>
+  <p>这是行业标准做法（Nuxt、VitePress 同理）。构建脚本很小（~30 行），prepublishOnly 前自动跑。</p>
+  <p style="color:var(--text-secondary);margin-top:8px">开发期仍用 import.meta.glob（即时），发布时走构建产物。</p>
+</div>

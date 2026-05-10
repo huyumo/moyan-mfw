@@ -17,7 +17,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base-frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base-frontend'
-import { AdApi } from '../../api'
+import { ApiAdCreate, ApiAdUpdate, ApiAdPlacementFindAll } from '../../apis'
 import { LINK_TYPE_LABELS, LINK_TYPE } from '../../shared/constants'
 
 const props = defineProps<{
@@ -102,7 +102,8 @@ const formTemplate = computed<FormItemConfig[]>(() => {
 })
 
 onMounted(async () => {
-  const res = await AdApi.getPlacements({ pageSize: 999, status: 1 })
+  const api = new ApiAdPlacementFindAll()
+  const res = await api.call({ pageSize: 999, status: 1 })
   const list = res.data?.data?.data || []
   placementOptions.value = list.map((p: any) => ({ label: `${p.name} (${p.code})`, value: p.id }))
 })
@@ -112,9 +113,9 @@ const onConfirm = async () => {
   if (!valid) throw new Error('表单验证失败')
   const body = { ...form }
   if (isEdit.value) {
-    await AdApi.updateAd(props.id!, body)
+    await new ApiAdUpdate().call(props.id!, body)
   } else {
-    await AdApi.createAd(body)
+    await new ApiAdCreate().call(body)
   }
 }
 defineExpose({ onConfirm })

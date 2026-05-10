@@ -1,0 +1,42 @@
+<h2>🔴 #7（修正）：安全卸载 + 明确清理</h2>
+<p class="subtitle">折中方案：框架不自动删，但提供<b>强引导的清理机制</b>，避免残留影响业务系统</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>启动时检测 → 拒绝启动 + 提示清理命令</h3>
+      <p>框架启动时发现：<strong>数据库有某扩展包的表，但配置中已移除该扩展包</strong></p>
+      <p style="margin-top:8px">→ <strong>拒绝启动</strong>，终端输出：</p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px;margin-top:4px">
+⚠️  检测到已卸载扩展包的残留数据
+  - moyan-extension-ad (ext_ad_placements, ext_ad_contents, ...)
+
+请运行清理命令后重新启动：
+  pnpm ext:cleanup moyan-extension-ad
+或跳过检查（危险）：
+  EXT_SKIP_CLEANUP_CHECK=1 pnpm dev</pre>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>启动时警告 + 继续运行</h3>
+      <p>只打印警告，不阻止启动。卸载后数据库表仍然保留。</p>
+      <p style="margin-top:8px"><strong>风险：</strong>开发者可能忽略警告，残留数据长期积累</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：拒绝启动 + 明确清理路径</h3>
+  <p><strong>逻辑：</strong></p>
+  <ol style="padding-left:18px;margin:8px 0">
+    <li>框架启动时扫描所有扩展包的 entity → 对比数据库中的表</li>
+    <li>发现"有表但无配置" → <strong>拒绝启动</strong>，输出清理命令</li>
+    <li>开发者手动执行 <code>pnpm ext:cleanup</code> → 运行扩展包的 <code>onUninstall</code> 中的 DROP/DELETE 逻辑</li>
+    <li>清理后重启正常</li>
+  </ol>
+  <p style="margin-top:8px"><strong>扩展包的责任：</strong>在 <code>migrations/</code> 中提供 <code>down</code> 函数，cleanup 时执行。</p>
+  <p style="color:var(--text-secondary)">既不自动删数据（安全），也不让残留数据默默影响系统（可控）。</p>
+</div>

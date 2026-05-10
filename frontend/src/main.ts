@@ -5,10 +5,11 @@
 import { createBaseAdminApp } from 'moyan-mfw-base-frontend';
 import { HeaderCommonActions } from './components/Layout';
 import { businessRoutes } from './router';
+import { adTypeRoutes, adPlacementRoutes } from 'moyan-extension-ad/frontend';
 
 const admin = createBaseAdminApp({
   title: '墨焱前端演示',
-  routes: businessRoutes,
+  routes: [...businessRoutes, ...adTypeRoutes, ...adPlacementRoutes],
   layout: {
     layoutMode: 'dual',
     showTabs: true,

@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsInt, IsDateString, Min, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsInt, IsDateString, IsIn, Min, MaxLength } from 'class-validator'
 
 export class CreateAdDto {
   @ApiProperty({ description: '广告位 ID' })
@@ -24,9 +24,10 @@ export class CreateAdDto {
   @MaxLength(500)
   imageUrl: string
 
-  @ApiProperty({ description: '跳转类型: miniapp | internal | external', example: 'miniapp' })
+  @ApiProperty({ description: '跳转类型', enum: ['miniapp', 'internal', 'external'], example: 'miniapp' })
   @IsNotEmpty({ message: '跳转类型不能为空' })
   @IsString()
+  @IsIn(['miniapp', 'internal', 'external'], { message: '跳转类型只能是 miniapp / internal / external' })
   linkType: string
 
   @ApiProperty({ description: '跳转链接', required: false })

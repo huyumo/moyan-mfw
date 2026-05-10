@@ -1,0 +1,40 @@
+<h2>🔴 #3：扩展包数据库迁移文件 — 谁执行？何时执行？</h2>
+<p class="subtitle">扩展包有自己的 TypeORM entity（如 ext_ad_placements）。表结构的创建和维护谁负责？</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：业务层统一管理迁移</h3>
+      <p>扩展包发布时不带 migration。业务层安装后，框架自动检测新实体并为它们生成 migration 到业务层目录。</p>
+      <p style="margin-top:8px"><strong>类比：</strong>Django 的 <code>makemigrations my_app</code></p>
+      <p><strong>优点：</strong>业务层完全掌控数据库变更；迁移文件在业务层版本控制中</p>
+      <p><strong>缺点：</strong>需要框架层提供 <code>ext:migrate:generate</code> 命令</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：扩展包自带 migration，框架启动时执行</h3>
+      <p>扩展包发布时包含 migration 文件。业务层启动时，框架依次执行所有扩展包的迁移。</p>
+      <p style="margin-top:8px"><strong>优点：</strong>扩展包开发者编写迁移，最了解表结构</p>
+      <p><strong>缺点：</strong>多个扩展包迁移顺序和冲突管理复杂；业务层失去控制权</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 C：开发期 synchronize，生产期手动迁移</h3>
+      <p>扩展包只提供 entity 定义。dev 环境用 <code>synchronize: true</code> 自动建表。</p>
+      <p>生产部署时，业务层手动写 migration。</p>
+      <p style="margin-top:8px"><strong>缺点：</strong>生产运维负担重，容易遗漏</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 B 改良版：扩展包自带 + 框架编排</h3>
+  <p>扩展包目录结构增加：</p>
+  <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px">extension-ad/
+├── migrations/
+│   └── 001-create-ad-tables.ts</pre>
+  <p style="margin-top:8px">框架启动时：读所有扩展包的 migration → 按时间戳排序 → 依次执行。</p>
+  <p style="color:var(--text-secondary)">TypeORM 原生支持多来源 migration，框架只需指定路径列表即可。</p>
+</div>

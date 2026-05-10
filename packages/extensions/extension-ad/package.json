@@ -9,10 +9,26 @@
     "./frontend": "./src/frontend/index.ts",
     "./shared": "./src/shared/index.ts"
   },
+  "scripts": {
+    "dev:backend": "tsx src/backend/main.ts",
+    "dev:frontend": "vite",
+    "api:build": "node api.build.cjs",
+    "build:routes": "node scripts/build-routes.mjs",
+    "build": "tsc",
+    "prepublishOnly": "pnpm api:build && pnpm build:routes && pnpm build"
+  },
+  "files": [
+    "dist",
+    "migrations",
+    "api.build.cjs",
+    "scripts",
+    "extension.json",
+    "src/frontend/routes.gen.ts"
+  ],
   "peerDependencies": {
-    "moyan-base-backend": "workspace:*",
-    "moyan-mfw-base-frontend": "workspace:*",
-    "moyan-shared-dict": "workspace:*",
+    "moyan-base-backend": "workspace:^",
+    "moyan-mfw-base-frontend": "workspace:^",
+    "moyan-shared-dict": "workspace:^",
     "vue-router": "^4.0"
   }
 }

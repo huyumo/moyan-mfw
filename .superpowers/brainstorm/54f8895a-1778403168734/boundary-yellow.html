@@ -1,0 +1,90 @@
+<h2>🟡 层剩余需决策项（4 项）</h2>
+<p class="subtitle">以下问题命名空间规则无法自动覆盖，需确认策略</p>
+
+<div class="issue-grid" style="display:grid;grid-template-columns:1fr;gap:12px;margin-bottom:24px">
+
+  <div style="background:var(--bg-secondary);border-radius:8px;padding:16px">
+    <b style="color:var(--accent-primary)">#15 多扩展包同时 synchronize → TypeORM 并发建表冲突？</b>
+    <div class="options" style="margin-top:10px">
+      <div class="option" data-choice="a" onclick="toggleSelect(this)" style="margin-bottom:8px">
+        <div class="letter" style="font-size:14px">A</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 A：</strong>框架用互斥锁串行 synchronize。先 A 建完表，再 B。</p>
+        </div>
+      </div>
+      <div class="option" data-choice="b" onclick="toggleSelect(this)">
+        <div class="letter" style="font-size:14px">B</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 B：</strong>直接用 migration，生产环境禁用 synchronize（TypeORM 官方建议）</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary);border-radius:8px;padding:16px">
+    <b style="color:var(--accent-primary)">#19 dev 时扩展包前端跨域</b>
+    <p style="margin:6px 0;font-size:13px">扩展包独立 Vite 在 <code>:5200</code>，后端在 <code>:3002</code> → 跨域</p>
+    <div class="options" style="margin-top:10px">
+      <div class="option" data-choice="c" onclick="toggleSelect(this)" style="margin-bottom:8px">
+        <div class="letter" style="font-size:14px">A</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 A：</strong><code>createExtensionBackendApp</code> 自动开启 CORS（仅 dev）</p>
+        </div>
+      </div>
+      <div class="option" data-choice="d" onclick="toggleSelect(this)">
+        <div class="letter" style="font-size:14px">B</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 B：</strong>Vite proxy 代理到后端</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary);border-radius:8px;padding:16px">
+    <b style="color:var(--accent-primary)">#21 第三方扩展包安全</b>
+    <p style="margin:6px 0;font-size:13px">第三方包代码运行在 NestJS/Vue 进程内，可读取 process.env</p>
+    <div class="options" style="margin-top:10px">
+      <div class="option" data-choice="e" onclick="toggleSelect(this)" style="margin-bottom:8px">
+        <div class="letter" style="font-size:14px">A</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 A：</strong>信任模型（与 npm 生态一致）。框架不隔离，开发者自行审查。</p>
+        </div>
+      </div>
+      <div class="option" data-choice="f" onclick="toggleSelect(this)">
+        <div class="letter" style="font-size:14px">B</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 B：</strong>框架级权限控制（只能调自己的 controller），但进程级隔离暂不做</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background:var(--bg-secondary);border-radius:8px;padding:16px">
+    <b style="color:var(--accent-primary)">#22 Controller 受全局 AuthGuard 保护？</b>
+    <div class="options" style="margin-top:10px">
+      <div class="option" data-choice="g" onclick="toggleSelect(this)" style="margin-bottom:8px">
+        <div class="letter" style="font-size:14px">A</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 A：</strong>是。框架保证扩展包 Controller 自动纳入全局 AuthGuard。</p>
+        </div>
+      </div>
+      <div class="option" data-choice="h" onclick="toggleSelect(this)">
+        <div class="letter" style="font-size:14px">B</div>
+        <div class="content" style="padding:6px 0">
+          <p style="margin:0"><strong>方案 B：</strong>否。扩展包自行决定是否加守卫，框架不强制。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="padding:16px;background:var(--bg-secondary);border-radius:8px;margin-bottom:24px">
+  <h3 style="margin-top:0;font-size:14px">✅ 已由命名空间规则覆盖（无需讨论）</h3>
+  <p style="font-size:13px;margin:0">#9 Pinia store · #10 CSS · #12 Vue 全局注册 · #13 API baseURL · #14 表前缀 · #16 Auth Guard 复用 · #18 事件总线 · #20 端口冲突（dev 脚本自动分配）</p>
+</div>
+
+<div style="padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">⏭️ 🟢 推迟项</h3>
+  <p style="font-size:13px;margin:0">#23~#31 E2E测试、HMR、i18n、多实例、seed、CLI脚手架、注册中心、tree-shaking、权限位值工具 → 当前阶段不讨论</p>
+</div>

@@ -1,0 +1,31 @@
+<h2>🔴 #7：卸载扩展包后，数据库表 & 权限节点的清理</h2>
+<p class="subtitle">业务层从 extensions 配置中移除一个扩展包 → 重启后，数据库表和权限节点还在</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：标注为"未启用"，不删除数据（推荐一期）</h3>
+      <p>卸载时框架检测到扩展包不在配置中 → 标记状态为 <code>disabled</code></p>
+      <p style="margin-top:8px"><strong>表保留</strong>（避免误删数据），<strong>权限节点保留但不可分配</strong></p>
+      <p><strong>清理：</strong>提供 CLI 命令 <code>ext:cleanup moyan-extension-ad</code>，由开发者手动执行</p>
+      <p style="color:var(--text-secondary)">类比：WordPress 卸载插件 → 表和选项保留在数据库中</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：动删除（危险）</h3>
+      <p>移除配置 → 启动时自动 DROP TABLE + 删除权限节点</p>
+      <p style="margin-top:8px"><strong>优点：</strong>干净</p>
+      <p style="color:var(--accent-warning)"><strong>风险：</strong>误删生产数据不可恢复</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：soft-disabled + 手动清理 CLI</h3>
+  <ul style="padding-left:18px;margin:8px 0">
+    <li>启动时检测：配置中的扩展包 ≠ 已安装的扩展包 → 标记 <code>disabled</code></li>
+    <li><code>extension.json</code> 新增 <code>onUninstall</code> 生命周期钩子（未来实现）</li>
+    <li>清理操作永远是 <b>开发者手动触发</b>，框架不自动删任何数据</li>
+  </ul>
+</div>

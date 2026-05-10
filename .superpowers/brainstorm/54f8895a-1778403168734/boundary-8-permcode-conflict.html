@@ -1,0 +1,44 @@
+<h2>🔴 #8：两个扩展包声明了同名 permCode</h2>
+<p class="subtitle">扩展包 A：<code>payment:order:view</code> | 扩展包 B：<code>payment:order:view</code> → 冲突</p>
+<p class="subtitle" style="color:var(--text-secondary)">这是最后一个 🔴 架构级问题</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案 A：启动时冲突检测 → 报错终止（推荐）</h3>
+      <p>框架启动时扫描所有扩展包的 permCodeNodes，发现重复 permCode → <strong>拒绝启动</strong></p>
+      <p style="margin-top:8px"><strong>错误信息：</strong></p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px;margin-top:4px">⚠️  permCode 冲突：
+  "payment:order:view" 被以下扩展包同时声明：
+  - moyan-extension-payment
+  - moyan-extension-payment-plus
+请选择一个保留，或联系扩展包提供方解决</pre>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案 B：业务层映射重命名</h3>
+      <p>业务层在 <code>extension.json</code> 或配置中提供 remap</p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px;margin-top:4px">permCodeRemap: {
+  "moyan-extension-payment-plus:payment:order:view": "payment-plus:order:view"
+}</pre>
+      <p style="margin-top:8px"><strong>缺点：</strong>增加复杂度；重映射后扩展包内部代码仍用旧 permCode</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案 C：先注册者优先，后注册者跳过</h3>
+      <p>按扩展包加载顺序，第一个声明的生效，后面的跳过并警告</p>
+      <p style="margin-top:8px"><strong>缺点：</strong>隐性行为，开发者不知道哪个扩展包的权限"丢"了</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：拒绝启动 + 明确错误</h3>
+  <p>与清单校验器思路一致：<strong>发现问题 → 立即报错</strong>，不猜测意图。</p>
+  <p style="color:var(--text-secondary);margin-top:8px">这是启动时的一次性检查，零运行时开销。</p>
+</div>

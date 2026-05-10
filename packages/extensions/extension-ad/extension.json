@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "displayName": "广告管理",
   "description": "提供广告位管理、广告内容管理、广告跳转配置等功能，支持小程序跳转、App内部跳转和外部链接跳转",
+  "routePrefix": "/ext/ad",
   "permCodeNodes": [
     { "permCode": "ad:placement:view",   "permName": "查看广告位",   "nodeType": "TAG", "group": "广告管理" },
     { "permCode": "ad:placement:create", "permName": "创建广告位",   "nodeType": "TAG", "group": "广告管理" },
@@ -20,5 +21,11 @@
   "requiredExtensions": [],
   "optionalExtensions": [],
   "appTypes": ["*"],
-  "minFrameworkVersion": "1.0.0"
+  "minFrameworkVersion": "1.0.0",
+  "provides": {
+    "services": ["AdPlacementTypeService", "AdPlacementService", "AdService"],
+    "dicts": ["AdLinkTypeDict"],
+    "routes": ["adRoutes", "adTypeRoutes", "adPlacementRoutes", "adContentRoutes"],
+    "entities": ["AdPlacementType", "AdPlacement", "Ad"]
+  }
 }
