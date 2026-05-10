@@ -1,0 +1,29 @@
+<h2>🔴 #5：业务层只用 Service，不想暴露扩展包 Controller</h2>
+<p class="subtitle">场景：业务层想用 AdService 内部创建广告，但不需要 AdController 暴露 HTTP API</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：扩展包拆分 Module → 业务层按需导入</h3>
+      <p>扩展包提供两个 Module：</p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px;margin-top:8px">// extension-ad 导出
+export { AdCoreModule }     // 仅 Service + Entity（无 Controller）
+export { AdModule }         // CoreModule + Controller（完整）</pre>
+      <p style="margin-top:8px"><strong>业务层只用 Service：</strong><code>modules: [AdCoreModule]</code></p>
+      <p><strong>业务层要完整 API：</strong><code>modules: [AdModule]</code></p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：Controller 用 @Optional 守卫控制</h3>
+      <p>框架提供 <code>@ExtensionGuard</code>，业务层配置中可禁用某个扩展包的 Controller</p>
+      <p style="margin-top:8px"><strong>缺点：</strong>Controller 仍被注册，只是拦截请求；不如不注册干净</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A</h3>
+  <p>每个扩展包都导出 <code>CoreModule</code> + 完整 <code>Module</code>。</p>
+  <p style="color:var(--text-secondary)">Core 只含 Service + Entity + DTO，零 HTTP 暴露。业务层精确控制暴露面。</p>
+</div>

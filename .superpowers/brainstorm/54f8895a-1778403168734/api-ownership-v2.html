@@ -1,0 +1,35 @@
+<h2>扩展包 API 代码应放在哪里？</h2>
+<p class="subtitle">修正：base-frontend 是框架基础设施，业务层和扩展层都依赖它。<br/>API 代码生成产物不能写入框架层目录。</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案 A：生成到扩展包内部</h3>
+      <p>生成到 <code>extension-ad/src/frontend/apis/</code></p>
+      <p style="margin-top:8px"><strong>做法：</strong>扩展包自身维护 <code>api.build.cjs</code>，或业务层 <code>api.build.cjs</code> 中 output 指向扩展包目录</p>
+      <p><strong>优点：</strong>扩展包自包含，Vue 组件就近引用；npm 发布自带 API 代码；业务层 import 路径统一</p>
+      <p><strong>缺点：</strong>需要确认扩展包 <code>package.json</code> exports 暴露 <code>./frontend/apis</code> 子路径</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案 B：生成到业务层 frontend/</h3>
+      <p>生成到 <code>frontend/src/apis/extension-ad/</code></p>
+      <p style="margin-top:8px"><strong>做法：</strong>业务层 <code>api.build.cjs</code> 增加扩展包 Swagger 源，output 指向业务层自身</p>
+      <p><strong>优点：</strong>业务层完全掌控 API 代码；无需修改扩展包 exports</p>
+      <p><strong>缺点：</strong>扩展包的 Vue 组件需从业务层 import API → 循环依赖风险；npm 发布时 API 代码不在扩展包内</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案 C：扩展包提供 Service 层接口，不暴露原始 API</h3>
+      <p>扩展包封装一个 <code>AdSdk</code> 类，内部调用 API，对外暴露方法</p>
+      <p style="margin-top:8px"><strong>做法：</strong>扩展包用 <code>moyan-api</code> 生成代码放在内部，再封装一层语义化 SDK</p>
+      <p><strong>优点：</strong>最大封装性；业务层只需 <code>AdSdk.getPlacements()</code>；API 变更对业务层透明</p>
+      <p><strong>缺点：</strong>多一层抽象；SDK 方法需与 API 保持同步</p>
+    </div>
+  </div>
+</div>

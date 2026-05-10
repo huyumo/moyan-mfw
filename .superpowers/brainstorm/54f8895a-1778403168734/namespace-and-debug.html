@@ -1,0 +1,56 @@
+<h2>问题 1：命名空间由谁决定？</h2>
+<p class="subtitle">扩展包默认声明 vs 业务层覆盖 vs 映射表</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案 A：扩展包声明，不可覆盖</h3>
+      <p><code>extension.json</code> 写死 <code>routePrefix: "/ext/ad"</code></p>
+      <p style="margin-top:8px"><strong>简单粗暴。</strong>所有扩展包的路径在发布时就固定，业务层只能接受。</p>
+      <p style="color:var(--text-secondary)">风险：两个扩展包买了同一个路径 → 启动报错（只能要求开发者别这么干）</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案 B：扩展包声明默认值 + 业务层映射覆盖</h3>
+      <p>扩展包声明 <code>routePrefix: "/ext/ad"</code>（默认）</p>
+      <p>业务层 <code>main.ts</code> 提供 <code>extensionRouteMap: { "moyan-extension-ad": "/my-ads" }</code></p>
+      <p style="margin-top:8px"><strong>灵活。</strong>业务层有最终决定权。扩展包内部跳转通过 composable 解析实际前缀。</p>
+      <p style="color:var(--text-secondary)">代价：扩展包内部不能用硬编码路径</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案 C：路径完全由业务层组装</h3>
+      <p>扩展包只暴露 <code>RouteRecordRaw[]</code>，不带路径假设</p>
+      <p>业务层在注册路由时指定挂载点</p>
+      <p style="margin-top:8px"><strong>最大控制权。</strong>但扩展包内部导航失效（组件不知道自己的路径）</p>
+    </div>
+  </div>
+</div>
+
+<hr style="margin:32px 0;border-color:var(--border-color)">
+
+<h2>问题 2：扩展包开发如何快速调试？</h2>
+<p class="subtitle">涉及 API 生成 + 路由构建 + 后端联调三个环节</p>
+
+<div class="cards">
+  <div class="card">
+    <div class="card-body">
+      <h3>现状瓶颈</h3>
+      <p>开发一个广告表单：改 DTO → 重启后端 → 刷新 Swagger → 跑 api:build → 重启前端 → 改 Vue</p>
+      <p style="color:var(--accent-warning);margin-top:8px">这是"6步循环"，每次改接口都要走一遍</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3>方案：开发期跳过 api:build，用动态代理</h3>
+      <p><strong>开发模式：</strong>扩展包写一个 <code>devAdapter.ts</code>，直接用 axios + 类型标注，跳过生成步骤</p>
+      <p><strong>提交/CI 前：</strong>必须跑 <code>api:build</code> 更新生成的代码</p>
+      <p style="margin-top:8px"><strong>效果：</strong>DTO 改完 → 重启后端 → 直接改 Vue（3步，少了 Swagger + api:build）</p>
+    </div>
+  </div>
+</div>

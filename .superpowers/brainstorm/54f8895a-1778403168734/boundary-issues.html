@@ -1,0 +1,98 @@
+<h2>挖掘的全部边界问题（31 项）</h2>
+<p class="subtitle">按紧急度三层分类。每层聚焦回答一个问题</p>
+
+<style>
+  .layer { margin-bottom: 28px }
+  .layer-header { display:flex;align-items:center;gap:10px;margin-bottom:12px }
+  .layer-header h3 { margin:0 }
+  .badge { padding:2px 10px;border-radius:12px;font-size:12px;font-weight:600 }
+  .badge-red { background:#fee2e2;color:#dc2626 }
+  .badge-yellow { background:#fef3c7;color:#d97706 }
+  .badge-green { background:#d1fae5;color:#059669 }
+  .issue-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px }
+  .issue-item { padding:10px 14px;background:var(--bg-secondary);border-radius:6px;font-size:13px }
+  .issue-item b { color:var(--accent-primary) }
+</style>
+
+<div class="layer">
+  <div class="layer-header">
+    <span class="badge badge-red">🔴 必须决策</span>
+    <h3>架构级边界问题（影响整体方案）</h3>
+  </div>
+  <div class="issue-grid">
+    <div class="issue-item"><b>#1</b> npm 发布后，Vue 组件的 import.meta.glob 失效 → 路由如何预构建？</div>
+    <div class="issue-item"><b>#2</b> API 代码（moyan-api 生成）随包发布还是安装后由业务层生成？</div>
+    <div class="issue-item"><b>#3</b> 扩展包 TypeORM entity → 迁移文件谁执行？业务层启动时一并跑？</div>
+    <div class="issue-item"><b>#4</b> 扩展包 controller 路径与业务层 controller 同名碰撞怎么办？</div>
+    <div class="issue-item"><b>#5</b> 业务层只想用 Service，不想暴露扩展包的 API/Controller，怎么做到？</div>
+    <div class="issue-item"><b>#6</b> 扩展包依赖的 base-backend 版本，"workspace:*" → npm 发布后写什么？</div>
+    <div class="issue-item"><b>#7</b> 卸载扩展包后，数据库表和权限节点残留怎么清理？</div>
+    <div class="issue-item"><b>#8</b> 两个扩展包声明了同名 permCode，合并 or 冲突？</div>
+  </div>
+</div>
+
+<div class="layer">
+  <div class="layer-header">
+    <span class="badge badge-yellow">🟡 设计导向</span>
+    <h3>需要规范约束，但不影响核心架构</h3>
+  </div>
+  <div class="issue-grid">
+    <div class="issue-item"><b>#9</b> 前端 Pinia store 隔离 — 跨扩展包 store 命名冲突？</div>
+    <div class="issue-item"><b>#10</b> 前端 CSS 隔离 — 同名 class 样式污染？</div>
+    <div class="issue-item"><b>#11</b> 扩展包间 Service 注入 → 被依赖包未安装时 @Optional 兜底？</div>
+    <div class="issue-item"><b>#12</b> 多扩展包的 Vue 全局注册（el-button 等）重复注册？</div>
+    <div class="issue-item"><b>#13</b> 扩展包的前端 API baseURL 硬编码 /api/ext，业务层想改怎么办？</div>
+    <div class="issue-item"><b>#14</b> 扩展包定义了自己的数据库表前缀 ext_，业务层想自定义前缀呢？</div>
+    <div class="issue-item"><b>#15</b> 多个扩展包同时 synchronize → TypeORM 并发建表冲突？</div>
+    <div class="issue-item"><b>#16</b> 扩展包页面需要 auth guard → 能否复用 base-frontend 的守卫？</div>
+    <div class="issue-item"><b>#17</b> 业务层和扩展包用了不同版本 element-plus → 类型冲突？</div>
+    <div class="issue-item"><b>#18</b> 事件总线 — 扩展包 A 和 B 都用 'order.created' 事件名？</div>
+    <div class="issue-item"><b>#19</b> dev 开发时前端跨域 → 扩展包后端在 3002，前端 Vite 在 5200</div>
+    <div class="issue-item"><b>#20</b> 多个扩展包前端各自跑 Vite，端口冲突？</div>
+    <div class="issue-item"><b>#21</b> 第三方扩展包如何防止读取业务层 .env？</div>
+    <div class="issue-item"><b>#22</b> 扩展包的 controller 是否受全局 AuthGuard 保护？</div>
+  </div>
+</div>
+
+<div class="layer">
+  <div class="layer-header">
+    <span class="badge badge-green">🟢 可推迟</span>
+    <h3>当前阶段可跳过，后续迭代补齐</h3>
+  </div>
+  <div class="issue-grid">
+    <div class="issue-item"><b>#23</b> 扩展包独立 E2E 测试策略</div>
+    <div class="issue-item"><b>#24</b> 扩展包热更新（HMR）支持</div>
+    <div class="issue-item"><b>#25</b> 国际化（i18n）扩展</div>
+    <div class="issue-item"><b>#26</b> 多实例部署下的事件总线适配</div>
+    <div class="issue-item"><b>#27</b> 扩展包自身 seed 数据初始化</div>
+    <div class="issue-item"><b>#28</b> 扩展包开发规范文档 & CLI 脚手架</div>
+    <div class="issue-item"><b>#29</b> 扩展包市场/注册中心的长期规划</div>
+    <div class="issue-item"><b>#30</b> 扩展包的 bundle 体积分析 & tree-shaking</div>
+    <div class="issue-item"><b>#31</b> 权限位值的自动化分配工具</div>
+  </div>
+</div>
+
+<hr style="margin:32px 0;border-color:var(--border-color)">
+
+<h2>🟡 立即确认：清单校验器</h2>
+<p class="subtitle">结合你上一个问题：是否需要框架层提供 extension.json 强制校验？</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>强制校验（推荐）</h3>
+      <p><code>createExtensionApp</code> 启动时校验 extension.json 格式</p>
+      <p>缺必填字段 / 格式错误 → <strong>拒绝启动</strong>，输出明确错误信息</p>
+      <p>类似 NestJS 的 ConfigModule 校验</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>宽松警告</h3>
+      <p>校验通过 console.warn 警告，不阻止启动</p>
+      <p>开发期可用，生产环境可能埋坑</p>
+    </div>
+  </div>
+</div>

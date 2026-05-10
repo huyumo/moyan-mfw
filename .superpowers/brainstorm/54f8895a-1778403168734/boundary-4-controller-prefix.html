@@ -1,0 +1,32 @@
+<h2>🔴 #4：扩展包 Controller 路径与业务层 Controller 碰撞</h2>
+<p class="subtitle">扩展包的 <code>@Controller('ad-placements')</code> 和业务层的某个 Controller 撞了同名路径怎么办？</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：框架强制前缀隔离（推荐）</h3>
+      <p>框架在注册扩展包 Controller 时，自动在前面加 <code>ext/{extName}</code> 全局前缀</p>
+      <p style="margin-top:8px"><strong>效果：</strong><code>ad-placements</code> → 实际路径 <code>/api/ext/ad/ad-placements</code></p>
+      <p><strong>优点：</strong>零碰撞风险；框架层强制执行，开发者无感知</p>
+      <p><strong>缺点：</strong>需要框架在 NestJS 路由注册时做前缀注入</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：扩展包开发者手动写前缀</h3>
+      <p>约定：Controller 路径统一写 <code>'ext/ad/ad-placements'</code></p>
+      <p style="margin-top:8px"><strong>优点：</strong>零框架改造</p>
+      <p><strong>缺点：</strong>依赖开发者遵守约定；npm 发布后路径固定，业务层无法覆盖</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：框架强制前缀</h3>
+  <p>在 <code>createExtensionBackendApp</code> 和 <code>createBaseBackendApp</code> 中：</p>
+  <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px">// 框架内部逻辑
+const extPrefix = extensionName.replace('moyan-extension-', '') // 'ad'
+app.setGlobalPrefix(`api/ext/${extPrefix}`)</pre>
+  <p style="margin-top:8px">扩展包开发者只需写 <code>@Controller('ad-placements')</code>，框架自动补全前缀。</p>
+  <p style="color:var(--text-secondary)">与前端路由的命名空间前缀对称设计。</p>
+</div>

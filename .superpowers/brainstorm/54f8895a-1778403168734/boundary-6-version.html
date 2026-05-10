@@ -1,0 +1,35 @@
+<h2>🔴 #6：peerDependencies 的 "workspace:*" → npm 发布后写什么？</h2>
+<p class="subtitle">当前 package.json：<code>"moyan-base-backend": "workspace:*"</code>。npm 发布时必须换成语义化版本号，否则业务层 npm install 会失败。</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：pnpm publish 自动转换（推荐）</h3>
+      <p>pnpm 原生支持：<code>"workspace:^"</code> → publish 时自动变成 <code>"^1.0.0"</code></p>
+      <pre style="font-size:12px;background:var(--bg-primary);padding:8px;border-radius:4px;margin-top:8px">// 开发期
+"moyan-base-backend": "workspace:^"
+
+// pnpm publish 后自动变成
+"moyan-base-backend": "^1.2.0"</pre>
+      <p style="margin-top:8px"><strong>零脚本，pnpm 内置。</strong>版本号取自目标包实际的 package.json version。</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：prepublishOnly 脚本手动替换</h3>
+      <p>写 node 脚本读取 base-backend 的 package.json version，再替换 peerDependencies</p>
+      <p style="margin-top:8px"><strong>缺点：</strong>多写一个脚本，增加维护负担</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：workspace:^ 自动转换</h3>
+  <p>当前写法改一下：<code>"moyan-base-backend": "workspace:^"</code></p>
+  <ul style="padding-left:18px;margin:8px 0">
+    <li><code>workspace:^</code> → publish 后 <code>^1.0.0</code>（兼容同主版本）</li>
+    <li><code>workspace:~</code> → publish 后 <code>~1.2.0</code>（兼容同次版本）</li>
+    <li><code>workspace:*</code> → publish 后 <code>1.2.0</code>（精确版本）</li>
+  </ul>
+  <p style="color:var(--text-secondary);margin-top:8px">扩展包推荐用 <code>workspace:^</code>，允许业务层使用兼容的 base-backend 新版本。</p>
+</div>

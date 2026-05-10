@@ -1,0 +1,61 @@
+<h2>扩展包开发时如何运行？</h2>
+<p class="subtitle">方案 B 已确认。核心矛盾：扩展包不是独立应用，必须嵌入业务层启动</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid #e5a00d">
+    <div class="card-body">
+      <h3>方案 A：业务层直接 import，靠 workspace 软链接</h3>
+      <p>开发者在 <code>backend/src/app.modules.ts</code> 临时 import AdModule<br/>
+      在 <code>frontend/src/main.ts</code> 临时 import adRoutes</p>
+      <p style="margin-top:8px"><strong>好处：</strong>零额外配置，直接跑</p>
+      <p style="color:var(--accent-warning)"><strong>痛点：</strong>污染业务层代码，每次换扩展包都要改 main.ts</p>
+    </div>
+  </div>
+
+  <div class="card" style="border-left: 4px solid #e5a00d">
+    <div class="card-body">
+      <h3>方案 B：业务层提供 <code>extensions.config.ts</code> 声明式开关</h3>
+      <p>后端：<code>extensions.config.ts</code> 列出启用的扩展包名<br/>
+      前端：同上，<code>createBaseAdminApp</code> 读取并自动加载路由</p>
+      <p style="margin-top:8px"><strong>好处：</strong>改一行配置即切换；可提交到 git 作为项目默认</p>
+      <p style="color:var(--accent-warning)"><strong>前提：</strong>需要框架层支持"按名称动态 import 扩展包"</p>
+    </div>
+  </div>
+
+  <div class="card" style="border-left: 4px solid #e5a00d">
+    <div class="card-body">
+      <h3>方案 C：扩展包自带 dev playground</h3>
+      <p>每个扩展包内建最小化的 <code>dev/</code> 目录<br/>
+      包含独立的 main.ts，仅加载该扩展包</p>
+      <p style="margin-top:8px"><strong>好处：</strong>完全隔离，不依赖业务层</p>
+      <p style="color:var(--accent-warning)"><strong>代价：</strong>维护成本翻倍</p>
+    </div>
+  </div>
+</div>
+
+<hr style="margin:32px 0;border-color:var(--border-color)">
+
+<h2>推荐：方案 B — 声明式开关</h2>
+<p class="subtitle">一次配置，随时切换，可提交 git</p>
+
+<pre style="background:var(--bg-primary,#fff);padding:16px;border-radius:8px;overflow-x:auto;font-size:13px">
+// backend/src/extensions.config.ts（业务层新增文件）
+export const enabledExtensions = ['moyan-extension-ad']
+
+// backend/src/main.ts（框架层需改造以支持自动加载）
+import { enabledExtensions } from './extensions.config'
+// 框架内部：enabledExtensions 中包含 'moyan-extension-ad'
+//   → 自动 import('moyan-extension-ad/backend') → 注入 AdModule + entities + 权限节点
+
+// frontend/src/extensions.config.ts
+export const enabledExtensions = ['moyan-extension-ad']
+export const extensionRouteMap = {     // ← 方案 B 的命名空间映射
+  'moyan-extension-ad': '/ads'        //   业务层可覆盖默认的 /ext/ad
+}
+</pre>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0">关键问题</h3>
+  <p><strong>框架层需要改造吗？</strong> 需要。当前 <code>createBaseBackendApp</code> 不支持"按包名动态 import 扩展包"，但这正是 P0 中 entities/permissionValues 通道的延伸。</p>
+  <p style="margin-top:8px"><strong>这是额外负担还是必要能力？</strong> 必要。没有这个，每个扩展包都要手写 import，扩展包系统无法规模化和自动化。</p>
+</div>

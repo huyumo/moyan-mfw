@@ -31,10 +31,16 @@ import { ElTag, ElMessageBox } from 'element-plus'
 import { MfwPageWrapper, MfwListPage, MfwFormat, MfwPopup } from 'moyan-mfw-base-frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
 import { renderActionButtons } from 'moyan-mfw-base-frontend'
-import { AdApi } from '../../api'
+import {
+  ApiAdFindAll,
+  ApiAdCreate,
+  ApiAdUpdate,
+  ApiAdDelete,
+} from '../../apis'
+import { StatusDict } from 'moyan-shared-dict'
 import { LINK_TYPE_LABELS, LINK_TYPE } from '../../shared/constants'
 
-const STATUS = { ENABLED: 1, DISABLED: 0 } as const
+const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdContentList' })
 const listPage = ref<MfwListPageInstance>()
 const route = useRoute()
@@ -83,7 +89,8 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const res = await AdApi.getAds(params)
+  const api = new ApiAdFindAll()
+  const res = await api.call(params)
   return res.data?.data
 }
 const handleAdd = () => {
@@ -108,7 +115,7 @@ const handleEdit = (row: any) => {
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告「${row.title}」吗？`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await AdApi.deleteAd(row.id)
+  await new ApiAdDelete().call(row.id)
   listPage.value?.refresh()
 }
 </script>

@@ -6,6 +6,7 @@ import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-base-backend';
 import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
 import { SupplierModule } from './modules/supplier/supplier.module';
+import { AdModule } from 'moyan-extension-ad/backend';
 import './permissions';
 import 'business-dict';
 
@@ -15,6 +16,12 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     title: '供应商API文档',
     description: '供应商管理相关 API',
     include: [SupplierModule],
+  },
+  {
+    name: 'ad-extension',
+    title: '广告管理API文档',
+    description: '广告位类型、广告位、广告内容管理 API',
+    include: [AdModule],
   },
 ];
 

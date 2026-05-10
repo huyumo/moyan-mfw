@@ -7,6 +7,7 @@ import { Injectable, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, DataSource } from 'typeorm'
 import { AdPlacementType } from '../entities/ad-placement-type.entity'
+import { AdPlacement } from '../entities/ad-placement.entity'
 import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-base-backend'
 
@@ -66,6 +67,12 @@ export class AdPlacementTypeService {
 
   async delete(id: string): Promise<void> {
     const entity = await this.findById(id)
+    const childCount = await this.dataSource
+      .getRepository(AdPlacement)
+      .count({ where: { placementTypeId: id } })
+    if (childCount > 0) {
+      throw new ConflictException(`该类型下有 ${childCount} 个广告位，请先删除关联广告位`)
+    }
     await this.typeRepo.softDelete(entity.id)
   }
 }

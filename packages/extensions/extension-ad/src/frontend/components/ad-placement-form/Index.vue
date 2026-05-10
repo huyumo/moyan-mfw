@@ -17,7 +17,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base-frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base-frontend'
-import { AdApi } from '../../api'
+import { ApiAdPlacementCreate, ApiAdPlacementUpdate, ApiAdPlacementTypeFindAll } from '../../apis'
 
 const props = defineProps<{
   id?: string
@@ -57,7 +57,8 @@ const formTemplate = computed<FormItemConfig[]>(() => [
 ])
 
 onMounted(async () => {
-  const res = await AdApi.getTypes({ pageSize: 999, status: 1 })
+  const api = new ApiAdPlacementTypeFindAll()
+  const res = await api.call({ pageSize: 999, status: 1 })
   const list = res.data?.data?.data || []
   typeOptions.value = list.map((t: any) => ({ label: `${t.name} (${t.width}x${t.height})`, value: t.id }))
 })
@@ -66,9 +67,9 @@ const onConfirm = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) throw new Error('表单验证失败')
   if (isEdit.value) {
-    await AdApi.updatePlacement(props.id!, form)
+    await new ApiAdPlacementUpdate().call(props.id!, form)
   } else {
-    await AdApi.createPlacement(form)
+    await new ApiAdPlacementCreate().call(form)
   }
 }
 defineExpose({ onConfirm })

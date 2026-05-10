@@ -1,0 +1,33 @@
+<h2>🔴 #2：API 代码（moyan-api 生成）随包发布 or 安装后生成？</h2>
+<p class="subtitle">扩展包的 <code>src/frontend/apis/</code> 由 moyan-api 生成。npm 发布时这些文件怎么处理？</p>
+
+<div class="cards">
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 A：随包发布（推荐）</h3>
+      <p>发布前跑 <code>api:build</code>，产物提交到 npm。</p>
+      <p style="margin-top:8px"><strong>优点：</strong>业务层安装即用，零额外步骤</p>
+      <p><strong>风险：</strong>生成的代码基于发布时的 Swagger，如果后端版本不匹配可能不一致</p>
+      <p style="color:var(--text-secondary)"><strong>缓解：</strong>API 类只声明 path/method，不携带业务逻辑，跨版本通常兼容</p>
+    </div>
+  </div>
+  <div class="card" style="border-left: 4px solid var(--accent-primary)">
+    <div class="card-body">
+      <h3>方案 B：安装后生成</h3>
+      <p>发布不含 API 代码。业务层 <code>api.build.cjs</code> 增加扩展包 Swagger 源。</p>
+      <p style="margin-top:8px"><strong>优点：</strong>生成的代码与运行时后端完全一致</p>
+      <p><strong>缺点：</strong>需要业务层手动配置 Swagger 源地址；扩展包不再"即装即用"</p>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:24px;padding:16px;background:var(--bg-secondary);border-radius:8px">
+  <h3 style="margin-top:0;font-size:14px">📌 推荐方案 A：随包发布</h3>
+  <p>原因：</p>
+  <ul style="padding-left:18px;margin:8px 0">
+    <li>API 类本质是类型声明 + 路径常量，<strong>换版本几乎不会变</strong></li>
+    <li>即装即用是扩展包的核心体验 — npm install → import → use</li>
+    <li>如果真有重大变更，本来就要发 MAJOR 版本</li>
+  </ul>
+  <p style="color:var(--text-secondary);margin-top:8px">注意：扩展包的 <code>.gitignore</code> 不能忽略 <code>src/frontend/apis/</code>（与业务层相反）</p>
+</div>

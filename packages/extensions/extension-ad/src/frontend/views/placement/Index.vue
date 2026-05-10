@@ -30,9 +30,16 @@ import { ElTag, ElMessageBox } from 'element-plus'
 import { MfwPageWrapper, MfwListPage, MfwFormat, MfwPopup } from 'moyan-mfw-base-frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
 import { renderActionButtons } from 'moyan-mfw-base-frontend'
-import { AdApi } from '../../api'
+import {
+  ApiAdPlacementFindAll,
+  ApiAdPlacementCreate,
+  ApiAdPlacementUpdate,
+  ApiAdPlacementDelete,
+} from '../../apis'
+import { StatusDict } from 'moyan-shared-dict'
+import { AD_PATHS } from '../../shared/paths'
 
-const STATUS = { ENABLED: 1, DISABLED: 0 } as const
+const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
 const listPage = ref<MfwListPageInstance>()
 const router = useRouter()
@@ -70,7 +77,8 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const res = await AdApi.getPlacements(params)
+  const api = new ApiAdPlacementFindAll()
+  const res = await api.call(params)
   return res.data?.data
 }
 const handleAdd = () => {
@@ -91,12 +99,12 @@ const handleEdit = (row: any) => {
   })
 }
 const handleManageAd = (row: any) => {
-  router.push('/ext/ad/content?placementId=' + row.id)
+  router.push(`${AD_PATHS.CONTENT}?placementId=${row.id}`)
 }
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告位「${row.name}」吗？关联的广告内容也将被清除`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await AdApi.deletePlacement(row.id)
+  await new ApiAdPlacementDelete().call(row.id)
   listPage.value?.refresh()
 }
 </script>

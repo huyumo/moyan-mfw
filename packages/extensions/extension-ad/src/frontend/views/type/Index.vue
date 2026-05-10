@@ -29,9 +29,15 @@ import { ElTag, ElMessageBox } from 'element-plus'
 import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-mfw-base-frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
 import { renderActionButtons } from 'moyan-mfw-base-frontend'
-import { AdApi } from '../../api'
+import {
+  ApiAdPlacementTypeFindAll,
+  ApiAdPlacementTypeCreate,
+  ApiAdPlacementTypeUpdate,
+  ApiAdPlacementTypeDelete,
+} from '../../apis'
+import { StatusDict } from 'moyan-shared-dict'
 
-const STATUS = { ENABLED: 1, DISABLED: 0 } as const
+const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdTypeList' })
 const listPage = ref<MfwListPageInstance>()
 
@@ -66,7 +72,8 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const res = await AdApi.getTypes(params)
+  const api = new ApiAdPlacementTypeFindAll()
+  const res = await api.call(params)
   return res.data?.data
 }
 const handleAdd = () => {
@@ -89,7 +96,7 @@ const handleEdit = (row: any) => {
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除类型「${row.name}」吗？`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await AdApi.deleteType(row.id)
+  await new ApiAdPlacementTypeDelete().call(row.id)
   listPage.value?.refresh()
 }
 </script>

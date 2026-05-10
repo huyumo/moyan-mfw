@@ -1,0 +1,32 @@
+<h2>扩展包 API 代码应放在哪里？</h2>
+<p class="subtitle">moyan-api 从 Swagger JSON 自动生成 API 调用类，生成的代码需要有一个"家"</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>方案 A：放在业务层 base-frontend</h3>
+      <p>生成到 <code>packages/base-frontend/src/apis/extension-ad/</code></p>
+      <p style="margin-top:8px"><strong>优点：</strong>与现有 sys API 同一体系，业务层直接 import；<code>api.build.cjs</code> 只需加一个源</p>
+      <p><strong>缺点：</strong>扩展包自身的 Vue 组件需要跨包引用 API 类</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>方案 B：放在扩展包内部</h3>
+      <p>生成到 <code>extension-ad/src/frontend/apis/</code></p>
+      <p style="margin-top:8px"><strong>优点：</strong>扩展包自包含，Vue 组件就近引用；npm 发布时自带 API 代码</p>
+      <p><strong>缺点：</strong>生成的代码需独立配置源；业务层引用路径不统一</p>
+    </div>
+  </div>
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>方案 C：双份生成 + re-export 桥接</h3>
+      <p>生成到 <code>base-frontend/src/apis/extension-ad/</code>，扩展包通过 <code>frontend/apis/index.ts</code> re-export</p>
+      <p style="margin-top:8px"><strong>优点：</strong>兼顾两方，业务层和扩展包都自然引用</p>
+      <p><strong>缺点：</strong>文件归属权模糊（生成代码在 base-frontend，re-export 在 extension）</p>
+    </div>
+  </div>
+</div>
