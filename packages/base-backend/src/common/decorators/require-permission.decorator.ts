@@ -3,7 +3,6 @@
  * @description 定义接口所需的权限编码和权限值，支持多种调用方式
  */
 
-import { SetMetadata } from '@nestjs/common';
 import { registerPermissionValues } from '../constants/permissions';
 import type { BasePermissionName } from '../constants/permissions';
 
@@ -59,6 +58,22 @@ export interface RequirePermissionOptions {
  * @RequirePermission('system:role')
  * ```
  */
+/**
+ * 将权限选项累加到已有元数据数组中
+ * @description 解决 NestJS SetMetadata 多次调用时后者覆盖前者的问题，
+ * 使同一 handler 上的多个 @RequirePermission 装饰器可以共存（OR 逻辑）。
+ */
+function accumulateMetadata(
+  metadataTarget: any,
+  options: RequirePermissionOptions,
+): void {
+  const existing: RequirePermissionOptions[] =
+    Reflect.getMetadata(REQUIRE_PERMISSION, metadataTarget) || [];
+  const existingArray = Array.isArray(existing) ? existing : [existing];
+  existingArray.push(options);
+  Reflect.defineMetadata(REQUIRE_PERMISSION, existingArray, metadataTarget);
+}
+
 export function RequirePermission(
   optionsOrCode: RequirePermissionOptions | string,
   permissionValue?: string[],
@@ -68,7 +83,14 @@ export function RequirePermission(
       ? { permCode: optionsOrCode, permissionValue }
       : optionsOrCode;
 
-  return SetMetadata(REQUIRE_PERMISSION, options);
+  return (target: any, propertyKey?: string | symbol, descriptor?: TypedPropertyDescriptor<any>) => {
+    const metadataTarget = descriptor ? descriptor.value : target;
+    accumulateMetadata(metadataTarget, options);
+    if (descriptor) {
+      return descriptor;
+    }
+    return target;
+  };
 }
 
 /**
@@ -109,6 +131,13 @@ export function createBusinessPermissionDecorator<T extends readonly string[]>(
       permCode,
       permissionValue: permissionValue as string[],
     };
-    return SetMetadata(REQUIRE_PERMISSION, options);
+    return (target: any, propertyKey?: string | symbol, descriptor?: TypedPropertyDescriptor<any>) => {
+      const metadataTarget = descriptor ? descriptor.value : target;
+      accumulateMetadata(metadataTarget, options);
+      if (descriptor) {
+        return descriptor;
+      }
+      return target;
+    };
   };
 }

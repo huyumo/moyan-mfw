@@ -1,6 +1,7 @@
 packages:
   - packages/base-backend
   - packages/base-frontend
+  - packages/extensions/*
   - packages/component-demo
   - packages/shared-dict
   - frontend

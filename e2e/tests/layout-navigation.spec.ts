@@ -14,12 +14,12 @@ test.describe('布局与导航', () => {
     await authenticatedPage.waitForTimeout(500);
 
     const sidebar = authenticatedPage.locator('.mfw-admin-sidebar');
-    const isCompact = await sidebar.evaluate((el) => el.classList.contains('is-compact') || el.offsetWidth < 200);
+    const isCompact = await sidebar.evaluate((el) => el.classList.contains('is-compact') || (el as HTMLElement).offsetWidth < 200);
 
     await toggleBtn.click();
     await authenticatedPage.waitForTimeout(500);
 
-    const isExpanded = await sidebar.evaluate((el) => el.offsetWidth > 200);
+    const isExpanded = await sidebar.evaluate((el) => (el as HTMLElement).offsetWidth > 200);
     expect(isCompact || isExpanded).toBeTruthy();
   });
 

@@ -169,6 +169,9 @@ export class AuthController {
     @User() user: UserDto,
     @AppId() appId: string,
   ) {
+    if (!appId) {
+      throw new BadRequestException('缺少应用标识，请传入 X-App-Id 请求头或 appId 参数');
+    }
     const userId = user.id;
     const result = await this.authService.getUserPermissions(userId, appId);
     return ApiResponseUtil.success(result, '获取成功');
@@ -262,6 +265,9 @@ export class AuthController {
     @User() user: UserDto,
     @AppId() appId: string,
   ) {
+    if (!appId) {
+      throw new BadRequestException('缺少应用标识，请传入 X-App-Id 请求头或 appId 参数');
+    }
     const userId = user.id;
     const result = await this.authService.syncPermissions(userId, appId);
     return ApiResponseUtil.success(result, '权限同步成功');

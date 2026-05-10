@@ -161,7 +161,7 @@ async function createDynamicAppModule(
             charset: dbConfig.charset || 'utf8mb4',
             timezone: dbConfig.timezone || '+08:00',
             poolSize: dbConfig.poolSize || 100,
-            synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development'),
+            synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'),
             logging: dbConfig.logging ?? false,
             entities: entities,
             extra: {

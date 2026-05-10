@@ -59,13 +59,10 @@ test.describe('系统初始化', () => {
   });
 
   test('INIT-05: 已初始化系统访问 /install 自动跳转到 /login', async ({ page }) => {
-    const statusResponse = await page.request.get('/api/install/status');
-    const statusBody = await statusResponse.json();
-
-    if (!statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
+    try { await page.waitForURL('**/install', { timeout: 5000 }); test.skip(); return; }
+    catch { /* initialized */ }
 
     await page.goto('/install');
     await page.waitForURL('**/login', { timeout: 10000 });

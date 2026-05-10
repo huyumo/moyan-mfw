@@ -1,14 +1,21 @@
 import { test, expect } from '../fixtures';
 
+async function isSystemInitialized(page: any): Promise<boolean> {
+  await page.goto('/');
+  await page.waitForLoadState('domcontentloaded');
+  try { await page.waitForURL('**/install', { timeout: 8000 }); return false; }
+  catch { return true; }
+}
+
+async function goToInstall(page: any): Promise<boolean> {
+  await page.goto('/install');
+  await page.waitForLoadState('domcontentloaded');
+  return page.url().includes('/install');
+}
+
 test.describe('登录表单验证 - 前端边界条件', () => {
   test('LOGIN-FORM-01: 提交节流 - 连续点击不会重复请求', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (!statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
+    if (!(await isSystemInitialized(page))) { test.skip(); return; }
     await page.goto('/login');
     await page.waitForLoadState('networkidle');
 
@@ -36,18 +43,8 @@ test.describe('登录表单验证 - 前端边界条件', () => {
 
 test.describe('安装向导表单验证 - 前端边界条件', () => {
   test('INSTALL-FORM-01: 密码仅数字 - 按钮禁用', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
-    await page.goto('/install');
-    if (!page.url().includes('/install')) {
-      test.skip();
-      return;
-    }
+    if (await isSystemInitialized(page)) { test.skip(); return; }
+    if (!(await goToInstall(page))) { test.skip(); return; }
 
     const passwordInput = page.locator('[data-testid="install-password-input"] input');
     await passwordInput.fill('12345678');
@@ -57,18 +54,8 @@ test.describe('安装向导表单验证 - 前端边界条件', () => {
   });
 
   test('INSTALL-FORM-02: 密码仅字母 - 按钮禁用', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
-    await page.goto('/install');
-    if (!page.url().includes('/install')) {
-      test.skip();
-      return;
-    }
+    if (await isSystemInitialized(page)) { test.skip(); return; }
+    if (!(await goToInstall(page))) { test.skip(); return; }
 
     const passwordInput = page.locator('[data-testid="install-password-input"] input');
     await passwordInput.fill('abcdefghij');
@@ -78,18 +65,8 @@ test.describe('安装向导表单验证 - 前端边界条件', () => {
   });
 
   test('INSTALL-FORM-03: 密码7位 - 按钮禁用（需8位以上）', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
-    await page.goto('/install');
-    if (!page.url().includes('/install')) {
-      test.skip();
-      return;
-    }
+    if (await isSystemInitialized(page)) { test.skip(); return; }
+    if (!(await goToInstall(page))) { test.skip(); return; }
 
     const passwordInput = page.locator('[data-testid="install-password-input"] input');
     await passwordInput.fill('Abc1234');
@@ -99,18 +76,8 @@ test.describe('安装向导表单验证 - 前端边界条件', () => {
   });
 
   test('INSTALL-FORM-04: 有效密码+一致确认 - 按钮可用', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
-    await page.goto('/install');
-    if (!page.url().includes('/install')) {
-      test.skip();
-      return;
-    }
+    if (await isSystemInitialized(page)) { test.skip(); return; }
+    if (!(await goToInstall(page))) { test.skip(); return; }
 
     const passwordInput = page.locator('[data-testid="install-password-input"] input');
     const confirmInput = page.locator('[data-testid="install-confirm-password-input"] input');
@@ -122,18 +89,8 @@ test.describe('安装向导表单验证 - 前端边界条件', () => {
   });
 
   test('INSTALL-FORM-05: 管理员账号字段只读且值为 admin', async ({ page }) => {
-    const statusRes = await page.request.get('/api/install/status');
-    const statusBody = await statusRes.json();
-    if (statusBody.data?.initialized) {
-      test.skip();
-      return;
-    }
-
-    await page.goto('/install');
-    if (!page.url().includes('/install')) {
-      test.skip();
-      return;
-    }
+    if (await isSystemInitialized(page)) { test.skip(); return; }
+    if (!(await goToInstall(page))) { test.skip(); return; }
 
     const adminInput = page.locator('[data-testid="install-admin-input"] input');
     await expect(adminInput).toBeDisabled();

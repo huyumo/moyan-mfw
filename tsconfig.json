@@ -27,5 +27,16 @@
       "moyan-shared-dict": ["./packages/shared-dict/dist/esm"]
     }
   },
-  "exclude": ["node_modules", "dist", "scripts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "scripts",
+    "e2e",
+    "backend",
+    "frontend",
+    "business-dict",
+    "packages",
+    "packages/*/tests",
+    "packages/*/__tests__"
+  ]
 }
