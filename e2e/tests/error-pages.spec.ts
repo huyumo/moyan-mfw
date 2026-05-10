@@ -1,4 +1,4 @@
-import { test, expect, ensureSystemInitialized, resetSystem } from '../fixtures';
+import { test, expect } from '../fixtures';
 
 test.describe('错误页面', () => {
   test('ERROR-01: 403 页面 - 元素可见', async ({ page }) => {

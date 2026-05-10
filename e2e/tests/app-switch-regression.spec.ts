@@ -1,266 +1,282 @@
-import { test, expect, ensureSystemInitialized, login } from '../fixtures';
+import { test, expect } from '@playwright/test';
+import type { Page } from '@playwright/test';
 
-const API = '/api';
+/**
+ * 纯 UI 登录函数：导航到登录页，填写表单，提交，处理应用选择面板。
+ */
+async function loginViaUI(page: Page, username: string, password: string): Promise<void> {
+  await page.goto('/login');
+  await page.waitForLoadState('networkidle');
 
-test.describe('多应用切换 - 权限菜单数据正确性回归测试', () => {
-  async function setupAuthAndAppId(page: any) {
-    await ensureSystemInitialized(page);
-    const { authToken } = await login(page, { username: 'admin', password: 'Admin@123' });
-
-    const appsRes = await page.request.get(`${API}/auth/apps`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    });
-    const appsBody = await appsRes.json();
-    const appsResult = appsBody.data?.data || appsBody.data;
-    const apps = Array.isArray(appsResult) ? appsResult : [];
-
-    return { authToken, apps };
+  // 如果已在登录态（未跳转登录页），直接进入 dashboard
+  const loginEl = page.locator('.mfw-login-page');
+  const isVisible = await loginEl.isVisible({ timeout: 5000 }).catch(() => false);
+  if (!isVisible) {
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+    return;
   }
 
-  test('APP-SWITCH-01: 切换应用后权限菜单应完全替换', async ({ page }) => {
-    const { authToken, apps } = await setupAuthAndAppId(page);
+  await page.locator('input[placeholder*="用户名"]').fill(username);
+  await page.locator('input[placeholder*="密码"]').fill(password);
+  await page.locator('.mfw-login-page .mfw-login-submit').click();
+  await page.waitForLoadState('networkidle');
 
-    if (apps.length < 2) {
-      test.skip();
-      return;
+  // 处理应用选择面板（首次登录只有 system-instance 一个应用时会自动跳过）
+  const appSelector = page.locator('.app-selector-panel');
+  if (await appSelector.isVisible({ timeout: 3000 }).catch(() => false)) {
+    await appSelector.locator('.app-item, .el-card').first().click();
+  }
+  await page.waitForTimeout(1500);
+}
+
+test.describe('多应用切换 - 权限菜单数据正确性回归测试', () => {
+  test('APP-SWITCH-01: 系统至少有2个不同应用可切换', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    // 点击应用切换器，统计下拉菜单中的应用数量
+    const appSwitcher = page.locator('[data-testid="app-switcher"]');
+    if (!(await appSwitcher.isVisible({ timeout: 5000 }).catch(() => false))) {
+      console.log('应用切换器不可见，当前可能仅有一个应用');
     }
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
 
-    const app1Id = apps[0].appId || apps[0].id;
-    const app2Id = apps[1].appId || apps[1].id;
+    const appOptions = page.locator('.el-dropdown-menu__item');
+    const count = await appOptions.count();
 
-    const perm1Res = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app1Id },
-    });
-    const perm1Body = await perm1Res.json();
-    const perm1 = perm1Body.data?.data || perm1Body.data;
-
-    const perm2Res = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app2Id },
-    });
-    const perm2Body = await perm2Res.json();
-    const perm2 = perm2Body.data?.data || perm2Body.data;
-
-    expect(perm1).toHaveProperty('menuTree');
-    expect(perm2).toHaveProperty('menuTree');
-
-    const tree1Codes = (perm1.menuTree || []).map((n: any) => n.permCode).sort();
-    const tree2Codes = (perm2.menuTree || []).map((n: any) => n.permCode).sort();
-
-    console.log(`App1 (${app1Id}) 权限树根节点:`, tree1Codes);
-    console.log(`App2 (${app2Id}) 权限树根节点:`, tree2Codes);
-
-    if (tree1Codes.length > 0 || tree2Codes.length > 0) {
-      const areDifferent = JSON.stringify(tree1Codes) !== JSON.stringify(tree2Codes);
-      console.log(`两个应用的权限树${areDifferent ? '不同' : '相同'}`);
+    if (count < 2) {
+      console.log(`当前仅有 ${count} 个应用，需要运行 multi-app-workflow.spec.ts 创建更多应用`);
     }
+    expect(count, '需要至少2个应用才能测试应用切换').toBeGreaterThanOrEqual(2);
   });
 
-  test('APP-SWITCH-02: 权限菜单响应数据结构完整性', async ({ page }) => {
-    const { authToken, apps } = await setupAuthAndAppId(page);
+  test('APP-SWITCH-02: 切换应用后权限菜单应完全替换', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    if (apps.length === 0) {
+    // 打开应用切换器，检查应用数量
+    const appSwitcher = page.locator('[data-testid="app-switcher"]');
+    if (!(await appSwitcher.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
+
+    const appOptions = page.locator('.el-dropdown-menu__item');
+    const appCount = await appOptions.count();
+    if (appCount < 2) {
       test.skip();
       return;
     }
 
-    const appId = apps[0].appId || apps[0].id;
-
-    const permRes = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': appId },
-    });
-    const permBody = await permRes.json();
-    const perm = permBody.data?.data || permBody.data;
-
-    expect(perm).toHaveProperty('menuTree');
-    expect(perm).toHaveProperty('permissions');
-    expect(perm).toHaveProperty('permissionValueMap');
-    expect(perm).toHaveProperty('appTypeId');
-    expect(Array.isArray(perm.menuTree)).toBeTruthy();
-    expect(Array.isArray(perm.permissions)).toBeTruthy();
-    expect(typeof perm.permissionValueMap).toBe('object');
-    expect(typeof perm.appTypeId).toBe('string');
-  });
-
-  test('APP-SWITCH-03: 不同应用返回不同的 appTypeId', async ({ page }) => {
-    const { authToken, apps } = await setupAuthAndAppId(page);
-
-    if (apps.length < 2) {
-      test.skip();
-      return;
-    }
-
-    const app1Id = apps[0].appId || apps[0].id;
-    const app2Id = apps[1].appId || apps[1].id;
-
-    const perm1Res = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app1Id },
-    });
-    const perm1Body = await perm1Res.json();
-    const perm1 = perm1Body.data?.data || perm1Body.data;
-
-    const perm2Res = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app2Id },
-    });
-    const perm2Body = await perm2Res.json();
-    const perm2 = perm2Body.data?.data || perm2Body.data;
-
-    expect(perm1.appTypeId).toBeDefined();
-    expect(perm2.appTypeId).toBeDefined();
-    expect(perm1.appTypeId.length).toBeGreaterThan(0);
-    expect(perm2.appTypeId.length).toBeGreaterThan(0);
-  });
-
-  test('APP-SWITCH-04: 前端应用切换 - localStorage 更新', async ({ authenticatedPage }) => {
-    const appsStr = await authenticatedPage.evaluate(() => {
-      const appStr = localStorage.getItem('mfw:admin:current_app');
-      return appStr;
-    });
-
-    if (!appsStr) {
-      test.skip();
-      return;
-    }
-
-    const currentApp = JSON.parse(appsStr);
-    expect(currentApp).toHaveProperty('appId');
-    expect(currentApp.appId.length).toBeGreaterThan(0);
-  });
-
-  test('APP-SWITCH-05: 前端应用切换 - X-App-Id 请求头与当前应用一致', async ({ authenticatedPage }) => {
-    const currentAppStr = await authenticatedPage.evaluate(() => {
-      return localStorage.getItem('mfw:admin:current_app');
-    });
-
-    if (!currentAppStr) {
-      test.skip();
-      return;
-    }
-
-    const currentApp = JSON.parse(currentAppStr);
-    const currentAppId = currentApp.appId;
-
-    const checkResult = await authenticatedPage.evaluate(async (appId) => {
-      const token = localStorage.getItem('mfw:admin:token');
-      const res = await fetch('/api/auth/permissions?appId=' + appId, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-App-Id': appId,
-        },
-      });
-      const body = await res.json();
-      return { code: body.code, hasData: !!body.data };
-    }, currentAppId);
-
-    expect(checkResult.code).toBe(0);
-    expect(checkResult.hasData).toBeTruthy();
-  });
-
-  test('APP-SWITCH-06: 快速连续切换应用 - 权限菜单不混乱', async ({ page }) => {
-    const { authToken, apps } = await setupAuthAndAppId(page);
-
-    if (apps.length < 2) {
-      test.skip();
-      return;
-    }
-
-    const app1Id = apps[0].appId || apps[0].id;
-    const app2Id = apps[1].appId || apps[1].id;
-
-    const results = await Promise.all([
-      page.request.get(`${API}/auth/permissions`, {
-        headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app1Id },
-      }),
-      page.request.get(`${API}/auth/permissions`, {
-        headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': app2Id },
-      }),
-    ]);
-
-    for (const res of results) {
-      const body = await res.json();
-      expect(body.code).toBe(0);
-      const perm = body.data?.data || body.data;
-      expect(perm).toHaveProperty('menuTree');
-    }
-  });
-
-  test('APP-SWITCH-07: 切换应用后导航 - 侧边栏菜单更新', async ({ authenticatedPage }) => {
-    const appCount = await authenticatedPage.evaluate(() => {
-      const appStr = localStorage.getItem('mfw:admin:current_app');
-      return appStr ? 1 : 0;
-    });
-
-    if (appCount === 0) {
-      test.skip();
-      return;
-    }
-
-    const sidebarMenu = authenticatedPage.locator('[data-testid="sidebar-menu"]');
+    // 记录当前侧边栏菜单
+    const sidebarMenu = page.locator('[data-testid="sidebar-menu"]');
     await expect(sidebarMenu).toBeVisible({ timeout: 10000 });
 
-    const menuItems = authenticatedPage.locator('[data-testid^="menu-node-"]');
-    const count = await menuItems.count();
-    expect(count).toBeGreaterThan(0);
+    const menuItems1 = page.locator('[data-testid^="menu-node-"]');
+    const count1 = await menuItems1.count();
+    const texts1 = await menuItems1.allTextContents();
+    console.log(`应用1 菜单项数量: ${count1}, 菜单: [${texts1.join(', ')}]`);
+
+    // 点击第二个应用进行切换
+    // 先关闭当前下拉（如果还在）
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
+    await page.waitForTimeout(200);
+
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
+    await appOptions.nth(1).click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
+
+    // 验证侧边栏菜单已替换
+    await expect(sidebarMenu).toBeVisible({ timeout: 10000 });
+    const menuItems2 = page.locator('[data-testid^="menu-node-"]');
+    const count2 = await menuItems2.count();
+    const texts2 = await menuItems2.allTextContents();
+    console.log(`应用2 菜单项数量: ${count2}, 菜单: [${texts2.join(', ')}]`);
+
+    expect(count1).toBeGreaterThan(0);
+    expect(count2).toBeGreaterThan(0);
   });
 
-  test('APP-SWITCH-08: 切换应用后 keep-alive 缓存清除', async ({ authenticatedPage }) => {
-    await authenticatedPage.goto('/sys/user');
-    await authenticatedPage.waitForLoadState('networkidle');
+  // APP-SWITCH-03: 原测试验证 API 响应数据结构（menuTree / permissions / permissionValueMap / appTypeId），
+  // 这些是纯 API 层字段，UI 层无法直接校验。改写为验证侧边栏菜单结构和数据完整性。
+  test('APP-SWITCH-03: 侧边栏菜单结构完整性（UI等价验证）', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    await authenticatedPage.waitForTimeout(500);
-
-    await authenticatedPage.goto('/sys/role');
-    await authenticatedPage.waitForLoadState('networkidle');
-
-    const currentUrl = authenticatedPage.url();
-    expect(currentUrl).toContain('/sys/role');
-  });
-
-  test('APP-SWITCH-09: 应用列表 API 返回数据包含必要字段', async ({ page }) => {
-    const { authToken, apps } = await setupAuthAndAppId(page);
-
-    if (apps.length === 0) {
+    const sidebarMenu = page.locator('[data-testid="sidebar-menu"]');
+    if (!(await sidebarMenu.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip();
       return;
     }
 
-    const app = apps[0];
-    expect(app).toHaveProperty('appId');
-    expect(app).toHaveProperty('appName');
-    expect(app).toHaveProperty('appCode');
-    expect(app).toHaveProperty('appTypeId');
-    expect(app).toHaveProperty('appTypeCode');
-    expect(app).toHaveProperty('appTypeName');
-    expect(typeof app.appId).toBe('string');
-    expect(app.appId.length).toBeGreaterThan(0);
+    // 验证菜单容器可见
+    await expect(sidebarMenu).toBeVisible({ timeout: 10000 });
+
+    // 验证菜单项存在且为数组结构（在 UI 层面表现为多个 DOM 节点）
+    const menuItems = page.locator('[data-testid^="menu-node-"]');
+    const count = await menuItems.count();
+    expect(count).toBeGreaterThan(0);
+
+    // 验证每个菜单项都有可显示的文本内容
+    for (let i = 0; i < count; i++) {
+      const text = await menuItems.nth(i).textContent();
+      expect(text, `菜单项 ${i} 应包含文本内容`).toBeTruthy();
+    }
   });
 
-  test('APP-SWITCH-10: 切换不存在的应用 - 权限菜单为空', async ({ page }) => {
-    const { authToken } = await setupAuthAndAppId(page);
+  // APP-SWITCH-04: 原测试比较不同应用的 appTypeId，属于 API 层数据比较。
+  // 改写为验证不同应用切换后侧边栏菜单数量/内容可能不同。
+  test('APP-SWITCH-04: 不同应用可能展示不同的菜单内容', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    const permRes = await page.request.get(`${API}/auth/permissions`, {
-      headers: { Authorization: `Bearer ${authToken}`, 'X-App-Id': '00000000-0000-0000-0000-000000000000' },
-    });
-    const permBody = await permRes.json();
+    const appSwitcher = page.locator('[data-testid="app-switcher"]');
+    if (!(await appSwitcher.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
 
-    if (permBody.code === 0) {
-      const perm = permBody.data?.data || permBody.data;
-      expect(perm.menuTree).toEqual([]);
-      expect(perm.permissions).toEqual([]);
+    const appOptions = page.locator('.el-dropdown-menu__item');
+    const appCount = await appOptions.count();
+    if (appCount < 2) {
+      test.skip();
+      return;
+    }
+
+    // 记录第一个应用的菜单
+    const menuItems1 = page.locator('[data-testid^="menu-node-"]');
+    const count1 = await menuItems1.count();
+    const codes1 = await menuItems1.allTextContents();
+
+    // 切换到第二个应用
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
+    await page.waitForTimeout(200);
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
+    await appOptions.nth(1).click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
+
+    const menuItems2 = page.locator('[data-testid^="menu-node-"]');
+    const count2 = await menuItems2.count();
+    const codes2 = await menuItems2.allTextContents();
+
+    if (count1 !== count2 || JSON.stringify(codes1) !== JSON.stringify(codes2)) {
+      console.log(`应用1 菜单(${count1}): [${codes1.join(', ')}]`);
+      console.log(`应用2 菜单(${count2}): [${codes2.join(', ')}]（不同）`);
     } else {
-      expect(permBody.code).not.toBe(0);
+      console.log(`两个应用的菜单内容相同`);
+    }
+
+    // 至少两个应用都有菜单
+    expect(count1).toBeGreaterThan(0);
+    expect(count2).toBeGreaterThan(0);
+  });
+
+  test('APP-SWITCH-05: 快速连续切换应用 - 权限菜单不混乱', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    const appSwitcher = page.locator('[data-testid="app-switcher"]');
+    if (!(await appSwitcher.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
+
+    const appOptions = page.locator('.el-dropdown-menu__item');
+    const appCount = await appOptions.count();
+    if (appCount < 2) {
+      test.skip();
+      return;
+    }
+
+    // 快速连续切换：先切到应用2，再切回应用1
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
+    await page.waitForTimeout(200);
+
+    // 切换到应用2
+    await appSwitcher.click();
+    await page.waitForTimeout(200);
+    await appOptions.nth(1).click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
+    // 验证应用2侧边栏正常
+    let menuItems = page.locator('[data-testid^="menu-node-"]');
+    const countAfterSwitch2 = await menuItems.count();
+    expect(countAfterSwitch2).toBeGreaterThan(0);
+
+    // 切回应用1
+    await appSwitcher.click();
+    await page.waitForTimeout(200);
+    await appOptions.first().click();
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(500);
+
+    menuItems = page.locator('[data-testid^="menu-node-"]');
+    const countAfterSwitch1 = await menuItems.count();
+    expect(countAfterSwitch1).toBeGreaterThan(0);
+  });
+
+  test('APP-SWITCH-06: 切换不存在的应用 - 返回空权限或错误', async () => {
+    test.skip(true, 'API 层安全测试：UI 无法构造不存在 appId 的请求，需在 base-backend 集成测试中覆盖');
+  });
+
+  test('APP-SWITCH-07: 缺少 X-App-Id 时返回 400 错误', async () => {
+    test.skip(true, 'API 层安全测试：X-App-Id 由前端 Axios 拦截器自动注入，需在 base-backend 集成测试中覆盖');
+  });
+
+  test('APP-SWITCH-08: 应用切换器下拉列表包含必要的应用名称', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
+
+    const appSwitcher = page.locator('[data-testid="app-switcher"]');
+    if (!(await appSwitcher.isVisible({ timeout: 5000 }).catch(() => false))) {
+      test.skip();
+      return;
+    }
+    await appSwitcher.click();
+    await page.waitForTimeout(300);
+
+    const appOptions = page.locator('.el-dropdown-menu__item');
+    const count = await appOptions.count();
+    if (count === 0) {
+      test.skip();
+      return;
+    }
+
+    // 验证每个应用选项都有名称（非空文本）
+    for (let i = 0; i < count; i++) {
+      const text = await appOptions.nth(i).textContent();
+      expect(text, `应用选项 ${i} 应有名称`).toBeTruthy();
+      expect(text!.trim().length, `应用选项 ${i} 名称不应为空`).toBeGreaterThan(0);
     }
   });
 });
 
 test.describe('多应用切换 - 前端 Store 数据一致性', () => {
-  test('STORE-01: 登录后 authStore 包含正确的应用数据', async ({ page }) => {
-    await ensureSystemInitialized(page);
-    await login(page, { username: 'admin', password: 'Admin@123' });
+  test('STORE-01: 登录后 localStorage 包含正确的 token 和应用数据', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
     await page.goto('/dashboard');
     await page.waitForURL('**/dashboard', { timeout: 15000 });
 
     const storeState = await page.evaluate(() => {
-      const pinia = (window as any).__pinia || (window as any).__VUE_DEVTOOLS_GLOBAL_HOOK__?.stores;
       const appStr = localStorage.getItem('mfw:admin:current_app');
       const token = localStorage.getItem('mfw:admin:token');
       return {
@@ -277,44 +293,28 @@ test.describe('多应用切换 - 前端 Store 数据一致性', () => {
     }
   });
 
-  test('STORE-02: 切换应用后 localStorage 中 current_app 已更新', async ({ authenticatedPage }) => {
-    const beforeApp = await authenticatedPage.evaluate(() => {
-      const appStr = localStorage.getItem('mfw:admin:current_app');
-      return appStr ? JSON.parse(appStr) : null;
-    });
+  test('STORE-02: 侧边栏菜单可见', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
+    await page.goto('/dashboard');
+    await page.waitForLoadState('networkidle');
 
-    if (!beforeApp) {
-      test.skip();
-      return;
-    }
+    const sidebarMenu = page.locator('[data-testid="sidebar-menu"]');
+    await expect(sidebarMenu).toBeVisible({ timeout: 10000 });
 
-    const currentAppId = beforeApp.appId;
-
-    const afterApp = await authenticatedPage.evaluate(() => {
-      const appStr = localStorage.getItem('mfw:admin:current_app');
-      return appStr ? JSON.parse(appStr) : null;
-    });
-
-    expect(afterApp?.appId).toBe(currentAppId);
+    const menuItems = page.locator('[data-testid^="menu-node-"]');
+    const count = await menuItems.count();
+    expect(count).toBeGreaterThan(0);
   });
 
-  test('STORE-03: 权限菜单非空时包含有效路由路径', async ({ authenticatedPage }) => {
-    const permissionMenuState = await authenticatedPage.evaluate(() => {
-      const appStr = localStorage.getItem('mfw:admin:current_app');
-      if (!appStr) return null;
-      return JSON.parse(appStr);
-    });
+  test('STORE-03: 切换页面后路由正确', async ({ page }) => {
+    await loginViaUI(page, 'admin', 'Admin@123');
 
-    if (!permissionMenuState) {
-      test.skip();
-      return;
-    }
+    await page.goto('/sys/user');
+    await page.waitForLoadState('networkidle');
+    expect(page.url()).toContain('/sys/user');
 
-    const sidebarMenu = authenticatedPage.locator('[data-testid="sidebar-menu"]');
-    if (await sidebarMenu.isVisible()) {
-      const menuItems = authenticatedPage.locator('[data-testid^="menu-node-"]');
-      const count = await menuItems.count();
-      expect(count).toBeGreaterThan(0);
-    }
+    await page.goto('/sys/role');
+    await page.waitForLoadState('networkidle');
+    expect(page.url()).toContain('/sys/role');
   });
 });

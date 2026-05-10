@@ -1,0 +1,18 @@
+{
+  "name": "moyan-extension-ad",
+  "version": "0.1.0",
+  "description": "MFW 广告管理扩展包",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./backend": "./src/backend/index.ts",
+    "./frontend": "./src/frontend/index.ts",
+    "./shared": "./src/shared/index.ts"
+  },
+  "peerDependencies": {
+    "moyan-base-backend": "workspace:*",
+    "moyan-mfw-base-frontend": "workspace:*",
+    "moyan-shared-dict": "workspace:*",
+    "vue-router": "^4.0"
+  }
+}

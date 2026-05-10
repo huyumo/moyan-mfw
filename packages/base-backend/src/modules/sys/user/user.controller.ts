@@ -107,6 +107,7 @@ export class UserController {
     type: UserResponseDto,
   })
   @RequirePermission({ permCode: 'pc_root:sys:user' })
+  @RequirePermission({ permCode: 'pc_root:sys:member' })
   async findOneByKeyword(
     @Query('keyword') keyword: string,
     @Query('searchBy') searchBy: 'username' | 'phone' | 'both' = 'both',

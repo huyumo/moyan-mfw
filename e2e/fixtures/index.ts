@@ -47,6 +47,9 @@ export async function login(page: Page, params: LoginParams): Promise<AppContext
   const token = body.data.accessToken;
   const refreshToken = body.data.refreshToken;
 
+  await page.goto('/');
+  await page.waitForLoadState('domcontentloaded');
+
   await page.evaluate(
     ({ token, refreshToken }) => {
       localStorage.setItem('mfw:admin:token', token);

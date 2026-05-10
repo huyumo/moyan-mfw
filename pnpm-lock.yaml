@@ -452,6 +452,21 @@ importers:
         specifier: ^2.1.10
         version: 2.2.12(typescript@5.9.3)
 
+  packages/extensions/extension-ad:
+    dependencies:
+      moyan-base-backend:
+        specifier: workspace:*
+        version: link:../../base-backend
+      moyan-mfw-base-frontend:
+        specifier: workspace:*
+        version: link:../../base-frontend
+      moyan-shared-dict:
+        specifier: workspace:*
+        version: link:../../shared-dict
+      vue-router:
+        specifier: ^4.0
+        version: 4.6.4(vue@3.5.30(typescript@5.9.3))
+
   packages/shared-dict:
     dependencies:
       reflect-metadata:

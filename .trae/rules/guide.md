@@ -8,7 +8,6 @@
 - ✋ `createQueryRunner() + try/catch` → `dataSource.transaction(callback)`
 - ✋ `repository.find()` 分页 → `PaginationX + WhereBuilder`
 - ✋ 表单 `emit('confirm')` → `defineExpose({ onConfirm })`
-- ✋ `label-width="80px"` 中文换行 → `100px`
 - ✋ 弹窗组件放 `views/` → `components/`
 - ✋ 内联 `const STATUS = {…}` → `moyan-shared-dict`
 - ✋ `@Request() req` → `@User() user: UserDto`
