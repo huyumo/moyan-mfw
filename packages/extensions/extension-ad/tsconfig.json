@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "strict": true,
     "strictPropertyInitialization": false,
@@ -12,7 +12,11 @@
     "emitDecoratorMetadata": true,
     "resolveJsonModule": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "paths": {
+      "typeorm": ["./node_modules/typeorm"]
+    }
   },
-  "include": ["src/**/*"]
+  "include": ["src/backend/**/*"],
+  "exclude": ["src/frontend"]
 }
