@@ -1,11 +1,10 @@
 /**
  * @fileoverview 广告位类型配置服务
- * @description 处理广告位类型配置相关业务逻辑
  */
 
 import { Injectable, ConflictException } from '@nestjs/common'
-import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, DataSource } from 'typeorm'
+import { ModuleRef } from '@nestjs/core'
+import { DataSource, Repository } from 'typeorm'
 import { AdPlacementType } from '../entities/ad-placement-type.entity'
 import { AdPlacement } from '../entities/ad-placement.entity'
 import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'
@@ -13,40 +12,34 @@ import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moya
 
 @Injectable()
 export class AdPlacementTypeService {
-  constructor(
-    @InjectRepository(AdPlacementType)
-    private typeRepo: Repository<AdPlacementType>,
-    private dataSource: DataSource,
-  ) {}
+  private ds: DataSource
 
-  async create(dto: CreateAdPlacementTypeDto): Promise<AdPlacementType> {
-    const existing = await this.typeRepo.findOne({ where: { code: dto.code } })
-    if (existing) throw new ConflictException('类型编码已存在')
-
-    const entity = this.typeRepo.create(dto)
-    return this.dataSource.transaction(async (manager) => {
-      return manager.save(entity)
-    })
+  constructor(private moduleRef: ModuleRef) {
+    this.ds = this.moduleRef.get(DataSource, { strict: false })
+    if (!this.ds) throw new Error('DataSource not found')
   }
 
-  async findAll(query: QueryAdPlacementTypeDto): Promise<PaginationResult<AdPlacementType>> {
+  private get typeRepo(): Repository<AdPlacementType> {
+    return this.ds.getRepository(AdPlacementType)
+  }
+
+  async create(dto: CreateAdPlacementTypeDto): Promise<AdPlacementType> {
+    const repo = this.typeRepo
+    const existing = await repo.findOne({ where: { code: dto.code } })
+    if (existing) throw new ConflictException('类型编码已存在')
+    return repo.save(repo.create(dto))
+  }
+
+  async findAll(query: QueryAdPlacementTypeDto): Promise<PaginationResult<any>> {
     const { name, code, status } = query
     const whereBuilder = new WhereBuilder()
-    whereBuilder
-      .like('t.name', name)
-      .like('t.code', code)
-      .eq('t.status', status)
-
-    const pager = new PaginationX(this.dataSource, query)
-    return pager
-      .where('main', whereBuilder)
+    whereBuilder.like('t.name', name).like('t.code', code).eq('t.status', status)
+    const pager = new PaginationX(this.ds, query)
+    return pager.where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''
         return `SELECT ${select} FROM ext_ad_placement_types t ${whereClause} ${orderBy} ${limit}`
-      })
-      .select('t.*')
-      .defaultOrderBy('t.sortOrder ASC, t.createdAt DESC')
-      .getData()
+      }).select('t.*').defaultOrderBy('t.sortOrder ASC, t.createdAt DESC').getData()
   }
 
   async findById(id: string): Promise<AdPlacementType> {
@@ -56,23 +49,24 @@ export class AdPlacementTypeService {
   }
 
   async update(id: string, dto: UpdateAdPlacementTypeDto): Promise<AdPlacementType> {
+    const repo = this.typeRepo
     const entity = await this.findById(id)
     if (dto.code && dto.code !== entity.code) {
-      const existing = await this.typeRepo.findOne({ where: { code: dto.code } })
+      const existing = await repo.findOne({ where: { code: dto.code } })
       if (existing) throw new ConflictException('类型编码已存在')
     }
     Object.assign(entity, dto)
-    return this.typeRepo.save(entity)
+    return repo.save(entity)
   }
 
   async delete(id: string): Promise<void> {
+    const repo = this.typeRepo
     const entity = await this.findById(id)
-    const childCount = await this.dataSource
-      .getRepository(AdPlacement)
-      .count({ where: { placementTypeId: id } })
+    const childCount = await this.ds
+      .getRepository(AdPlacement).count({ where: { placementTypeId: id } })
     if (childCount > 0) {
       throw new ConflictException(`该类型下有 ${childCount} 个广告位，请先删除关联广告位`)
     }
-    await this.typeRepo.softDelete(entity.id)
+    await repo.softDelete(entity.id)
   }
 }

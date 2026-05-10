@@ -163,7 +163,7 @@ async function createDynamicAppModule(
             poolSize: dbConfig.poolSize || 100,
             synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'),
             logging: dbConfig.logging ?? false,
-            entities: entities,
+            entities: [...entities, ...(options.extraEntities || [])],
             extra: {
               multipleStatements: true,
             },

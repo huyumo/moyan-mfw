@@ -153,6 +153,7 @@ export interface CreateBaseBackendAppOptions {
   permissionValues?: string[];
   seeds?: SeedConfig[];
   modules?: Type<any>[];
+  extraEntities?: Array<new (...args: any[]) => any>;
   providers?: Provider[];
   middlewares?: Array<NestMiddleware>;
   exceptionFilters?: Array<Type<ExceptionFilter>>;

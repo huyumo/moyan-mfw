@@ -4,6 +4,7 @@
  */
 
 export * from './create-base-admin-app';
+export * from './create-extension-frontend-app';
 export * from './router';
 export * from './layouts';
 export * from './config/layout-defaults';
