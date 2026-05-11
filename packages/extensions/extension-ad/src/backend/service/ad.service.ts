@@ -3,23 +3,17 @@
  */
 
 import { Injectable } from '@nestjs/common'
-import { ModuleRef } from '@nestjs/core'
-import { DataSource, Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { Ad } from '../entities/ad.entity'
 import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-base-backend'
 
 @Injectable()
 export class AdService {
-  private ds: DataSource
-
-  constructor(private moduleRef: ModuleRef) {
-    this.ds = this.moduleRef.get(DataSource, { strict: false })
-  }
-
-  private get adRepo(): Repository<Ad> {
-    return this.ds.getRepository(Ad)
-  }
+  constructor(
+    @InjectRepository(Ad) private adRepo: Repository<Ad>,
+  ) {}
 
   async create(dto: CreateAdDto): Promise<Ad> {
     return this.adRepo.save(this.adRepo.create(dto))
@@ -30,7 +24,7 @@ export class AdService {
     const whereBuilder = new WhereBuilder()
     whereBuilder.eq('a.placementId', placementId).like('a.title', title)
       .eq('a.linkType', linkType).eq('a.status', status)
-    const pager = new PaginationX(this.ds, query)
+    const pager = new PaginationX(this.adRepo.manager.connection as any, query)
     const result = await pager.where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''

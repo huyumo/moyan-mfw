@@ -17,6 +17,6 @@
       "typeorm": ["./node_modules/typeorm"]
     }
   },
-  "include": ["src/backend/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["src/frontend"]
 }

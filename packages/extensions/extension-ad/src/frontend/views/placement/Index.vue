@@ -25,9 +25,9 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, Document } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwFormat, MfwPopup } from 'moyan-mfw-base-frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base-frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
 import { renderActionButtons } from 'moyan-mfw-base-frontend'
 import {
@@ -35,9 +35,9 @@ import {
   ApiAdPlacementCreate,
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
-} from '../../apis'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-shared-dict'
-import { AD_PATHS } from '../../shared/paths'
+import { AD_PATHS } from '../../../shared/paths'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
@@ -63,7 +63,7 @@ const columns = [
     }, () => row.status === STATUS.ENABLED ? '启用' : '禁用'),
   },
   { prop: 'createdAt', label: '创建时间', width: 170,
-    render: ({ row }: any) => h(MfwFormat, { value: row.createdAt, type: 'date' }),
+    render: ({ row }: any) => h(MfwDateFormat, { value: row.createdAt }),
   },
 ]
 
@@ -71,15 +71,14 @@ const actionColumn = {
   prop: 'action', label: '操作', width: 220, fixed: 'right' as const,
   render: ({ row }: any) => renderActionButtons([
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
-    { label: '广告内容', type: 'default', icon: 'Document', onClick: handleManageAd },
+    { label: '广告内容', icon: Document, onClick: handleManageAd },
     { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
   ], { maxVisible: 3 }, row),
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const api = new ApiAdPlacementFindAll()
-  const res = await api.call(params)
-  return res.data?.data
+  const res = await new ApiAdPlacementFindAll({ query: params as any })
+  return (res as any).list
 }
 const handleAdd = () => {
   MfwPopup.open({
@@ -104,7 +103,7 @@ const handleManageAd = (row: any) => {
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告位「${row.name}」吗？关联的广告内容也将被清除`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await new ApiAdPlacementDelete().call(row.id)
+  await new ApiAdPlacementDelete({ params: { id: row.id } })
   listPage.value?.refresh()
 }
 </script>

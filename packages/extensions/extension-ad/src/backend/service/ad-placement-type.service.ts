@@ -3,8 +3,8 @@
  */
 
 import { Injectable, ConflictException } from '@nestjs/common'
-import { ModuleRef } from '@nestjs/core'
-import { DataSource, Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 import { AdPlacementType } from '../entities/ad-placement-type.entity'
 import { AdPlacement } from '../entities/ad-placement.entity'
 import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'
@@ -12,29 +12,21 @@ import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moya
 
 @Injectable()
 export class AdPlacementTypeService {
-  private ds: DataSource
-
-  constructor(private moduleRef: ModuleRef) {
-    this.ds = this.moduleRef.get(DataSource, { strict: false })
-    if (!this.ds) throw new Error('DataSource not found')
-  }
-
-  private get typeRepo(): Repository<AdPlacementType> {
-    return this.ds.getRepository(AdPlacementType)
-  }
+  constructor(
+    @InjectRepository(AdPlacementType) private typeRepo: Repository<AdPlacementType>,
+  ) {}
 
   async create(dto: CreateAdPlacementTypeDto): Promise<AdPlacementType> {
-    const repo = this.typeRepo
-    const existing = await repo.findOne({ where: { code: dto.code } })
+    const existing = await this.typeRepo.findOne({ where: { code: dto.code } })
     if (existing) throw new ConflictException('类型编码已存在')
-    return repo.save(repo.create(dto))
+    return this.typeRepo.save(this.typeRepo.create(dto))
   }
 
   async findAll(query: QueryAdPlacementTypeDto): Promise<PaginationResult<any>> {
     const { name, code, status } = query
     const whereBuilder = new WhereBuilder()
     whereBuilder.like('t.name', name).like('t.code', code).eq('t.status', status)
-    const pager = new PaginationX(this.ds, query)
+    const pager = new PaginationX(this.typeRepo.manager.connection as any, query)
     return pager.where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''
@@ -49,24 +41,22 @@ export class AdPlacementTypeService {
   }
 
   async update(id: string, dto: UpdateAdPlacementTypeDto): Promise<AdPlacementType> {
-    const repo = this.typeRepo
     const entity = await this.findById(id)
     if (dto.code && dto.code !== entity.code) {
-      const existing = await repo.findOne({ where: { code: dto.code } })
+      const existing = await this.typeRepo.findOne({ where: { code: dto.code } })
       if (existing) throw new ConflictException('类型编码已存在')
     }
     Object.assign(entity, dto)
-    return repo.save(entity)
+    return this.typeRepo.save(entity)
   }
 
   async delete(id: string): Promise<void> {
-    const repo = this.typeRepo
     const entity = await this.findById(id)
-    const childCount = await this.ds
+    const childCount = await this.typeRepo.manager
       .getRepository(AdPlacement).count({ where: { placementTypeId: id } })
     if (childCount > 0) {
       throw new ConflictException(`该类型下有 ${childCount} 个广告位，请先删除关联广告位`)
     }
-    await repo.softDelete(entity.id)
+    await this.typeRepo.softDelete(entity.id)
   }
 }
