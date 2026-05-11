@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 成员管理列表页面
  * @description 管理应用实例下的成员及其角色分配
@@ -40,7 +40,7 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
-import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
 import { useRoute, useRouter } from 'vue-router';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {

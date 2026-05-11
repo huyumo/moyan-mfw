@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 角色分配表单组件
  * @description 用于 MfwPopup 弹窗的角色分配表单
@@ -25,7 +25,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
 import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
-import { IsBuiltinDict, IsOwnerDict } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-mfw-base/shared';
 
 /** Props */
 interface Props {

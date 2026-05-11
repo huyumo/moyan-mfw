@@ -13,7 +13,8 @@
       "@common/*": ["src/backend/common/*"],
       "@modules/*": ["src/backend/modules/*"],
       "@config/*": ["src/backend/config/*"],
-      "@database/*": ["src/backend/database/*"]
+      "@database/*": ["src/backend/database/*"],
+      "moyan-mfw-base/shared": ["dist/shared"]
     }
   },
   "include": ["src/backend/**/*"],

@@ -34,6 +34,7 @@ export default defineConfig({
         'element-plus',
         '@element-plus/icons-vue',
         'reflect-metadata',
+        'moyan-mfw-base/shared',
       ],
     },
     outDir: 'dist/frontend',

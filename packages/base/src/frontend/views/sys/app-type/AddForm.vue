@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用类型新建表单组件
  * @description 用于 MfwPopup 弹窗的新建表单
@@ -20,7 +20,7 @@ import MfwFormCard from '../../../components/form/form-card';
 import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeCreate } from '../../../apis/sys';
-import { MultiAppEnabledDict } from 'moyan-shared-dict';
+import { MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();

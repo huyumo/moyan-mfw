@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="mfw-profile-panel">
     <div class="profile-header">
       <el-avatar :size="48" :src="avatarUrl" class="profile-avatar">
@@ -67,7 +67,7 @@ import type { UserResponseDto } from '../../apis/sys/schemas';
 import UserForm from '../../views/sys/user/UserForm.vue';
 import PasswordChangeForm from './password-change-form.vue';
 import { MfwDictFormat } from '..';
-import { toItems, StatusDict } from 'moyan-shared-dict';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'ProfilePanel' });
 

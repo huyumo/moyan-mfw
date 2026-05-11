@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview 前端应用入口文件。
  */
 
-import { createBaseAdminApp } from 'moyan-base/frontend';
+import { createBaseAdminApp } from 'moyan-mfw-base/frontend';
 import { HeaderCommonActions } from './components/Layout';
 import { businessRoutes } from './router';
-import { adTypeRoutes, adPlacementRoutes } from 'moyan-extension-ad/frontend';
+import { adTypeRoutes, adPlacementRoutes } from 'moyan-mfw-extension-ad/frontend';
 
 const admin = createBaseAdminApp({
   title: '墨焱前端演示',

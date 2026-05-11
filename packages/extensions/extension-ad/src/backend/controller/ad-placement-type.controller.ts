@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 广告位类型配置控制器
  * @description 处理广告位类型配置相关 HTTP 请求
  */
@@ -9,7 +9,7 @@ import {
   UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-base/backend'
+import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdPlacementTypeService } from '../service/ad-placement-type.service'
 import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'

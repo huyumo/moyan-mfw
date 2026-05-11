@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 用户表单组件
  * @description 新建/编辑用户的表单
@@ -20,7 +20,7 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
-import { toItems, GenderDict } from 'moyan-shared-dict';
+import { toItems, GenderDict } from 'moyan-mfw-base/shared';
 
 const props = defineProps<UserResponseDto>();
 

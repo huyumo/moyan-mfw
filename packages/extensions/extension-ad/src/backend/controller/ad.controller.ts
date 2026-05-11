@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 广告内容控制器
  * @description 处理广告内容相关 HTTP 请求
  */
@@ -9,7 +9,7 @@ import {
   UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-base/backend'
+import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdService } from '../service/ad.service'
 import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'

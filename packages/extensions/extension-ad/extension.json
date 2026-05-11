@@ -1,5 +1,5 @@
 {
-  "name": "moyan-extension-ad",
+  "name": "moyan-mfw-extension-ad",
   "version": "0.1.0",
   "displayName": "广告管理",
   "description": "提供广告位管理、广告内容管理、广告跳转配置等功能，支持小程序跳转、App内部跳转和外部链接跳转",

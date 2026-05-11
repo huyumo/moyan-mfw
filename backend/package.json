@@ -1,5 +1,5 @@
 {
-  "name": "moyan-backend",
+  "name": "moyan-mfw-backend",
   "version": "1.0.0",
   "description": "Moyan 后台管理 - 业务后端应用",
   "type": "commonjs",
@@ -23,10 +23,9 @@
     "api:build": "node api.build.cjs"
   },
   "dependencies": {
-    "moyan-base": "workspace:*",
-    "moyan-extension-ad": "workspace:*",
-    "moyan-shared-dict": "workspace:*",
-    "business-dict": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-ad": "workspace:*",
+    "moyan-mfw-business-dict": "workspace:*",
     "dotenv": "catalog:",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",

@@ -1,5 +1,5 @@
-import 'reflect-metadata'
-import { DictMeta, DictEntry } from 'moyan-shared-dict'
+﻿import 'reflect-metadata'
+import { DictMeta, DictEntry } from 'moyan-mfw-base/shared'
 
 @DictMeta({ key: 'supplier_status', label: '供应商状态', module: '供应商管理' })
 export class SupplierStatusDict {

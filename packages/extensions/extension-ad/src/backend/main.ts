@@ -3,7 +3,7 @@
  * @description 独立运行扩展包后端，不依赖业务层
  */
 import 'reflect-metadata'
-import { createExtensionBackendApp } from 'moyan-base/backend'
+import { createExtensionBackendApp } from 'moyan-mfw-base/backend'
 import { AdModule, AdPlacementType, AdPlacement, Ad } from './index'
 
 async function bootstrap() {
@@ -12,7 +12,7 @@ async function bootstrap() {
     module: AdModule,
     entities: [AdPlacementType, AdPlacement, Ad],
     manifest: {
-      name: 'moyan-extension-ad',
+      name: 'moyan-mfw-extension-ad',
       version: '0.1.0',
       displayName: '广告管理',
       description: '提供广告位管理、广告内容管理、广告跳转配置等功能',

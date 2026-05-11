@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用类型卡片组件
  * @description 用于应用类型管理页面的卡片展示
@@ -44,7 +44,7 @@ import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import { MfwDictFormat } from '../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'AppTypeCard' });
 

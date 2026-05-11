@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 权限常量定义
  * @description 定义全局权限位运算常量和工具函数（支持可扩展配置）
  */
@@ -104,7 +104,7 @@ export function registerPermissionValues(values: readonly string[]) {
  * @example
  * ```typescript
  * // 业务层 permissions.ts
- * import { createBusinessPageConfigFn } from 'moyan-base/frontend';
+ * import { createBusinessPageConfigFn } from 'moyan-mfw-base/frontend';
  *
  * export const BUSINESS_PERMISSION_VALUES = ['发货', '充值', '接待', '指派'] as const;
  * export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES);

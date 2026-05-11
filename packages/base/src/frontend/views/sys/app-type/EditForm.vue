@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用类型编辑表单组件
  * @description 用于 MfwPopup 弹窗的编辑表单
@@ -21,7 +21,7 @@ import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeUpdate } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-import { StatusDict } from 'moyan-shared-dict';
+import { StatusDict } from 'moyan-mfw-base/shared';
 
 /** Props */
 interface Props {

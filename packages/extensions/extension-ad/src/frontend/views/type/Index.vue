@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 广告位类型配置管理列表页
  * @description 管理广告位的尺寸类型配置（如首页横幅 750x300、弹窗广告 600x400）
@@ -26,16 +26,16 @@
 import { ref, h } from 'vue'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-base/frontend'
-import type { MfwListPageInstance } from 'moyan-base/frontend'
-import { renderActionButtons } from 'moyan-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-mfw-base/frontend'
+import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
+import { renderActionButtons } from 'moyan-mfw-base/frontend'
 import {
   ApiAdPlacementTypeFindAll,
   ApiAdPlacementTypeCreate,
   ApiAdPlacementTypeUpdate,
   ApiAdPlacementTypeDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-shared-dict'
+import { StatusDict } from 'moyan-mfw-base/shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdTypeList' })

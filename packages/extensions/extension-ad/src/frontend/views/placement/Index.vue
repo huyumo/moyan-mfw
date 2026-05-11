@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 广告位管理列表页
  * @description 管理广告位及其关联的类型配置
@@ -27,16 +27,16 @@ import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Edit, Delete, Document } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-base/frontend'
-import type { MfwListPageInstance } from 'moyan-base/frontend'
-import { renderActionButtons } from 'moyan-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
+import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
+import { renderActionButtons } from 'moyan-mfw-base/frontend'
 import {
   ApiAdPlacementFindAll,
   ApiAdPlacementCreate,
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-shared-dict'
+import { StatusDict } from 'moyan-mfw-base/shared'
 import { AD_PATHS } from '../../../shared/paths'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 通用组件导出
  * @description
  * 存放业务通用的 UI 组件，这些组件可以在多个业务场景中复用。
@@ -10,7 +10,7 @@
  * 示例：
  * ```vue
  * <script setup>
- * import { MfwButton } from 'moyan-base/frontend';
+ * import { MfwButton } from 'moyan-mfw-base/frontend';
  * </script>
  *
  * <template>

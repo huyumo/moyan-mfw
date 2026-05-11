@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 权限装饰器
  * @description 定义接口所需的权限编码和权限值，支持多种调用方式
  */
@@ -104,7 +104,7 @@ export function RequirePermission(
  * @example
  * ```typescript
  * // backend/src/permissions.ts
- * import { createBusinessPermissionDecorator } from 'moyan-base/backend';
+ * import { createBusinessPermissionDecorator } from 'moyan-mfw-base/backend';
  * 
  * export const BUSINESS_PERMISSION_VALUES = ['上架', '发货', '退款'] as const;
  * export const RequireBusinessPermission = createBusinessPermissionDecorator(BUSINESS_PERMISSION_VALUES);

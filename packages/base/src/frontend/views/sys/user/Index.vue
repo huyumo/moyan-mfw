@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 用户管理列表页面
  * @description 管理系统用户，支持新建、编辑、状态管理、密码重置
@@ -26,7 +26,7 @@ import { ElMessageBox, ElSwitch, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete, Lock, User } from '@element-plus/icons-vue';
 import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
 import type { MfwListPageInstance } from '../../../components/page/list-page/types';
-import { toItems, StatusDict, GenderDict, DeveloperDict } from 'moyan-shared-dict'
+import { toItems, StatusDict, GenderDict, DeveloperDict } from 'moyan-mfw-base/shared'
 import { MfwPopup } from '../../../components/feedback';
 import { renderActionButtons } from '../../../components/table/action-buttons';
 import { getImageSrc } from '../../../utils/image';

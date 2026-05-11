@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview 广告内容查询参数 DTO
  * @description 广告列表查询参数
  */
 
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator'
-import { PaginationQueryDto } from 'moyan-base/backend'
+import { PaginationQueryDto } from 'moyan-mfw-base/backend'
 
 export class QueryAdDto extends PaginationQueryDto {
   @ApiProperty({ description: '广告位 ID', required: false })

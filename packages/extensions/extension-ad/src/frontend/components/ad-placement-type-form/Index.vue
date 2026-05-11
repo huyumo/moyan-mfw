@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 广告位类型配置表单组件
  * @description 新建/编辑广告位类型配置的表单，包含尺寸配置
@@ -15,8 +15,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { MfwFormCard } from 'moyan-base/frontend'
-import type { MfwFormCardInstance, FormItemConfig } from 'moyan-base/frontend'
+import { MfwFormCard } from 'moyan-mfw-base/frontend'
+import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
 import { ApiAdPlacementTypeCreate, ApiAdPlacementTypeUpdate } from '../../apis/ad'
 
 const props = defineProps<{

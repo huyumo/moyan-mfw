@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 广告内容管理列表页
  * @description 管理广告位下具体的广告内容，支持小程序/App内部/外部链接三种跳转方式
@@ -28,16 +28,16 @@ import { ref, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-base/frontend'
-import type { MfwListPageInstance } from 'moyan-base/frontend'
-import { renderActionButtons } from 'moyan-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
+import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
+import { renderActionButtons } from 'moyan-mfw-base/frontend'
 import {
   ApiAdFindAll,
   ApiAdCreate,
   ApiAdUpdate,
   ApiAdDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-shared-dict'
+import { StatusDict } from 'moyan-mfw-base/shared'
 import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../shared/constants'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }

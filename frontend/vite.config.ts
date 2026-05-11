@@ -17,7 +17,8 @@ export default defineConfig({
       // frontend self alias
       '@': resolve(__dirname, 'src'),
       // base package frontend entry
-      'moyan-base/frontend': baseFrontendSrc,
+      'moyan-mfw-base/frontend': baseFrontendSrc,
+      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
     },
   },
   server: {

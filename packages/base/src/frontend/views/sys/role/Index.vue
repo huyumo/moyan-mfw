@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 角色管理列表页面
  * @description 管理应用级角色和内置角色
@@ -32,7 +32,7 @@ import { MfwPopup } from '../../../components/feedback';
 import { ApiRoleFindAll } from '../../../apis/sys';
 import { RoleForm, RoleCard } from '../../../components/business';
 import { useAuthStore } from '../../../store/auth-store';
-import { toItems, StatusDict } from 'moyan-shared-dict';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'MfwRoleList' });
 

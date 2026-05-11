@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview 广告位类型配置实体
  * @description 定义广告位的类型和尺寸配置
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm'
-import { Base } from 'moyan-base/backend'
-import { toDescription, StatusDict } from 'moyan-shared-dict'
+import { Base } from 'moyan-mfw-base/backend'
+import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
 import { AdPlacement } from './ad-placement.entity'
 
 @Entity('ext_ad_placement_types')

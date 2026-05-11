@@ -1,5 +1,5 @@
 {
-  "name": "moyan-frontend",
+  "name": "moyan-mfw-frontend",
   "version": "1.0.0",
   "description": "Moyan 后台管理 - 业务前端应用",
   "type": "module",
@@ -12,10 +12,9 @@
   "dependencies": {
     "@element-plus/icons-vue": "catalog:",
     "element-plus": "catalog:",
-    "moyan-base": "workspace:*",
-    "moyan-extension-ad": "workspace:*",
-    "moyan-shared-dict": "workspace:*",
-    "business-dict": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-ad": "workspace:*",
+    "moyan-mfw-business-dict": "workspace:*",
     "vue-router": "catalog:"
   },
   "devDependencies": {

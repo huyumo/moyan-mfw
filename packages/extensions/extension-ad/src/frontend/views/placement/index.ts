@@ -1,4 +1,4 @@
-import { definePageConfig } from 'moyan-base/frontend'
+﻿import { definePageConfig } from 'moyan-mfw-base/frontend'
 import PlacementList from './Index.vue'
 
 export default definePageConfig({

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用类型详情弹窗组件
  * @description 使用弹窗组件显示应用类型基本信息、权限池配置、内置角色
@@ -41,7 +41,7 @@
 <script setup lang="ts">
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import { MfwDictFormat } from '../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-shared-dict';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
 defineProps<{
   data?: AppTypeResponseDto | null;
