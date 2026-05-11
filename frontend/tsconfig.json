@@ -19,8 +19,8 @@
     "types": ["vite/client"],
     "paths": {
       "@/*": ["src/*"],
-      "moyan-mfw-base-frontend": ["../packages/base-frontend/src/index.ts"],
-      "moyan-mfw-base-frontend/*": ["../packages/base-frontend/src/*"]
+      "moyan-base/frontend": ["../packages/base/src/frontend/index.ts"],
+      "moyan-base/frontend/*": ["../packages/base/src/frontend/*"]
     }
   },
   "include": ["src/**/*"],

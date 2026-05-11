@@ -1,4 +1,4 @@
-import { definePageConfig } from 'moyan-mfw-base-frontend'
+import { definePageConfig } from 'moyan-base/frontend'
 import AdList from './Index.vue'
 
 export default definePageConfig({

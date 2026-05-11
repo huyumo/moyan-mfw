@@ -48,8 +48,8 @@
 -->
 
 <script setup lang="ts">
-import { useLayoutStore } from 'moyan-mfw-base-frontend/store/layout-store';
-import { useColorMode } from 'moyan-mfw-base-frontend/composables';
+import { useLayoutStore } from 'moyan-base/frontend/store/layout-store';
+import { useColorMode } from 'moyan-base/frontend/composables';
 import {
   Bell,
   Document,

@@ -8,7 +8,7 @@ import { Repository } from 'typeorm'
 import { AdPlacementType } from '../entities/ad-placement-type.entity'
 import { AdPlacement } from '../entities/ad-placement.entity'
 import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'
-import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-base-backend'
+import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-base/backend'
 
 @Injectable()
 export class AdPlacementTypeService {

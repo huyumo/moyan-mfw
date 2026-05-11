@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator'
-import { PaginationQueryDto } from 'moyan-base-backend'
+import { PaginationQueryDto } from 'moyan-base/backend'
 
 export class QueryAdDto extends PaginationQueryDto {
   @ApiProperty({ description: '广告位 ID', required: false })

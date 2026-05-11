@@ -4,7 +4,7 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
-import { Base } from 'moyan-base-backend'
+import { Base } from 'moyan-base/backend'
 import { toDescription, StatusDict } from 'moyan-shared-dict'
 import { AdPlacementType } from './ad-placement-type.entity'
 import { Ad } from './ad.entity'

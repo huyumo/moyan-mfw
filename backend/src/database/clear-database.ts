@@ -21,7 +21,7 @@ import {
   App,
   AppMember,
   AuditLog,
-} from 'moyan-base-backend';
+} from 'moyan-base/backend';
 
 import { SupplierMemberProfile } from '../modules/supplier/entities/supplier-member-profile.entity';
 

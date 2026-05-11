@@ -13,8 +13,12 @@
     "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": "./src",
+    "baseUrl": ".",
     "paths": {
-      "typeorm": ["./node_modules/typeorm"]
+      "typeorm": ["./node_modules/typeorm"],
+      "moyan-base/backend": ["../../base/dist/backend"],
+      "moyan-base/frontend": ["../../base/src/frontend/index.ts"],
+      "moyan-base/shared": ["../../base/src/shared/index.ts"]
     }
   },
   "include": ["src/**/*"],

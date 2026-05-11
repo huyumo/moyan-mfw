@@ -2,7 +2,7 @@ const path = require('path')
 
 const moyanApiDir = path.dirname(
   require.resolve('moyan-api/package.json', {
-    paths: [path.join(__dirname, '..', '..', 'base-frontend')],
+    paths: [path.join(__dirname, '..', '..', 'base')],
   }),
 )
 

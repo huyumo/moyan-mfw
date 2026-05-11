@@ -21,8 +21,8 @@
     "removeComments": false,
     "paths": {
       "moyan-mfw-core": ["./packages/core/dist"],
-      "moyan-mfw-base-backend": ["./packages/base-backend/dist"],
-      "moyan-mfw-base-frontend": ["./packages/base-frontend/dist"],
+      "moyan-base/backend": ["./packages/base/dist/backend"],
+      "moyan-base/frontend": ["./packages/base/src/frontend/index.ts"],
       "moyan-mfw-base-api": ["./packages/base-api/dist"],
       "moyan-shared-dict": ["./packages/shared-dict/dist/esm"]
     }

@@ -7,17 +7,17 @@ import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import vueJsxPlugin from '@vitejs/plugin-vue-jsx';
 
-// base-frontend 源码路径
-const baseFrontendSrc = resolve(__dirname, '../packages/base-frontend/src');
+// base frontend source path
+const baseFrontendSrc = resolve(__dirname, '../packages/base/src/frontend');
 
 export default defineConfig({
   plugins: [vue(), vueJsxPlugin()],
   resolve: {
     alias: {
-      // frontend 自身别名
+      // frontend self alias
       '@': resolve(__dirname, 'src'),
-      // base-frontend 包入口
-      'moyan-mfw-base-frontend': baseFrontendSrc,
+      // base package frontend entry
+      'moyan-base/frontend': baseFrontendSrc,
     },
   },
   server: {

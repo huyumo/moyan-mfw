@@ -26,9 +26,9 @@
 import { ref, h } from 'vue'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-mfw-base-frontend'
-import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
-import { renderActionButtons } from 'moyan-mfw-base-frontend'
+import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-base/frontend'
+import type { MfwListPageInstance } from 'moyan-base/frontend'
+import { renderActionButtons } from 'moyan-base/frontend'
 import {
   ApiAdPlacementTypeFindAll,
   ApiAdPlacementTypeCreate,

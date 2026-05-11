@@ -60,7 +60,7 @@ export default [
   },
   // TSX 组件规范
   {
-    files: ['packages/base-frontend/src/components/**/*.tsx', 'packages/base-frontend/src/components/**/index.ts'],
+    files: ['packages/base/src/frontend/components/**/*.tsx', 'packages/base/src/frontend/components/**/index.ts'],
     rules: {
       // 组件名必须使用 Mfw 前缀
       'vue/multi-word-component-names': ['error', {

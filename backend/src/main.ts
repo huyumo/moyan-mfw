@@ -2,7 +2,7 @@
  * @fileoverview 业务后端应用入口文件
  */
 
-import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-base-backend';
+import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-base/backend';
 import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
 import { SupplierModule } from './modules/supplier/supplier.module';

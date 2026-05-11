@@ -9,7 +9,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import { buildRoutesFromConfigs } from 'moyan-mfw-base-frontend';
+import { buildRoutesFromConfigs } from 'moyan-base/frontend';
 
 /**
  * 扫描所有配置文件（包括模块配置和页面配置）
