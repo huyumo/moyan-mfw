@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用实例管理列表页面
  * @description 管理应用实例的创建、编辑、删除和拥有者管理
@@ -42,7 +42,7 @@ import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
 import { OwnerChanger } from '../../../components/business';
 import { getImageSrc } from '../../../utils/image';
-import { toItems, StatusDict } from 'moyan-shared-dict';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'MfwAppList' });
 

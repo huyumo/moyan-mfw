@@ -3,10 +3,10 @@
  */
 
 import 'reflect-metadata';
-import 'business-dict';
+import 'moyan-mfw-business-dict';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
-import { runSeeds } from 'moyan-base/backend';
+import { runSeeds } from 'moyan-mfw-base/backend';
 
 config({ path: '.env' });
 
@@ -18,10 +18,10 @@ import {
   App,
   AppMember,
   AuditLog,
-} from 'moyan-base/backend';
+} from 'moyan-mfw-base/backend';
 
 import { SupplierMemberProfile } from '../modules/supplier/entities/supplier-member-profile.entity';
-import { seedDicts } from 'moyan-base/backend';
+import { seedDicts } from 'moyan-mfw-base/backend';
 
 const entities = [
   UserEntity,

@@ -16,9 +16,9 @@
     "baseUrl": ".",
     "paths": {
       "typeorm": ["./node_modules/typeorm"],
-      "moyan-base/backend": ["../../base/dist/backend"],
-      "moyan-base/frontend": ["../../base/src/frontend/index.ts"],
-      "moyan-base/shared": ["../../base/src/shared/index.ts"]
+      "moyan-mfw-base/backend": ["../../base/dist/backend"],
+      "moyan-mfw-base/frontend": ["../../base/src/frontend/index.ts"],
+      "moyan-mfw-base/shared": ["../../base/dist/shared"]
     }
   },
   "include": ["src/**/*"],

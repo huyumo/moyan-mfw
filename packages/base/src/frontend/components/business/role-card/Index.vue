@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 角色卡片组件
  * @description 用于角色管理页面和内置角色弹窗的卡片展示，内部处理编辑/权限/删除操作
@@ -36,7 +36,7 @@ import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-shared-dict';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
 import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });

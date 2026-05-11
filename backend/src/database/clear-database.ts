@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 数据库清理脚本
  * @description 清空所有表数据，用于重新初始化
  *
@@ -21,7 +21,7 @@ import {
   App,
   AppMember,
   AuditLog,
-} from 'moyan-base/backend';
+} from 'moyan-mfw-base/backend';
 
 import { SupplierMemberProfile } from '../modules/supplier/entities/supplier-member-profile.entity';
 

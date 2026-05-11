@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview TypeORM 数据源配置
  * @description 用于迁移命令行工具的数据源配置
  */
@@ -17,7 +17,7 @@ import {
   App,
   AppMember,
   AuditLog,
-} from 'moyan-base/backend';
+} from 'moyan-mfw-base/backend';
 
 import { SupplierMemberProfile } from '../modules/supplier/entities/supplier-member-profile.entity';
 

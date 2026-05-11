@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 **
  * @fileoverview - 头部通用操作区组件（参考 Vben Admin 设计）
  *
@@ -48,8 +48,8 @@
 -->
 
 <script setup lang="ts">
-import { useLayoutStore } from 'moyan-base/frontend/store/layout-store';
-import { useColorMode } from 'moyan-base/frontend/composables';
+import { useLayoutStore } from 'moyan-mfw-base/frontend/store/layout-store';
+import { useColorMode } from 'moyan-mfw-base/frontend/composables';
 import {
   Bell,
   Document,

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview MfwDetail 详情展示组件统一导出
  * @description 提供详情面板、用户信息展示等组件
  *
  * @example
  * ```typescript
  * // 在 main.ts 中注册
- * import { MfwDetail } from 'moyan-base/frontend';
+ * import { MfwDetail } from 'moyan-mfw-base/frontend';
  * app.use(MfwDetail);
  * ```
  *

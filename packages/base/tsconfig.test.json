@@ -2,6 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
     "outDir": "./dist/backend",
     "rootDir": ".",
     "baseUrl": "./",
@@ -10,7 +11,8 @@
       "@common/*": ["src/backend/common/*"],
       "@modules/*": ["src/backend/modules/*"],
       "@config/*": ["src/backend/config/*"],
-      "@database/*": ["src/backend/database/*"]
+      "@database/*": ["src/backend/database/*"],
+      "moyan-mfw-base/shared": ["dist/shared"]
     },
     "types": ["jest", "node"],
     "esModuleInterop": true,

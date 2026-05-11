@@ -1,10 +1,10 @@
-/**
+﻿/**
  * @fileoverview 供应商成员扩展实体
  * @description 展示如何扩展 AppMember 添加业务字段
  */
 
 import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { Base, AppMember } from 'moyan-base/backend';
+import { Base, AppMember } from 'moyan-mfw-base/backend';
 
 @Entity('supplier_member_profile')
 export class SupplierMemberProfile extends Base {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 业务路由配置 - 自动扫描模式。
  *
  * 框架使用 import.meta.glob 扫描 views 目录下的 index.{ts,tsx} 配置文件
@@ -9,7 +9,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import { buildRoutesFromConfigs } from 'moyan-base/frontend';
+import { buildRoutesFromConfigs } from 'moyan-mfw-base/frontend';
 
 /**
  * 扫描所有配置文件（包括模块配置和页面配置）

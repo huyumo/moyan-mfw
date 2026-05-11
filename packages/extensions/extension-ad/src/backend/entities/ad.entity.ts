@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview 广告内容实体
  * @description 定义广告位中的具体广告内容
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn } from 'typeorm'
-import { Base } from 'moyan-base/backend'
-import { toDescription, StatusDict } from 'moyan-shared-dict'
+import { Base } from 'moyan-mfw-base/backend'
+import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
 import { AdPlacement } from './ad-placement.entity'
 
 @Entity('ext_ad_contents')

@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用实例表单组件
  * @description 用于 MfwPopup 弹窗的新建/编辑表单
@@ -21,7 +21,7 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
 import MfwImageSingle from '../../../components/upload/image-single';
-import { StatusDict } from 'moyan-shared-dict';
+import { StatusDict } from 'moyan-mfw-base/shared';
 
 const props = defineProps<AppDetailResponseDto>();
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview 广告内容服务
  */
 
@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Ad } from '../entities/ad.entity'
 import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'
-import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-base/backend'
+import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-mfw-base/backend'
 
 @Injectable()
 export class AdService {

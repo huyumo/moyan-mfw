@@ -1,4 +1,4 @@
-<!--
+﻿<!--
 /**
  * @fileoverview 应用详情面板组件
  * @description 以卡片类型展示应用实例详情信息
@@ -26,7 +26,7 @@ import { MfwCardPanel } from '../../../components';
 import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
 import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
 import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
-import { toItems, getLabel, StatusDict } from 'moyan-shared-dict';
+import { toItems, getLabel, StatusDict } from 'moyan-mfw-base/shared';
 
 interface Props {
   data?: AppDetailResponseDto;

@@ -1,11 +1,11 @@
-/**
+﻿/**
  * @fileoverview 广告位实体
  * @description 定义广告位，关联广告位类型
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
-import { Base } from 'moyan-base/backend'
-import { toDescription, StatusDict } from 'moyan-shared-dict'
+import { Base } from 'moyan-mfw-base/backend'
+import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
 import { AdPlacementType } from './ad-placement-type.entity'
 import { Ad } from './ad.entity'
 

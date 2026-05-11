@@ -1,5 +1,5 @@
 {
-  "name": "moyan-extension-ad",
+  "name": "moyan-mfw-extension-ad",
   "version": "0.1.0",
   "description": "MFW 广告管理扩展包",
   "exports": {
@@ -55,8 +55,7 @@
     "@nestjs/typeorm": "catalog:",
     "class-transformer": "catalog:",
     "class-validator": "catalog:",
-    "moyan-base": "workspace:^",
-    "moyan-shared-dict": "workspace:^",
+    "moyan-mfw-base": "workspace:^",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "typeorm": "catalog:",
@@ -70,8 +69,7 @@
     "@vitejs/plugin-vue": "catalog:",
     "element-plus": "catalog:",
     "moyan-api": "catalog:",
-    "moyan-base": "workspace:*",
-    "moyan-shared-dict": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
     "sass": "catalog:",
     "tsx": "catalog:",
     "vite": "catalog:",
