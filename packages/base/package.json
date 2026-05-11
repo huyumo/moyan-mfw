@@ -40,7 +40,7 @@
   "scripts": {
     "build": "pnpm run build:shared && pnpm run build:frontend && pnpm run build:backend",
     "build:backend": "tsc -p tsconfig.backend.json && tsc-alias -p tsconfig.backend.alias.json",
-    "build:frontend": "vite build",
+    "build:frontend": "vite build && pnpm run build:frontend:types",
     "build:frontend:types": "tsc -p tsconfig.frontend.json --emitDeclarationOnly",
     "build:shared": "tsc -p tsconfig.shared.json",
     "dev:backend": "nest start --watch",
