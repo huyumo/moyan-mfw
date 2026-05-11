@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 权限常量定义
  * @description 定义全局权限位运算常量和工具函数（支持可扩展配置）
  */
@@ -123,7 +123,9 @@ export function createBusinessPageConfigFn<T extends readonly string[]>(
   registerPermissionValues(businessPermissions);
   
   return function defineBusinessPageConfig<C extends PageConfig<PermissionName | T[number]>>(config: C): C & { permissionValue?: bigint } {
-    const permissionValue = config.permissions ? buildPerValue(config.permissions) : undefined;
+    const permissionValue = config.permissions
+      ? buildPerValue(config.permissions)
+      : config.permissionValue;
     return { ...config, permissionValue };
   };
 }

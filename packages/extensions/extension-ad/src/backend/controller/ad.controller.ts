@@ -25,7 +25,7 @@ export class AdController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '创建广告内容', description: '在指定广告位下创建新的广告内容' })
   @ApiResponse({ status: 201, description: '创建成功' })
-  @RequirePermission({ permCode: 'ad:content:create', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: 'ad:content:create', permissionValue: ['发布'] })
   async create(@Body() dto: CreateAdDto) {
     const result = await this.service.create(dto)
     return ApiResponseUtil.success(result, '创建成功')
