@@ -2,7 +2,7 @@
  * @fileoverview 应用类型配置
  * @description 定义业务应用类型， */
 
-import { AppTypeConfig } from 'moyan-base-backend';
+import { AppTypeConfig } from 'moyan-base/backend';
 
 /**
  * 业务应用类型配置

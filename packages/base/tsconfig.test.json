@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "outDir": "./dist/backend",
+    "rootDir": ".",
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/backend/*"],
+      "@common/*": ["src/backend/common/*"],
+      "@modules/*": ["src/backend/modules/*"],
+      "@config/*": ["src/backend/config/*"],
+      "@database/*": ["src/backend/database/*"]
+    },
+    "types": ["jest", "node"],
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "inlineSources": true
+  },
+  "include": ["src/backend/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules", "dist", "coverage"]
+}

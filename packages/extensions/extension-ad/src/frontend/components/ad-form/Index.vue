@@ -15,8 +15,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { MfwFormCard } from 'moyan-mfw-base-frontend'
-import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base-frontend'
+import { MfwFormCard } from 'moyan-base/frontend'
+import type { MfwFormCardInstance, FormItemConfig } from 'moyan-base/frontend'
 import { ApiAdCreate, ApiAdUpdate, ApiAdPlacementFindAll } from '../../apis/ad'
 import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../shared/constants'
 

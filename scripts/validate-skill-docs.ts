@@ -145,7 +145,7 @@ function validatePermissionCodes(result: ValidationResult): void {
 
   const permTsPath = path.join(
     PROJECT_ROOT,
-    'packages/base-backend/src/common/constants/permissions.ts'
+    'packages/base/src/backend/common/constants/permissions.ts'
   );
 
   if (fs.existsSync(permTsPath)) {
@@ -189,7 +189,7 @@ function validateComponentReferences(result: ValidationResult): void {
 
   const componentsDir = path.join(
     PROJECT_ROOT,
-    'packages/base-frontend/src/components'
+    'packages/base/src/frontend/components'
   );
 
   if (fs.existsSync(componentsDir)) {

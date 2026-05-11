@@ -166,8 +166,8 @@ createBaseAdminApp({
 
 | 依赖包 | 类型 | 说明 |
 |--------|------|------|
-| moyan-base-backend | peer | 后端框架基础 |
-| moyan-mfw-base-frontend | peer | 前端框架基础 |
+| moyan-base/backend | peer | 后端框架基础 |
+| moyan-base/frontend | peer | 前端框架基础 |
 
 ## 版本历史
 

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "outDir": "./dist/frontend",
+    "rootDir": "./src/frontend",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/frontend/*"]
+    },
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "composite": false,
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "skipLibCheck": true
+  },
+  "include": ["src/frontend/**/*"],
+  "exclude": ["node_modules", "dist", "src/frontend/**/*.spec.ts", "src/frontend/**/*-spec.ts"]
+}

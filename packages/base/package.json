@@ -1,0 +1,115 @@
+{
+  "name": "moyan-base",
+  "version": "1.0.0",
+  "description": "墨焱MFW（MoYan Full-stack Workflow）核心框架 - 全栈一体化后台管理基础设施",
+  "author": "Moyan Team",
+  "license": "MIT",
+  "exports": {
+    "./backend": {
+      "require": "./dist/backend/index.js",
+      "types": "./dist/backend/index.d.ts"
+    },
+    "./frontend": {
+      "import": "./dist/frontend/index.mjs",
+      "require": "./dist/frontend/index.js",
+      "types": "./dist/frontend/index.d.ts"
+    },
+    "./shared": {
+      "import": "./dist/shared/index.mjs",
+      "require": "./dist/shared/index.js",
+      "types": "./dist/shared/index.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "backend": ["./dist/backend/index.d.ts"],
+      "frontend": ["./dist/frontend/index.d.ts"],
+      "shared": ["./dist/shared/index.d.ts"]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "pnpm run build:frontend && pnpm run build:backend",
+    "build:backend": "tsc -p tsconfig.backend.json",
+    "build:frontend": "vite build",
+    "build:frontend:types": "tsc -p tsconfig.frontend.json --emitDeclarationOnly",
+    "dev:backend": "nest start --watch",
+    "dev:frontend": "vite",
+    "typecheck:vue": "vue-tsc --noEmit -p tsconfig.frontend.json",
+    "lint": "eslint \"{src,tests}/**/*.ts\" --fix",
+    "test": "jest --config jest.config.ts",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --config jest.config.ts --coverage",
+    "test:integration": "jest --config jest.config.ts --testPathPatterns=integration",
+    "api:build": "node api.build.cjs"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/jwt": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "@nestjs/config": "catalog:",
+    "typeorm": "catalog:",
+    "mysql2": "catalog:",
+    "redis": "catalog:",
+    "bcrypt": "catalog:",
+    "class-validator": "catalog:",
+    "class-transformer": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "element-plus": "catalog:",
+    "pinia": "catalog:"
+  },
+  "dependencies": {
+    "business-dict": "workspace:*",
+    "moyan-shared-dict": "workspace:*",
+    "moyan-api": "catalog:",
+    "multer": "catalog:",
+    "axios": "catalog:",
+    "@vueuse/core": "catalog:",
+    "@element-plus/icons-vue": "catalog:",
+    "md-editor-v3": "catalog:",
+    "quill": "catalog:",
+    "vue-advanced-cropper": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "@nestjs/testing": "catalog:",
+    "@types/bcrypt": "catalog:",
+    "@types/dotenv": "catalog:",
+    "@types/express": "catalog:",
+    "@types/jest": "catalog:",
+    "@types/multer": "catalog:",
+    "@types/node": "catalog:",
+    "@types/supertest": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "@vue/test-utils": "catalog:",
+    "dotenv": "catalog:",
+    "jest": "catalog:",
+    "jsdom": "catalog:",
+    "sass": "catalog:",
+    "source-map-support": "catalog:",
+    "supertest": "catalog:",
+    "ts-jest": "catalog:",
+    "ts-loader": "catalog:",
+    "ts-node": "catalog:",
+    "tsconfig-paths": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:",
+    "vue-tsc": "catalog:"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

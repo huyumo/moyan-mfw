@@ -4,7 +4,7 @@
  */
 
 import { Entity, Column, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { Base, AppMember } from 'moyan-base-backend';
+import { Base, AppMember } from 'moyan-base/backend';
 
 @Entity('supplier_member_profile')
 export class SupplierMemberProfile extends Base {

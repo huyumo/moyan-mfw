@@ -18,7 +18,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': '/src/frontend',
-      'moyan-mfw-base-frontend': resolve(import.meta.dirname, '../../base-frontend/src'),
+      'moyan-base/frontend': resolve(import.meta.dirname, '../../base/src/frontend'),
     },
   },
 
