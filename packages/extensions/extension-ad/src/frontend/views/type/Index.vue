@@ -34,7 +34,7 @@ import {
   ApiAdPlacementTypeCreate,
   ApiAdPlacementTypeUpdate,
   ApiAdPlacementTypeDelete,
-} from '../../apis'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-shared-dict'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
@@ -72,9 +72,8 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const api = new ApiAdPlacementTypeFindAll()
-  const res = await api.call(params)
-  return res.data?.data
+  const res = await new ApiAdPlacementTypeFindAll({ query: params as any })
+  return (res as any).list
 }
 const handleAdd = () => {
   MfwPopup.open({
@@ -96,7 +95,7 @@ const handleEdit = (row: any) => {
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除类型「${row.name}」吗？`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await new ApiAdPlacementTypeDelete().call(row.id)
+  await new ApiAdPlacementTypeDelete({ params: { id: row.id } })
   listPage.value?.refresh()
 }
 </script>

@@ -24,7 +24,7 @@
     "build": "pnpm run build:cjs && pnpm run build:esm"
   },
   "dependencies": {
-    "reflect-metadata": "^0.2.2",
+    "reflect-metadata": "^0.1.13",
     "moyan-shared-dict": "workspace:*"
   },
   "devDependencies": {

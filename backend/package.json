@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "moyan-base-backend": "workspace:*",
+    "moyan-extension-ad": "workspace:*",
     "moyan-shared-dict": "workspace:*",
     "business-dict": "workspace:*",
     "dotenv": "^17.3.1",

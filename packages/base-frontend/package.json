@@ -33,7 +33,7 @@
     "moyan-shared-dict": "workspace:*",
     "pinia": "^2.1.7",
     "quill": "^2.0.3",
-    "reflect-metadata": "^0.2.2",
+    "reflect-metadata": "^0.1.13",
     "vue": "^3.4.15",
     "vue-advanced-cropper": "^2.8.8",
     "vue-router": "^4.2.5"

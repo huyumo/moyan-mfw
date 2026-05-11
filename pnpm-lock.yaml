@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  reflect-metadata: 0.1.14
+
 importers:
 
   .:
@@ -11,6 +14,9 @@ importers:
       '@eslint/js':
         specifier: ^9.38.0
         version: 9.39.4
+      '@nestjs/cli':
+        specifier: ^10.0.0
+        version: 10.4.9
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -107,6 +113,9 @@ importers:
       moyan-base-backend:
         specifier: workspace:*
         version: link:../packages/base-backend
+      moyan-extension-ad:
+        specifier: workspace:*
+        version: link:../packages/extensions/extension-ad
       moyan-shared-dict:
         specifier: workspace:*
         version: link:../packages/shared-dict
@@ -117,7 +126,7 @@ importers:
         specifier: ^4.6.0
         version: 4.7.1
       reflect-metadata:
-        specifier: ^0.1.13
+        specifier: 0.1.14
         version: 0.1.14
       rxjs:
         specifier: ^7.8.0
@@ -193,8 +202,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/shared-dict
       reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: 0.1.14
+        version: 0.1.14
     devDependencies:
       typescript:
         specifier: ^5.1.3
@@ -288,7 +297,7 @@ importers:
         specifier: ^4.6.0
         version: 4.7.1
       reflect-metadata:
-        specifier: ^0.1.13
+        specifier: 0.1.14
         version: 0.1.14
       rxjs:
         specifier: ^7.8.0
@@ -412,8 +421,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: 0.1.14
+        version: 0.1.14
       vue:
         specifier: ^3.4.15
         version: 3.5.30(typescript@5.9.3)
@@ -455,69 +464,87 @@ importers:
   packages/extensions/extension-ad:
     dependencies:
       moyan-base-backend:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../base-backend
-      moyan-mfw-base-frontend:
-        specifier: workspace:*
-        version: link:../../base-frontend
       moyan-shared-dict:
-        specifier: workspace:*
+        specifier: workspace:^
         version: link:../../shared-dict
       vue-router:
         specifier: ^4.0
         version: 4.6.4(vue@3.5.30(typescript@5.9.3))
     devDependencies:
+      '@element-plus/icons-vue':
+        specifier: ^2.3.2
+        version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      '@nestjs/cli':
+        specifier: ^10.0.0
+        version: 10.4.9
       '@nestjs/common':
         specifier: ^10.4.22
-        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/config':
-        specifier: ^3.3.0
-        version: 3.3.0(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)
+        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
       '@nestjs/core':
         specifier: ^10.4.22
-        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
       '@nestjs/platform-express':
         specifier: ^10.4.22
-        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)
       '@nestjs/swagger':
         specifier: ^7.4.2
-        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)
+        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)
       '@nestjs/typeorm':
         specifier: ^10.0.2
-        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))
+        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@20.19.37))(redis@4.7.1)(ts-node@10.9.2(@types/node@20.19.37)(typescript@5.9.3)))
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.37
       '@vitejs/plugin-vue':
         specifier: ^5.2.4
-        version: 5.2.4(vite@5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+        version: 5.2.4(vite@5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
       class-validator:
         specifier: ^0.14.4
         version: 0.14.4
+      element-plus:
+        specifier: ^2.13.5
+        version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      moyan-api:
+        specifier: ^2.1.19
+        version: 2.1.19
+      moyan-mfw-base-frontend:
+        specifier: workspace:*
+        version: link:../../base-frontend
       reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: 0.1.14
+        version: 0.1.14
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
+      sass:
+        specifier: ^1.70.0
+        version: 1.98.0
       tsx:
         specifier: ^4.21.0
         version: 4.21.0
       typeorm:
         specifier: ^0.3.28
-        version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
+        version: 0.3.28(mysql2@3.20.0(@types/node@20.19.37))(redis@4.7.1)(ts-node@10.9.2(@types/node@20.19.37)(typescript@5.9.3))
       vite:
         specifier: ^5.4.21
-        version: 5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1)
+        version: 5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
       vue:
         specifier: ^3.5.30
         version: 3.5.30(typescript@5.9.3)
+      vue-tsc:
+        specifier: ^2.2.12
+        version: 2.2.12(typescript@5.9.3)
 
   packages/shared-dict:
     dependencies:
       reflect-metadata:
-        specifier: ^0.2.2
-        version: 0.2.2
+        specifier: 0.1.14
+        version: 0.1.14
     devDependencies:
       typescript:
         specifier: ^5.1.3
@@ -1508,7 +1535,7 @@ packages:
     peerDependencies:
       class-transformer: '*'
       class-validator: '*'
-      reflect-metadata: ^0.1.12 || ^0.2.0
+      reflect-metadata: 0.1.14
       rxjs: ^7.1.0
     peerDependenciesMeta:
       class-transformer:
@@ -1529,7 +1556,7 @@ packages:
       '@nestjs/microservices': ^10.0.0
       '@nestjs/platform-express': ^10.0.0
       '@nestjs/websockets': ^10.0.0
-      reflect-metadata: ^0.1.12 || ^0.2.0
+      reflect-metadata: 0.1.14
       rxjs: ^7.1.0
     peerDependenciesMeta:
       '@nestjs/microservices':
@@ -1550,7 +1577,7 @@ packages:
       '@nestjs/common': ^8.0.0 || ^9.0.0 || ^10.0.0
       class-transformer: ^0.4.0 || ^0.5.0
       class-validator: ^0.13.0 || ^0.14.0
-      reflect-metadata: ^0.1.12 || ^0.2.0
+      reflect-metadata: 0.1.14
     peerDependenciesMeta:
       class-transformer:
         optional: true
@@ -1576,7 +1603,7 @@ packages:
       '@nestjs/core': ^9.0.0 || ^10.0.0
       class-transformer: '*'
       class-validator: '*'
-      reflect-metadata: ^0.1.12 || ^0.2.0
+      reflect-metadata: 0.1.14
     peerDependenciesMeta:
       '@fastify/static':
         optional: true
@@ -1603,7 +1630,7 @@ packages:
     peerDependencies:
       '@nestjs/common': ^8.0.0 || ^9.0.0 || ^10.0.0
       '@nestjs/core': ^8.0.0 || ^9.0.0 || ^10.0.0
-      reflect-metadata: ^0.1.13 || ^0.2.0
+      reflect-metadata: 0.1.14
       rxjs: ^7.2.0
       typeorm: ^0.3.0
 
@@ -5233,9 +5260,6 @@ packages:
   reflect-metadata@0.1.14:
     resolution: {integrity: sha512-ZhYeb6nRaXCfhnndflDK8qI6ZQ/YcWZCISRAWICW9XYqMUwjZM9Z0DveWX/ABN01oxSHwVxKQmxeYZSsm0jh5A==}
 
-  reflect-metadata@0.2.2:
-    resolution: {integrity: sha512-urBwgfrvVP/eAyXx4hluJivBKzuEbSQs9rKWCrCkbSxNv8mxPcUZKeuoF3Uy4mJl3Lwprp6yy5/39VWigZ4K6Q==}
-
   repeat-string@1.6.1:
     resolution: {integrity: sha512-PV0dzCYDNfRi1jCDbJzpW7jNNDRuCOG/jI5ctQcGKt/clZD+YcPS3yIlWuTJMmESC8aevCFmWJy5wjAFgNqN6w==}
     engines: {node: '>=0.10'}
@@ -7592,31 +7616,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
-    dependencies:
-      file-type: 20.4.1
-      iterare: 1.2.1
-      reflect-metadata: 0.2.2
-      rxjs: 7.8.2
-      tslib: 2.8.1
-      uid: 2.0.2
-    optionalDependencies:
-      class-transformer: 0.5.1
-      class-validator: 0.14.4
-    transitivePeerDependencies:
-      - supports-color
-
   '@nestjs/config@3.3.0(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
       '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
-      dotenv: 16.4.5
-      dotenv-expand: 10.0.0
-      lodash: 4.17.21
-      rxjs: 7.8.2
-
-  '@nestjs/config@3.3.0(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(rxjs@7.8.2)':
-    dependencies:
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       dotenv: 16.4.5
       dotenv-expand: 10.0.0
       lodash: 4.17.21
@@ -7638,22 +7640,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@nestjs/core@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)':
-    dependencies:
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nuxtjs/opencollective': 0.3.2
-      fast-safe-stringify: 2.1.1
-      iterare: 1.2.1
-      path-to-regexp: 3.3.0
-      reflect-metadata: 0.2.2
-      rxjs: 7.8.2
-      tslib: 2.8.1
-      uid: 2.0.2
-    optionalDependencies:
-      '@nestjs/platform-express': 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)
-    transitivePeerDependencies:
-      - encoding
-
   '@nestjs/jwt@10.2.0(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))':
     dependencies:
       '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
@@ -7668,30 +7654,10 @@ snapshots:
       class-transformer: 0.5.1
       class-validator: 0.14.4
 
-  '@nestjs/mapped-types@2.0.5(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)':
-    dependencies:
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      reflect-metadata: 0.2.2
-    optionalDependencies:
-      class-transformer: 0.5.1
-      class-validator: 0.14.4
-
   '@nestjs/platform-express@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)':
     dependencies:
       '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
       '@nestjs/core': 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
-      body-parser: 1.20.4
-      cors: 2.8.5
-      express: 4.22.1
-      multer: 2.0.2
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
-
-  '@nestjs/platform-express@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)':
-    dependencies:
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/core': 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       body-parser: 1.20.4
       cors: 2.8.5
       express: 4.22.1
@@ -7737,21 +7703,6 @@ snapshots:
       class-transformer: 0.5.1
       class-validator: 0.14.4
 
-  '@nestjs/swagger@7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)':
-    dependencies:
-      '@microsoft/tsdoc': 0.15.1
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/core': 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/mapped-types': 2.0.5(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)
-      js-yaml: 4.1.0
-      lodash: 4.17.21
-      path-to-regexp: 3.3.0
-      reflect-metadata: 0.2.2
-      swagger-ui-dist: 5.17.14
-    optionalDependencies:
-      class-transformer: 0.5.1
-      class-validator: 0.14.4
-
   '@nestjs/testing@10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(@nestjs/platform-express@10.4.22)':
     dependencies:
       '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
@@ -7767,15 +7718,6 @@ snapshots:
       reflect-metadata: 0.1.14
       rxjs: 7.8.2
       typeorm: 0.3.28(mysql2@3.20.0(@types/node@20.19.37))(redis@4.7.1)(ts-node@10.9.2(@types/node@20.19.37)(typescript@5.9.3))
-      uuid: 9.0.1
-
-  '@nestjs/typeorm@10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))':
-    dependencies:
-      '@nestjs/common': 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@nestjs/core': 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      reflect-metadata: 0.2.2
-      rxjs: 7.8.2
-      typeorm: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
       uuid: 9.0.1
 
   '@noble/hashes@1.8.0': {}
@@ -8471,6 +8413,11 @@ snapshots:
       vue: 3.5.30(typescript@5.9.3)
     transitivePeerDependencies:
       - supports-color
+
+  '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))':
+    dependencies:
+      vite: 5.4.21(@types/node@20.19.37)(sass@1.98.0)(terser@5.46.1)
+      vue: 3.5.30(typescript@5.9.3)
 
   '@vitejs/plugin-vue@5.2.4(vite@5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))':
     dependencies:
@@ -9542,7 +9489,7 @@ snapshots:
       '@types/lodash-es': 4.17.12
       '@vueuse/core': 12.0.0(typescript@5.9.3)
       async-validator: 4.2.5
-      dayjs: 1.11.19
+      dayjs: 1.11.20
       lodash: 4.17.23
       lodash-es: 4.17.23
       lodash-unified: 1.0.3(@types/lodash-es@4.17.12)(lodash-es@4.17.23)(lodash@4.17.23)
@@ -11914,8 +11861,6 @@ snapshots:
 
   reflect-metadata@0.1.14: {}
 
-  reflect-metadata@0.2.2: {}
-
   repeat-string@1.6.1: {}
 
   request-progress@3.0.0:
@@ -12573,7 +12518,7 @@ snapshots:
       dedent: 1.7.2
       dotenv: 16.6.1
       glob: 10.5.0
-      reflect-metadata: 0.2.2
+      reflect-metadata: 0.1.14
       sha.js: 2.4.12
       sql-highlight: 6.1.0
       tslib: 2.8.1
@@ -12598,7 +12543,7 @@ snapshots:
       dedent: 1.7.2
       dotenv: 16.6.1
       glob: 10.5.0
-      reflect-metadata: 0.2.2
+      reflect-metadata: 0.1.14
       sha.js: 2.4.12
       sql-highlight: 6.1.0
       tslib: 2.8.1

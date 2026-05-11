@@ -3,13 +3,36 @@
   "version": "0.1.0",
   "description": "MFW 广告管理扩展包",
   "exports": {
-    ".": "./src/index.ts",
-    "./backend": "./src/backend/index.ts",
-    "./frontend": "./src/frontend/index.ts",
-    "./shared": "./src/shared/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "require": "./dist/index.js",
+      "default": "./src/index.ts"
+    },
+    "./backend": {
+      "types": "./src/backend/index.ts",
+      "require": "./dist/backend/index.js",
+      "default": "./src/backend/index.ts"
+    },
+    "./frontend": {
+      "types": "./src/frontend/index.ts",
+      "require": "./dist/frontend/index.js",
+      "default": "./src/frontend/index.ts"
+    },
+    "./shared": {
+      "types": "./src/shared/index.ts",
+      "require": "./dist/shared/index.js",
+      "default": "./src/shared/index.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "backend": ["./src/backend/index.ts"],
+      "frontend": ["./src/frontend/index.ts"],
+      "shared": ["./src/shared/index.ts"]
+    }
   },
   "scripts": {
-    "dev:backend": "tsx src/backend/main.ts",
+    "dev:backend": "nest start --watch",
     "dev:frontend": "vite",
     "api:build": "node api.build.cjs",
     "build:routes": "node scripts/build-routes.mjs",
@@ -25,26 +48,44 @@
     "src/frontend/routes.gen.ts"
   ],
   "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
+    "@nestjs/swagger": "^7.0.0",
+    "@nestjs/typeorm": "^10.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "moyan-base-backend": "workspace:^",
     "moyan-mfw-base-frontend": "workspace:^",
     "moyan-shared-dict": "workspace:^",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.8.0",
+    "typeorm": "^0.3.28",
+    "vue": "^3.4.0",
     "vue-router": "^4.0"
   },
   "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@element-plus/icons-vue": "^2.3.2",
     "@nestjs/common": "^10.4.22",
-    "@nestjs/config": "^3.3.0",
     "@nestjs/core": "^10.4.22",
     "@nestjs/platform-express": "^10.4.22",
     "@nestjs/swagger": "^7.4.2",
     "@nestjs/typeorm": "^10.0.2",
+    "@types/node": "^20.0.0",
     "@vitejs/plugin-vue": "^5.2.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
-    "reflect-metadata": "^0.2.2",
+    "element-plus": "^2.13.5",
+    "moyan-api": "^2.1.19",
+    "moyan-mfw-base-frontend": "workspace:*",
+    "sass": "^1.70.0",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.2",
     "tsx": "^4.21.0",
     "typeorm": "^0.3.28",
     "vite": "^5.4.21",
-    "vue": "^3.5.30"
+    "vue": "^3.5.30",
+    "vue-tsc": "^2.2.12"
   }
 }

@@ -28,7 +28,7 @@ import { ref, h } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwFormat, MfwPopup } from 'moyan-mfw-base-frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base-frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base-frontend'
 import { renderActionButtons } from 'moyan-mfw-base-frontend'
 import {
@@ -36,9 +36,9 @@ import {
   ApiAdCreate,
   ApiAdUpdate,
   ApiAdDelete,
-} from '../../apis'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-shared-dict'
-import { LINK_TYPE_LABELS, LINK_TYPE } from '../../shared/constants'
+import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../shared/constants'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdContentList' })
@@ -76,7 +76,7 @@ const columns = [
     }, () => row.status === STATUS.ENABLED ? '启用' : '禁用'),
   },
   { prop: 'createdAt', label: '创建时间', width: 170,
-    render: ({ row }: any) => h(MfwFormat, { value: row.createdAt, type: 'date' }),
+    render: ({ row }: any) => h(MfwDateFormat, { value: row.createdAt }),
   },
 ]
 
@@ -89,9 +89,8 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const api = new ApiAdFindAll()
-  const res = await api.call(params)
-  return res.data?.data
+  const res = await new ApiAdFindAll({ query: params as any })
+  return (res as any).list
 }
 const handleAdd = () => {
   const placementId = route.query.placementId as string
@@ -115,7 +114,7 @@ const handleEdit = (row: any) => {
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告「${row.title}」吗？`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await new ApiAdDelete().call(row.id)
+  await new ApiAdDelete({ params: { id: row.id } })
   listPage.value?.refresh()
 }
 </script>

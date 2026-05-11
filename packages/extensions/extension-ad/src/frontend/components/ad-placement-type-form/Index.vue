@@ -17,7 +17,7 @@
 import { ref, reactive, computed } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base-frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base-frontend'
-import { ApiAdPlacementTypeCreate, ApiAdPlacementTypeUpdate } from '../../apis'
+import { ApiAdPlacementTypeCreate, ApiAdPlacementTypeUpdate } from '../../apis/ad'
 
 const props = defineProps<{
   id?: string
@@ -55,9 +55,9 @@ const onConfirm = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) throw new Error('表单验证失败')
   if (isEdit.value) {
-    await new ApiAdPlacementTypeUpdate().call(props.id!, form)
+    await new ApiAdPlacementTypeUpdate({ params: { id: props.id! }, body: form })
   } else {
-    await new ApiAdPlacementTypeCreate().call(form)
+    await new ApiAdPlacementTypeCreate({ body: form })
   }
 }
 defineExpose({ onConfirm })
