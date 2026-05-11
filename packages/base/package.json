@@ -112,6 +112,10 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "element-plus": "catalog:",
+    "pinia": "catalog:",
     "vue-tsc": "catalog:"
   },
   "engines": {
