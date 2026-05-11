@@ -1,4 +1,4 @@
-﻿import { definePageConfig } from 'moyan-mfw-base/frontend'
+import { definePageConfig } from 'moyan-mfw-base/frontend'
 import AdList from './Index.vue'
 
 export default definePageConfig({
@@ -8,5 +8,5 @@ export default definePageConfig({
   icon: 'Files',
   auth: true,
   order: 3,
-  permissions: ['添加', '编辑', '删除'],
+  permissionValue: 0x0100_0100n,
 })

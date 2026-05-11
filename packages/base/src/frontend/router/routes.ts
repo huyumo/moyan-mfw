@@ -90,7 +90,9 @@ export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
 export function definePageConfig<T extends string = PermissionName>(
   config: PageConfig<T>
 ): PageConfig<T> & { permissionValue?: bigint } {
-  const permissionValue = config.permissions ? buildPerValue(config.permissions) : undefined;
+  const permissionValue = config.permissions
+    ? buildPerValue(config.permissions)
+    : config.permissionValue;
   return { ...config, permissionValue };
 }
 

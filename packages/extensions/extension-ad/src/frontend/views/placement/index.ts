@@ -1,4 +1,4 @@
-﻿import { definePageConfig } from 'moyan-mfw-base/frontend'
+import { definePageConfig } from 'moyan-mfw-base/frontend'
 import PlacementList from './Index.vue'
 
 export default definePageConfig({
@@ -8,5 +8,5 @@ export default definePageConfig({
   icon: 'CollectionTag',
   auth: true,
   order: 2,
-  permissions: ['添加', '编辑', '删除'],
+  permissionValue: 0x0100_0001n,
 })
