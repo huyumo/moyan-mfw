@@ -14,6 +14,6 @@
       "@/*": ["./src/frontend/*"]
     }
   },
-  "include": ["src/frontend/**/*.ts", "src/frontend/**/*.vue"],
+  "include": ["src/frontend/**/*.ts", "src/frontend/**/*.vue", "vite.config.mts"],
   "exclude": ["src/backend"]
 }

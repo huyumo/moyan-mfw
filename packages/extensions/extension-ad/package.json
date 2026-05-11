@@ -67,6 +67,7 @@
     "@element-plus/icons-vue": "catalog:",
     "@types/node": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
     "element-plus": "catalog:",
     "moyan-api": "catalog:",
     "moyan-mfw-base": "workspace:*",
