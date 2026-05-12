@@ -30,6 +30,7 @@ import type { RouteRecordRaw } from 'vue-router';
 import PermissionManager from '../../../components/business/permission-manager/Index.vue';
 import type { RouteNodeDto } from '../../../apis/sys/schemas';
 import { ApiPermissionSyncPermissions } from '../../../apis/sys';
+import { buildPerValue } from '../../../utils/permissions';
 
 defineOptions({ name: 'MfwPcPermissionList' });
 
@@ -81,7 +82,9 @@ const collectRouteInfos = (
     result.push({
       path: fullPath,
       name: meta.title as string,
-      permissionValue: meta.permissionValue as string | undefined,
+      permissionValue: (meta.permissionValue
+        || (meta.permissions?.length ? buildPerValue(meta.permissions).toString() : undefined)
+      ) as string | undefined,
     });
   }
 

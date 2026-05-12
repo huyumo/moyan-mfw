@@ -48,6 +48,19 @@ export type PermissionName = DefaultPermissionName | ExtensionPermissionName
 export let PERMISSION_VALUES: string[] = [...DEFAULT_PERMISSION_VALUES, ...EXTENSION_PERMISSION_VALUES]
 
 /**
+ * 运行时权限值缓存（从 API 获取，name → bitValue）
+ */
+let permissionValueCache: Map<string, bigint> = new Map()
+
+export function initPermissionCache(values: Array<{ name: string; bitValue: string }>): void {
+  permissionValueCache = new Map(values.map(v => [v.name, BigInt(v.bitValue)]))
+}
+
+export function getPermissionValueCache(): Map<string, bigint> {
+  return permissionValueCache
+}
+
+/**
  * 权限配置接口
  */
 export interface PermissionConfig {
@@ -123,10 +136,7 @@ export function createBusinessPageConfigFn<T extends readonly string[]>(
   registerPermissionValues(businessPermissions);
   
   return function defineBusinessPageConfig<C extends PageConfig<PermissionName | T[number]>>(config: C): C & { permissionValue?: bigint } {
-    const permissionValue = config.permissions
-      ? buildPerValue(config.permissions)
-      : config.permissionValue;
-    return { ...config, permissionValue };
+    return { ...config };
   };
 }
 
@@ -163,15 +173,15 @@ export function getPermissionConfig(): PermissionConfig {
  * ```
  */
 export function buildPerValue(names: string[]): bigint {
-  let result = 0n
+  let result = 0n;
   for (const name of names) {
-    const index = PERMISSION_VALUES.indexOf(name)
-    if (index === -1) {
-      throw new Error(`未知的权限名称：${name}，可用值：${PERMISSION_VALUES.join(', ')}`)
+    const value = permissionValueCache.get(name);
+    if (value === undefined) {
+      throw new Error(`未知的权限名称：${name}`);
     }
-    result |= (1n << BigInt(index))
+    result |= value;
   }
-  return result
+  return result;
 }
 
 /**
@@ -186,11 +196,11 @@ export function buildPerValue(names: string[]): bigint {
  * ```
  */
 export function getPermValue(name: string): bigint {
-  const index = PERMISSION_VALUES.indexOf(name)
-  if (index === -1) {
-    throw new Error(`未知的权限名称：${name}`)
+  const cached = permissionValueCache.get(name);
+  if (cached === undefined) {
+    throw new Error(`未知的权限名称：${name}`);
   }
-  return 1n << BigInt(index)
+  return cached;
 }
 
 /**
@@ -205,14 +215,14 @@ export function getPermValue(name: string): bigint {
  * ```
  */
 export function parsePerValue(value: string): string[] {
-  const bigValue = BigInt(value)
-  const result: string[] = []
-  for (let i = 0; i < PERMISSION_VALUES.length; i++) {
-    if ((bigValue & (1n << BigInt(i))) !== 0n) {
-      result.push(PERMISSION_VALUES[i])
+  const bigValue = BigInt(value);
+  const result: string[] = [];
+  for (const [name, bitValue] of permissionValueCache) {
+    if ((bigValue & bitValue) !== 0n) {
+      result.push(name);
     }
   }
-  return result
+  return result;
 }
 
 /**
@@ -228,12 +238,9 @@ export function parsePerValue(value: string): string[] {
  * ```
  */
 export function hasPermission(value: string, name: string): boolean {
-  const index = PERMISSION_VALUES.indexOf(name)
-  if (index === -1) {
-    return false
-  }
-  const bigValue = BigInt(value)
-  return (bigValue & (1n << BigInt(index))) !== 0n
+  const cached = permissionValueCache.get(name);
+  if (cached === undefined) return false;
+  return (BigInt(value) & cached) !== 0n;
 }
 
 /**

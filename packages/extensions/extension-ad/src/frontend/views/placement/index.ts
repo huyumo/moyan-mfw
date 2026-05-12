@@ -8,5 +8,5 @@ export default definePageConfig({
   icon: 'CollectionTag',
   auth: true,
   order: 2,
-  permissionValue: 0x0100_0001n,
+  permissions: ['添加', '编辑', '删除'],
 })

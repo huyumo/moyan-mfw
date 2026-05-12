@@ -1,29 +1,18 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ES2022"],
-    "declaration": true,
+    "composite": true,
     "declarationMap": true,
-    "sourceMap": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "composite": true,
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "removeComments": false,
     "paths": {
       "moyan-mfw-core": ["./packages/core/dist"],
       "moyan-mfw-base/backend": ["./packages/base/dist/backend"],
       "moyan-mfw-base/frontend": ["./packages/base/src/frontend/index.ts"],
-      "moyan-mfw-base-api": ["./packages/base-api/dist"],
+      "moyan-mfw-base-api": ["./packages/base-api/dist"]
     }
   },
   "exclude": [

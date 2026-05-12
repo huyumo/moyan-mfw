@@ -1,11 +1,6 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.backend.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "outDir": "./dist/backend",
-    "rootDir": "./src/backend",
-    "declaration": true,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/backend/*"],

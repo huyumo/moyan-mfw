@@ -1,8 +1,9 @@
 {
-  "extends": "../../tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "composite": true,
     "outDir": "./dist/frontend",
     "rootDir": "./src/frontend",
     "baseUrl": ".",
@@ -10,12 +11,10 @@
       "@/*": ["src/frontend/*"]
     },
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "composite": false,
     "jsx": "preserve",
     "jsxImportSource": "vue",
-    "skipLibCheck": true,
     "types": ["vite/client", "node"]
   },
-  "include": ["src/frontend/**/*"],
+  "include": ["src/frontend/**/*.ts", "src/frontend/**/*.tsx", "src/frontend/**/*.vue", "src/frontend/**/*.json"],
   "exclude": ["node_modules", "dist", "src/frontend/**/*.spec.ts", "src/frontend/**/*-spec.ts"]
 }

@@ -15,6 +15,7 @@ import { hashPassword } from '../../common/utils/encrypt';
 import { buildPerValue } from '../../common/constants/permissions';
 import { AppTypePermissionEntity } from '../../modules/sys/app-type/entities/app-type-permission.entity';
 import { AppMember } from '../../modules/sys/app/entities/app-member.entity';
+import { PermissionValue } from '../../modules/sys/permission/entities/permission-value.entity';
 
 /**
  * 种子数据执行函数
@@ -48,6 +49,9 @@ export async function runSeeds(dataSource: DataSource, adminPassword?: string): 
 
   // 8. 绑定拥有者（sys_user_app + sys_user_role）
   await seedAppMembers(dataSource);
+
+  // 9. 初始化权限值位表
+  await seedPermissionValues(dataSource);
 
   process.stdout.write('\n✅ 种子数据执行完成！\n');
 }
@@ -610,4 +614,38 @@ async function seedAppMembers(dataSource: DataSource): Promise<void> {
   } else {
     process.stdout.write(`    √ 用户角色绑定已存在：admin → 超级管理员\n`);
   }
+}
+
+/**
+ * 9. 初始化权限值位表
+ */
+async function seedPermissionValues(dataSource: DataSource): Promise<void> {
+  const repo = dataSource.getRepository(PermissionValue);
+  const existing = await repo.count();
+  if (existing > 0) {
+    process.stdout.write('    √ 权限值位表已存在，跳过初始化\n');
+    return;
+  }
+
+  const builtin = [
+    { name: '添加', bitPosition: 0 },
+    { name: '编辑', bitPosition: 1 },
+    { name: '删除', bitPosition: 2 },
+    { name: '导出', bitPosition: 3 },
+    { name: '导入', bitPosition: 4 },
+    { name: '审批', bitPosition: 5 },
+    { name: '拒绝', bitPosition: 6 },
+    { name: '发布', bitPosition: 7 },
+    { name: '归档', bitPosition: 8 },
+  ];
+
+  for (const item of builtin) {
+    await repo.insert({
+      name: item.name,
+      bitPosition: item.bitPosition,
+      bitValue: 1n << BigInt(item.bitPosition),
+      status: 1,
+    });
+  }
+  process.stdout.write(`   ✅ 写入 ${builtin.length} 个内置权限标签\n`);
 }

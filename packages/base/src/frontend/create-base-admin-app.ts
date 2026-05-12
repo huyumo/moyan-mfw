@@ -16,6 +16,8 @@ import { createBaseAdminRouter, type CreateBaseAdminRouterOptions, buildBasePack
 import { createMenuTreeFromRoutes, dedupeMenuTree } from './router/menu-tree';
 import { useLayoutStore } from './store/layout-store';
 import { setupPlugins } from './plugins';
+import { initPermissionCache as initPermissionValueCache } from './utils/permissions';
+import { ApiPermissionValuesGetPermissionValues } from './apis/sys';
 
 /**
  * 管理后台启动选项。
@@ -50,6 +52,10 @@ export interface BaseAdminAppInstance {
   pinia: Pinia;
   /** 挂载函数 */
   mount: (selector?: string | Element) => Promise<ComponentPublicInstance>;
+  /** 从后端获取权限值标签映射表 */
+  fetchPermissionValues: () => Promise<Array<{ name: string; bitValue: string }>>;
+  /** 初始化权限值运行时缓存 */
+  initPermissionCache: (values: Array<{ name: string; bitValue: string }>) => void;
 }
 
 /**
@@ -109,6 +115,16 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
     mount: async (selector: string | Element = '#app') => {
       await router.isReady();
       return app.mount(selector);
+    },
+    async fetchPermissionValues() {
+      const result = await new ApiPermissionValuesGetPermissionValues({});
+      return (result as Array<{ name: string; bitPosition: number; bitValue: string }>).map((item) => ({
+        name: item.name,
+        bitValue: item.bitValue,
+      }));
+    },
+    initPermissionCache(values: Array<{ name: string; bitValue: string }>) {
+      initPermissionValueCache(values);
     },
   };
 }
