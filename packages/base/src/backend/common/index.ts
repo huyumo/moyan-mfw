@@ -88,6 +88,8 @@ export {
   parsePerValue,
   hasPermission,
   getPermissionOptions,
+  initPermissionValueCache,
+  getPermissionValueCache,
   type DefaultPermissionName,
   type ExtensionPermissionName,
   type BasePermissionName,

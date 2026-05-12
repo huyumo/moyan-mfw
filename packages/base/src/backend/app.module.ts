@@ -26,6 +26,7 @@ import { AppTypePermissionEntity } from './modules/sys/app-type/entities/app-typ
 import { App } from './modules/sys/app/entities/app.entity';
 import { AppMember } from './modules/sys/app/entities/app-member.entity';
 import { AuditLog } from './modules/sys/audit-log/entities/audit-log.entity';
+import { PermissionValue } from './modules/sys/permission/entities/permission-value.entity';
 
 // 业务模块
 import { SysModule } from './modules/sys/sys.module';
@@ -36,7 +37,7 @@ import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 
 // 所有实体数组
-const entities = [User, Role, UserRole, Permission, RolePermission, AppType, AppTypePermissionEntity, App, AppMember, AuditLog];
+const entities = [User, Role, UserRole, Permission, RolePermission, AppType, AppTypePermissionEntity, App, AppMember, AuditLog, PermissionValue];
 
 /**
  * 数据库连接健康检查服务

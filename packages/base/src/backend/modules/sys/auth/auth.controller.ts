@@ -9,7 +9,6 @@ import {
   Get,
   Body,
   Query,
-  Headers,
   HttpCode,
   HttpStatus,
   BadRequestException,
@@ -31,6 +30,7 @@ import {
   RegisterDto,
   CheckAvailabilityDto,
   CheckAvailabilityResponseDto,
+  LogoutDto,
 } from './dto';
 import { Public } from '../../../common/decorators/public.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
@@ -120,8 +120,8 @@ export class AuthController {
   @ApiBearerAuth('Authorization')
   @ApiOperation({ summary: '退出登录', description: '使当前 Token 失效（可选认证）' })
   @ApiResponse({ status: 200, description: '退出成功' })
-  async logout(@Headers('authorization') authHeader: string) {
-    const token = authHeader?.replace('Bearer ', '');
+  async logout(@Body() dto: LogoutDto) {
+    const token = dto.token;
     await this.authService.logout(token);
     return ApiResponseUtil.success(null, '退出成功');
   }

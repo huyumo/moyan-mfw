@@ -11,7 +11,7 @@ export * from './config/layout-defaults';
 export * from './types/layout-types';
 
 export type { PermissionName, DefaultPermissionName, ExtensionPermissionName } from './utils/permissions';
-export { createBusinessPageConfigFn } from './utils/permissions';
+export { createBusinessPageConfigFn, initPermissionCache, getPermissionValueCache } from './utils/permissions';
 
 export * from './components';
 export * from './utils/image';

@@ -8,5 +8,5 @@ export default definePageConfig({
   icon: 'Setting',
   auth: true,
   order: 1,
-  permissionValue: 0x0100_0010n,
+  permissions: ['添加', '编辑', '删除'],
 })

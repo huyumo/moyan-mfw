@@ -143,6 +143,11 @@ export function setupRouteGuard(router: Router): void {
       appLoadingStore.hideLoading();
     }
 
+    if (to.meta.permissions && !to.meta.permissionValue) {
+      const { buildPerValue } = await import('../utils/permissions');
+      to.meta.permissionValue = buildPerValue(to.meta.permissions as string[]).toString();
+    }
+
     if (to.meta.requiresAuth !== false) {
       const hasPermission = checkPagePermission(to, authStore);
       if (!hasPermission) {

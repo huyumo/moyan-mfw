@@ -10,6 +10,7 @@ import type {
   UserSummaryDto,
   LoginResponseDto,
   UserInfoDto,
+  LogoutDto,
   AppInstanceItemDto,
   PermissionTreeNodeDto,
   UserPermissionsResponseDto,
@@ -104,7 +105,12 @@ export class ApiAuthGetCurrentUser extends ApiCall<{}, UserInfoDto> {
 /**
  * auth|认证相关接口->退出登录
  */
-export class ApiAuthLogout extends ApiCall<{}, unknown> {
+export class ApiAuthLogout extends ApiCall<
+  {
+    body: LogoutDto
+  },
+  unknown
+> {
   readonly path = '/api/auth/logout'
   readonly method: MoMethod = 'POST'
   readonly auth = true
@@ -123,11 +129,7 @@ export class ApiAuthGetUserApps extends ApiCall<{}, Array<AppInstanceItemDto>> {
  * auth|认证相关接口->获取用户权限菜单
  */
 export class ApiAuthGetUserPermissions extends ApiCall<
-  {
-    query: {
-      appId: string //应用实例 ID
-    }
-  },
+  {},
   UserPermissionsResponseDto
 > {
   readonly path = '/api/auth/permissions'
@@ -610,6 +612,18 @@ export class ApiPermissionSyncPermissions extends ApiCall<
   readonly path = '/api/permissions/sync'
   readonly method: MoMethod = 'POST'
   readonly auth = true
+}
+
+/**
+ * permission-values|权限值标签映射->获取权限值标签映射表
+ */
+export class ApiPermissionValuesGetPermissionValues extends ApiCall<
+  {},
+  unknown
+> {
+  readonly path = '/api/permission-values'
+  readonly method: MoMethod = 'GET'
+  readonly auth = false
 }
 
 /**

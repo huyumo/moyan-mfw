@@ -20,7 +20,7 @@
   },
   "scripts": {
     "build:cjs": "tsc -p tsconfig.cjs.json",
-    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:esm": "tsc -p tsconfig.json",
     "build": "pnpm run build:cjs && pnpm run build:esm"
   },
   "dependencies": {

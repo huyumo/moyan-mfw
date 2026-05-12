@@ -90,10 +90,7 @@ export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
 export function definePageConfig<T extends string = PermissionName>(
   config: PageConfig<T>
 ): PageConfig<T> & { permissionValue?: bigint } {
-  const permissionValue = config.permissions
-    ? buildPerValue(config.permissions)
-    : config.permissionValue;
-  return { ...config, permissionValue };
+  return { ...config };
 }
 
 /**
@@ -164,6 +161,7 @@ export function buildRoutesFromConfigs(
         menuOrder: config.order ?? 50,
         requiresAuth: config.auth ?? true,
         hidden: config.hidden,
+        permissions: config.permissions,
         permissionValue: config.permissionValue?.toString(),
       },
     } as RouteRecordRaw;

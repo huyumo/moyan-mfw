@@ -20,7 +20,6 @@ import {
   SKIP_PERMISSION_KEY,
 } from '../decorators/skip-permission.decorator';
 import {
-  PERMISSION_VALUES,
   buildPerValue,
 } from '../constants/permissions';
 import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';

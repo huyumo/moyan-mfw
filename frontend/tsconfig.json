@@ -1,26 +1,22 @@
 {
+  "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "baseUrl": ".",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "strict": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
     "isolatedModules": true,
-    "noEmit": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "declaration": false,
+    "noEmit": true,
     "types": ["vite/client"],
     "paths": {
       "@/*": ["src/*"],
       "moyan-mfw-base/frontend": ["../packages/base/src/frontend/index.ts"],
-      "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/*"]
+      "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/*"],
+      "moyan-mfw-base/shared": ["../packages/base/src/shared"]
     }
   },
   "include": ["src/**/*"],

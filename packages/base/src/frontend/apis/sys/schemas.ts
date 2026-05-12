@@ -50,6 +50,10 @@ export type UserInfoDto = {
   roles: Array<string> // 角色列表
 }
 
+export type LogoutDto = {
+  token: string // 授权 Token
+}
+
 export type AppInstanceItemDto = {
   appId: string // 应用实例 ID
   appName: string // 应用实例名称
@@ -108,14 +112,13 @@ export type CheckAvailabilityResponseDto = {
 }
 
 export type CreateUserDto = {
-  username: string // 用户名
-  password: string // 密码
   nickname?: string // 昵称
-  phone?: string // 手机号
-  email?: string // 邮箱
   avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
-  roleIds?: Array<string> // 角色 ID 列表
+  username: string // 用户名
+  password: string // 密码
+  phone?: string // 手机号
+  email?: string // 邮箱
 }
 
 export type UserResponseDto = {
@@ -127,18 +130,17 @@ export type UserResponseDto = {
   avatar: ImageResourceDto // 头像
   gender: number // 性别 (0:未知 1:男 2:女)
   userStatus: number // 状态 (1:启用 0:禁用)
-  isDeveloper: boolean // 是否开发者
+  isDeveloper: number // 是否开发者 (1:是 0:否)
   createdAt: string // 创建时间
   updateAt: string // 更新时间
 }
 
 export type AdminCreateUserDto = {
-  username: string // 用户名
-  phone: string // 手机号
   nickname?: string // 昵称
   avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
-  roleIds?: Array<string> // 角色 ID 列表
+  username: string // 用户名
+  phone: string // 手机号
 }
 
 export type PageResponseDto = {
@@ -152,11 +154,10 @@ export type PageResponseDto = {
 
 export type UpdateUserDto = {
   nickname?: string // 昵称
-  phone?: string // 手机号
-  email?: string // 邮箱
   avatar?: ImageResourceDto // 头像
   gender?: number // 性别 (0:未知 1:男 2:女)
-  roleIds?: Array<string> // 角色 ID 列表
+  phone?: string // 手机号
+  email?: string // 邮箱
 }
 
 export type StatusDto = {
@@ -348,7 +349,6 @@ export type CreateAppDto = {
   appTypeId: string // 应用类型 ID
   appName: string // 应用名称
   appCode: string // 应用编码
-  ownerId: string // 拥有者 ID
   appDesc?: string // 应用描述
   logo?: ImageResourceDto // 应用 Logo
   sortOrder: number // 排序号
@@ -375,7 +375,6 @@ export type UpdateAppDto = {
   appName?: string // 应用名称
   appDesc?: string // 应用描述
   logo?: ImageResourceDto // 应用 Logo
-  ownerId?: string // 拥有者 ID（变更负责人时使用）
   appStatus?: number // 应用状态 (1:启用 0:禁用)
   sortOrder?: number // 排序号
 }

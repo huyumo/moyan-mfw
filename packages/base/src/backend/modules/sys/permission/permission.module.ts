@@ -6,8 +6,11 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Permission } from './entities/permission.entity';
+import { PermissionValue } from './entities/permission-value.entity';
 import { PermissionService } from './permission.service';
 import { PermissionController } from './permission.controller';
+import { PermissionValuesController } from './permission-values.controller';
+import { PermissionValueSyncService } from './permission-value-sync.service';
 
 /**
  * 权限模块
@@ -15,10 +18,10 @@ import { PermissionController } from './permission.controller';
  */
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Permission]),
+    TypeOrmModule.forFeature([Permission, PermissionValue]),
   ],
-  providers: [PermissionService],
-  controllers: [PermissionController],
-  exports: [PermissionService],
+  providers: [PermissionService, PermissionValueSyncService],
+  controllers: [PermissionController, PermissionValuesController],
+  exports: [PermissionService, PermissionValueSyncService],
 })
 export class PermissionModule {}

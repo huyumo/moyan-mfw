@@ -6,7 +6,7 @@ import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-mfw-base/backend
 import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
 import { SupplierModule } from './modules/supplier/supplier.module';
-import { AdModule } from 'moyan-mfw-extension-ad/backend';
+import { AdModule, AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/backend';
 import './permissions';
 import 'moyan-mfw-business-dict';
 
@@ -32,6 +32,7 @@ async function bootstrap() {
     syncAppTypes: true,
     modules: [AppModule],
     swagger: swaggerGroups,
+    permissionValues: [...AD_EXTENSION_PERMISSION_VALUES],
     hooks: {
       onAppInit: async (ctx) => {
         console.log('[Backend] 应用初始化完成');

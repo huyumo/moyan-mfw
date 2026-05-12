@@ -12,6 +12,13 @@ const baseFrontendSrc = resolve(__dirname, '../packages/base/src/frontend');
 
 export default defineConfig({
   plugins: [vue(), vueJsxPlugin()],
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        experimentalDecorators: true,
+      },
+    },
+  },
   resolve: {
     alias: {
       // frontend self alias

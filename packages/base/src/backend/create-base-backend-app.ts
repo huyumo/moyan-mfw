@@ -28,6 +28,7 @@ import { AuthGuard } from './common/guards/auth.guard';
 import { PermissionGuard } from './common/guards/permission.guard';
 import { RolePermission } from './modules/sys/role/entities/role-permission.entity';
 import { UserRole } from './modules/sys/role/entities/user-role.entity';
+import { PermissionValueSyncService } from './modules/sys/permission/permission-value-sync.service';
 
 config({ path: '.env' });
 
@@ -90,6 +91,17 @@ export async function createBaseBackendApp(
   hooksExecutor.initContext(app, dataSource);
 
   await hooksExecutor.onDatabaseReady();
+
+  try {
+    const syncService = app.get(PermissionValueSyncService);
+    await syncService.sync(dataSource);
+  } catch (error: any) {
+    if (error.message?.includes('ER_NO_SUCH_TABLE')) {
+      process.stdout.write('⏳ sys_permission_values 表未创建，跳过权限值同步\n');
+    } else {
+      process.stdout.write(`⚠️ 权限值同步失败: ${error.message}\n`);
+    }
+  }
 
   await hooksExecutor.onAppInit();
 

@@ -8,6 +8,7 @@ export { LoginDto } from './req/login.dto';
 export { RefreshTokenDto } from './req/refresh-token.dto';
 export { CheckAvailabilityDto, CheckAvailabilityResponseDto } from './req/check-availability.dto';
 export { RegisterDto } from './req/register.dto';
+export { LogoutDto } from './req/logout.dto';
 
 // Response DTOs
 export {

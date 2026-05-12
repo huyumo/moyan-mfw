@@ -1,11 +1,13 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
+    "strictPropertyInitialization": false,
+    "noImplicitAny": false,
+    "composite": true,
     "outDir": "./dist/backend",
     "rootDir": "./src/backend",
-    "declaration": true,
     "declarationMap": true,
     "baseUrl": "./",
     "paths": {
