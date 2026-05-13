@@ -18,7 +18,10 @@
 
 import type { RouteRecordRaw } from 'vue-router';
 import { buildPerValue, registerPermissionValues, type PermissionName } from '../utils/permissions';
-
+import AdminLayout from '../layouts/AdminLayout.vue';
+import Login from '../views/login/index.vue';
+import ForbiddenPage from '../views/forbidden/index.vue';
+import NotFoundPage from '../views/not-found/index.vue';
 export { registerPermissionValues, createBusinessPageConfigFn } from '../utils/permissions';
 
 /**
@@ -248,16 +251,7 @@ export interface CreateBaseAdminRoutesOptions {
   extraRoutes?: RouteRecordRaw[];
 }
 
-/**
- * 动态导入布局组件
- */
-const AdminLayout = () => import('../layouts/AdminLayout.vue');
 
-/**
- * 403 和 404 页面
- */
-const ForbiddenPage = () => import('../views/forbidden/Index.vue');
-const NotFoundPage = () => import('../views/not-found/Index.vue');
 
 /**
  * 基包内部使用：扫描基包自己的 views 目录构建路由
@@ -299,7 +293,7 @@ export function createBaseAdminRoutes(
     {
       path: '/login',
       name: 'AdminLogin',
-      component: () => import('../views/login/Index.vue'),
+      component: Login,
       meta: {
         title: '登录',
         menu: false,
