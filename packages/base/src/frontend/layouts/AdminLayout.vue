@@ -41,13 +41,11 @@
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <NoAppsEmpty v-if="noApps" :brand-name="layoutStore.navigation.brandName"
           @logout="authStore.logout()" />
-        <router-view v-else-if="layoutStore.styleConfig.keepAlive" v-slot="{ Component, route: slotRoute }">
-          <keep-alive :max="20">
-            <component :is="Component" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
+        <router-view v-slot="{ Component, route: slotRoute }">
+          <keep-alive>
+            <component :is="Component" v-if="layoutStore.styleConfig.keepAlive"  :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
           </keep-alive>
-        </router-view>
-        <router-view v-else v-slot="{ Component, route: slotRoute }">
-          <component :is="Component" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
+           <component :is="Component" v-if="!layoutStore.styleConfig.keepAlive" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
         </router-view>
       </MainPanel>
     </div>
@@ -86,6 +84,7 @@ import { useAuthStore } from '../store/auth-store';
 
 const authStore = useAuthStore();
 const router = useRouter();
+console.log('----------3333--------');
 
 const {
   layoutStore,
