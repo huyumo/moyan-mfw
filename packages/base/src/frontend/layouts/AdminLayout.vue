@@ -59,9 +59,7 @@
       v-model:visible="appDrawerVisible"
       :apps="drawerApps"
       :current-app-id="authStore.currentApp?.appId"
-      :default-app-id="authStore.defaultAppId || undefined"
       @select="handleAppSwitch"
-      @toggle-default="handleToggleDefault"
     />
   </div>
 </template>
@@ -175,18 +173,6 @@ async function handleAppSwitch(app: AppListItem) {
     router.push('/');
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');
-  }
-}
-
-/** 切换默认应用 */
-function handleToggleDefault(app: AppListItem) {
-  const currentDefault = authStore.getDefaultAppId();
-  if (currentDefault === app.appId) {
-    authStore.clearDefaultApp();
-    ElMessage.success('已取消默认应用');
-  } else {
-    authStore.setDefaultApp(app.appId);
-    ElMessage.success(`已设为默认应用: ${app.appName}`);
   }
 }
 

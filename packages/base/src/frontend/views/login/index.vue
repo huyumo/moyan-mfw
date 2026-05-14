@@ -266,10 +266,6 @@ async function handleAppSelect(app: { appId: string; appName: string; appCode: s
       isOwner: app.isOwner,
       appTypeName: app.appTypeName,
     });
-    // 若未设置默认应用，自动将所选应用设为默认
-    if (!authStore.defaultAppId) {
-      authStore.setDefaultApp(app.appId);
-    }
     ElMessage.success(`已进入应用: ${app.appName}`);
     await router.replace('/');
   } catch (error: any) {

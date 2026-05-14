@@ -6,6 +6,7 @@
 import type { Router, RouteLocationNormalized } from 'vue-router';
 import { useAuthStore, TOKEN_KEY } from '../store/auth-store';
 import { useAppLoadingStore } from '../store/app-loading-store';
+import { ElMessage } from 'element-plus';
 
 /** 白名单路由（无需登录即可访问） */
 const WHITE_LIST = ['/login', '/install', '/403', '/404'];
@@ -151,6 +152,11 @@ export function setupRouteGuard(router: Router): void {
     if (to.meta.requiresAuth !== false) {
       const hasPermission = checkPagePermission(to, authStore);
       if (!hasPermission) {
+        if (to.path !== '/dashboard' && to.path !== '/') {
+          ElMessage.warning('当前应用无此页面的访问权限，已跳转到首页');
+          next({ path: '/dashboard' });
+          return;
+        }
         next({ path: '/403' });
         return;
       }

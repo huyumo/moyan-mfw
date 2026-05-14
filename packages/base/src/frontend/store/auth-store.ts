@@ -20,7 +20,6 @@ import { getImageSrc } from '../utils/image';
 export const TOKEN_KEY = 'mfw:admin:token';
 export const REFRESH_TOKEN_KEY = 'mfw:admin:refresh_token';
 export const CURRENT_APP_KEY = 'mfw:admin:current_app';
-export const DEFAULT_APP_KEY = 'mfw:admin:default_app';
 
 /** 用户信息接口 */
 export interface UserInfo {
@@ -77,7 +76,6 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserInfo | null>(null);
   const apps = ref<AppInstance[]>([]);
   const currentApp = ref<AppInstance | null>(null);
-  const defaultAppId = ref<string>('');
   const permissionMenu = ref<PermissionMenuItem[]>([]);
   const tokenExpiresAt = ref<number>(0);
   const loading = ref<boolean>(false);
@@ -111,7 +109,6 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
 
-      defaultAppId.value = localStorage.getItem(DEFAULT_APP_KEY) || '';
       return true;
     }
     return false;
@@ -125,9 +122,6 @@ export const useAuthStore = defineStore('auth', () => {
 
     localStorage.setItem(TOKEN_KEY, newToken);
     localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-
-    // 恢复默认应用设置
-    defaultAppId.value = localStorage.getItem(DEFAULT_APP_KEY) || '';
   }
 
   /** 清除 Token */
@@ -137,14 +131,12 @@ export const useAuthStore = defineStore('auth', () => {
     user.value = null;
     apps.value = [];
     currentApp.value = null;
-    defaultAppId.value = '';
     permissionMenu.value = [];
     tokenExpiresAt.value = 0;
 
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(CURRENT_APP_KEY);
-    // DEFAULT_APP_KEY 是用户偏好，登出时不清除以便下次登录自动选择
   }
 
   /** 检查 Token 是否即将过期（10 分钟内） */
@@ -412,16 +404,6 @@ export const useAuthStore = defineStore('auth', () => {
       return true;
     }
 
-    // 优先使用默认应用
-    if (defaultAppId.value) {
-      const defaultApp = apps.value.find(a => a.appId === defaultAppId.value);
-      if (defaultApp) {
-        await selectApp(defaultApp);
-        return true;
-      }
-    }
-
-    // 检查是否有已保存的选择
     const savedAppCode = currentApp.value?.appCode;
     if (savedAppCode) {
       const saved = apps.value.find(a => a.appCode === savedAppCode);
@@ -432,23 +414,6 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     return false;
-  }
-
-  /** 设置默认应用 */
-  function setDefaultApp(appId: string): void {
-    defaultAppId.value = appId;
-    localStorage.setItem(DEFAULT_APP_KEY, appId);
-  }
-
-  /** 取消默认应用 */
-  function clearDefaultApp(): void {
-    defaultAppId.value = '';
-    localStorage.removeItem(DEFAULT_APP_KEY);
-  }
-
-  /** 获取默认应用 ID */
-  function getDefaultAppId(): string {
-    return defaultAppId.value;
   }
 
   // ============== 权限菜单 ==============
@@ -497,7 +462,6 @@ export const useAuthStore = defineStore('auth', () => {
     user,
     apps,
     currentApp,
-    defaultAppId,
     permissionMenu,
     tokenExpiresAt,
     loading,
@@ -522,9 +486,6 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserApps,
     selectApp,
     autoSelectApp,
-    setDefaultApp,
-    clearDefaultApp,
-    getDefaultAppId,
     loadPermissions,
     setPermissionMenu,
     initializeAuth,
