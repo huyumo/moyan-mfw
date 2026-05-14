@@ -4,12 +4,13 @@
  */
 
 import type { IUploader, UploadRequestOptions, UploadResult } from './types';
+import { TOKEN_KEY, LEGACY_ACCESS_TOKEN_KEY } from '../../constants/storage-keys';
 
 const getAuthToken = (): string => {
   return (
-    localStorage.getItem('mfw:admin:token') ||
-    localStorage.getItem('access_token') ||
-    sessionStorage.getItem('access_token') ||
+    localStorage.getItem(TOKEN_KEY) ||
+    localStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
+    sessionStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
     ''
   );
 };

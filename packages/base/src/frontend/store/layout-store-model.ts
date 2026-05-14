@@ -9,37 +9,23 @@ import type {
   LayoutStyleConfig,
   PageTabItem,
 } from '../types/layout-types';
+import { LAYOUT_PREFERENCES_KEY, LAYOUT_TABS_KEY, LAYOUT_LEGACY_CONFIG_KEY } from '../constants/storage-keys';
 
-/**
- * 应用项类型定义。
- * TODO-TASK-2026-04-20-001: 重新设计 API 类型系统
- */
+export const LAYOUT_PREFERENCES_STORAGE_KEY = LAYOUT_PREFERENCES_KEY;
+export const LAYOUT_TABS_STORAGE_KEY = LAYOUT_TABS_KEY;
+export { LAYOUT_LEGACY_CONFIG_KEY };
+
 export interface AppItem {
-  /** 应用 ID */
   id: string;
-  /** 应用名称 */
   name: string;
-  /** 应用标识 */
   appKey: string;
-  /** 应用描述 */
   description?: string;
-  /** 应用图标 */
   icon?: string;
-  /** 是否启用 */
   enabled?: boolean;
-  /** 排序 */
   order?: number;
-  /** 创建时间 */
   createdAt?: string;
-  /** 更新时间 */
   updatedAt?: string;
 }
-
-/**
- * 布局偏好设置本地存储键名。
- */
-export const LAYOUT_PREFERENCES_STORAGE_KEY = 'mfw:base-frontend:layout-preferences';
-export const LAYOUT_TABS_STORAGE_KEY = 'mfw:base-frontend:layout-tabs';
 
 /**
  * 布局持久化状态。

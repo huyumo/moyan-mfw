@@ -16,6 +16,7 @@ import { containsPathInMenu, createHomeTab, cloneMenus } from './layout-store-ut
 import {
   LAYOUT_PREFERENCES_STORAGE_KEY,
   LAYOUT_TABS_STORAGE_KEY,
+  LAYOUT_LEGACY_CONFIG_KEY,
   type LayoutPersistedState,
   type LayoutPreferenceActionContext,
 } from './layout-store-model';
@@ -168,7 +169,7 @@ export function hydrateLegacyLayoutConfig(store: LayoutPreferenceActionContext):
     return;
   }
 
-  const raw = window.localStorage.getItem('mfw:layout:config');
+  const raw = window.localStorage.getItem(LAYOUT_LEGACY_CONFIG_KEY);
   if (!raw) {
     return;
   }
@@ -189,5 +190,5 @@ export function persistLegacyLayoutConfig(styleConfig: LayoutStyleConfig): void 
   if (typeof window === 'undefined') {
     return;
   }
-  window.localStorage.setItem('mfw:layout:config', JSON.stringify(styleConfig));
+  window.localStorage.setItem(LAYOUT_LEGACY_CONFIG_KEY, JSON.stringify(styleConfig));
 }
