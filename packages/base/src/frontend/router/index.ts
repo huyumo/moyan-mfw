@@ -118,23 +118,10 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
           redirect: '/dashboard',
           meta: { requiresAuth: true },
         },
-        // 注入合并后的路由
-        ...mergedChildren.map((route) => {
-          const newPath = route.path.replace(/^\//, '');
-          
-          // 如果 redirect 是字符串且带前导/，需要转换为相对路径
-          if (typeof route.redirect === 'string' && route.redirect.startsWith('/')) {
-            return {
-              ...route,
-              path: newPath,
-              redirect: route.redirect.replace(/^\//, ''),
-            };
-          }
-          return {
-            ...route,
-            path: newPath,
-          };
-        }),
+        ...mergedChildren.map((route) => ({
+          ...route,
+          path: route.path.replace(/^\//, ''),
+        })),
       ],
     },
     {

@@ -25,6 +25,17 @@ declare module 'vue-router' {
     menuOrder?: number;
     /** 是否固定标签页 */
     affix?: boolean;
+    /** 所属模块信息（用于菜单分组，不生成嵌套路由） */
+    moduleInfo?: {
+      /** 模块路径前缀（如 'sys'） */
+      modulePath: string;
+      /** 模块名称（如 '系统管理'） */
+      moduleName: string;
+      /** 模块图标 */
+      moduleIcon?: string;
+      /** 模块排序 */
+      moduleOrder?: number;
+    };
   }
 }
 
