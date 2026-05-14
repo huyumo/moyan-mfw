@@ -5,11 +5,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router, type RouterHistory } from 'vue-router';
 import { buildBasePackageRoutes } from './routes';
 import { setupRouteGuard } from './guard';
-
-/**
- * 本地存储中的认证令牌键名。
- */
-export const AUTH_TOKEN_STORAGE_KEY = 'mfw:admin:token';
+import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from '../constants/storage-keys';
 
 /**
  * 路由创建参数。

@@ -15,11 +15,9 @@ import {
 import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
 import type { SideMenuItem } from '../types/layout-types';
 import { getImageSrc } from '../utils/image';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
 
-/** Token 存储键名 */
-export const TOKEN_KEY = 'mfw:admin:token';
-export const REFRESH_TOKEN_KEY = 'mfw:admin:refresh_token';
-export const CURRENT_APP_KEY = 'mfw:admin:current_app';
+export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY };
 
 /** 用户信息接口 */
 export interface UserInfo {

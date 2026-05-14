@@ -8,7 +8,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { ApiCall, ApiEntity } from 'moyan-api';
 import { ApiEvents } from 'moyan-api/dist/lib/base';
 import type { App } from 'vue';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../store/auth-store';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY, LEGACY_ACCESS_TOKEN_KEY } from '../constants/storage-keys';
 
 const AXIOS = Symbol('mo#Api#axios');
 
@@ -247,11 +247,10 @@ export class MoAxios {
 
   /** 获取访问令牌 */
   getAccessToken(): string {
-    // 从 localStorage 获取（使用 auth-store 中的键名）
     return (
-      localStorage.getItem('mfw:admin:token') ||
-      localStorage.getItem('access_token') ||
-      sessionStorage.getItem('access_token') ||
+      localStorage.getItem(TOKEN_KEY) ||
+      localStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
+      sessionStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
       ''
     );
   }
@@ -337,8 +336,8 @@ ApiCall.emitter.on(ApiEvents.Unauthorized, () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
   localStorage.removeItem(CURRENT_APP_KEY);
-  localStorage.removeItem('access_token');
-  sessionStorage.removeItem('access_token');
+  localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
+  sessionStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
 
   if (MoAxios.app) {
     const router = MoAxios.app.config.globalProperties.$router;
