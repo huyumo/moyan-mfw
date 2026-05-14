@@ -88,7 +88,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
     {
       path: '/login',
       name: 'AdminLogin',
-      component: () => import('../views/login/Index.vue'),
+      component: () => import('../views/login/index.vue'),
       meta: {
         title: '登录',
         menu: false,
@@ -121,7 +121,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
         // 注入合并后的路由
         ...mergedChildren.map((route) => {
           const newPath = route.path.replace(/^\//, '');
-
+          
           // 如果 redirect 是字符串且带前导/，需要转换为相对路径
           if (typeof route.redirect === 'string' && route.redirect.startsWith('/')) {
             return {
@@ -140,7 +140,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
     {
       path: '/403',
       name: 'AdminForbidden',
-      component: () => import('../views/forbidden/Index.vue'),
+      component: () => import('../views/forbidden/index.vue'),
       meta: {
         title: '权限不足',
         requiresAuth: true,
@@ -150,7 +150,7 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
     {
       path: '/404',
       name: 'AdminNotFound',
-      component: () => import('../views/not-found/Index.vue'),
+      component: () => import('../views/not-found/index.vue'),
       meta: {
         title: '页面不存在',
         menu: false,
