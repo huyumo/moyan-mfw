@@ -4,15 +4,10 @@
  */
 
 import type { IUploader, UploadRequestOptions, UploadResult } from './types';
-import { TOKEN_KEY, LEGACY_ACCESS_TOKEN_KEY } from '../../constants/storage-keys';
+import { TOKEN_KEY } from '../../constants/storage-keys';
 
 const getAuthToken = (): string => {
-  return (
-    localStorage.getItem(TOKEN_KEY) ||
-    localStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
-    sessionStorage.getItem(LEGACY_ACCESS_TOKEN_KEY) ||
-    ''
-  );
+  return localStorage.getItem(TOKEN_KEY) || '';
 };
 
 const uploadingFiles = new Set<any>();

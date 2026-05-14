@@ -16,7 +16,6 @@ import { containsPathInMenu, createHomeTab, cloneMenus } from './layout-store-ut
 import {
   LAYOUT_PREFERENCES_STORAGE_KEY,
   LAYOUT_TABS_STORAGE_KEY,
-  LAYOUT_LEGACY_CONFIG_KEY,
   type LayoutPersistedState,
   type LayoutPreferenceActionContext,
 } from './layout-store-model';
@@ -161,34 +160,4 @@ export function setLoginExtensions(store: LayoutPreferenceActionContext, payload
 export function resetToDefaults(store: LayoutPreferenceActionContext): void {
   store.styleConfig = { ...defaultLayoutStyleConfig };
   store.persistPreferences();
-}
-
-/** 偏好操作实现。 */
-export function hydrateLegacyLayoutConfig(store: LayoutPreferenceActionContext): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-
-  const raw = window.localStorage.getItem(LAYOUT_LEGACY_CONFIG_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<LayoutStyleConfig>;
-    store.styleConfig = {
-      ...store.styleConfig,
-      ...parsed,
-    };
-  } catch {
-    // ?????????????
-  }
-}
-
-/** 偏好操作实现。 */
-export function persistLegacyLayoutConfig(styleConfig: LayoutStyleConfig): void {
-  if (typeof window === 'undefined') {
-    return;
-  }
-  window.localStorage.setItem(LAYOUT_LEGACY_CONFIG_KEY, JSON.stringify(styleConfig));
 }
