@@ -71,14 +71,6 @@
             <Check />
           </el-icon>
           <span v-else class="check-icon-placeholder"></span>
-          <el-switch
-            v-if="showDefaultToggle"
-            :model-value="defaultAppId === app.appId"
-            size="small"
-            inline-prompt
-            active-text="默认"
-            @change="emit('toggle-default', app)"
-          />
         </div>
       </div>
     </div>
@@ -106,13 +98,10 @@ defineProps<{
   apps: AppListItem[]
   loading?: boolean
   selectedAppId?: string
-  defaultAppId?: string
-  showDefaultToggle?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'select', app: AppListItem): void
-  (e: 'toggle-default', app: AppListItem): void
 }>()
 
 function handleClick(app: AppListItem) {
