@@ -43,7 +43,7 @@
           @logout="authStore.logout()" />
         <router-view v-slot="{ Component, route: slotRoute }">
           <keep-alive>
-            <component :is="Component" v-if="layoutStore.styleConfig.keepAlive"  :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
+            <component :is="Component"  v-if="layoutStore.styleConfig.keepAlive"  :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
           </keep-alive>
            <component :is="Component" v-if="!layoutStore.styleConfig.keepAlive" :key="`${keepAliveKey}-${slotRoute.fullPath}`" />
         </router-view>
@@ -67,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import '../styles/base-admin.scss';
@@ -84,7 +84,7 @@ import { useAuthStore } from '../store/auth-store';
 
 const authStore = useAuthStore();
 const router = useRouter();
-console.log('----------3333--------');
+
 
 const {
   layoutStore,
