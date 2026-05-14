@@ -9,23 +9,30 @@
  * 3. 配置文件必须导出：page 组件、path 路径、name 名称
  * 4. 如果找不到配置文件，则自动显示 404 页面
  *
+ * 扁平路由架构：
+ * - 所有页面路由直接作为 / 的子路由注册，不使用嵌套路由
+ * - 模块配置（defineModuleConfig）仅作为菜单分组元数据，注入到页面路由的 meta.moduleInfo 中
+ * - 模块路径前缀保留在路由 path 中（如 sys/user），保持 URL 语义清晰
+ * - 模块自动生成纯重定向路由（如 /sys → /sys/user），不需要 EmptyLayout 中间层
+ *
  * 配置文件示例 (index.ts):
  * ```typescript
  * import Dashboard from './dashboard.vue';
  * export default { page: Dashboard, path: 'dashboard', name: '看板', icon: 'DataBoard', auth: true };
  * ```
+ *
+ * 模块配置示例 (sys/index.ts):
+ * ```typescript
+ * export default { type: 'module', name: '系统管理', icon: 'Setting', order: 10 };
+ * ```
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import { buildPerValue, registerPermissionValues, type PermissionName } from '../utils/permissions';
-import AdminLayout from '../layouts/AdminLayout.vue';
-import Login from '../views/login/index.vue';
-import ForbiddenPage from '../views/forbidden/index.vue';
-import NotFoundPage from '../views/not-found/index.vue';
+import { registerPermissionValues, type PermissionName } from '../utils/permissions';
 export { registerPermissionValues, createBusinessPageConfigFn } from '../utils/permissions';
 
 /**
- * 模块配置接口（用于菜单分组）
+ * 模块配置接口（用于菜单分组，不生成嵌套路由）
  */
 export interface ModuleConfig {
   /** 类型：module 表示模块分组 */
@@ -44,7 +51,7 @@ export interface ModuleConfig {
 export interface PageConfig<T extends string = PermissionName> {
   /** 页面组件 */
   page: unknown;
-  /** 路由路径 */
+  /** 路由路径（相对路径，如 'user' 或 'detail/:id'） */
   path: string;
   /** 页面/菜单名称 */
   name: string;
@@ -80,6 +87,7 @@ export function isPageConfig(config: unknown): config is PageConfig<string> {
 
 /**
  * 定义模块配置（提供类型推断和标准化）
+ * 模块仅用于菜单分组，不生成 EmptyLayout 嵌套路由
  */
 export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
   return config;
@@ -97,9 +105,14 @@ export function definePageConfig<T extends string = PermissionName>(
 }
 
 /**
- * 从扫描结果构建路由配置
+ * 从扫描结果构建扁平路由配置。
+ *
+ * 处理流程：
+ * 1. 分离模块配置和页面配置
+ * 2. 为每个页面生成扁平路由，将所属模块信息注入 meta.moduleInfo
+ * 3. 为有子页面的模块生成纯重定向路由（如 /sys → /sys/user）
+ *
  * @param allConfigs - import.meta.glob 扫描结果
- * @param options - 选项
  * @param options.skipPaths - 需要跳过的路径（如 '/not-found/', '/forbidden/'）
  * @param options.minSegments - 页面配置所需的最小路径段数（默认 2，跳过只有 1 层的路径）
  */
@@ -110,19 +123,18 @@ export function buildRoutesFromConfigs(
     minSegments?: number;
   } = {}
 ): RouteRecordRaw[] {
-  const { skipPaths = ['/not-found/', '/forbidden/'], minSegments = 2 } = options;
+  const { skipPaths = ['/not-found/', '/forbidden/', '/login/', '/install/', '/route-group/'], minSegments = 2 } = options;
 
-  // 1. 分离模块配置和页面配置
+  // 步骤 1：分离模块配置和页面配置
   const moduleMap = new Map<string, ModuleConfig>();
   const pageConfigs = new Map<string, PageConfig<string>>();
 
   for (const [path, config] of Object.entries(allConfigs)) {
-    // 跳过指定路径
     if (skipPaths.some(skipPath => path.includes(skipPath))) {
       continue;
     }
 
-    // 从路径提取相对路径
+    // 从绝对路径提取相对路径（如 '../views/sys/user/index.ts' → 'sys/user'）
     const relativePath = path
       .replace('../views/', '')
       .replace('./views/', '')
@@ -130,11 +142,11 @@ export function buildRoutesFromConfigs(
       .replace('/index.tsx', '');
 
     if (isModuleConfig(config)) {
-      // 模块配置存储在模块目录（如 business/index.ts）
+      // 模块配置存储在模块目录（如 sys/index.ts）
       moduleMap.set(relativePath, config);
     } else if (isPageConfig(config)) {
-      // 页面配置存储在页面目录（如 business/orders/index.ts）
-      // 跳过只有 1 层的路径（如 business/index.ts 不是页面配置）
+      // 页面配置存储在页面目录（如 sys/user/index.ts）
+      // 跳过路径段数不足的配置（如只有 1 层的模块 index.ts）
       const segments = relativePath.split('/');
       if (segments.length >= minSegments) {
         pageConfigs.set(relativePath, config);
@@ -142,17 +154,20 @@ export function buildRoutesFromConfigs(
     }
   }
 
-  // 2. 按层级组织路由
-  const routeMap = new Map<string, RouteRecordRaw>();
+  // 步骤 2：生成扁平路由，注入模块信息到 meta.moduleInfo
+  const routes: RouteRecordRaw[] = [];
 
   for (const [relativePath, config] of pageConfigs.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
-    // 子路由路径优先使用配置文件中的 path，否则使用目录名
-    // 例如：config.path = 'detail/:id' -> 'detail/:id'
-    // 例如：无 config.path，目录名 'orders' -> 'orders'
-    const routePath = config.path || segments[segments.length - 1] || '';
 
-    // 创建路由
+    // 查找所属模块：页面路径的第一段即为模块路径（如 'sys/user' 的模块是 'sys'）
+    const modulePath = segments.length > 1 ? segments[0] : '';
+    const moduleConfig = modulePath ? moduleMap.get(modulePath) : undefined;
+
+    // 路由路径：有模块前缀时保留（如 'sys/user'），无模块时直接使用页面路径（如 'dashboard'）
+    const pagePath = config.path || segments[segments.length - 1] || '';
+    const routePath = modulePath ? `${modulePath}/${pagePath}` : pagePath;
+
     const route: RouteRecordRaw = {
       path: routePath,
       name: `Route_${segments.join('_')}` || 'Root',
@@ -166,38 +181,44 @@ export function buildRoutesFromConfigs(
         hidden: config.hidden,
         permissions: config.permissions,
         permissionValue: config.permissionValue?.toString(),
+        // 将模块信息注入 meta，供菜单构建时按模块分组
+        ...(moduleConfig
+          ? {
+              moduleInfo: {
+                modulePath,
+                moduleName: moduleConfig.name,
+                moduleIcon: moduleConfig.icon,
+                moduleOrder: moduleConfig.order ?? 50,
+              },
+            }
+          : {}),
       },
     } as RouteRecordRaw;
 
-    routeMap.set('/' + relativePath, route);
+    routes.push(route);
   }
 
-  // 3. 为有页面配置的模块创建模块路由（作为菜单分组）
+  // 步骤 3：为有子页面的模块生成纯重定向路由
+  // 当用户访问模块路径（如 /sys）时，自动重定向到该模块下的第一个子路由
+  // 不需要 EmptyLayout，仅作 redirect 用途
   for (const [modulePath, moduleConfig] of moduleMap.entries()) {
-    // 检查该模块下是否有页面
-    const hasChildRoutes = Array.from(routeMap.keys()).some(key =>
-      key.startsWith('/' + modulePath + '/')
-    );
+    const hasChildRoutes = routes.some(r => {
+      const meta = (r.meta ?? {}) as Record<string, unknown>;
+      const info = meta.moduleInfo as { modulePath: string } | undefined;
+      return info?.modulePath === modulePath;
+    });
 
     if (hasChildRoutes) {
-      // 创建模块分组路由（使用空布局组件，用于渲染子路由）
-      const route: RouteRecordRaw = {
+      const firstChildRoute = routes.find(r => {
+        const meta = (r.meta ?? {}) as Record<string, unknown>;
+        const info = meta.moduleInfo as { modulePath: string } | undefined;
+        return info?.modulePath === modulePath;
+      });
+
+      routes.push({
         path: modulePath,
         name: `Module_${modulePath}`,
-        component: () => import('../layouts/EmptyLayout.vue'),
-        redirect: () => {
-          // 找到该模块下的第一个子路由并跳转
-          const firstChildRoute = Array.from(routeMap.entries())
-            .find(([key]) => key.startsWith('/' + modulePath + '/'));
-          if (firstChildRoute) {
-            // 返回命名路由对象
-            const childRoute = firstChildRoute[1];
-            return {
-              name: childRoute.name,
-            };
-          }
-          return { path: '/404' };
-        },
+        redirect: firstChildRoute?.name ? { name: firstChildRoute.name as string } : `/${modulePath}`,
         meta: {
           title: moduleConfig.name,
           menuLabel: moduleConfig.name,
@@ -205,136 +226,21 @@ export function buildRoutesFromConfigs(
           menuOrder: moduleConfig.order ?? 50,
           menu: true,
         },
-      } as unknown as RouteRecordRaw;
-      routeMap.set('/' + modulePath, route);
+      } as RouteRecordRaw);
     }
   }
 
-  // 4. 构建树形结构（按路径深度排序，确保先处理父路由）
-  const rootRoutes: RouteRecordRaw[] = [];
-  const sortedRoutes = Array.from(routeMap.entries())
-    .sort(([a], [b]) => a.split('/').length - b.split('/').length);
-
-  for (const [fullPath, route] of sortedRoutes) {
-    const parentPath = fullPath.substring(0, fullPath.lastIndexOf('/'));
-
-    if (!parentPath || parentPath === '/') {
-      // 根级路由
-      rootRoutes.push(route);
-    } else {
-      // 子路由，找到父路由并添加
-      const parentRoute = routeMap.get(parentPath);
-      if (parentRoute) {
-        if (!parentRoute.children) {
-          parentRoute.children = [];
-        }
-        parentRoute.children.push(route);
-
-        // 如果父路由没有 component，设置为 redirect
-        if (!parentRoute.component && !parentRoute.redirect) {
-          parentRoute.redirect = fullPath;
-        }
-      } else {
-        rootRoutes.push(route);
-      }
-    }
-  }
-
-  return rootRoutes;
+  return routes;
 }
 
 /**
- * 创建基础管理后台路由的选项接口。
- */
-export interface CreateBaseAdminRoutesOptions {
-  /** 额外路由配置（可选） */
-  extraRoutes?: RouteRecordRaw[];
-}
-
-
-
-/**
- * 基包内部使用：扫描基包自己的 views 目录构建路由
+ * 基包内部使用：扫描基包自己的 views 目录构建路由。
+ * minSegments 设为 1 以允许单层路由（如 dashboard）被创建。
  */
 export function buildBasePackageRoutes(): RouteRecordRaw[] {
   const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
     eager: true,
     import: 'default',
   });
-  // minSegments: 1 允许单层路由（如 dashboard）被创建
   return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
 }
-
-/**
- * 创建基础管理后台路由配置。
- */
-export function createBaseAdminRoutes(
-  options: CreateBaseAdminRoutesOptions = {}
-): RouteRecordRaw[] {
-  // 自动扫描生成的路由（基包自己的 views 目录）
-  const autoRoutes = buildBasePackageRoutes();
-
-  // 合并额外路由
-  const allRoutes = options.extraRoutes
-    ? [...autoRoutes, ...options.extraRoutes]
-    : autoRoutes;
-
-  const baseChildren: RouteRecordRaw[] = [
-    {
-      path: '',
-      redirect: '/dashboard',
-    },
-    // 注入自动扫描的路由
-    ...allRoutes,
-  ];
-
-  console.log(baseChildren);
-  return [
-    {
-      path: '/login',
-      name: 'AdminLogin',
-      component: Login,
-      meta: {
-        title: '登录',
-        menu: false,
-      },
-    },
-    {
-      path: '/',
-      component: AdminLayout,
-      meta: {
-        requiresAuth: true,
-        menu: false,
-      },
-      children: baseChildren,
-    },
-    {
-      path: '/403',
-      name: 'AdminForbidden',
-      component: ForbiddenPage,
-      meta: {
-        title: '权限不足',
-        requiresAuth: true,
-        menu: false,
-      },
-    },
-    {
-      path: '/404',
-      name: 'AdminNotFound',
-      component: NotFoundPage,
-      meta: {
-        title: '页面不存在',
-        menu: false,
-      },
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      redirect: '/404',
-    },
-  ];
-}
-
-/**
- * 默认的基础管理后台路由配置。
- */
-export const baseAdminRoutes: RouteRecordRaw[] = createBaseAdminRoutes();
