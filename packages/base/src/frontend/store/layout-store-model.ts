@@ -9,11 +9,10 @@ import type {
   LayoutStyleConfig,
   PageTabItem,
 } from '../types/layout-types';
-import { LAYOUT_PREFERENCES_KEY, LAYOUT_TABS_KEY, LAYOUT_LEGACY_CONFIG_KEY } from '../constants/storage-keys';
+import { LAYOUT_PREFERENCES_KEY, LAYOUT_TABS_KEY } from '../constants/storage-keys';
 
 export const LAYOUT_PREFERENCES_STORAGE_KEY = LAYOUT_PREFERENCES_KEY;
 export const LAYOUT_TABS_STORAGE_KEY = LAYOUT_TABS_KEY;
-export { LAYOUT_LEGACY_CONFIG_KEY };
 
 export interface AppItem {
   id: string;
