@@ -1,0 +1,57 @@
+<h2>✅ 方案选定：exports 子路径 + 私有子层 package.json</h2>
+<p class="subtitle">一个逻辑单元 = 一个 npm 包 | 内部三层私有隔离 | 消费者一个 install 搞定</p>
+
+<div class="mockup" style="margin-bottom:24px">
+  <div class="mockup-header">以 packages/base/ 为例 — npm 发布视角</div>
+  <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.7">
+    <span style="color:#61afef">📦 npm 上发布的包：moyan-mfw-base</span><br><br>
+    <span style="color:#888">packages/base/</span><br>
+    <span style="color:#61afef">├── package.json</span>           ← <span style="color:#98c379">exports: { "./backend": ..., "./frontend": ..., "./shared": ... }</span><br>
+    <span style="color:#888">├── tsconfig.json</span>         ← <span style="color:#98c379">Project References（仅开发时）</span><br>
+    <span style="color:#888">├── src/</span><br>
+    <span style="color:#888">│   ├── backend/</span><br>
+    <span style="color:#666">│   │   ├── package.json</span>   ← <span style="color:#666">"private": true — 不发布，仅供 workspace 内部用</span><br>
+    <span style="color:#666">│   │   └── tsconfig.json</span>  ← <span style="color:#666">CJS / node 解析，只管自己</span><br>
+    <span style="color:#888">│   ├── frontend/</span><br>
+    <span style="color:#666">│   │   ├── package.json</span>   ← <span style="color:#666">"private": true — 不发布</span><br>
+    <span style="color:#666">│   │   └── tsconfig.json</span>  ← <span style="color:#666">ESNext / bundler，只管自己</span><br>
+    <span style="color:#888">│   └── shared/</span><br>
+    <span style="color:#666">│       ├── package.json</span>   ← <span style="color:#666">"private": true — 不发布</span><br>
+    <span style="color:#666">│       └── tsconfig.json</span>  ← <span style="color:#666">独立编译，CJS + ESM 双输出</span><br>
+    <span style="color:#888">├── dist/backend/</span>         ← <span style="color:#f0a040">发布到 npm</span><br>
+    <span style="color:#888">├── dist/frontend/</span>        ← <span style="color:#f0a040">发布到 npm</span><br>
+    <span style="color:#888">├── dist/shared/</span>          ← <span style="color:#f0a040">发布到 npm</span><br>
+    <span style="color:#888">├── nest-cli.json</span><br>
+    <span style="color:#888">└── vite.config.mts</span><br>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🎯 第二个问题：子层 package.json 如何影响 pnpm workspace？</h3>
+  <p class="subtitle">当前 pnpm-workspace.yaml 直接声明 packages/* 等全局路径。子层加 package.json 后，需要怎么注册？</p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="explicit" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>显式声明每个子包路径</h3>
+      <p>在 pnpm-workspace.yaml 中逐一声明：<code>packages/base/src/backend</code>, <code>packages/base/src/frontend</code>, <code>packages/base/src/shared</code>；扩展包同理。每个子包的名字如 <code>@internal/base-backend</code> 加 @internal scope 防止误发布</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>依赖完全隔离，hoist 可控</li><li>每个子包编译脚本独立</li><li>@internal scope 防止 npm publish 误操作</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>workspace 配置膨胀（每个扩展 +3 条）</li><li>现有 import 路径需要批量替换</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="glob" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>全局 glob + .npmignore 排除</h3>
+      <p>pnpm-workspace.yaml 保持现有 <code>packages/**</code> 不变（自动发现所有 package.json）。子层 package.json 标记 private，通过根 package.json 的 <code>files</code> 字段控制发布内容</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>pnpm-workspace.yaml 无需改动</li><li>import 路径可保持相对路径，改动最小</li><li>新增扩展包零配置</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>hoist 行为由 pnpm 自动决策，依赖隔离不如 A</li><li>所有包共享同一个 node_modules 提升</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

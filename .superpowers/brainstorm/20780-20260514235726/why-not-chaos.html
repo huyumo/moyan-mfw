@@ -1,0 +1,122 @@
+<h2>🔍 混乱根因 vs 新方案 — 为什么不会重蹈覆辙</h2>
+<p class="subtitle">同样是"有多个文件"，但原因和结果完全不同</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header" style="background:rgba(224,108,117,0.2)">🔴 当前混乱的根因</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong>根因 1：依赖全混在一起</strong></p>
+      <p style="color:#e06c75;margin-left:12px">
+        一个 package.json 同时声明 NestJS + Vue + Vite + ElementPlus<br>
+        → pnpm install 时全部装到一个 node_modules<br>
+        → 编译时所有三方库都可见
+      </p>
+      <p style="margin-top:16px"><strong>根因 2：tsconfig 交叉继承</strong></p>
+      <p style="color:#e06c75;margin-left:12px">
+        tsconfig.shared.json <strong>继承</strong> tsconfig.backend.json<br>
+        → shared 被迫用 CJS / node 解析<br>
+        → frontend 消费 shared 时被迫绕道 dist/shared
+      </p>
+      <p style="margin-top:16px"><strong>根因 3：模块体系互撞</strong></p>
+      <p style="color:#e06c75;margin-left:12px">
+        backend 要 CJS / node 解析<br>
+        frontend 要 ESNext / bundler 解析<br>
+        → 两个世界观硬塞进同一个 node_modules
+      </p>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header" style="background:rgba(152,195,121,0.2)">🟢 新方案：隔离但统一</div>
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong>解决 1：依赖彻底隔离</strong></p>
+      <p style="color:#98c379;margin-left:12px">
+        每个子层 package.json 只声明<strong>自己的</strong>依赖<br>
+        backend: 只有 NestJS / TypeORM<br>
+        frontend: 只有 Vue / Vite / ElementPlus<br>
+        shared: 零运行时依赖<br>
+        → 编译时各自只看到自己的依赖
+      </p>
+      <p style="margin-top:16px"><strong>解决 2：tsconfig 互不继承</strong></p>
+      <p style="color:#98c379;margin-left:12px">
+        每个子层 tsconfig.json 独立配置，只继承 workspace 根<br>
+        → backend: module=CJS, moduleResolution=node<br>
+        → frontend: module=ESNext, moduleResolution=bundler<br>
+        → shared: 独立编译，CJS+ESM 双输出<br>
+        → 互不干扰
+      </p>
+      <p style="margin-top:16px"><strong>解决 3：模块体系互不碰撞</strong></p>
+      <p style="color:#98c379;margin-left:12px">
+        每个子层在自己的 moduleResolution 下工作<br>
+        → CJS 和 ESNext 永远不在同一个编译上下文中
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:32px">
+  <h3>📦 npm 发布视角：消费者看到什么？</h3>
+  <p class="subtitle">内部子层的 package.json 全部标记 "private": true，永远不发布</p>
+</div>
+
+<div class="mockup">
+  <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8">
+    <span style="color:#f0a040">消费者侧：</span><br>
+    $ npm i moyan-mfw-base     <span style="color:#888">← 只装一个包</span><br><br>
+
+    <span style="color:#f0a040">导入方式：</span><br>
+    <span style="color:#61afef">import</span> { createBaseBackendApp } <span style="color:#61afef">from</span> <span style="color:#98c379">'moyan-mfw-base/backend'</span><br>
+    <span style="color:#61afef">import</span> { createBaseAdminApp } <span style="color:#61afef">from</span> <span style="color:#98c379">'moyan-mfw-base/frontend'</span><br>
+    <span style="color:#61afef">import</span> { AppDto } <span style="color:#61afef">from</span> <span style="color:#98c379">'moyan-mfw-base/shared'</span><br><br>
+
+    <span style="color:#f0a040">npm 包内文件结构：</span><br>
+    <span style="color:#888">moyan-mfw-base/</span><br>
+    <span style="color:#888">├── package.json</span>          <span style="color:#888">← exports: {"./backend":..., "./frontend":..., "./shared":...}</span><br>
+    <span style="color:#888">├── dist/backend/index.js</span>  <span style="color:#888">← 编译后的 CJS 产物</span><br>
+    <span style="color:#888">├── dist/frontend/index.mjs</span> <span style="color:#888">← 编译后的 ESM 产物</span><br>
+    <span style="color:#888">├── dist/shared/index.js</span>   <span style="color:#888">← 编译后的共享层</span><br>
+    <span style="color:#888">└── migrations/</span>           <span style="color:#888">← 数据库迁移</span><br><br>
+
+    <span style="color:#98c379">❌ 子层 package.json 不发布 → 消费者完全感知不到</span><br>
+    <span style="color:#98c379">❌ tsconfig.json 不发布</span><br>
+    <span style="color:#98c379">❌ src/ 源码不发布（只有 dist/）</span>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>✅ 结论：当前混乱 = 架构缺陷，新方案 = 架构修复</h3>
+  <p style="font-size:15px;line-height:1.8">
+    当前是<strong style="color:#e06c75">"一个 package.json 管三层"</strong>的架构缺陷，导致依赖和编译配置互相污染。<br>
+    新方案是<strong style="color:#98c379">"三层各自自治 + 根层统一导出"</strong>的架构修复，子层互不干扰，对外仍是一个包。<br><br>
+    这不是"多几个文件"的问题，而是<strong>模块边界是否清晰</strong>的问题。
+  </p>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>🎯 下一个问题：子层是否要注册到 pnpm workspace？</h3>
+  <p class="subtitle">当前 pnpm-workspace.yaml 是显式路径，不是通配 glob</p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="no-register" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>不注册子层，保持最简</h3>
+      <p>pnpm-workspace.yaml 不变，子层 package.json 仅供 IDE 和构建脚本内部使用。所有依赖仍由根 package.json 统一声明（通过 pnpm catalog 去重）。构建脚本串联执行 shared → backend → frontend</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>workspace 配置零改动</li><li>无 hoist 行为变化</li><li>改动最小</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>子 package.json 的依赖声明只是"文档"，不参与实际解析</li><li>根 package.json 仍需声明所有三方依赖</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="register-sub" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>注册子层到 workspace，真正依赖隔离</h3>
+      <p>pnpm-workspace.yaml 新增 <code>packages/base/src/backend</code> 等条目。每个子包独立安装自己的依赖，通过 <code>workspace:*</code> 互相引用。根 package.json 仅保留 devDependencies 和构建脚本</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>真正依赖隔离，backend 看不到 Vue</li><li>每个子包可独立 lint/build</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>workspace 配置膨胀</li><li>需解决跨子包引用(src 路径变更)</li><li>pnpm install 行为变化需验证</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<h2>📦 当前结构 vs 目标结构</h2>
+<p class="subtitle">核心问题：单一 package.json 强迫三层共享依赖，5+ 个 tsconfig 交叉引用冲突不断</p>
+
+<div class="section">
+  <h3>🔴 当前结构（packages/base 为例）</h3>
+  <div class="mockup">
+    <div class="mockup-header">packages/base/ — 单一 package.json 管所有</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.7">
+      <span style="color:#888">packages/base/</span><br>
+      <span style="color:#e06c75">├── package.json</span>          ← <span style="color:#f0a040">NestJS + Vue + Vite 全混一起</span><br>
+      <span style="color:#e06c75">├── tsconfig.json</span>         ← Project References 入口<br>
+      <span style="color:#e06c75">├── tsconfig.backend.json</span> ← CJS / node 解析<br>
+      <span style="color:#e06c75">├── tsconfig.frontend.json</span>← ESNext / bundler 解析<br>
+      <span style="color:#e06c75">├── tsconfig.shared.json</span>  ← 继承 backend (被迫 CJS)<br>
+      <span style="color:#e06c75">├── tsconfig.test.json</span>    ← 又一套 paths 映射<br>
+      <span style="color:#888">├── nest-cli.json</span><br>
+      <span style="color:#888">├── vite.config.mts</span><br>
+      <span style="color:#888">└── src/</span><br>
+      <span style="color:#888">    ├── backend/</span>   ← NestJS 代码<br>
+      <span style="color:#888">    ├── frontend/</span>  ← Vue3 代码<br>
+      <span style="color:#888">    └── shared/</span>    ← 纯类型/常量<br>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>⚠️ 当前痛点</h3>
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:200px;background:rgba(224,108,117,0.1);border:1px solid rgba(224,108,117,0.3);border-radius:8px;padding:12px">
+      <strong>依赖污染</strong><br>backend 的 typeorm 泄漏到<br>frontend 的 node_modules
+    </div>
+    <div style="flex:1;min-width:200px;background:rgba(224,108,117,0.1);border:1px solid rgba(224,108,117,0.3);border-radius:8px;padding:12px">
+      <strong>tsconfig 冲突</strong><br>CJS vs ESNext 模块体系<br>在同级配置中互相干扰
+    </div>
+    <div style="flex:1;min-width:200px;background:rgba(224,108,117,0.1);border:1px solid rgba(224,108,117,0.3);border-radius:8px;padding:12px">
+      <strong>路径映射混乱</strong><br>shared 继承 backend 的 CJS，<br>frontend 又绕道 dist/shared
+    </div>
+    <div style="flex:1;min-width:200px;background:rgba(224,108,117,0.1);border:1px solid rgba(224,108,117,0.3);border-radius:8px;padding:12px">
+      <strong>extension-ad 更糟</strong><br>tsconfig.json / build.json /<br>vue.json 三套交叉继承
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:32px">
+  <h3>🟢 目标结构（以 packages/base 示意）</h3>
+  <div class="mockup">
+    <div class="mockup-header">每层独立 package.json + 根层统一导出</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.7">
+      <span style="color:#888">packages/base/</span><br>
+      <span style="color:#61afef">├── package.json</span>           ← <span style="color:#98c379">统一导出：backend/ → frontend/ + shared/</span><br>
+      <span style="color:#888">├── src/</span><br>
+      <span style="color:#888">│   ├── backend/</span><br>
+      <span style="color:#98c379">│   │   ├── package.json</span>   ← <span style="color:#98c379">只依赖 NestJS / TypeORM</span><br>
+      <span style="color:#98c379">│   │   └── tsconfig.json</span>  ← <span style="color:#98c379">CJS / node，仅管自己</span><br>
+      <span style="color:#888">│   ├── frontend/</span><br>
+      <span style="color:#98c379">│   │   ├── package.json</span>   ← <span style="color:#98c379">只依赖 Vue / Vite / ElementPlus</span><br>
+      <span style="color:#98c379">│   │   └── tsconfig.json</span>  ← <span style="color:#98c379">ESNext / bundler，仅管自己</span><br>
+      <span style="color:#888">│   └── shared/</span><br>
+      <span style="color:#98c379">│       ├── package.json</span>   ← <span style="color:#98c379">零运行时依赖，纯类型包</span><br>
+      <span style="color:#98c379">│       └── tsconfig.json</span>  ← <span style="color:#98c379">独立编译，CJS + ESM 双输出</span><br>
+      <span style="color:#888">├── nest-cli.json</span><br>
+      <span style="color:#888">└── vite.config.mts</span><br>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>🎯 关键设计决策 — 需要你来定</h3>
+  <p class="subtitle">以下问题决定最终方案，请一边看图一边告诉我们你的偏好</p>
+  <p style="margin-top:12px;color:#61afef;font-size:15px"><strong>第一个问题：子包的注册方式？</strong></p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="workspace" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>pnpm workspace 子包注册</h3>
+      <p>每个子包的 package.json 独立注册到 pnpm-workspace.yaml，通过 <code>moyan-mfw-base-backend</code> 等独立包名引用。根 package.json 用 <code>workspace:*</code> 聚合导出</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>依赖完全隔离</li><li>编译互不干扰</li><li>IDE 类型解析最清晰</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>需要注册到 workspace root</li><li>包名变多（base-backend / base-frontend / base-shared）</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="exports" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>package.json exports 子路径</h3>
+      <p>保持单一包名，通过 exports 字段区分 <code>moyan-mfw-base/backend</code>。子层用独立的 package.json 管理依赖，但不注册到 pnpm workspace</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>对外包名不变</li><li>workspace 配置改动最小</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>TypeScript 路径解析仍需 paths 映射</li><li>子层 package.json 的依赖可能被根层 hoist 合并</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="hybrid" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>混合模式：exports + npm workspaces</h3>
+      <p>根目录 package.json 用 npm workspaces 声明子层，同时保留 exports 子路径。子层独立 tsconfig + package.json，构建时各自编译到 dist 子目录</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>兼顾隔离与统一导出</li><li>构建脚本简洁</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>workspace 嵌套层级深</li><li>pnpm hoist 行为需要精细控制</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

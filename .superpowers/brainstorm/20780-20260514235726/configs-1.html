@@ -1,0 +1,146 @@
+<h2>📄 关键配置文件详细设计</h2>
+
+<div class="section">
+  <h3>1. pnpm-workspace.yaml 变更</h3>
+  <div class="mockup">
+    <div class="mockup-header">注册所有子包路径</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.6">
+<span style="color:#61afef">packages:</span>
+  - <span style="color:#98c379">packages/base/src/backend</span>        <span style="color:#888">← @internal/base-backend</span>
+  - <span style="color:#98c379">packages/base/src/frontend</span>       <span style="color:#888">← @internal/base-frontend</span>
+  - <span style="color:#98c379">packages/base/src/shared</span>         <span style="color:#888">← @internal/base-shared</span>
+  - packages/base                      <span style="color:#888">← moyan-mfw-base (根聚合包)</span>
+  - <span style="color:#98c379">packages/extensions/*/src/backend</span> <span style="color:#888">← @internal/ad-backend 等</span>
+  - <span style="color:#98c379">packages/extensions/*/src/frontend</span>
+  - <span style="color:#98c379">packages/extensions/*/src/shared</span>
+  - packages/extensions/*              <span style="color:#888">← 扩展根聚合包</span>
+  - packages/component-demo
+  - ...
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>2. packages/base/package.json（npm 发布入口）</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#98c379">"name": "moyan-mfw-base"</span>,<br>
+  <span style="color:#98c379">"version": "1.0.0"</span>,<br>
+  <span style="color:#888">"description": "墨焱MFW核心框架"</span>,<br><br>
+  <span style="color:#f0a040">"exports": {</span><br>
+    <span style="color:#98c379">"./backend"</span>: {<br>
+      <span style="color:#888">"require": "./dist/backend/index.js",</span><br>
+      <span style="color:#888">"types": "./dist/backend/index.d.ts"</span><br>
+    },<br>
+    <span style="color:#98c379">"./frontend"</span>: {<br>
+      <span style="color:#888">"import": "./dist/frontend/index.mjs",</span><br>
+      <span style="color:#888">"require": "./dist/frontend/index.js",</span><br>
+      <span style="color:#888">"types": "./dist/frontend/index.d.ts"</span><br>
+    },<br>
+    <span style="color:#98c379">"./shared"</span>: {<br>
+      <span style="color:#888">"types": "./dist/shared/index.d.ts",</span><br>
+      <span style="color:#888">"require": "./dist/shared/index.js",</span><br>
+      <span style="color:#888">"default": "./dist/shared/index.js"</span><br>
+    }<br>
+  },<br><br>
+  <span style="color:#f0a040">"scripts": {</span><br>
+    <span style="color:#888">"build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",</span><br>
+    <span style="color:#888">"build:backend": "pnpm --filter @internal/base-backend build",</span><br>
+    <span style="color:#888">"build:frontend": "pnpm --filter @internal/base-frontend build",</span><br>
+    <span style="color:#888">"build:shared": "pnpm --filter @internal/base-shared build",</span><br>
+    <span style="color:#888">"build:publish": "pnpm run build && tsc-alias -p tsconfig.publish.json",</span><br>
+    <span style="color:#888">"prepublishOnly": "pnpm run build:publish"</span><br>
+  },<br><br>
+  <span style="color:#f0a040">"files": [</span><br>
+    <span style="color:#888">"dist/",</span><br>
+    <span style="color:#888">"migrations/"</span><br>
+  ],<br><br>
+  <span style="color:#888">"devDependencies": {</span><br>
+    <span style="color:#888">"tsc-alias": "catalog:"</span><br>
+  <span style="color:#888">}</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>3. packages/base/src/backend/package.json</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#98c379">"name": "@internal/base-backend"</span>,<br>
+  <span style="color:#e06c75">"private": true</span>,<br>
+  <span style="color:#888">"version": "1.0.0"</span>,<br><br>
+  <span style="color:#f0a040">"main": "./index.ts"</span>,<br>
+  <span style="color:#f0a040">"types": "./index.ts"</span>,<br><br>
+  <span style="color:#f0a040">"scripts": {</span><br>
+    <span style="color:#888">"build": "tsc && tsc-alias",</span><br>
+    <span style="color:#888">"dev": "nest start --watch"</span><br>
+  },<br><br>
+  <span style="color:#f0a040">"dependencies": {</span><br>
+    <span style="color:#98c379">"@internal/base-shared"</span>: <span style="color:#888">"workspace:*"</span>,<br>
+    <span style="color:#888">"@nestjs/common": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/core": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/platform-express": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/typeorm": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/swagger": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/jwt": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/config": "catalog:",</span><br>
+    <span style="color:#888">"typeorm": "catalog:",</span><br>
+    <span style="color:#888">"class-transformer": "catalog:",</span><br>
+    <span style="color:#888">"class-validator": "catalog:",</span><br>
+    <span style="color:#888">"reflect-metadata": "catalog:",</span><br>
+    <span style="color:#888">"rxjs": "catalog:",</span><br>
+    <span style="color:#888">"dotenv": "catalog:",</span><br>
+    <span style="color:#888">"bcrypt": "catalog:",</span><br>
+    <span style="color:#888">"multer": "catalog:",</span><br>
+    <span style="color:#888">"mysql2": "catalog:",</span><br>
+    <span style="color:#888">"redis": "catalog:"</span><br>
+  },<br>
+  <span style="color:#888">"devDependencies": {</span><br>
+    <span style="color:#888">"tsc-alias": "catalog:",</span><br>
+    <span style="color:#888">"typescript": "catalog:"</span><br>
+  <span style="color:#888">}</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>4. packages/base/src/frontend/package.json</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#98c379">"name": "@internal/base-frontend"</span>,<br>
+  <span style="color:#e06c75">"private": true</span>,<br><br>
+  <span style="color:#f0a040">"type": "module"</span>,<br><br>
+  <span style="color:#f0a040">"scripts": {</span><br>
+    <span style="color:#888">"build": "vite build && tsc --emitDeclarationOnly",</span><br>
+    <span style="color:#888">"dev": "vite"</span><br>
+  },<br><br>
+  <span style="color:#f0a040">"dependencies": {</span><br>
+    <span style="color:#98c379">"@internal/base-shared"</span>: <span style="color:#888">"workspace:*"</span>,<br>
+    <span style="color:#888">"vue": "catalog:",</span><br>
+    <span style="color:#888">"vue-router": "catalog:",</span><br>
+    <span style="color:#888">"element-plus": "catalog:",</span><br>
+    <span style="color:#888">"@element-plus/icons-vue": "catalog:",</span><br>
+    <span style="color:#888">"pinia": "catalog:",</span><br>
+    <span style="color:#888">"@vueuse/core": "catalog:",</span><br>
+    <span style="color:#888">"axios": "catalog:",</span><br>
+    <span style="color:#888">"md-editor-v3": "catalog:",</span><br>
+    <span style="color:#888">"quill": "catalog:",</span><br>
+    <span style="color:#888">"vue-advanced-cropper": "catalog:"</span><br>
+  },<br>
+  <span style="color:#888">"devDependencies": {</span><br>
+    <span style="color:#888">"vite": "catalog:",</span><br>
+    <span style="color:#888">"@vitejs/plugin-vue": "catalog:",</span><br>
+    <span style="color:#888">"@vitejs/plugin-vue-jsx": "catalog:",</span><br>
+    <span style="color:#888">"vue-tsc": "catalog:",</span><br>
+    <span style="color:#888">"sass": "catalog:",</span><br>
+    <span style="color:#888">"typescript": "catalog:"</span><br>
+  <span style="color:#888">}</span><br>
+}
+    </div>
+  </div>
+</div>

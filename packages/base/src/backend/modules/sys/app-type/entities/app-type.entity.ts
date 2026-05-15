@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 应用类型实体
  * @description 应用分类/应用类型定义
  */
@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ClassConstructor } from 'class-transformer';
-import { toDescription, StatusDict, MultiAppEnabledDict } from '../../../../../shared';
+import { toDescription, StatusDict, MultiAppEnabledDict } from '@internal/base-shared';
 
 /**
  * 应用类型实体

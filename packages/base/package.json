@@ -60,7 +60,11 @@
     "@types/jest": "catalog:",
     "@nestjs/testing": "catalog:",
     "supertest": "catalog:",
-    "@types/supertest": "catalog:"
+    "@types/supertest": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   },
   "engines": {
     "node": ">=20.0.0",

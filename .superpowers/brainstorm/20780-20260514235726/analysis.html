@@ -1,0 +1,136 @@
+<h2>📊 完整方案分析：注册子层到 workspace 的影响</h2>
+<p class="subtitle">基于 538 条 import 语句的完整扫描结果</p>
+
+<div class="section">
+  <h3>问题 1：本地开发的模块引用路径会变吗？</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8">
+      <p style="color:#98c379"><strong>✅ 包内相对路径：完全不变</strong></p>
+      <p style="margin-left:16px">
+        相对路径是文件系统层面的距离，和 tsconfig 放在哪里无关。<br>
+        例如 <code>modules/sys/app/service/</code> → <code>common/</code> 永远是 <code>../../../../common/</code>
+      </p>
+
+      <p style="color:#98c379;margin-top:12px"><strong>✅ 路径别名 @/* ：小幅调整</strong></p>
+      <p style="margin-left:16px">
+        当前后端 tsconfig: <code>"@/*": ["src/backend/*"]</code><br>
+        新 tsconfig 放在 src/backend/ 下: <code>"@/*": ["./*"]</code>（<strong>仅改映射值</strong>，import 语句不动）
+      </p>
+
+      <p style="color:#f0a040;margin-top:12px"><strong>⚠️ 跨包引用：需要区分 dev/prod</strong></p>
+      <p style="margin-left:16px">
+        <strong>内部 dev 开发时</strong>：backend → shared 通过 workspace 协议 <code>"@internal/base-shared": "workspace:*"</code><br>
+        <strong>npm 消费时</strong>：通过 exports 子路径 <code>"moyan-mfw-base/shared"</code><br>
+        当前代码中的 <code>import ... from 'moyan-mfw-base/shared'</code> 在 dev 时通过 tsconfig paths 映射到源码
+      </p>
+
+      <p style="color:#61afef;margin-top:12px"><strong>📊 影响面统计</strong></p>
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:rgba(97,175,239,0.1)">
+          <th style="padding:8px;text-align:left">引用类型</th>
+          <th style="padding:8px">数量</th>
+          <th style="padding:8px">是否受影响</th>
+          <th style="padding:8px;text-align:left">说明</th>
+        </tr>
+        <tr>
+          <td style="padding:8px">base backend → shared</td>
+          <td style="padding:8px;text-align:center">7</td>
+          <td style="padding:8px;text-align:center;color:#f0a040">⚠️ 小改</td>
+          <td style="padding:8px">调整 tsconfig paths 映射源即可</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:8px">base backend 内部</td>
+          <td style="padding:8px;text-align:center">~500</td>
+          <td style="padding:8px;text-align:center;color:#98c379">✅ 不变</td>
+          <td style="padding:8px">相对路径 + @/* 别名均兼容</td>
+        </tr>
+        <tr>
+          <td style="padding:8px">extension-ad → base/backend</td>
+          <td style="padding:8px;text-align:center">~20</td>
+          <td style="padding:8px;text-align:center;color:#f0a040">⚠️ 小改</td>
+          <td style="padding:8px">调整 tsconfig paths: dist → src</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:8px">extension-ad → base/frontend</td>
+          <td style="padding:8px;text-align:center">~25</td>
+          <td style="padding:8px;text-align:center;color:#98c379">✅ 不变</td>
+          <td style="padding:8px">已指向源码 src/frontend</td>
+        </tr>
+        <tr>
+          <td style="padding:8px">extension-ad → base/shared</td>
+          <td style="padding:8px;text-align:center">~10</td>
+          <td style="padding:8px;text-align:center;color:#f0a040">⚠️ 小改</td>
+          <td style="padding:8px">同 base backend → shared</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:8px">extension-ad shared 内部</td>
+          <td style="padding:8px;text-align:center">~5</td>
+          <td style="padding:8px;text-align:center;color:#98c379">✅ 不变</td>
+          <td style="padding:8px">包内相对路径</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>问题 2：tsconfig.json 调整清单</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.6">
+      <p style="color:#e06c75"><strong>🗑️ 删除（混乱源头）</strong></p>
+      <p style="margin-left:16px;color:#888">
+        packages/base/tsconfig.backend.alias.json  ← tsc-alias 专项配置，子层自治后不需要<br>
+        packages/base/tsconfig.shared.json         ← 并入 @internal/base-shared 自己的 tsconfig<br>
+        extension-ad/tsconfig.build.json           ← 并入 extension-ad/src/backend/tsconfig.json
+      </p>
+
+      <p style="color:#f0a040;margin-top:12px"><strong>✏️ 重写（核心变化）</strong></p>
+      <p style="margin-left:16px;color:#888">
+        packages/base/tsconfig.json → 改为 project references 指向 3 个子包<br>
+        packages/base/tsconfig.backend.json → 移入 src/backend/tsconfig.json<br>
+        packages/base/tsconfig.frontend.json → 移入 src/frontend/tsconfig.json<br>
+        extension-ad/tsconfig.json → 移入 src/backend/tsconfig.json（后端）+ src/shared/tsconfig.json
+      </p>
+
+      <p style="color:#98c379;margin-top:12px"><strong>➕ 新增</strong></p>
+      <p style="margin-left:16px;color:#888">
+        packages/base/src/backend/tsconfig.json    ← CJS, rootDir: ".", paths: "@/*":["./*"]<br>
+        packages/base/src/frontend/tsconfig.json   ← ESNext/bundler, rootDir: "."<br>
+        packages/base/src/shared/tsconfig.json     ← CJS+ESM 双输出<br>
+        extension-ad/src/backend/tsconfig.json     ← 同 base backend<br>
+        extension-ad/src/frontend/tsconfig.json    ← 同 base frontend<br>
+        extension-ad/src/shared/tsconfig.json      ← 同 base shared
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>🎯 dev 时跨包引用方案：export 条件 + tsconfig paths</h3>
+  <p class="subtitle">最关键的决策：开发时"moyan-mfw-base/shared" 怎么解析？</p>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="paths-dev" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>tsconfig paths 指向 src（推荐）</h3>
+      <p>consumer 包的 tsconfig 中用 paths 将 <code>"moyan-mfw-base/shared"</code> 映射到 <code>"../../base/src/shared/index.ts"</code>。npm 消费时走 exports → dist</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>import 语句一行不改</li><li>dev 即时更新，无构建等待</li><li>业界常见做法（Vite/Nx 等）</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>新增 consumer 包需手动配置 paths</li><li>paths 是 tsconfig 特性，非标准 JS 解析</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="workspace-ref" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>统一用 workspace 内部引用（彻底改）</h3>
+      <p>所有 import 改为 <code>'@internal/base-shared'</code>，利用 pnpm workspace 的 node_modules 软链接。npm 发布时不做任何处理（消费者不安装内部包）</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>优点</h4><ul><li>纯标准 JS 解析，无 tsconfig hack</li><li>编译时能严格校验依赖边界</li></ul></div>
+        <div class="cons"><h4>缺点</h4><ul><li>大量 import 语句需修改（~200+ 处）</li><li>源码和发布产物的 import 不一致</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

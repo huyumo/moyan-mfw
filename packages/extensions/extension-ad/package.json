@@ -38,6 +38,10 @@
     "@internal/ad-frontend": "workspace:*",
     "@internal/ad-shared": "workspace:*",
     "tsc-alias": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

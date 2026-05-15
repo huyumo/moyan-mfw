@@ -31,11 +31,13 @@ const config: Config = {
   roots: ['<rootDir>/src/backend', '<rootDir>/tests'],
 
   // Transform configuration
+  // 指向子包 tsconfig（tsconfig.test.json 将在迁移第四阶段删除）
   transform: {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        tsconfig: 'tsconfig.test.json',
+        tsconfig: 'src/backend/tsconfig.json',
+        types: ['jest', 'node'],
       },
     ],
   },

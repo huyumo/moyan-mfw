@@ -30,6 +30,9 @@
   },
   "devDependencies": {
     "@nestjs/cli": "catalog:",
+    "@types/bcrypt": "catalog:",
+    "@types/express": "catalog:",
+    "@types/multer": "catalog:",
     "typescript": "catalog:"
   }
 }

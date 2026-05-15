@@ -1,0 +1,110 @@
+<h2>📊 方案总结 + 待确认事项</h2>
+
+<div class="section">
+  <h3>✅ 方案 B 核心架构回顾</h3>
+  <div class="mockup">
+    <div class="mockup-header">一套机制解决所有问题</div>
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <tr style="background:rgba(97,175,239,0.1)">
+          <th style="padding:8px;text-align:left">问题</th>
+          <th style="padding:8px;text-align:left">现状</th>
+          <th style="padding:8px;text-align:left;color:#98c379">方案 B 如何解决</th>
+        </tr>
+        <tr>
+          <td style="padding:8px"><strong>依赖污染</strong></td>
+          <td style="padding:8px">backend 能看到 Vue</td>
+          <td style="padding:8px;color:#98c379">每个子层独立 package.json → pnpm 隔离 node_modules</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:8px"><strong>tsconfig 冲突</strong></td>
+          <td style="padding:8px">shared 继承 backend CJS</td>
+          <td style="padding:8px;color:#98c379">每个子层独立 tsconfig，互不继承</td>
+        </tr>
+        <tr>
+          <td style="padding:8px"><strong>模块解析混乱</strong></td>
+          <td style="padding:8px">paths 映射绕来绕去</td>
+          <td style="padding:8px;color:#98c379">dev 用标准 workspace 解析；发布用 tsc-alias 一次性转换</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:8px"><strong>npm 发布</strong></td>
+          <td style="padding:8px">当前可用</td>
+          <td style="padding:8px;color:#98c379">一个逻辑单元 = 一个 npm 包，prepublishOnly 自动转换</td>
+        </tr>
+        <tr>
+          <td style="padding:8px"><strong>新增扩展包</strong></td>
+          <td style="padding:8px">手动拼 tsconfig</td>
+          <td style="padding:8px;color:#98c379">只需创建 3 个子 package.json，注册到 workspace</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>📈 import 语句变更统计</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:13px;line-height:1.8">
+      <p><strong style="color:#98c379">✅ 不需要改（~500 条）</strong></p>
+      <p style="margin-left:16px;color:#888">
+        包内相对路径：<code>../../../common/</code>、<code>../entities/</code>、<code>../dto</code> 等<br>
+        @/* 路径别名：<code>@/common</code>、<code>@/modules/sys/</code> 等
+      </p>
+
+      <p style="margin-top:12px"><strong style="color:#f0a040">⚠️ 需要改（~40 条）</strong></p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-left:16px">
+        <tr style="background:rgba(240,160,64,0.1)">
+          <th style="padding:6px;text-align:left">原来</th>
+          <th style="padding:6px;text-align:left">改为</th>
+          <th style="padding:6px">数量</th>
+        </tr>
+        <tr>
+          <td style="padding:6px"><code>'moyan-mfw-base/backend'</code></td>
+          <td style="padding:6px;color:#98c379"><code>'@internal/base-backend'</code></td>
+          <td style="padding:6px;text-align:center">~20</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:6px"><code>'moyan-mfw-base/frontend'</code></td>
+          <td style="padding:6px;color:#98c379"><code>'@internal/base-frontend'</code></td>
+          <td style="padding:6px;text-align:center">~25</td>
+        </tr>
+        <tr>
+          <td style="padding:6px"><code>'moyan-mfw-base/shared'</code></td>
+          <td style="padding:6px;color:#98c379"><code>'@internal/base-shared'</code></td>
+          <td style="padding:6px;text-align:center">~15</td>
+        </tr>
+        <tr style="background:rgba(255,255,255,0.03)">
+          <td style="padding:6px"><code>'../../shared/...'</code>（包内）</td>
+          <td style="padding:6px;color:#98c379"><code>'@internal/ad-shared'</code></td>
+          <td style="padding:6px;text-align:center">~5</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>⚠️ 需要确认 2 个设计细节</h3>
+</div>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="confirm-ok" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>包内 shared 引用方式</h3>
+      <p>extension-ad 的 backend 引用自己的 shared 代码时，是改成 <code>@internal/ad-shared</code>（标准 workspace 引用），还是保留相对路径 <code>../../shared/</code>？相对路径无需 tsc-alias 转换，但不够"干净"</p>
+    </div>
+  </div>
+  <div class="option" data-choice="confirm-ok" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>base 内部 backend → shared 也走 @internal 吗？</h3>
+      <p>base 包内部 backend → shared 引用（entity 的 toDescription、StatusDict 等 ~7 处），是否也改为 <code>@internal/base-shared</code>？改了更统一，但 tsc-alias 转相对路径多一步。不改则保留相对路径也能工作</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px;text-align:center">
+  <p style="font-size:16px">👆 点击选择你的偏好（可多选），然后在终端回复"确认"进入下一步</p>
+</div>
