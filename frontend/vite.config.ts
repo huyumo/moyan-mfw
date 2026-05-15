@@ -23,16 +23,11 @@ export default defineConfig({
       'moyan-mfw-extension-ad/frontend': resolve(__dirname, '../packages/extensions/extension-ad/src/frontend'),
       'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
-      '@internal/base-shared': resolve(__dirname, '../packages/base/dist/shared/index.js'),
-      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/dist/shared/index.js'),
     },
   },
   server: {
     port: 5173,
     host: true,
-    fs: {
-      strict: false,
-    },
     proxy: {
       '/api': { target: 'http://localhost:3000', changeOrigin: true },
       '/v1': { target: 'http://localhost:3000', changeOrigin: true },
