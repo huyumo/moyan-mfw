@@ -1,11 +1,11 @@
-﻿/**
+/**
  * @fileoverview 审计日志实体
  * @description 记录系统操作审计日志
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
 import { AuditModule } from '../../../../common/decorators/audit-log.decorator';
-import { toDescription, AuditModuleDict } from '../../../../../shared';
+import { toDescription, AuditModuleDict } from '@internal/base-shared';
 
 /**
  * 审计日志实体

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 角色实体
  * @description 系统角色实体，用于 RBAC 权限管理
  */
@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import type { Permission } from '../../permission/entities/permission.entity';
-import { toDescription, StatusDict, IsBuiltinDict, IsOwnerDict } from '../../../../../shared';
+import { toDescription, StatusDict, IsBuiltinDict, IsOwnerDict } from '@internal/base-shared';
 
 /**
  * 角色实体类

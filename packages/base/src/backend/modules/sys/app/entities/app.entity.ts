@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 应用实例实体
  * @description 应用实例定义，存储应用的基本信息
  */
@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
-import { toDescription, StatusDict } from '../../../../../shared';
+import { toDescription, StatusDict } from '@internal/base-shared';
 
 /**
  * 应用实例实体

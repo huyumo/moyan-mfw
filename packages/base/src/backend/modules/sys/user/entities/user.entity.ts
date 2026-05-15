@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 用户实体
  * @description 系统用户基础实体，存储用户登录和基本信息
  */
@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
-import { StatusDict, GenderDict, DeveloperDict, toDescription } from '../../../../../shared'
+import { StatusDict, GenderDict, DeveloperDict, toDescription } from '@internal/base-shared';
 
 /**
  * 用户实体类

@@ -1,5 +1,5 @@
-﻿import 'reflect-metadata'
-import { getAllDicts } from '../../../shared'
+import 'reflect-metadata'
+import { getAllDicts } from '@internal/base-shared';
 import type { DataSource } from 'typeorm'
 
 export async function seedDicts(dataSource: DataSource) {

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 权限实体
  * @description 系统权限实体，定义系统中的所有权限点
  */
@@ -14,7 +14,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
-import { toDescription, StatusDict, PermissionTypeDict, NodeTypeDict, IsAutoSyncDict, IsVisibleDict, IsCacheDict, ShowModeDict } from '../../../../../shared';
+import { toDescription, StatusDict, PermissionTypeDict, NodeTypeDict, IsAutoSyncDict, IsVisibleDict, IsCacheDict, ShowModeDict } from '@internal/base-shared';
 
 /**
  * 权限类型枚举

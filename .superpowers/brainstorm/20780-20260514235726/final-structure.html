@@ -1,0 +1,93 @@
+<h2>🏗️ 最终方案：方案 B — workspace 内部引用 + 构建时路径转换</h2>
+<p class="subtitle">源码用 @internal/xxx 开发，发布时 tsc-alias 转为 npm 路径</p>
+
+<div class="section">
+  <h3>📐 核心原则</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-size:14px;line-height:1.8">
+      <p><strong style="color:#61afef">开发时（workspace 内）</strong><br>
+      所有跨包引用使用 <code>@internal/base-backend</code> / <code>@internal/base-frontend</code> / <code>@internal/base-shared</code><br>
+      pnpm workspace 的 node_modules 软链接自动解析 → 标准 JS 模块解析，零 tsconfig hack</p>
+
+      <p style="margin-top:12px"><strong style="color:#f0a040">构建时（npm publish 前）</strong><br>
+      tsc 编译后用 <code>tsc-alias</code> 将 <code>@internal/xxx</code> 转为消费者路径：<br>
+      <code>@internal/base-backend</code> → <code>moyan-mfw-base/backend</code><br>
+      <code>@internal/base-shared</code>  → <code>moyan-mfw-base/shared</code></p>
+
+      <p style="margin-top:12px"><strong style="color:#98c379">消费时（npm install）</strong><br>
+      用户 <code>npm i moyan-mfw-extension-ad</code>，dist 里的 require 是 <code>moyan-mfw-base/backend</code><br>
+      Node.js 通过 exports 字段解析到 <code>dist/backend/index.js</code> → 标准 npm 行为</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>📦 packages/base — 完整目录结构</h3>
+  <div class="mockup">
+    <div class="mockup-header">根层：npm 发布入口</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.6">
+<span style="color:#888">packages/base/</span>
+<span style="color:#61afef">├── package.json</span>              <span style="color:#888">← npm 包 "moyan-mfw-base"；只声明 exports + scripts</span>
+<span style="color:#888">├── tsconfig.json</span>             <span style="color:#888">← project references 指向 3 个子包</span>
+<span style="color:#888">├── tsconfig.publish.json</span>      <span style="color:#888">← 发布构建用的路径映射配置</span>
+<span style="color:#888">├── nest-cli.json</span>             <span style="color:#888">← NestJS CLI 指向 src/backend</span>
+<span style="color:#888">├── vite.config.mts</span>           <span style="color:#888">← Vite 配置</span>
+<span style="color:#888">├── .npmignore</span>
+<span style="color:#888">├── src/</span>
+<span style="color:#888">│   ├── backend/</span>              <span style="color:#888">← 后端代码（src 不动！）</span>
+<span style="color:#98c379">│   │   ├── package.json</span>      <span style="color:#888">← "@internal/base-backend": private</span>
+<span style="color:#98c379">│   │   ├── tsconfig.json</span>     <span style="color:#888">← CJS，rootDir:"."，paths:"@/*":["./*"]</span>
+<span style="color:#888">│   │   ├── index.ts</span>
+<span style="color:#888">│   │   ├── app.module.ts</span>
+<span style="color:#888">│   │   ├── common/</span>
+<span style="color:#888">│   │   ├── modules/</span>
+<span style="color:#888">│   │   └── ...</span>
+<span style="color:#888">│   ├── frontend/</span>             <span style="color:#888">← 前端代码（src 不动）</span>
+<span style="color:#98c379">│   │   ├── package.json</span>      <span style="color:#888">← "@internal/base-frontend": private</span>
+<span style="color:#98c379">│   │   ├── tsconfig.json</span>     <span style="color:#888">← ESNext/bundler，rootDir:"."</span>
+<span style="color:#888">│   │   └── ...</span>
+<span style="color:#888">│   └── shared/</span>               <span style="color:#888">← 共享代码（src 不动）</span>
+<span style="color:#98c379">│       ├── package.json</span>      <span style="color:#888">← "@internal/base-shared": private，零依赖</span>
+<span style="color:#98c379">│       ├── tsconfig.json</span>     <span style="color:#888">← 独立编译，CJS 输出（前后端都消费）</span>
+<span style="color:#888">│       └── ...</span>
+<span style="color:#888">├── dist/</span>                     <span style="color:#888">← 构建产物（npm publish 发布此目录）</span>
+<span style="color:#888">│   ├── backend/</span>
+<span style="color:#888">│   ├── frontend/</span>
+<span style="color:#888">│   └── shared/</span>
+<span style="color:#888">├── tests/</span>
+<span style="color:#888">└── migrations/</span>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <h3>📦 packages/extensions/extension-ad — 完整目录结构</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:12px;line-height:1.6">
+<span style="color:#888">packages/extensions/extension-ad/</span>
+<span style="color:#61afef">├── package.json</span>              <span style="color:#888">← npm 包 "moyan-mfw-extension-ad"</span>
+<span style="color:#888">├── tsconfig.json</span>             <span style="color:#888">← project references</span>
+<span style="color:#888">├── tsconfig.publish.json</span>      <span style="color:#888">← 发布构建：@internal → moyan-mfw-base</span>
+<span style="color:#888">├── extension.json</span>
+<span style="color:#888">├── nest-cli.json</span>
+<span style="color:#888">├── vite.config.mts</span>
+<span style="color:#888">├── .npmignore</span>
+<span style="color:#888">├── src/</span>
+<span style="color:#888">│   ├── backend/</span>
+<span style="color:#98c379">│   │   ├── package.json</span>      <span style="color:#888">← "@internal/ad-backend": private</span>
+<span style="color:#98c379">│   │   ├── tsconfig.json</span>
+<span style="color:#888">│   │   └── ...</span>               <span style="color:#888">← controller/service/entities/dto</span>
+<span style="color:#888">│   ├── frontend/</span>
+<span style="color:#98c379">│   │   ├── package.json</span>      <span style="color:#888">← "@internal/ad-frontend": private</span>
+<span style="color:#98c379">│   │   ├── tsconfig.json</span>
+<span style="color:#888">│   │   └── ...</span>               <span style="color:#888">← views/components/apis</span>
+<span style="color:#888">│   └── shared/</span>
+<span style="color:#98c379">│       ├── package.json</span>      <span style="color:#888">← "@internal/ad-shared": private</span>
+<span style="color:#98c379">│       ├── tsconfig.json</span>
+<span style="color:#888">│       └── ...</span>               <span style="color:#888">← constants/types/dict/paths</span>
+<span style="color:#888">├── dist/</span>
+<span style="color:#888">└── migrations/</span>
+    </div>
+  </div>
+</div>
+</div>

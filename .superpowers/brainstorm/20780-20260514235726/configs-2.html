@@ -1,0 +1,178 @@
+<h2>📄 tsconfig 配置 + 扩展包 + 导入转换流程</h2>
+
+<div class="section">
+  <h3>5. packages/base/src/backend/tsconfig.json</h3>
+  <div class="mockup">
+    <div class="mockup-header">后端独立 tsconfig — 只管自己，不再继承 shared</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#f0a040">"extends": "../../../../tsconfig.base.json"</span>,<br>
+  <span style="color:#888">"compilerOptions": {</span><br>
+    <span style="color:#888">"module": "commonjs",</span><br>
+    <span style="color:#888">"moduleResolution": "node",</span><br>
+    <span style="color:#888">"strictPropertyInitialization": false,</span><br>
+    <span style="color:#888">"composite": true,</span><br>
+    <span style="color:#888">"outDir": "../../dist/backend",</span><br>
+    <span style="color:#888">"declarationMap": true,</span><br>
+    <span style="color:#888">"baseUrl": ".",</span><br>
+    <span style="color:#888">"paths": {</span><br>
+      <span style="color:#98c379">"@/*": ["./*"]</span>,<br>
+      <span style="color:#888">"@common/*": ["common/*"],</span><br>
+      <span style="color:#888">"@modules/*": ["modules/*"]</span><br>
+    }<br>
+  },<br>
+  <span style="color:#888">"include": ["./**/*.ts"],</span><br>
+  <span style="color:#888">"exclude": ["node_modules"]</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <h3>6. packages/base/src/shared/tsconfig.json</h3>
+  <div class="mockup">
+    <div class="mockup-header">共享层完全独立 — 不再被迫继承 backend 的 CJS</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#f0a040">"extends": "../../../../tsconfig.base.json"</span>,<br>
+  <span style="color:#888">"compilerOptions": {</span><br>
+    <span style="color:#888">"module": "commonjs",               ← backend 消费 CJS</span><br>
+    <span style="color:#888">"moduleResolution": "node",</span><br>
+    <span style="color:#888">"composite": true,</span><br>
+    <span style="color:#888">"outDir": "../../dist/shared",</span><br>
+    <span style="color:#888">"declarationMap": true</span><br>
+  },<br>
+  <span style="color:#888">"include": ["./**/*.ts"]</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:16px">
+  <h3>7. packages/base/src/frontend/tsconfig.json</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#f0a040">"extends": "../../../../tsconfig.base.json"</span>,<br>
+  <span style="color:#888">"compilerOptions": {</span><br>
+    <span style="color:#888">"module": "ESNext",</span><br>
+    <span style="color:#888">"moduleResolution": "bundler",</span><br>
+    <span style="color:#888">"composite": true,</span><br>
+    <span style="color:#888">"outDir": "../../dist/frontend",</span><br>
+    <span style="color:#888">"jsx": "preserve",</span><br>
+    <span style="color:#888">"jsxImportSource": "vue",</span><br>
+    <span style="color:#888">"paths": { "@/*": ["./*"] },</span><br>
+    <span style="color:#888">"types": ["vite/client", "node"]</span><br>
+  },<br>
+  <span style="color:#888">"include": ["./**/*.ts", "./**/*.tsx", "./**/*.vue", "./**/*.json"]</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>8. packages/extensions/extension-ad/src/backend/package.json</h3>
+  <div class="mockup">
+    <div class="mockup-header">扩展包后端 — 通过 @internal 引用 base</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#98c379">"name": "@internal/ad-backend"</span>,<br>
+  <span style="color:#e06c75">"private": true</span>,<br><br>
+  <span style="color:#f0a040">"main": "./index.ts"</span>,<br>
+  <span style="color:#f0a040">"types": "./index.ts"</span>,<br><br>
+  <span style="color:#f0a040">"scripts": {</span><br>
+    <span style="color:#888">"build": "tsc && tsc-alias",</span><br>
+    <span style="color:#888">"dev": "nest start --watch"</span><br>
+  },<br><br>
+  <span style="color:#f0a040">"dependencies": {</span><br>
+    <span style="color:#98c379">"@internal/base-backend"</span>: <span style="color:#888">"workspace:*"</span>,<br>
+    <span style="color:#98c379">"@internal/base-shared"</span>: <span style="color:#888">"workspace:*"</span>,<br>
+    <span style="color:#98c379">"@internal/ad-shared"</span>: <span style="color:#888">"workspace:*"</span>,<br>
+    <span style="color:#888">"typeorm": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/common": "catalog:",</span><br>
+    <span style="color:#888">"@nestjs/core": "catalog:",</span><br>
+    <span style="color:#888">"rxjs": "catalog:"</span><br>
+  },<br>
+  <span style="color:#888">"devDependencies": {</span><br>
+    <span style="color:#888">"tsc-alias": "catalog:",</span><br>
+    <span style="color:#888">"typescript": "catalog:"</span><br>
+  <span style="color:#888">}</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>9. tsconfig.publish.json（npm 发布前转换）</h3>
+  <div class="mockup">
+    <div class="mockup-header">build:publish 脚本用此配置，tsc-alias 将 @internal 转为 npm 路径</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#888">// packages/base/tsconfig.publish.json</span><br>
+  <span style="color:#f0a040">"extends": "./tsconfig.json"</span>,<br>
+  <span style="color:#888">"compilerOptions": {</span><br>
+    <span style="color:#888">"paths": {</span><br>
+      <span style="color:#98c379">"@internal/base-shared"</span>: <span style="color:#888">["./dist/shared/index.js"],</span><br>
+      <span style="color:#98c379">"@internal/base-backend"</span>: <span style="color:#888">["./dist/backend/index.js"],</span><br>
+      <span style="color:#98c379">"@internal/base-frontend"</span>: <span style="color:#888">["./dist/frontend/index.js"]</span><br>
+    <span style="color:#888">}</span><br>
+  },<br>
+  <span style="color:#f0a040">"include": ["./dist/**/*.js"]</span><br>
+}
+    </div>
+  </div>
+  <div class="mockup" style="margin-top:8px">
+    <div class="mockup-header">packages/extensions/extension-ad/tsconfig.publish.json</div>
+    <div class="mockup-body" style="font-family:monospace;font-size:11px;line-height:1.5">
+{<br>
+  <span style="color:#888">// 扩展包的 @internal → 消费者可解析的 npm 路径</span><br>
+  <span style="color:#f0a040">"extends": "./tsconfig.json"</span>,<br>
+  <span style="color:#888">"compilerOptions": {</span><br>
+    <span style="color:#888">"paths": {</span><br>
+      <span style="color:#98c379">"@internal/base-backend"</span>: <span style="color:#888">["moyan-mfw-base/backend"],</span><br>
+      <span style="color:#98c379">"@internal/base-shared"</span>: <span style="color:#888">["moyan-mfw-base/shared"],</span><br>
+      <span style="color:#98c379">"@internal/base-frontend"</span>: <span style="color:#888">["moyan-mfw-base/frontend"],</span><br>
+      <span style="color:#98c379">"@internal/ad-shared"</span>: <span style="color:#888">["../shared/index.js"]</span>             <span style="color:#888">← 内部引用转相对路径</span><br>
+    <span style="color:#888">}</span><br>
+  },<br>
+  <span style="color:#f0a040">"include": ["./dist/**/*.js"]</span><br>
+}
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top:24px">
+  <h3>🔄 导入路径转换流程</h3>
+  <div class="mockup">
+    <div class="mockup-body" style="font-size:13px;line-height:1.8">
+      <p><strong style="color:#61afef">阶段 1：源码（dev）</strong></p>
+      <p style="margin-left:16px;font-family:monospace">
+        <span style="color:#888">// extension-ad/src/backend/controller/ad.controller.ts</span><br>
+        <span style="color:#c678dd">import</span> { <span style="color:#e5c07b">AuthGuard</span> } <span style="color:#c678dd">from</span> <span style="color:#98c379">'@internal/base-backend'</span>;<br>
+        <span style="color:#c678dd">import</span> { <span style="color:#e5c07b">StatusDict</span> } <span style="color:#c678dd">from</span> <span style="color:#98c379">'@internal/base-shared'</span>;<br>
+        <span style="color:#c678dd">import</span> { <span style="color:#e5c07b">LINK_TYPE</span> } <span style="color:#c678dd">from</span> <span style="color:#98c379">'@internal/ad-shared'</span>;
+      </p>
+
+      <p style="margin-top:12px"><strong style="color:#61afef">├─ dev 解析</strong>：pnpm workspace 软链接 → <code>node_modules/@internal/base-backend</code> → 标准 JS 解析</p>
+
+      <p style="margin-top:16px"><strong style="color:#f0a040">阶段 2：tsc 编译</strong></p>
+      <p style="margin-left:16px">
+        tsc 按 tsconfig 编译为 CJS，output 中 <strong style="color:#e06c75">保留</strong> <code>require('@internal/base-backend')</code>
+      </p>
+
+      <p style="margin-top:16px"><strong style="color:#f0a040">阶段 3：tsc-alias 转换（prepublishOnly）</strong></p>
+      <p style="margin-left:16px;font-family:monospace">
+        <span style="color:#888">// dist/backend/controller/ad.controller.js（转换后）</span><br>
+        <span style="color:#c678dd">const</span> { AuthGuard } = <span style="color:#c678dd">require</span>(<span style="color:#98c379">'moyan-mfw-base/backend'</span>);<br>
+        <span style="color:#c678dd">const</span> { StatusDict } = <span style="color:#c678dd">require</span>(<span style="color:#98c379">'moyan-mfw-base/shared'</span>);<br>
+        <span style="color:#c678dd">const</span> { LINK_TYPE } = <span style="color:#c678dd">require</span>(<span style="color:#98c379">'../shared/index.js'</span>);   <span style="color:#888">← 自引用转相对</span>
+      </p>
+
+      <p style="margin-top:16px"><strong style="color:#98c379">阶段 4：消费者安装</strong></p>
+      <p style="margin-left:16px">
+        <code>npm i moyan-mfw-extension-ad moyan-mfw-base</code><br>
+        Node.js 通过 <code>moyan-mfw-base</code> 的 exports 字段解析 → 标准 npm 行为 ✅
+      </p>
+    </div>
+  </div>
+</div>

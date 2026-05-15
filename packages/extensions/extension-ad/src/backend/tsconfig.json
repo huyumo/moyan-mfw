@@ -4,12 +4,12 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
-    "composite": true,
+    "noImplicitAny": false,
     "outDir": "../../dist/backend",
     "declarationMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*", "../../../../base/src/backend/*"]
     }
   },
   "include": ["./**/*.ts"],
