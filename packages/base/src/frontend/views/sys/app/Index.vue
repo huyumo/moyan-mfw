@@ -1,7 +1,7 @@
-ï»¿ï»¿<!--
+?<!--
 /**
- * @fileoverview åº”ç”¨å®ä¾‹ç®¡ç†åˆ—è¡¨é¡µé¢
- * @description ç®¡ç†åº”ç”¨å®ä¾‹çš„åˆ›å»ºã€ç¼–è¾‘ã€åˆ é™¤å’Œæ‹¥æœ‰è€…ç®¡ç†
+ * @fileoverview Ó¦ÓÃÊµÀı¹ÜÀíÁĞ±íÒ³Ãæ
+ * @description ¹ÜÀíÓ¦ÓÃÊµÀıµÄ´´½¨¡¢±à¼­¡¢É¾³ıºÍÓµÓĞÕß¹ÜÀí
  */
 -->
 <template>
@@ -9,7 +9,7 @@
     <template #header-extra>
       <el-button type="primary" data-testid="app-create-btn" @click="handleAdd">
         <el-icon><Plus /></el-icon>
-        æ–°å»ºåº”ç”¨
+        ĞÂ½¨Ó¦ÓÃ
       </el-button>
     </template>
 
@@ -42,54 +42,54 @@ import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
 import { OwnerChanger } from '../../../components/business';
 import { getImageSrc } from '../../../utils/image';
-import { toItems, StatusDict } from '../../../../shared';
+import { toItems, StatusDict } from '@internal/base-shared';
 
 defineOptions({ name: 'MfwAppList' });
 
 const listPage = ref<MfwListPageInstance>();
 
-/** åº”ç”¨ç±»å‹åˆ—è¡¨ï¼ˆç”¨äºæœç´¢æ¨¡æ¿ï¼‰ */
+/** Ó¦ÓÃÀàĞÍÁĞ±í£¨ÓÃÓÚËÑË÷Ä£°å£© */
 const appTypeList = ref<AppTypeResponseDto[]>([]);
 
-/** æœç´¢æ¨¡æ¿ */
+/** ËÑË÷Ä£°å */
 const searchTemplate = ref([
   {
     key: 'appName',
-    label: 'åº”ç”¨åç§°',
+    label: 'Ó¦ÓÃÃû³Æ',
     type: 'input' as const,
     testId: 'app-search-name',
-    placeholder: 'è¯·è¾“å…¥åº”ç”¨åç§°',
+    placeholder: 'ÇëÊäÈëÓ¦ÓÃÃû³Æ',
   },
   {
     key: 'appCode',
-    label: 'åº”ç”¨ç¼–ç ',
+    label: 'Ó¦ÓÃ±àÂë',
     type: 'input' as const,
     testId: 'app-search-code',
-    placeholder: 'è¯·è¾“å…¥åº”ç”¨ç¼–ç ',
+    placeholder: 'ÇëÊäÈëÓ¦ÓÃ±àÂë',
   },
   {
     key: 'appTypeId',
-    label: 'åº”ç”¨ç±»å‹',
+    label: 'Ó¦ÓÃÀàĞÍ',
     type: 'select' as const,
     testId: 'app-search-type',
-    placeholder: 'è¯·é€‰æ‹©åº”ç”¨ç±»å‹',
+    placeholder: 'ÇëÑ¡ÔñÓ¦ÓÃÀàĞÍ',
     elProps: {
       options: [] as { label: string; value: string }[],
     },
   },
   {
     key: 'appStatus',
-    label: 'çŠ¶æ€',
+    label: '×´Ì¬',
     type: 'select' as const,
     testId: 'app-search-status',
-    placeholder: 'è¯·é€‰æ‹©çŠ¶æ€',
+    placeholder: 'ÇëÑ¡Ôñ×´Ì¬',
     elProps: {
       options: toItems(StatusDict),
     },
   },
 ]);
 
-/** è¡¨æ ¼åˆ— */
+/** ±í¸ñÁĞ */
 const columns = [
   {
     prop: 'logo',
@@ -98,55 +98,55 @@ const columns = [
     align: 'center' as const,
     render: ({ row }: { row: AppDetailResponseDto }) => h(ElAvatar, { size: 36, src: getImageSrc(row.logo), icon: Picture, shape: 'square' }),
   },
-  { prop: 'appName', label: 'åº”ç”¨åç§°', minWidth: 150 },
-  { prop: 'appCode', label: 'åº”ç”¨ç¼–ç ', minWidth: 120 },
+  { prop: 'appName', label: 'Ó¦ÓÃÃû³Æ', minWidth: 150 },
+  { prop: 'appCode', label: 'Ó¦ÓÃ±àÂë', minWidth: 120 },
   {
     prop: 'appType',
-    label: 'åº”ç”¨ç±»å‹',
+    label: 'Ó¦ÓÃÀàĞÍ',
     minWidth: 120,
     render: ({ row }: { row: AppDetailResponseDto }) => (row.appType as any)?.typeName || '-',
   },
   {
     prop: 'owner',
-    label: 'æ‹¥æœ‰è€…',
+    label: 'ÓµÓĞÕß',
     minWidth: 120,
     render: ({ row }: { row: AppDetailResponseDto }) => (row.owner as any)?.nickname || (row.owner as any)?.username || '-',
   },
   {
     prop: 'appStatus',
-    label: 'çŠ¶æ€',
+    label: '×´Ì¬',
     width: 80,
     render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDictFormat, { value: row.appStatus, dict: toItems(StatusDict), asTag: true }),
   },
-  { prop: 'sortOrder', label: 'æ’åº', width: 80 },
+  { prop: 'sortOrder', label: 'ÅÅĞò', width: 80 },
   {
     prop: 'createdAt',
-    label: 'åˆ›å»ºæ—¶é—´',
+    label: '´´½¨Ê±¼ä',
     width: 180,
     render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDateFormat, { value: row.createdAt }),
   },
 ];
 
-/** æ“ä½œåˆ— */
+/** ²Ù×÷ÁĞ */
 const actionColumn = {
   prop: 'action',
-  label: 'æ“ä½œ',
+  label: '²Ù×÷',
   width: 200,
   fixed: 'right' as const,
   render: ({ row }: { row: AppDetailResponseDto }) => renderActionButtons([
-    { label: 'è¯¦æƒ…', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
-    { label: 'ç¼–è¾‘', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['ç¼–è¾‘'], testId: 'app-edit-btn' },
-    { label: 'æ‹¥æœ‰è€…', type: 'warning', icon: User, onClick: handleOwner, permission: ['ç¼–è¾‘'], testId: 'app-owner-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
-    { label: 'åˆ é™¤', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['åˆ é™¤'], testId: 'app-delete-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
+    { label: 'ÏêÇé', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
+    { label: '±à¼­', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['±à¼­'], testId: 'app-edit-btn' },
+    { label: 'ÓµÓĞÕß', type: 'warning', icon: User, onClick: handleOwner, permission: ['±à¼­'], testId: 'app-owner-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
+    { label: 'É¾³ı', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['É¾³ı'], testId: 'app-delete-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
   ], { maxVisible: 2 }, row),
 };
 
-/** åŠ è½½åº”ç”¨ç±»å‹åˆ—è¡¨ */
+/** ¼ÓÔØÓ¦ÓÃÀàĞÍÁĞ±í */
 const loadAppTypes = async () => {
   const result = await new ApiAppTypeFindAllList({});
   appTypeList.value = result || [];
 
-  // æ›´æ–°æœç´¢æ¨¡æ¿çš„åº”ç”¨ç±»å‹é€‰é¡¹
+  // ¸üĞÂËÑË÷Ä£°åµÄÓ¦ÓÃÀàĞÍÑ¡Ïî
   const typeOptions = (result || []).map((item: AppTypeResponseDto) => ({
     label: item.typeName,
     value: item.id,
@@ -156,7 +156,7 @@ const loadAppTypes = async () => {
   }
 };
 
-/** åŠ è½½æ•°æ® */
+/** ¼ÓÔØÊı¾İ */
 const loadData = async (params: Record<string, unknown>) => {
   return await new ApiAppFindAll({
     query: {
@@ -170,11 +170,11 @@ const loadData = async (params: Record<string, unknown>) => {
   });
 };
 
-/** æŸ¥çœ‹è¯¦æƒ… */
+/** ²é¿´ÏêÇé */
 const handleDetail = async (row: AppDetailResponseDto) => {
   const detail = await new ApiAppFindById({ params: { id: row.id } });
   MfwPopup.open({
-    title: 'åº”ç”¨è¯¦æƒ…',
+    title: 'Ó¦ÓÃÏêÇé',
     type: 'drawer',
     component: AppDetail,
     data: detail,
@@ -183,10 +183,10 @@ const handleDetail = async (row: AppDetailResponseDto) => {
   });
 };
 
-/** æ–°å»º */
+/** ĞÂ½¨ */
 const handleAdd = () => {
   MfwPopup.open({
-    title: 'æ–°å»ºåº”ç”¨',
+    title: 'ĞÂ½¨Ó¦ÓÃ',
     type: 'dialog',
     component: AppForm,
     popupProps: { width: 550 },
@@ -194,10 +194,10 @@ const handleAdd = () => {
   });
 };
 
-/** ç¼–è¾‘ */
+/** ±à¼­ */
 const handleEdit = (row: AppDetailResponseDto) => {
   MfwPopup.open({
-    title: 'ç¼–è¾‘åº”ç”¨',
+    title: '±à¼­Ó¦ÓÃ',
     type: 'dialog',
     component: AppForm,
     data: { ...row },
@@ -206,12 +206,12 @@ const handleEdit = (row: AppDetailResponseDto) => {
   });
 };
 
-/** åˆ é™¤ */
+/** É¾³ı */
 const handleDelete = async (row: AppDetailResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `ç¡®å®šè¦åˆ é™¤åº”ç”¨ã€Œ${row.appName}ã€å—ï¼Ÿ`,
-      'ç¡®è®¤åˆ é™¤',
+      `È·¶¨ÒªÉ¾³ıÓ¦ÓÃ¡¸${row.appName}¡¹Âğ£¿`,
+      'È·ÈÏÉ¾³ı',
       { type: 'warning' }
     );
   } catch {
@@ -221,11 +221,11 @@ const handleDelete = async (row: AppDetailResponseDto) => {
   listPage.value?.refresh();
 };
 
-/** æ‹¥æœ‰è€…ç®¡ç† */
+/** ÓµÓĞÕß¹ÜÀí */
 const handleOwner = (row: AppDetailResponseDto) => {
   const owner = (row.owner as any) || {};
   MfwPopup.open({
-    title: `å˜æ›´æ‹¥æœ‰è€… â€” ${row.appName}`,
+    title: `±ä¸üÓµÓĞÕß ¡ª ${row.appName}`,
     type: 'dialog',
     component: OwnerChanger,
     data: {

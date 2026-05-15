@@ -36,6 +36,7 @@ export default defineConfig({
         '@element-plus/icons-vue',
         'reflect-metadata',
         /^moyan-api(\/.*)?$/,
+        '@internal/base-shared',
       ],
     },
     outDir: '../../dist/frontend',

@@ -39,6 +39,8 @@ export default defineConfig({
         'element-plus',
         '@element-plus/icons-vue',
         /^moyan-api(\/.*)?$/,
+        '@internal/base-shared',
+        '@internal/base-frontend',
       ],
     },
     outDir: '../../dist/frontend',
