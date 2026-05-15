@@ -72,5 +72,14 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
+    exclude: [
+      // workspace shared 模块不能预构建 —
+      // esbuild 打包 decorator.ts→registry.ts 链时因 reflect-metadata
+      // 解析失败导致导出丢失（DictEntry 等），排除后 Vite 按需逐文件 serve
+      'moyan-mfw-base/shared',
+      'moyan-mfw-extension-ad/shared',
+      '@internal/base-shared',
+      '@internal/ad-shared',
+    ],
   },
 });
