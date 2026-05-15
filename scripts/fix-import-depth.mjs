@@ -1,9 +1,11 @@
 /**
- * @fileoverview 修复所有因嵌套 src/ 导致的错误 relative import 路径。
- * 直接计算每个文件到目标模块的正确相对路径并替换。
+ * @fileoverview 修复 move-to-src-layout.mjs 引入的 import 路径错误。
+ * 由于源文件和目标文件同时移入 src/ 子目录，相对路径本应保持不变，
+ * 但 move-to-src-layout.mjs 错误地给所有 relative import 多加了一层 ../。
+ * 此脚本移除多余的那一层 ../。
  */
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'fs';
-import { join, dirname, resolve, relative, sep } from 'path';
+import { join, dirname, resolve, relative } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,119 +29,86 @@ function walkDir(dir) {
 }
 
 /**
- * 计算从 file 到 targetDir 的正确相对导入路径
+ * 移除 import 路径中开头的一个 ../ 层级。
+ * 如果路径恰好是 "../xxx"，则变为 "./xxx"。
+ * 如果路径以 "../../" 开头，移除开头的 "../"。
  */
-function relImport(file, targetDir) {
-  const d = dirname(file);
-  let r = relative(d, targetDir).split(sep).join('/');
-  if (!r.startsWith('.')) r = './' + r;
-  return r;
+function removeOneUpLevel(importPath) {
+  if (importPath.startsWith('../')) {
+    // 去掉开头的 ../
+    const rest = importPath.slice(3);
+    if (!rest.startsWith('.')) {
+      // ../sibling → ./sibling
+      return './' + rest;
+    }
+    // ../../xxx → ../xxx
+    return rest;
+  }
+  return importPath;
 }
 
-// ========== base/backend: 修复内部和 shared 的相对路径 ==========
-const baseBackendSrc = resolve(ROOT, 'packages/base/src/backend/src');
-const baseShared = resolve(ROOT, 'packages/base/src/shared');
+let totalChanges = 0;
 
-console.log('=== Fix packages/base/src/backend/src/ ===');
-for (const f of walkDir(baseBackendSrc)) {
-  let content = readFileSync(f, 'utf-8');
+function fixFile(filePath) {
+  let content = readFileSync(filePath, 'utf-8');
   let changed = false;
 
-  // 修复 shared 引用：从 @internal/base-shared 或错误的相对路径
-  // 现在的模式可能是 ../../../../../../shared 或 ../../../../../../shared/src
+  // 匹配所有 relative import：from '../xxx' 或 from "../xxx"
   content = content.replace(
-    /from\s+['"]\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/shared(?:\/src)?['"]/g,
-    () => {
-      changed = true;
-      const correct = relImport(f, baseShared);
-      return `from '${correct}'`;
+    /(from\s+['"])(\.\.\/[^'"]+)(['"])/g,
+    (match, prefix, importPath, suffix) => {
+      const fixed = removeOneUpLevel(importPath);
+      if (fixed !== importPath) {
+        changed = true;
+        totalChanges++;
+      }
+      return prefix + fixed + suffix;
     }
   );
-  // 也匹配 5 层路径到 shared
+
+  // 匹配动态 import：import('../xxx')
   content = content.replace(
-    /from\s+['"]\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/shared(?:\/src)?['"]/g,
-    () => {
-      changed = true;
-      const correct = relImport(f, baseShared);
-      return `from '${correct}'`;
+    /(import\s*\(\s*['"])(\.\.\/[^'"]+)(['"])/g,
+    (match, prefix, importPath, suffix) => {
+      const fixed = removeOneUpLevel(importPath);
+      if (fixed !== importPath) {
+        changed = true;
+        totalChanges++;
+      }
+      return prefix + fixed + suffix;
     }
   );
 
   if (changed) {
-    writeFileSync(f, content, 'utf-8');
-    console.log(`  [shared] ${relative(ROOT, f)} → ${relImport(f, baseShared)}`);
+    writeFileSync(filePath, content, 'utf-8');
+    console.log(`  ✓ ${relative(ROOT, filePath)}`);
   }
 }
 
-// ========== base/frontend: 修复 shared 引用 ==========
-const baseFrontendSrc = resolve(ROOT, 'packages/base/src/frontend/src');
-console.log('\n=== Fix packages/base/src/frontend/src/ ===');
-for (const f of walkDir(baseFrontendSrc)) {
-  let content = readFileSync(f, 'utf-8');
-  let changed = false;
+// ========== packages/base ==========
+const baseDirs = [
+  resolve(ROOT, 'packages/base/src/backend/src'),
+  resolve(ROOT, 'packages/base/src/frontend/src'),
+];
 
-  content = content.replace(
-    /from\s+['"]\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/shared(?:\/src)?['"]/g,
-    () => {
-      changed = true;
-      const correct = relImport(f, baseShared);
-      return `from '${correct}'`;
-    }
-  );
-
-  if (changed) {
-    writeFileSync(f, content, 'utf-8');
-    console.log(`  [shared] ${relative(ROOT, f)} → ${relImport(f, baseShared)}`);
+for (const dir of baseDirs) {
+  console.log(`\n=== Fix ${relative(ROOT, dir)} ===`);
+  for (const f of walkDir(dir)) {
+    fixFile(f);
   }
 }
 
-// ========== extension-ad/backend: 修复 @internal 已替换为 moyan-mfw-base 的引用 ==========
-// extension-ad 引用 base 的路径是 moyan-mfw-base/xxx，这个不需要改。
-// 但内部引用 ad-shared 可能有问题。
-const adBackendSrc = resolve(ROOT, 'packages/extensions/extension-ad/src/backend/src');
-const adShared = resolve(ROOT, 'packages/extensions/extension-ad/src/shared');
+// ========== packages/extensions/extension-ad ==========
+const adDirs = [
+  resolve(ROOT, 'packages/extensions/extension-ad/src/backend/src'),
+  resolve(ROOT, 'packages/extensions/extension-ad/src/frontend/src'),
+];
 
-console.log('\n=== Fix packages/extensions/extension-ad/src/backend/src/ ===');
-for (const f of walkDir(adBackendSrc)) {
-  let content = readFileSync(f, 'utf-8');
-  let changed = false;
-
-  // 修复 @internal/ad-shared → 相对路径 (已由第一次迁移处理，这里确保正确)
-  content = content.replace(
-    /from\s+['"]\.\.\/\.\.\/\.\.\/shared(?:\/src)?['"]/g,
-    () => {
-      changed = true;
-      const correct = relImport(f, adShared);
-      return `from '${correct}'`;
-    }
-  );
-
-  if (changed) {
-    writeFileSync(f, content, 'utf-8');
-    console.log(`  [ad-shared] ${relative(ROOT, f)} → ${relImport(f, adShared)}`);
+for (const dir of adDirs) {
+  console.log(`\n=== Fix ${relative(ROOT, dir)} ===`);
+  for (const f of walkDir(dir)) {
+    fixFile(f);
   }
 }
 
-// ========== extension-ad/frontend: 同样修复 ==========
-const adFrontendSrc = resolve(ROOT, 'packages/extensions/extension-ad/src/frontend/src');
-console.log('\n=== Fix packages/extensions/extension-ad/src/frontend/src/ ===');
-for (const f of walkDir(adFrontendSrc)) {
-  let content = readFileSync(f, 'utf-8');
-  let changed = false;
-
-  content = content.replace(
-    /from\s+['"]\.\.\/\.\.\/\.\.\/shared(?:\/src)?['"]/g,
-    () => {
-      changed = true;
-      const correct = relImport(f, adShared);
-      return `from '${correct}'`;
-    }
-  );
-
-  if (changed) {
-    writeFileSync(f, content, 'utf-8');
-    console.log(`  [ad-shared] ${relative(ROOT, f)} → ${relImport(f, adShared)}`);
-  }
-}
-
-console.log('\n=== Done ===');
+console.log(`\n=== Done: ${totalChanges} changes made ===`);
