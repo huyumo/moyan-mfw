@@ -2,7 +2,7 @@
  * @fileoverview 广告管理扩展包字典定义
  * @description 使用 moyan-mfw-base/shared 装饰器定义扩展包专属字典，供前后端共用
  */
-import { DictMeta, DictEntry } from 'moyan-mfw-base/shared'
+import { DictMeta, DictEntry } from '@internal/base-shared'
 
 @DictMeta({ key: 'ad_link_type', label: '广告跳转类型', module: '广告管理' })
 export class AdLinkTypeDict {

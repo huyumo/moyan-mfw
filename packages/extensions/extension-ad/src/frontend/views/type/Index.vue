@@ -26,16 +26,16 @@
 import { ref, h } from 'vue'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-mfw-base/frontend'
-import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
-import { renderActionButtons } from 'moyan-mfw-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwPopup } from '@internal/base-frontend'
+import type { MfwListPageInstance } from '@internal/base-frontend'
+import { renderActionButtons } from '@internal/base-frontend'
 import {
   ApiAdPlacementTypeFindAll,
   ApiAdPlacementTypeCreate,
   ApiAdPlacementTypeUpdate,
   ApiAdPlacementTypeDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-mfw-base/shared'
+import { StatusDict } from '@internal/base-shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdTypeList' })

@@ -3,7 +3,7 @@
  * @description 菜单分组
  */
 
-import { defineModuleConfig } from 'moyan-mfw-base/frontend'
+import { defineModuleConfig } from '@internal/base-frontend'
 
 export default defineModuleConfig({
   type: 'module',

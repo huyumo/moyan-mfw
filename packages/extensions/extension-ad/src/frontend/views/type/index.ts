@@ -1,4 +1,4 @@
-import { definePageConfig } from 'moyan-mfw-base/frontend'
+import { definePageConfig } from '@internal/base-frontend'
 import TypeList from './Index.vue'
 
 export default definePageConfig({

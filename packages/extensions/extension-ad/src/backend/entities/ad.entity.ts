@@ -4,8 +4,8 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn } from 'typeorm'
-import { Base } from 'moyan-mfw-base/backend'
-import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
+import { Base } from '@internal/base-backend'
+import { toDescription, StatusDict } from '@internal/base-shared'
 import { AdPlacement } from './ad-placement.entity'
 
 @Entity('ext_ad_contents')

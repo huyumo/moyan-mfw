@@ -3,7 +3,7 @@
  * @description 独立运行扩展包后端，不依赖业务层
  */
 import 'reflect-metadata'
-import { createExtensionBackendApp } from 'moyan-mfw-base/backend'
+import { createExtensionBackendApp } from '@internal/base-backend'
 import { AdModule, AdPlacementType, AdPlacement, Ad } from './index'
 
 async function bootstrap() {

@@ -27,17 +27,17 @@ import { ref, h } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Edit, Delete, Document } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
-import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
-import { renderActionButtons } from 'moyan-mfw-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from '@internal/base-frontend'
+import type { MfwListPageInstance } from '@internal/base-frontend'
+import { renderActionButtons } from '@internal/base-frontend'
 import {
   ApiAdPlacementFindAll,
   ApiAdPlacementCreate,
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-mfw-base/shared'
-import { AD_PATHS } from '../../../shared/paths'
+import { StatusDict } from '@internal/base-shared'
+import { AD_PATHS } from '@internal/ad-shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })

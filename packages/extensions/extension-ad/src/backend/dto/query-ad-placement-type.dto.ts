@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator'
-import { PaginationQueryDto } from 'moyan-mfw-base/backend'
+import { PaginationQueryDto } from '@internal/base-backend'
 
 export class QueryAdPlacementTypeDto extends PaginationQueryDto {
   @ApiProperty({ description: '类型名称（模糊查询）', required: false })
