@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
+    "noImplicitAny": false,
     "rootDir": "./src",
     "outDir": "./dist",
     "declaration": true,
@@ -11,7 +12,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*", "../../../../base/src/backend/src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts"],

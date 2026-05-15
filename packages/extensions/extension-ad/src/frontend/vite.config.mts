@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../shared/src/index.ts'),
     },
   },
   build: {
