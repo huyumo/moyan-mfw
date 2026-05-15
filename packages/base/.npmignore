@@ -1,0 +1,13 @@
+src/backend/package.json
+src/backend/tsconfig.json
+src/frontend/package.json
+src/frontend/tsconfig.json
+src/shared/package.json
+src/shared/tsconfig.json
+src/
+tsconfig.publish.json
+tsconfig.json
+vite.config.mts
+nest-cli.json
+jest.config.ts
+eslint.config.mjs

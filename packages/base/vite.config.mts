@@ -6,12 +6,13 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 export default defineConfig({
   plugins: [vue(), vueJsx()],
   resolve: {
     alias: {
-      '@': resolve(import.meta.dirname, 'src/frontend'),
+      '@': fileURLToPath(new URL('./src/frontend', import.meta.url)),
     },
     extensions: ['.ts', '.tsx', '.js', '.jsx', '.vue'],
   },
@@ -34,10 +35,9 @@ export default defineConfig({
         'element-plus',
         '@element-plus/icons-vue',
         'reflect-metadata',
-        'moyan-mfw-base/shared',
       ],
     },
-    outDir: 'dist/frontend',
+    outDir: '../../dist/frontend',
     sourcemap: true,
   },
 });
