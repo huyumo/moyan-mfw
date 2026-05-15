@@ -41,6 +41,7 @@ export default defineConfig({
         /^moyan-api(\/.*)?$/,
         '@internal/base-shared',
         '@internal/base-frontend',
+        '@internal/ad-shared',
       ],
     },
     outDir: '../../dist/frontend',
