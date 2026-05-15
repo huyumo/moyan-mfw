@@ -1,9 +1,8 @@
 {
   "name": "@internal/ad-backend",
-  "private": true,
   "version": "0.1.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "../../dist/backend/index.js",
+  "types": "../../dist/backend/index.d.ts",
   "scripts": {
     "build": "tsc",
     "dev": "nest start --config ../../nest-cli.json --watch"
