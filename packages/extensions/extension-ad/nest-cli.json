@@ -4,7 +4,7 @@
   "sourceRoot": "src/backend",
   "entryFile": "main",
   "compilerOptions": {
-    "tsConfigPath": "tsconfig.build.json",
+    "tsConfigPath": "src/backend/tsconfig.json",
     "deleteOutDir": true
   }
 }
