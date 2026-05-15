@@ -32,7 +32,7 @@ import { MfwPopup } from '../../../components/feedback';
 import { ApiRoleFindAll } from '../../../apis/sys';
 import { RoleForm, RoleCard } from '../../../components/business';
 import { useAuthStore } from '../../../store/auth-store';
-import { toItems, StatusDict } from 'moyan-mfw-base/shared';
+import { toItems, StatusDict } from '../../../../shared';
 
 defineOptions({ name: 'MfwRoleList' });
 

@@ -14,7 +14,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
-import { toDescription, StatusDict, PermissionTypeDict, NodeTypeDict, IsAutoSyncDict, IsVisibleDict, IsCacheDict, ShowModeDict } from 'moyan-mfw-base/shared';
+import { toDescription, StatusDict, PermissionTypeDict, NodeTypeDict, IsAutoSyncDict, IsVisibleDict, IsCacheDict, ShowModeDict } from '../../../../../shared';
 
 /**
  * 权限类型枚举

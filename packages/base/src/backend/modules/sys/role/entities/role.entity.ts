@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import type { Permission } from '../../permission/entities/permission.entity';
-import { toDescription, StatusDict, IsBuiltinDict, IsOwnerDict } from 'moyan-mfw-base/shared';
+import { toDescription, StatusDict, IsBuiltinDict, IsOwnerDict } from '../../../../../shared';
 
 /**
  * 角色实体类

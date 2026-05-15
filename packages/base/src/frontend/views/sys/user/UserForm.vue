@@ -20,7 +20,7 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import type { ImageResource } from '../../../components/upload/types';
 import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
 import type { UserResponseDto } from '../../../apis/sys/schemas';
-import { toItems, GenderDict } from 'moyan-mfw-base/shared';
+import { toItems, GenderDict } from '../../../../shared';
 
 const props = defineProps<UserResponseDto>();
 

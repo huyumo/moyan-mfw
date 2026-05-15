@@ -21,7 +21,7 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
 import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
 import MfwImageSingle from '../../../components/upload/image-single';
-import { StatusDict } from 'moyan-mfw-base/shared';
+import { StatusDict } from '../../../../shared';
 
 const props = defineProps<AppDetailResponseDto>();
 
