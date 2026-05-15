@@ -367,6 +367,9 @@ importers:
       moyan-mfw-extension-ad:
         specifier: workspace:*
         version: link:../packages/extensions/extension-ad
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
       vue-router:
         specifier: 'catalog:'
         version: 4.6.4(vue@3.5.30(typescript@5.9.3))
