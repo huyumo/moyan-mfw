@@ -123,7 +123,7 @@ export function registerPermissionValues(values: readonly string[]) {
  * export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES);
  *
  * // 业务层页面 index.ts
- * import { defineBusinessPageConfig } from '../../permissions';
+ * import { defineBusinessPageConfig } from '../permissions';
  *
  * export default defineBusinessPageConfig({
  *   permissions: ['发货', '充值', '添加'], // 有完整类型推断

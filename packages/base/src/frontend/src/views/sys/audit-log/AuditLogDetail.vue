@@ -28,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import type { AuditLogResponseDto } from '../../../../apis/sys/schemas';
+import type { AuditLogResponseDto } from '../../../apis/sys/schemas';
 
 /** Props */
 interface Props {

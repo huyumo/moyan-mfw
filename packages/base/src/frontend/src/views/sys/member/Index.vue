@@ -27,20 +27,20 @@
 import { ref, h, computed } from 'vue';
 import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDictFormat } from '../../../../components';
-import type { MfwListPageInstance } from '../../../../components/page/list-page/types';
-import { MfwPopup } from '../../../../components/feedback';
-import { renderActionButtons } from '../../../../components/table/action-buttons';
-import type { ImageResource } from '../../../../components/upload/types';
+import { MfwPageWrapper, MfwListPage, MfwDictFormat } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
+import type { ImageResource } from '../../../components/upload/types';
 import {
   ApiAppMemberGetMembers,
   ApiAppMemberRemoveMember,
-} from '../../../../apis/sys';
-import type { MemberResponseDto } from '../../../../apis/sys/schemas';
+} from '../../../apis/sys';
+import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
-import { useAuthStore } from '../../../../store/auth-store';
-import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../../shared/src';
+import { useAuthStore } from '../../../store/auth-store';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
 import { useRoute, useRouter } from 'vue-router';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {

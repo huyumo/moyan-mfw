@@ -7,14 +7,14 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router';
 import {
   defaultLayoutStyleConfig,
   defaultNavigationConfig,
-} from '../../config/layout-defaults';
+} from '../config/layout-defaults';
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
   LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
-} from '../../types/layout-types';
+} from '../types/layout-types';
 import { type LayoutPreferenceActionContext, type LayoutState } from './layout-store-model';
 import {
   cloneMenus,

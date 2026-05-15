@@ -13,7 +13,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { User, UserDto, AppId } from '../../../../common';
+import { User, UserDto, AppId } from '../../../common';
 import {
   ApiTags,
   ApiOperation,
@@ -32,8 +32,8 @@ import {
   CheckAvailabilityResponseDto,
   LogoutDto,
 } from './dto';
-import { Public } from '../../../../common/decorators/public.decorator';
-import { ApiResponseUtil } from '../../../../common/types/api.types';
+import { Public } from '../../../common/decorators/public.decorator';
+import { ApiResponseUtil } from '../../../common/types/api.types';
 
 /**
  * 认证控制器

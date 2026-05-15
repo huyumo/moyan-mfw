@@ -145,11 +145,11 @@
 import { ref, computed, onMounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Edit, Delete, Key, FolderOpened, Document, CollectionTag, Search } from '@element-plus/icons-vue';
-import { MfwPopup } from '../../../feedback';
+import { MfwPopup } from '../../feedback';
 import PermissionNodeForm from './PermissionNodeForm.vue';
-import type { PermissionTreeNodeDto } from '../../../../apis/sys/schemas';
-import { ApiPermissionFindAllTree, ApiPermissionUpdate, ApiPermissionDelete } from '../../../../apis/sys';
-import { MfwPermissionValuePanel } from '../../permission-value-panel';
+import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
+import { ApiPermissionFindAllTree, ApiPermissionUpdate, ApiPermissionDelete } from '../../../apis/sys';
+import { MfwPermissionValuePanel } from '../permission-value-panel';
 
 // ========== Props & Emits ==========
 

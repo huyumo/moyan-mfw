@@ -7,14 +7,14 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { App } from './entities/app.entity';
 import { AppMember } from './entities/app-member.entity';
-import { AppType } from '../../app-type/entities/app-type.entity';
+import { AppType } from '../app-type/entities/app-type.entity';
 
 import { AppMemberService } from './service/app-member.service';
 import { AppMemberController } from './controller/app-member.controller';
 import { AppService } from './service/app.service';
 import { AppController } from './controller/app.controller';
-import { User } from '../../user';
-import { Role } from '../../role';
+import { User } from '../user';
+import { Role } from '../role';
 
 /**
  * 应用模块

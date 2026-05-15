@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 /**
  * @fileoverview 广告位管理列表页
  * @description 管理广告位及其关联的类型配置
@@ -35,9 +35,9 @@ import {
   ApiAdPlacementCreate,
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
-} from '../../../apis/ad'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
-import { AD_PATHS } from '../../../../shared/src'
+import { AD_PATHS } from 'moyan-mfw-extension-ad/shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })

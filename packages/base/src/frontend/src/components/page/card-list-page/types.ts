@@ -3,7 +3,7 @@
  */
 
 import type { VNode } from 'vue';
-import type { SearchTemplateItem, LoadParams, TableData } from '../../list-page/types';
+import type { SearchTemplateItem, LoadParams, TableData } from '../list-page/types';
 
 // 重新导出共享类型
 export type { SearchTemplateItem, LoadParams, TableData };

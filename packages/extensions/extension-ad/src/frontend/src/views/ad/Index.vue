@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 /**
  * @fileoverview 广告内容管理列表页
  * @description 管理广告位下具体的广告内容，支持小程序/App内部/外部链接三种跳转方式
@@ -36,9 +36,9 @@ import {
   ApiAdCreate,
   ApiAdUpdate,
   ApiAdDelete,
-} from '../../../apis/ad'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
-import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../../shared/src'
+import { LINK_TYPE_LABELS, LINK_TYPE } from 'moyan-mfw-extension-ad/shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdContentList' })

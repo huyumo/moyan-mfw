@@ -8,18 +8,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
-import { PermissionType } from '../../permission/entities/permission.entity';
-import { Role } from '../../role/entities/role.entity';
+import { PermissionType } from '../permission/entities/permission.entity';
+import { Role } from '../role/entities/role.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
 import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
 import {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
 } from './dto/res/permission-pool-response.dto';
-import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { NotFoundError } from '../../../common/exceptions/not-found.exception';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
-import { PermissionTreeNodeDto } from '../../permission';
+import { PermissionTreeNodeDto } from '../permission';
 
 /**
  * 应用类型服务

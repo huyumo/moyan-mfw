@@ -3,7 +3,7 @@ import { defineComponent, ref, computed, type PropType, defineExpose } from 'vue
 import { ElUpload, ElMessage, ElImageViewer, type UploadRequestOptions } from 'element-plus';
 import { Plus, Delete, ZoomIn } from '@element-plus/icons-vue';
 import ImageCropper from './image-cropper';
-import { uploadImage } from '../../../config/upload-config';
+import { uploadImage } from '../../config/upload-config';
 import type { ImageResource, UploadMethodType } from './types';
 
 const getImageDimensions = (file: File | Blob): Promise<{ width: number; height: number }> => {

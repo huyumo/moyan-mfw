@@ -9,16 +9,16 @@ import { Repository, DataSource, EntityManager } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { RolePermission } from './entities/role-permission.entity';
 import { UserRole } from './entities/user-role.entity';
-import { PermissionType } from '../../permission/entities/permission.entity';
+import { PermissionType } from '../permission/entities/permission.entity';
 import { AssignPermissionsDto, CreateRoleDto, UpdateRoleDto, QueryRoleDto } from './dto';
 import {
   RolePermissionResponseDto,
 } from './dto/res/role-permission-response.dto';
-import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
-import { PermissionTreeNodeDto } from '../../permission';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { NotFoundError } from '../../../common/exceptions/not-found.exception';
+import { PermissionTreeNodeDto } from '../permission';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
-import { App } from '../../app/entities/app.entity';
+import { App } from '../app/entities/app.entity';
 
 /**
  * 角色服务

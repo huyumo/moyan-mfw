@@ -88,8 +88,8 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { Loading } from '@element-plus/icons-vue';
 
-import { ApiInstallInitialize } from '../../../apis/sys';
-import { resetSystemInitialized } from '../../../router/guard';
+import { ApiInstallInitialize } from '../../apis/sys';
+import { resetSystemInitialized } from '../../router/guard';
 
 const router = useRouter();
 

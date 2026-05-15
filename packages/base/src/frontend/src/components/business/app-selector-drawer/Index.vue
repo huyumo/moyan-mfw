@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import AppSelectorPanel, { type AppListItem } from '../../app-selector-panel/Index.vue'
+import AppSelectorPanel, { type AppListItem } from '../app-selector-panel/Index.vue'
 
 defineOptions({ name: 'AppSelectorDrawer' })
 

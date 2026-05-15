@@ -24,11 +24,11 @@
 <script setup lang="ts">
 import { computed, PropType } from 'vue';
 import { CheckedInfo, ElTree, TreeKey } from 'element-plus';
-import type { PermissionTreeNodeDto } from '../../../../apis/sys/schemas';
+import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
 import { Key } from '@element-plus/icons-vue';
 import { ref, watch, nextTick } from 'vue';
-import { MfwPopup } from '../../../feedback';
-import { MfwPermissionValuePanel } from '../../permission-value-panel';
+import { MfwPopup } from '../../feedback';
+import { MfwPermissionValuePanel } from '../permission-value-panel';
 
 defineOptions({ name: 'MfwPermissionTree' });
 const emit = defineEmits(['update:modelValue']);

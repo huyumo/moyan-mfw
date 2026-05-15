@@ -8,14 +8,14 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { InjectDataSource, InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
-import { User } from '../../user/entities/user.entity';
-import { UserRole } from '../../role/entities/user-role.entity';
-import { Role } from '../../role/entities/role.entity';
-import { NodeType, Permission, ShowMode } from '../../permission/entities/permission.entity';
-import { RolePermission } from '../../role/entities/role-permission.entity';
-import { AppTypePermissionEntity } from '../../app-type/entities/app-type-permission.entity';
-import { PermissionType } from '../../permission/entities/permission.entity';
-import { verifyPassword } from '../../../../common/utils/encrypt';
+import { User } from '../user/entities/user.entity';
+import { UserRole } from '../role/entities/user-role.entity';
+import { Role } from '../role/entities/role.entity';
+import { NodeType, Permission, ShowMode } from '../permission/entities/permission.entity';
+import { RolePermission } from '../role/entities/role-permission.entity';
+import { AppTypePermissionEntity } from '../app-type/entities/app-type-permission.entity';
+import { PermissionType } from '../permission/entities/permission.entity';
+import { verifyPassword } from '../../../common/utils/encrypt';
 import { LoginDto } from './dto/req/login.dto';
 import {
   LoginResponseDto,
@@ -27,10 +27,10 @@ import {
 } from './dto/res/user-permissions-response.dto';
 import { RegisterDto } from './dto/req/register.dto';
 import { CheckAvailabilityResponseDto } from './dto/req/check-availability.dto';
-import { BusinessException } from '../../../../common/exceptions/business.exception';
-import { hashPassword } from '../../../../common/utils/encrypt';
-import { executeRawSql } from '../../../../common/utils/sql.util';
-import { PermissionTreeNodeDto } from '../../permission';
+import { BusinessException } from '../../../common/exceptions/business.exception';
+import { hashPassword } from '../../../common/utils/encrypt';
+import { executeRawSql } from '../../../common/utils/sql.util';
+import { PermissionTreeNodeDto } from '../permission';
 import { flatToTree } from '@/common/utils/tree.util';
 
 /**
@@ -286,7 +286,7 @@ export class AuthService {
 
     const [appTypeIdResult, result] = await executeRawSql(this.entityManager, sql, { userId, appId }, true);
     const menuTree = flatToTree(result as any[])
-    const permissions = result.map((item) => item.permCode)
+    const permissions = result.map((item: any) => item.permCode)
     const appTypeId = appTypeIdResult[0]?.appTypeId || ''
 
     // 构建 permissionValueMap

@@ -8,7 +8,7 @@ import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
 import { ApiCall, ApiEntity } from 'moyan-api';
 import { ApiEvents } from 'moyan-api/dist/lib/base';
 import type { App } from 'vue';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../../constants/storage-keys';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
 
 const AXIOS = Symbol('mo#Api#axios');
 

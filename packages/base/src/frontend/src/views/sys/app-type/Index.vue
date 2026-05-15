@@ -21,16 +21,16 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { MfwPageWrapper, MfwCardListPage } from '../../../../components';
-import type { MfwCardListPageInstance } from '../../../../components/page/card-list-page/types';
-import { MfwPopup } from '../../../../components/feedback';
-import { ApiAppTypeFindAllList } from '../../../../apis/sys';
-import type { AppTypeResponseDto } from '../../../../apis/sys/schemas';
+import { MfwPageWrapper, MfwCardListPage } from '../../../components';
+import type { MfwCardListPageInstance } from '../../../components/page/card-list-page/types';
+import { MfwPopup } from '../../../components/feedback';
+import { ApiAppTypeFindAllList } from '../../../apis/sys';
+import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import AppTypeCard from './AppTypeCard.vue';
 import EditForm from './EditForm.vue';
 import AddForm from './AddForm.vue';
-import { PermissionPoolPanel } from '../../../../components/business/permission-pool-panel';
-import { BuiltinRoleDialog } from '../../../../components/business/builtin-role-dialog/mod';
+import { PermissionPoolPanel } from '../../../components/business/permission-pool-panel';
+import { BuiltinRoleDialog } from '../../../components/business/builtin-role-dialog/mod';
 
 defineOptions({ name: 'MfwAppTypeList' });
 

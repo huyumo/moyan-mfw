@@ -4,7 +4,7 @@
  */
 
 import type { VNode } from 'vue';
-import type { ImageResource } from '../../../upload/types';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 数据模型类型 ==========
 

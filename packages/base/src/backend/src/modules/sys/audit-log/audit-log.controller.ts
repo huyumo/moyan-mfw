@@ -24,10 +24,10 @@ import {
 } from '@nestjs/swagger';
 import { AuditLogService } from './audit-log.service';
 import { QueryAuditLogDto, AuditLogResponseDto } from './dto';
-import { AuthGuard } from '../../../../common/guards/auth.guard';
-import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
-import { ApiResponseUtil } from '../../../../common/types/api.types';
-import { ApiPaginatedResponse } from '../../../../common';
+import { AuthGuard } from '../../../common/guards/auth.guard';
+import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
+import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 审计日志控制器

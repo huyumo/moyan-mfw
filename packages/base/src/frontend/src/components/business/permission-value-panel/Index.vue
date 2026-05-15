@@ -29,8 +29,8 @@ import { ref, computed, onMounted } from 'vue';
 
 defineOptions({ name: 'MfwPermissionValueForm' });
 import { ElMessage } from 'element-plus';
-import { ApiPermissionUpdate } from '../../../../apis/sys';
-import { getPermissionOptions } from '../../../../utils/permissions';
+import { ApiPermissionUpdate } from '../../../apis/sys';
+import { getPermissionOptions } from '../../../utils/permissions';
 
 interface PermissionValueFormProps {
   permissiondData?: {

@@ -28,9 +28,9 @@ import {
   ElPagination,
   ElEmpty
 } from 'element-plus';
-import MfwTableList from '../../../table/table-list/index';
-import MfwSearchPanel from '../../search-panel';
-import { useLayoutStore } from '../../../../store/layout-store';
+import MfwTableList from '../../table/table-list/index';
+import MfwSearchPanel from '../search-panel';
+import { useLayoutStore } from '../../../store/layout-store';
 import type {
   MfwListPageProps,
   MfwListPageEmits,
@@ -41,7 +41,7 @@ import type {
   PaginationConfig,
   TableState
 } from './types';
-import type { MfwSearchPanelInstance } from '../../search-panel/types';
+import type { MfwSearchPanelInstance } from '../search-panel/types';
 
 export default defineComponent({
   name: 'MfwListPage',

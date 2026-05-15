@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 /**
  * @fileoverview 广告内容表单组件
  * @description 新建/编辑广告内容的表单，支持小程序/App内部/外部链接三种跳转方式
@@ -17,8 +17,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base/frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
-import { ApiAdCreate, ApiAdUpdate, ApiAdPlacementFindAll } from '../../../apis/ad'
-import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../../shared/src'
+import { ApiAdCreate, ApiAdUpdate, ApiAdPlacementFindAll } from '../../apis/ad'
+import { LINK_TYPE_LABELS, LINK_TYPE } from 'moyan-mfw-extension-ad/shared'
 
 const props = defineProps<{
   id?: string

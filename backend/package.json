@@ -22,6 +22,7 @@
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "mysql2": "catalog:",
+    "dotenv": "catalog:",
     "moyan-mfw-base": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-business-dict": "workspace:*"

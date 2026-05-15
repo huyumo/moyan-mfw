@@ -4,7 +4,7 @@
  */
 
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { UserDto } from '../../types/user.dto';
+import { UserDto } from '../types/user.dto';
 
 /**
  * 用户装饰器

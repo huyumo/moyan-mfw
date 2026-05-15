@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview ��ɫ��Ƭ���
- * @description ���ڽ�ɫ����ҳ������ý�ɫ�����Ŀ�Ƭչʾ���ڲ������༭/Ȩ��/ɾ������
+ * @fileoverview 角色卡片
+ * @description 角色卡片组件
  */
 -->
 <template>
@@ -16,13 +16,13 @@
 
     <div class="role-card__body">
       <div class="role-card__code">{{ data.roleCode }}</div>
-      <p class="role-card__desc">{{ data.roleDesc || '��������' }}</p>
+      <p class="role-card__desc">{{ data.roleDesc || '无描述' }}</p>
     </div>
 
     <div class="role-card__footer">
-      <el-button type="primary" size="small" link :disabled="!canEdit" data-testid="role-permission-btn" v-permission="{ value: ['�༭'] }" @click="handlePermission">����Ȩ��</el-button>
-      <el-button size="small" link :disabled="!canEdit" data-testid="role-edit-btn" v-permission="{ value: ['�༭'] }" @click="handleEdit">�༭</el-button>
-      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" data-testid="role-delete-btn" v-permission="{ value: ['ɾ��'] }" @click="handleDelete">ɾ��</el-button>
+      <el-button type="primary" size="small" link :disabled="!canEdit" data-testid="role-permission-btn" v-permission="{ value: ['permission'] }" @click="handlePermission">权限</el-button>
+      <el-button size="small" link :disabled="!canEdit" data-testid="role-edit-btn" v-permission="{ value: ['edit'] }" @click="handleEdit">编辑</el-button>
+      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" data-testid="role-delete-btn" v-permission="{ value: ['delete'] }" @click="handleDelete">删除</el-button>
     </div>
   </el-card>
 </template>
@@ -31,13 +31,13 @@
 import { computed } from 'vue';
 import { User } from '@element-plus/icons-vue';
 import { ElMessageBox } from 'element-plus';
-import { MfwPopup } from '../../../feedback';
-import { ApiRoleDelete } from '../../../../apis/sys';
-import type { RoleResponseDto } from '../../../../apis/sys/schemas';
-import { RolePermissionPanel } from '../../role-permission-panel';
+import { MfwPopup } from '../../feedback';
+import { ApiRoleDelete } from '../../../apis/sys';
+import type { RoleResponseDto } from '../../../apis/sys/schemas';
+import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../../shared/src';
-import { MfwDictFormat } from '../../../../components';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
+import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });
 
@@ -56,7 +56,7 @@ const canEdit = computed(() => !isBuiltin.value || props.canEditBuiltin);
 
 const handlePermission = () => {
   MfwPopup.open({
-    title: `���ý�ɫȨ�� - ${props.data.roleName}`,
+    title: `权限 - ${props.data.roleName}`,
     type: 'dialog',
     component: RolePermissionPanel,
     data: {
@@ -68,8 +68,8 @@ const handlePermission = () => {
       top: '10vh',
     },
     footer: {
-      cancelText: '�ر�',
-      confirmText: '����',
+      cancelText: '取消',
+      confirmText: '确认',
     },
     on: {
       confirm: () => {
@@ -81,7 +81,7 @@ const handlePermission = () => {
 
 const handleEdit = () => {
   MfwPopup.open({
-    title: '�༭��ɫ',
+    title: '编辑角色',
     type: 'dialog',
     component: RoleForm,
     data: {
@@ -94,8 +94,8 @@ const handleEdit = () => {
       size: '500px',
     },
     footer: {
-      cancelText: 'ȡ��',
-      confirmText: 'ȷ��',
+      cancelText: '取消',
+      confirmText: '确认',
     },
     on: {
       confirm: () => {
@@ -108,8 +108,8 @@ const handleEdit = () => {
 const handleDelete = async () => {
   try {
     await ElMessageBox.confirm(
-      `ȷ��Ҫɾ����ɫ��${props.data.roleName}����`,
-      'ȷ��ɾ��',
+      `确认删除角色 ${props.data.roleName}？`,
+      '删除角色',
       { type: 'warning' },
     );
     await new ApiRoleDelete({ params: { id: props.data.id } }, { hintSuccess: true });

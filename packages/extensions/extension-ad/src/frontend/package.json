@@ -1,0 +1,34 @@
+{
+  "name": "@internal/ad-frontend",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "dev": "vite --config vite.config.mts",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@internal/base-shared": "workspace:*",
+    "@internal/ad-shared": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-ad": "workspace:*",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "element-plus": "catalog:",
+    "@element-plus/icons-vue": "catalog:",
+    "pinia": "catalog:",
+    "@vueuse/core": "catalog:",
+    "axios": "catalog:",
+    "moyan-api": "catalog:"
+  },
+  "devDependencies": {
+    "vite": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "vue-tsc": "catalog:",
+    "sass": "catalog:",
+    "typescript": "catalog:"
+  }
+}

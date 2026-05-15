@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed, PropType,ref } from 'vue';
-import type { PermissionTreesResponseDto } from '../../../../apis/sys/schemas';
+import type { PermissionTreesResponseDto } from '../../../apis/sys/schemas';
 import TreeSelect from './TreeSelect.vue';
 
 

@@ -35,7 +35,7 @@
 import { computed } from 'vue';
 import { SwitchButton } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../../../store/auth-store';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY } from '../../../store/auth-store';
 
 const props = defineProps<{
   brandName?: string;

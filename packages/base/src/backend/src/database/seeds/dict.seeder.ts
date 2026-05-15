@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { getAllDicts } from '../../../../shared/src';
+import { getAllDicts } from 'moyan-mfw-base/shared';
 import type { DataSource } from 'typeorm'
 
 export async function seedDicts(dataSource: DataSource) {

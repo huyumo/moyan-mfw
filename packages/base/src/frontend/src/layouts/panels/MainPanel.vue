@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import TabsPanel from './TabsPanel.vue';
-import type { PageTabItem } from '../../../types/layout-types';
+import type { PageTabItem } from '../../types/layout-types';
 
 const props = defineProps<{
   modelValue: string;

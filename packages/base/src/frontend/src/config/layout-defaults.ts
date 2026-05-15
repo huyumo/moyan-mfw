@@ -5,7 +5,7 @@
 import type {
   AdminNavigationConfig,
   LayoutStyleConfig,
-} from '../../types/layout-types';
+} from '../types/layout-types';
 
 /** 默认布局样式配置。 */
 export const defaultLayoutStyleConfig: LayoutStyleConfig = {

@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue';
-import type { ImageResource } from '../../../upload/types';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 基础类型 ==========
 

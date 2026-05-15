@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MfwDateFormat from '../../date-format';
+import MfwDateFormat from '../date-format';
 
 describe('MfwDateFormat', () => {
   describe('基础渲染', () => {

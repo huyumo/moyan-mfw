@@ -4,9 +4,9 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
-import { Base } from '../../../../../common/entities/base.entity';
+import { Base } from '../../../../common/entities/base.entity';
 import { Role } from './role.entity';
-import { Permission } from '../../../permission/entities/permission.entity';
+import { Permission } from '../../permission/entities/permission.entity';
 
 /**
  * 角色权限关联实体

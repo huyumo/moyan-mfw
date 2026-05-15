@@ -9,7 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { AuditLogService } from './audit-log.service';
 import { AuditLogController } from './audit-log.controller';
-import { AuditInterceptor } from '../../../../common/interceptors/audit.interceptor';
+import { AuditInterceptor } from '../../../common/interceptors/audit.interceptor';
 
 /**
  * 审计日志模块

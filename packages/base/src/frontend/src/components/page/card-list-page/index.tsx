@@ -15,9 +15,9 @@ import {
   type VNode
 } from 'vue';
 import { ElPagination, ElEmpty } from 'element-plus';
-import MfwSearchPanel from '../../search-panel';
-import MfwTableList from '../../../table/table-list';
-import { useLayoutStore } from '../../../../store/layout-store';
+import MfwSearchPanel from '../search-panel';
+import MfwTableList from '../../table/table-list';
+import { useLayoutStore } from '../../../store/layout-store';
 import type {
   MfwCardListPageProps,
   MfwCardListPageEmits,

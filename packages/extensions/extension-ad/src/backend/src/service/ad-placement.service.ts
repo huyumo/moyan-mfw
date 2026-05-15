@@ -5,9 +5,9 @@
 import { Injectable, ConflictException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { AdPlacement } from '../../entities/ad-placement.entity'
-import { Ad } from '../../entities/ad.entity'
-import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../../dto'
+import { AdPlacement } from '../entities/ad-placement.entity'
+import { Ad } from '../entities/ad.entity'
+import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-mfw-base/backend'
 
 @Injectable()

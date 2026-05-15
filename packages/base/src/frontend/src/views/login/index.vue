@@ -96,12 +96,12 @@
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus';
 import { computed, defineAsyncComponent, markRaw, nextTick, onMounted, reactive, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore, type AppInstance } from '../../../store/auth-store';
-import { useLayoutStore } from '../../../store/layout-store';
-import { useColorMode, useThemeSwitch } from '../../../composables';
-import { ParticleBackground } from '../../../components/display';
-import AppSelectorPanel from '../../../components/business/app-selector-panel/Index.vue';
-import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../../types/layout-types';
+import { useAuthStore, type AppInstance } from '../../store/auth-store';
+import { useLayoutStore } from '../../store/layout-store';
+import { useColorMode, useThemeSwitch } from '../../composables';
+import { ParticleBackground } from '../../components/display';
+import AppSelectorPanel from '../../components/business/app-selector-panel/Index.vue';
+import type { AsyncExtensionComponent, ExtensionComponentInput } from '../../types/layout-types';
 
 interface LoginFormState {
   username: string;

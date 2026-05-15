@@ -23,9 +23,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../../apis/sys';
-import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../../apis/sys/schemas';
-import { IsBuiltinDict, IsOwnerDict } from '../../../../../shared/src';
+import { ApiAppMemberGetAvailableRoles, ApiAppMemberUpdateRoles } from '../../../apis/sys';
+import type { MemberResponseDto, AvailableAvailableRoleDto } from '../../../apis/sys/schemas';
+import { IsBuiltinDict, IsOwnerDict } from 'moyan-mfw-base/shared';
 
 /** Props */
 interface Props {

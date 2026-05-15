@@ -6,7 +6,7 @@ import { mount } from '@vue/test-utils';
 import { describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
 import SettingsPanel from './SettingsPanel.vue';
-import type { LayoutStyleConfig } from '../../../types/layout-types';
+import type { LayoutStyleConfig } from '../../types/layout-types';
 
 vi.mock('../../composables/use-color-mode', () => ({
   useColorMode: () => ({
@@ -54,6 +54,8 @@ const styleConfig: LayoutStyleConfig = {
   buttonRadius: 6,
   colorMode: 'light',
   themePackage: 'default',
+  searchTrigger: 'change' as const,
+  keepAlive: false,
 };
 
 function createWrapper() {

@@ -1,0 +1,30 @@
+"use strict";
+/**
+ * @fileoverview 跳过权限校验装饰器
+ * @description 标记接口跳过权限守卫检查，已认证用户可直接访问
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SkipPermission = exports.SKIP_PERMISSION_KEY = void 0;
+const common_1 = require("@nestjs/common");
+/**
+ * 跳过权限校验标识键
+ * @description 用于 Reflector 获取跳过权限标识
+ */
+exports.SKIP_PERMISSION_KEY = 'skip_permission';
+/**
+ * 跳过权限校验装饰器
+ * @description 标记控制器方法跳过权限检查，已通过 AuthGuard 认证的用户可直接访问
+ *
+ * @example
+ * ```typescript
+ * @Controller('upload')
+ * export class UploadController {
+ *   @SkipPermission()
+ *   @Post()
+ *   async uploadFile() {}
+ * }
+ * ```
+ */
+const SkipPermission = () => (0, common_1.SetMetadata)(exports.SKIP_PERMISSION_KEY, true);
+exports.SkipPermission = SkipPermission;
+//# sourceMappingURL=skip-permission.decorator.js.map

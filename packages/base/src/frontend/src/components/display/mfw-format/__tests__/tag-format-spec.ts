@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MfwTagFormat from '../../tag-format';
+import MfwTagFormat from '../tag-format';
 
 describe('MfwTagFormat', () => {
   describe('基础渲染', () => {

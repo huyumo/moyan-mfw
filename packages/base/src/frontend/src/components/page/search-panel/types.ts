@@ -3,7 +3,7 @@
  */
 
 import type { VNode } from 'vue';
-import type { SearchTemplateItem } from '../../list-page/types';
+import type { SearchTemplateItem } from '../list-page/types';
 
 /** MfwSearchPanel Props 接口 */
 export interface MfwSearchPanelProps {

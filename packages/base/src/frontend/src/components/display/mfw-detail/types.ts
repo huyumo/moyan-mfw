@@ -4,8 +4,8 @@
  */
 
 import type { Component, CSSProperties } from 'vue';
-import type { DictItem } from '../../mfw-format/types';
-import type { ImageResource } from '../../../upload/types';
+import type { DictItem } from '../mfw-format/types';
+import type { ImageResource } from '../../upload/types';
 
 // ========== 详情面板 ==========
 

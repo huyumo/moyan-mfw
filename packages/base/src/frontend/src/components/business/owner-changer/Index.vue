@@ -19,8 +19,8 @@
 import { ref, reactive, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import type { FormInstance, FormRules } from 'element-plus';
-import MfwUserPicker from '../../../picker/user-picker';
-import { ApiAppChangeOwner } from '../../../../apis/sys';
+import MfwUserPicker from '../../picker/user-picker';
+import { ApiAppChangeOwner } from '../../../apis/sys';
 
 defineOptions({ name: 'OwnerChanger' });
 

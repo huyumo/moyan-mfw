@@ -4,10 +4,10 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
-import { Base } from '../../../../../common/entities/base.entity';
+import { Base } from '../../../../common/entities/base.entity';
 import { App } from './app.entity';
-import { User } from '../../../user/entities/user.entity';
-import { Role } from '../../../role/entities/role.entity';
+import { User } from '../../user/entities/user.entity';
+import { Role } from '../../role/entities/role.entity';
 
 /**
  * 应用成员关联实体

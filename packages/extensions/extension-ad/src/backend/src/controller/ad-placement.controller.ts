@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
-import { ApiResponseUtil } from '../../api-response'
-import { AdPlacementService } from '../../service/ad-placement.service'
-import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../../dto'
+import { ApiResponseUtil } from '../api-response'
+import { AdPlacementService } from '../service/ad-placement.service'
+import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../dto'
 
 @ApiTags('ad-placement', '广告位相关接口')
 @ApiBearerAuth('Authorization')

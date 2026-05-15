@@ -16,7 +16,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { NotFoundError } from '../../exceptions/not-found.exception';
+import { NotFoundError } from '../exceptions/not-found.exception';
 import { Request, Response } from 'express';
 
 /**

@@ -4,8 +4,8 @@
  */
 
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '../../store/auth-store';
-import { buildPerValue } from '../../utils/permissions';
+import { useAuthStore } from '../store/auth-store';
+import { buildPerValue } from '../utils/permissions';
 
 /**
  * 权限检查选项

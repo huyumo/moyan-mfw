@@ -29,11 +29,11 @@ import {
 import { PermissionService } from './permission.service';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto } from './dto';
 import { SyncPermissionDto, PermissionTreeNodeDto } from './dto';
-import { AuthGuard } from '../../../../common/guards/auth.guard';
-import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
-import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
-import { ApiResponseUtil } from '../../../../common/types/api.types';
-import { ApiPaginatedResponse } from '../../../../common';
+import { AuthGuard } from '../../../common/guards/auth.guard';
+import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
+import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
+import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 
 /**
  * 权限控制器

@@ -1,5 +1,5 @@
-import { definePageConfig } from '../../../router/routes';
-import ForbiddenPage from './Index.vue';
+import { definePageConfig } from '../../router/routes';
+import ForbiddenPage from './index.vue';
 
 export default definePageConfig({
   page: ForbiddenPage,

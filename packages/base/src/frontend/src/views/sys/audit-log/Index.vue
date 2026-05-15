@@ -20,12 +20,12 @@
 <script setup lang="ts">
 import { ref, h } from 'vue';
 import { View } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../../components';
-import type { MfwListPageInstance } from '../../../../components/page/list-page/types';
-import { MfwPopup } from '../../../../components/feedback';
-import { renderActionButtons } from '../../../../components/table/action-buttons';
-import { ApiAuditLogFindAll, ApiAuditLogFindById } from '../../../../apis/sys';
-import type { AuditLogResponseDto } from '../../../../apis/sys/schemas';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
+import { ApiAuditLogFindAll, ApiAuditLogFindById } from '../../../apis/sys';
+import type { AuditLogResponseDto } from '../../../apis/sys/schemas';
 import AuditLogDetail from './AuditLogDetail.vue';
 
 defineOptions({ name: 'MfwAuditLogList' });

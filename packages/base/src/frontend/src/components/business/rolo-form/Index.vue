@@ -11,9 +11,9 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import type { FormInstance, FormRules } from 'element-plus';
-import { ApiRoleCreate, ApiRoleUpdate } from '../../../../apis/sys';
-import { CreateRoleDto } from '../../../../apis/sys/schemas';
-import { FormItemConfig, MfwFormCard } from '../../../form';
+import { ApiRoleCreate, ApiRoleUpdate } from '../../../apis/sys';
+import { CreateRoleDto } from '../../../apis/sys/schemas';
+import { FormItemConfig, MfwFormCard } from '../../form';
 
 defineOptions({ name: 'MfwAddRoleForm' });
 

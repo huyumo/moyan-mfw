@@ -2,7 +2,7 @@
  * @fileoverview 应用类型验证器
  */
 
-import { AppTypeConfig } from '../../types/app-config.types';
+import { AppTypeConfig } from '../types/app-config.types';
 
 /** 内置应用类型 typeCode */
 export const BUILTIN_APP_TYPES = ['system', 'admin'];

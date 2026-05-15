@@ -41,7 +41,7 @@
 
 <script setup lang="ts">
 import * as IconMap from '@element-plus/icons-vue';
-import type { SideMenuItem, TopNavItem } from '../../../types/layout-types';
+import type { SideMenuItem, TopNavItem } from '../../types/layout-types';
 
 defineProps<{
   /** 是否展示一级菜单 */

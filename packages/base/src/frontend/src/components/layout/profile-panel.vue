@@ -60,14 +60,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { Edit, Lock, User, Phone, Message, Avatar, CircleCheck, Calendar } from '@element-plus/icons-vue';
-import { MfwPopup } from '../../feedback/popup';
-import { useAuthStore } from '../../../store/auth-store';
-import { ApiUserFindById } from '../../../apis/sys';
-import type { UserResponseDto } from '../../../apis/sys/schemas';
-import UserForm from '../../../views/sys/user/UserForm.vue';
+import { MfwPopup } from '../feedback/popup';
+import { useAuthStore } from '../../store/auth-store';
+import { ApiUserFindById } from '../../apis/sys';
+import type { UserResponseDto } from '../../apis/sys/schemas';
+import UserForm from '../../views/sys/user/UserForm.vue';
 import PasswordChangeForm from './password-change-form.vue';
 import { MfwDictFormat } from '..';
-import { toItems, StatusDict } from '../../../../shared/src';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'ProfilePanel' });
 

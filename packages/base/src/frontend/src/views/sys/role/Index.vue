@@ -26,13 +26,13 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Plus } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwCardListPage } from '../../../../components';
-import type { MfwCardListPageInstance } from '../../../../components/page/card-list-page/types';
-import { MfwPopup } from '../../../../components/feedback';
-import { ApiRoleFindAll } from '../../../../apis/sys';
-import { RoleForm, RoleCard } from '../../../../components/business';
-import { useAuthStore } from '../../../../store/auth-store';
-import { toItems, StatusDict } from '../../../../../shared/src';
+import { MfwPageWrapper, MfwCardListPage } from '../../../components';
+import type { MfwCardListPageInstance } from '../../../components/page/card-list-page/types';
+import { MfwPopup } from '../../../components/feedback';
+import { ApiRoleFindAll } from '../../../apis/sys';
+import { RoleForm, RoleCard } from '../../../components/business';
+import { useAuthStore } from '../../../store/auth-store';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'MfwRoleList' });
 

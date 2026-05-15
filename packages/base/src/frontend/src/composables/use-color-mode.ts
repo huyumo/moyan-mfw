@@ -7,8 +7,8 @@
 
 import { usePreferredDark } from '@vueuse/core';
 import { watch, computed } from 'vue';
-import { useLayoutStore } from '../../store/layout-store';
-import type { ColorMode } from '../../types/color-mode-types';
+import { useLayoutStore } from '../store/layout-store';
+import type { ColorMode } from '../types/color-mode-types';
 
 let transitionInProgress = false;
 

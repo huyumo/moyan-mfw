@@ -3,7 +3,7 @@ import './style.scss';
 import { h, type VNode } from 'vue';
 import { ElButton, ElTooltip } from 'element-plus';
 import { More } from '@element-plus/icons-vue';
-import { usePermission } from '../../../../hooks';
+import { usePermission } from '../../../hooks';
 import type { ActionButtonConfig, ActionButtonsOptions } from './types';
 
 const DEFAULT_MAX_VISIBLE = 2;

@@ -5,7 +5,7 @@
 import { INestApplication, Type } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { HookConfig, AppContext } from '../../types/app-config.types';
+import { HookConfig, AppContext } from '../types/app-config.types';
 
 /**
  * 创建应用上下文

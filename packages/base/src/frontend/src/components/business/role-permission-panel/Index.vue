@@ -18,9 +18,9 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { MfwPermissionTree } from '../../permission-tree'
-import { PermissionTreesResponseDto } from '../../../../apis/sys/schemas';
-import { ApiRoleAssignPermissions, ApiRoleGetRolePermissions } from '../../../../apis/sys';
+import { MfwPermissionTree } from '../permission-tree'
+import { PermissionTreesResponseDto } from '../../../apis/sys/schemas';
+import { ApiRoleAssignPermissions, ApiRoleGetRolePermissions } from '../../../apis/sys';
 
 defineOptions({ name: 'RolePermissionPanel' })
 

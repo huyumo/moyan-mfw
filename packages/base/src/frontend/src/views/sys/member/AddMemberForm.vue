@@ -16,11 +16,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import MfwFormCard from '../../../../components/form/form-card';
-import type { MfwFormCardInstance, FormItemConfig } from '../../../../components/form/form-card/types';
-import { ApiAppMemberAddMember } from '../../../../apis/sys';
-import MfwUserPicker from '../../../../components/picker/user-picker';
-import { useAuthStore } from '../../../../store/auth-store';
+import MfwFormCard from '../../../components/form/form-card';
+import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
+import { ApiAppMemberAddMember } from '../../../apis/sys';
+import MfwUserPicker from '../../../components/picker/user-picker';
+import { useAuthStore } from '../../../store/auth-store';
 
 const authStore = useAuthStore();
 const appId = computed(() => authStore.currentApp?.appId || '');

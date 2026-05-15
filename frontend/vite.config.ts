@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
+      'moyan-mfw-base/frontend': resolve(__dirname, '../packages/base/src/frontend/src'),
+      'moyan-mfw-extension-ad/frontend': resolve(__dirname, '../packages/extensions/extension-ad/src/frontend/src'),
     },
   },
   server: {
@@ -22,5 +24,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    target: 'es2022',
   },
 });

@@ -12,9 +12,9 @@ import {
   JoinColumn,
   Unique,
 } from 'typeorm';
-import { Base } from '../../../../../common/entities/base.entity';
+import { Base } from '../../../../common/entities/base.entity';
 import { AppType } from './app-type.entity';
-import { Permission } from '../../../permission/entities/permission.entity';
+import { Permission } from '../../permission/entities/permission.entity';
 
 /**
  * 应用类型权限池实体

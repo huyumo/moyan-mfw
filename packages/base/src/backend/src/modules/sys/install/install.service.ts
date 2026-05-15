@@ -6,10 +6,10 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
-import { AppType } from '../../app-type/entities/app-type.entity';
-import { User } from '../../user/entities/user.entity';
-import { App } from '../../app/entities/app.entity';
-import { runSeeds } from '../../../../database/seeds/index';
+import { AppType } from '../app-type/entities/app-type.entity';
+import { User } from '../user/entities/user.entity';
+import { App } from '../app/entities/app.entity';
+import { runSeeds } from '../../../database/seeds/index';
 import { InitResponseDto } from './dto/init-response.dto';
 
 /**

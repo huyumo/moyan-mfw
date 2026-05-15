@@ -10,7 +10,17 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "moyan-mfw-base/backend": ["../packages/base/src/backend/dist"],
+      "moyan-mfw-base/backend/*": ["../packages/base/src/backend/dist/*"],
+      "moyan-mfw-base/shared": ["../packages/base/src/shared/dist"],
+      "moyan-mfw-base/shared/*": ["../packages/base/src/shared/dist/*"],
+      "moyan-mfw-extension-ad/backend": ["../packages/extensions/extension-ad/src/backend/dist"],
+      "moyan-mfw-extension-ad/backend/*": ["../packages/extensions/extension-ad/src/backend/dist/*"],
+      "moyan-mfw-extension-ad/shared": ["../packages/extensions/extension-ad/src/shared/dist"],
+      "moyan-mfw-extension-ad/shared/*": ["../packages/extensions/extension-ad/src/shared/dist/*"],
+      "moyan-mfw-business-dict": ["../business-dict/dist/esm"],
+      "moyan-mfw-business-dict/*": ["../business-dict/dist/esm/*"]
     }
   },
   "include": ["src/**/*.ts"],

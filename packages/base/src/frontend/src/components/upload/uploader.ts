@@ -4,7 +4,7 @@
  */
 
 import type { IUploader, UploadRequestOptions, UploadResult } from './types';
-import { TOKEN_KEY } from '../../../constants/storage-keys';
+import { TOKEN_KEY } from '../../constants/storage-keys';
 
 const getAuthToken = (): string => {
   return localStorage.getItem(TOKEN_KEY) || '';

@@ -1,5 +1,5 @@
-import { FormUploader, OssUploader } from '../../components/upload/uploader';
-import type { UploadResult } from '../../components/upload/types';
+import { FormUploader, OssUploader } from '../components/upload/uploader';
+import type { UploadResult } from '../components/upload/types';
 
 export type UploadType = 'Form' | 'Oss';
 

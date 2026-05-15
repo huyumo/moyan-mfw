@@ -40,8 +40,8 @@
 
 <script setup lang="ts">
 import { WarningFilled, Expand, Fold } from '@element-plus/icons-vue';
-import MenuTreeNode from '../../components/menu/MenuTreeNode.vue';
-import type { SideMenuItem } from '../../../types/layout-types';
+import MenuTreeNode from '../components/menu/MenuTreeNode.vue';
+import type { SideMenuItem } from '../../types/layout-types';
 
 defineProps<{
   /** 是否显示侧边栏 */

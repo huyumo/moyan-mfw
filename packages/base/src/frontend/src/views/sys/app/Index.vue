@@ -27,22 +27,22 @@
 import { ref, h, onMounted } from 'vue';
 import { ElMessageBox, ElTag, ElAvatar } from 'element-plus';
 import { Plus, View, Edit, Delete, User, Picture } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../../components';
-import type { MfwListPageInstance } from '../../../../components/page/list-page/types';
-import { MfwPopup } from '../../../../components/feedback';
-import { renderActionButtons } from '../../../../components/table/action-buttons';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
 import {
   ApiAppFindAll,
   ApiAppDelete,
   ApiAppTypeFindAllList,
   ApiAppFindById,
-} from '../../../../apis/sys';
-import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../../apis/sys/schemas';
+} from '../../../apis/sys';
+import type { AppDetailResponseDto, AppTypeResponseDto } from '../../../apis/sys/schemas';
 import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
-import { OwnerChanger } from '../../../../components/business';
-import { getImageSrc } from '../../../../utils/image';
-import { toItems, StatusDict } from '../../../../../shared/src';
+import { OwnerChanger } from '../../../components/business';
+import { getImageSrc } from '../../../utils/image';
+import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'MfwAppList' });
 

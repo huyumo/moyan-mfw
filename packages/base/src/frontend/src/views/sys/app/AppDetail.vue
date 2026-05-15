@@ -22,11 +22,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { MfwCardPanel } from '../../../../components';
-import type { CardPanelHeader, CardPanelItem } from '../../../../components/display/mfw-card-panel/types';
-import type { AppDetailResponseDto } from '../../../../apis/sys/schemas';
+import { MfwCardPanel } from '../../../components';
+import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
+import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
 import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
-import { toItems, getLabel, StatusDict } from '../../../../../shared/src';
+import { toItems, getLabel, StatusDict } from 'moyan-mfw-base/shared';
 
 interface Props {
   data?: AppDetailResponseDto;
