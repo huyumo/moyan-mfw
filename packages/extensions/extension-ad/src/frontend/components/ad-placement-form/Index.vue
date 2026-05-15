@@ -15,8 +15,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { MfwFormCard } from 'moyan-mfw-base/frontend'
-import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
+import { MfwFormCard } from '@internal/base-frontend'
+import type { MfwFormCardInstance, FormItemConfig } from '@internal/base-frontend'
 import { ApiAdPlacementCreate, ApiAdPlacementUpdate, ApiAdPlacementTypeFindAll } from '../../apis/ad'
 
 const props = defineProps<{

@@ -15,10 +15,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { MfwFormCard } from 'moyan-mfw-base/frontend'
-import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
+import { MfwFormCard } from '@internal/base-frontend'
+import type { MfwFormCardInstance, FormItemConfig } from '@internal/base-frontend'
 import { ApiAdCreate, ApiAdUpdate, ApiAdPlacementFindAll } from '../../apis/ad'
-import { LINK_TYPE_LABELS, LINK_TYPE } from '../../../shared/constants'
+import { LINK_TYPE_LABELS, LINK_TYPE } from '@internal/ad-shared'
 
 const props = defineProps<{
   id?: string
