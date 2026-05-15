@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nest start --watch",
+    "prebuild": "pnpm --filter @internal/base-shared build && pnpm --filter @internal/base-backend build && pnpm --filter @internal/ad-shared build && pnpm --filter @internal/ad-backend build && pnpm --filter moyan-mfw-business-dict build",
+    "dev": "pnpm run prebuild && nest start --watch",
     "build": "nest build",
     "typecheck:backend": "tsc --noEmit -p tsconfig.json",
     "typecheck": "tsc --noEmit -p tsconfig.json",

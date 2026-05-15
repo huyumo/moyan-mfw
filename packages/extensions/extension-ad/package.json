@@ -22,10 +22,12 @@
       "types": "./src/frontend/dist/*.d.ts"
     },
     "./shared": {
+      "import": "./src/shared/dist/index.js",
       "require": "./src/shared/dist/index.js",
       "types": "./src/shared/dist/index.d.ts"
     },
     "./shared/*": {
+      "import": "./src/shared/dist/*",
       "require": "./src/shared/dist/*",
       "types": "./src/shared/dist/*.d.ts"
     }
