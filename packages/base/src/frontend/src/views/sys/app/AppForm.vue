@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview Ӧ��ʵ���������
- * @description ���� MfwPopup �������½�/�༭����
+ * @fileoverview 应用实例表单组件
+ * @description 基于 MfwPopup 封装的新建/编辑表单
  */
 -->
 <template>
@@ -25,16 +25,16 @@ import { StatusDict } from 'moyan-mfw-base/shared';
 
 const props = defineProps<AppDetailResponseDto>();
 
-/** �Ƿ�༭ģʽ */
+/** 是否编辑模式 */
 const isEdit = computed(() => !!props?.id);
 
-/** �������� */
+/** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
 
-/** Ӧ�������б� */
+/** 应用类型列表 */
 const appTypeList = ref<AppTypeResponseDto[]>([]);
 
-/** �������� */
+/** 表单数据 */
 const form = reactive({
   appTypeId: '',
   appName: '',
@@ -44,11 +44,11 @@ const form = reactive({
   appStatus: StatusDict.ENABLED as 1 | 0,
 });
 
-/** �������������� */
+/** 基础表单模板 */
 const baseTemplate: FormItemConfig[] = [
   {
     key: 'logo',
-    label: 'Ӧ��Logo',
+    label: '应用Logo',
     component: MfwImageSingle,
     testId: 'app-logo-upload',
     elProps: {
@@ -56,16 +56,16 @@ const baseTemplate: FormItemConfig[] = [
       cropRatio: 1,
       cropWidth: 200,
       cropHeight: 200,
-      placeholder: '����ϴ�Logo',
+      placeholder: '点击上传Logo',
     },
   },
   {
     key: 'appTypeId',
-    label: 'Ӧ������',
+    label: '应用类型',
     component: 'el-select',
     testId: 'app-type-select',
-    placeholder: '��ѡ��Ӧ������',
-    rules: [{ required: true, message: '��ѡ��Ӧ������', trigger: 'change' }],
+    placeholder: '请选择应用类型',
+    rules: [{ required: true, message: '请选择应用类型', trigger: 'change' }],
     disabled: () => isEdit.value,
     elProps: {
       style: 'width: 100%',
@@ -73,24 +73,24 @@ const baseTemplate: FormItemConfig[] = [
   },
   {
     key: 'appName',
-    label: 'Ӧ������',
+    label: '应用名称',
     component: 'el-input',
     testId: 'app-name-input',
-    placeholder: '������Ӧ������',
-    rules: [{ required: true, message: '������Ӧ������', trigger: 'blur' }],
+    placeholder: '请输入应用名称',
+    rules: [{ required: true, message: '请输入应用名称', trigger: 'blur' }],
   },
   {
     key: 'appCode',
-    label: 'Ӧ�ñ���',
+    label: '应用编码',
     component: 'el-input',
     testId: 'app-code-input',
-    placeholder: '������Ӧ�ñ���',
-    rules: [{ required: true, message: '������Ӧ�ñ���', trigger: 'blur' }],
+    placeholder: '请输入应用编码',
+    rules: [{ required: true, message: '请输入应用编码', trigger: 'blur' }],
     show: () => !isEdit.value,
   },
   {
     key: 'appCode',
-    label: 'Ӧ�ñ���',
+    label: '应用编码',
     component: 'el-input',
     testId: 'app-code-input',
     disabled: true,
@@ -98,10 +98,10 @@ const baseTemplate: FormItemConfig[] = [
   },
   {
     key: 'appDesc',
-    label: 'Ӧ������',
+    label: '应用描述',
     component: 'el-input',
     testId: 'app-desc-input',
-    placeholder: '������Ӧ������',
+    placeholder: '请输入应用描述',
     elProps: {
       type: 'textarea',
       rows: 3,
@@ -109,7 +109,7 @@ const baseTemplate: FormItemConfig[] = [
   },
   {
     key: 'appStatus',
-    label: '״̬',
+    label: '状态',
     component: 'el-switch',
     testId: 'app-status-switch',
     show: () => isEdit.value,
@@ -117,13 +117,13 @@ const baseTemplate: FormItemConfig[] = [
     elProps: {
       activeValue: StatusDict.ENABLED,
       inactiveValue: StatusDict.DISABLED,
-      activeText: '����',
-      inactiveText: '����',
+      activeText: '启用',
+      inactiveText: '禁用',
     },
   },
 ];
 
-/** ��ǰģ�壨��̬���� select ѡ� */
+/** 当前模板（动态生成 select 选项） */
 const currentTemplate = computed<FormItemConfig[]>(() => {
   return baseTemplate.map((item) => {
     if (item.key === 'appTypeId') {
@@ -142,16 +142,16 @@ const currentTemplate = computed<FormItemConfig[]>(() => {
   });
 });
 
-/** ��֤���� */
+/** 验证规则 */
 const rules = {};
 
-/** ����Ӧ�������б� */
+/** 加载应用类型列表 */
 const loadAppTypes = async () => {
   const result = await new ApiAppTypeFindAllList({});
   appTypeList.value = result || [];
 };
 
-/** ����Ӧ�����飨�༭ģʽ�� */
+/** 加载应用数据（编辑模式） */
 const loadAppDetail = () => {
   if (props.id) {
     form.appTypeId = props.appTypeId;
@@ -163,13 +163,13 @@ const loadAppDetail = () => {
   }
 };
 
-/** ��ʼ�� */
+/** 初始化 */
 onMounted(async () => {
   await loadAppTypes();
   loadAppDetail();
 });
 
-/** ȷ���ύ */
+/** 确认提交 */
 const onConfirm = async () => {
   await formRef.value?.validate();
 

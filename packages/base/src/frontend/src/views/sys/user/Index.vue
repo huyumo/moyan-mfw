@@ -1,17 +1,17 @@
 <!--
 /**
- * @fileoverview �û������б�ҳ��
- * @description ����ϵͳ�û���֧���½����༭��״̬��������������
+ * @fileoverview 用户管理列表页
+ * @description 管理系统用户，支持新建、编辑、状态切换和密码重置
  */
 -->
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-      <el-button type="primary" data-testid="user-create-btn" v-permission="{ value: ['����'] }" @click="handleAdd">
+      <el-button type="primary" data-testid="user-create-btn" v-permission="{ value: ['新建'] }" @click="handleAdd">
         <el-icon>
           <Plus />
         </el-icon>
-        �½�
+        新建
       </el-button>
     </template>
 
@@ -43,64 +43,63 @@ defineOptions({ name: 'MfwUserList' });
 
 const listPage = ref<MfwListPageInstance>();
 
-/** ����ģ�� */
+/** 搜索模板 */
 const searchTemplate = [
   {
     key: 'username',
-    label: '�û���',
+    label: '用户名',
     type: 'input' as const,
     testId: 'user-search-name',
-    placeholder: '�������û���',
+    placeholder: '请输入用户名',
   },
   {
     key: 'phone',
-    label: '�ֻ���',
+    label: '手机号',
     type: 'input' as const,
     testId: 'user-search-phone',
-    placeholder: '�������ֻ���',
+    placeholder: '请输入手机号',
   },
   {
     key: 'userStatus',
-    label: '״̬',
+    label: '状态',
     type: 'select' as const,
     testId: 'user-search-status',
-    placeholder: '��ѡ��״̬',
+    placeholder: '请选择状态',
     elProps: {
       options: toItems(StatusDict)
     },
   },
 ];
 
-/** ������ */
+/** 列表列 */
 const columns = [
   {
     prop: 'avatar',
-    label: 'ͷ��',
+    label: '头像',
     width: 60,
     align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(ElAvatar, { size: 36, src: getImageSrc(row.avatar), icon: User }),
   },
-  { prop: 'username', label: '�û���', minWidth: 120 },
-  { prop: 'nickname', label: '�ǳ�', minWidth: 120 },
-  { prop: 'phone', label: '�ֻ���', minWidth: 130 },
-  // { prop: 'email', label: '����', minWidth: 180 },
+  { prop: 'username', label: '用户名', minWidth: 120 },
+  { prop: 'nickname', label: '昵称', minWidth: 120 },
+  { prop: 'phone', label: '手机号', minWidth: 130 },
   {
     prop: 'gender',
-    label: '�Ա�',
+    label: '性别',
     width: 80,
     align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: row.gender, dict: toItems(GenderDict), asTag: true }),
   },
   {
     prop: 'isDeveloper',
-    label: '������',
+    label: '开发者',
     width: 80,
     align: 'center' as const,
     render: ({ row }: { row: UserResponseDto }) => h(MfwDictFormat, { value: Number(row.isDeveloper), dict: toItems(DeveloperDict), asTag: true }),
   },
   {
     prop: 'userStatus',
-    label: '״̬',
+    label: '状态',
     width: 100,
     render: ({ row }: { row: UserResponseDto }) => h(ElSwitch, {
       modelValue: row.userStatus === StatusDict.ENABLED,
@@ -111,26 +110,26 @@ const columns = [
   },
   {
     prop: 'createdAt',
-    label: '����ʱ��',
+    label: '创建时间',
     width: 180,
     render: ({ row }: { row: UserResponseDto }) => h(MfwDateFormat, { value: row.createdAt }),
   },
 ];
 
-/** ������ */
+/** 操作列 */
 const actionColumn = {
   prop: 'action',
-  label: '����',
+  label: '操作',
   width: 200,
   fixed: 'right' as const,
   render: ({ row }: { row: UserResponseDto }) => renderActionButtons([
-    { label: '�༭', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['�༭'], testId: 'user-edit-btn' },
-    { label: '��������', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['�༭'], testId: 'user-reset-pwd-btn' },
-    { label: 'ɾ��', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['ɾ��'], testId: 'user-delete-btn', visible: (row: UserResponseDto) => row.username !== 'admin' },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'user-edit-btn' },
+    { label: '重置密码', type: 'warning', icon: Lock, onClick: handleResetPassword, permission: ['编辑'], testId: 'user-reset-pwd-btn' },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'user-delete-btn', visible: (row: UserResponseDto) => row.username !== 'admin' },
   ], { maxVisible: 2 }, row),
 };
 
-/** �������� */
+/** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   return await new ApiUserFindAll({
     query: {
@@ -143,10 +142,10 @@ const loadData = async (params: Record<string, unknown>) => {
   })
 };
 
-/** �½� */
+/** 新建 */
 const handleAdd = () => {
   MfwPopup.open({
-    title: '�½��û�',
+    title: '新建用户',
     type: 'dialog',
     component: UserForm,
     popupProps: { width: 500 },
@@ -154,10 +153,10 @@ const handleAdd = () => {
   });
 };
 
-/** �༭ */
+/** 编辑 */
 const handleEdit = (row: UserResponseDto) => {
   MfwPopup.open({
-    title: '�༭�û�',
+    title: '编辑用户',
     type: 'dialog',
     component: UserForm,
     data: { ...row },
@@ -166,48 +165,48 @@ const handleEdit = (row: UserResponseDto) => {
   });
 };
 
-/** ״̬�л� */
+/** 状态切换 */
 const handleStatusChange = async (row: UserResponseDto, enabled: boolean) => {
   const status = enabled ? StatusDict.ENABLED : StatusDict.DISABLED;
   await new ApiUserUpdateStatus({
     params: { id: row.id },
     body: { status }
-  }, { hintSuccess: true, successMsg: () => enabled ? '������' : '�ѽ���', hintFail: true, failMsg: '״̬����ʧ��' });
+  }, { hintSuccess: true, successMsg: () => enabled ? '已启用' : '已禁用', hintFail: true, failMsg: '状态更新失败' });
   listPage.value?.refresh();
 };
 
-/** �������� */
+/** 重置密码 */
 const handleResetPassword = async (row: UserResponseDto) => {
 
   await ElMessageBox.prompt(
-    `�������û���${row.username}����������`,
-    '��������',
+    `请输入用户"${row.username}"的新密码`,
+    '重置密码',
     {
-      inputPattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/, // ��������ĸ�����֣��20λ
-      inputErrorMessage: '��������������һ����ĸ��һ�����֣��ҳ��Ȳ����� 6 λ',
-      confirmButtonText: 'ȷ��',
-      cancelButtonText: 'ȡ��',
+      inputPattern: /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{6,}$/,
+      inputErrorMessage: '密码必须包含至少一个字母和一个数字，且长度不低于 6 位',
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
     }
   ).then(async ({ value }) => {
     await new ApiUserResetPassword({
       params: { id: row.id },
       body: { password: value }
-    }, { hintSuccess: true, successMsg: '�������óɹ�' });
+    }, { hintSuccess: true, successMsg: '密码重置成功' });
   })
 };
 
-/** ɾ�� */
+/** 删除 */
 const handleDelete = async (row: UserResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `ȷ��Ҫɾ���û���${row.username}����`,
-      'ȷ��ɾ��',
+      `确定要删除用户"${row.username}"？`,
+      '确认删除',
       { type: 'warning' }
     );
   } catch {
     return;
   }
-  await new ApiUserDelete({ params: { id: row.id } }, { hintSuccess: true, successMsg: 'ɾ���ɹ�' });
+  await new ApiUserDelete({ params: { id: row.id } }, { hintSuccess: true, successMsg: '删除成功' });
   listPage.value?.refresh();
 };
 </script>

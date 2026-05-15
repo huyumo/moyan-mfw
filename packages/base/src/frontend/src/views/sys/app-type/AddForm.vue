@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview Ӧ�������½��������
- * @description ���� MfwPopup �������½�����
+ * @fileoverview 应用类型新增表单组件
+ * @description 基于 MfwPopup 封装的新建表单
  */
 -->
 <template>
@@ -22,10 +22,10 @@ import type { MfwFormCardInstance, FormItemConfig } from '../../../components/fo
 import { ApiAppTypeCreate } from '../../../apis/sys';
 import { MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
-/** �������� */
+/** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
 
-/** �������� */
+/** 表单数据 */
 const form = reactive({
   typeName: '',
   typeCode: '',
@@ -34,36 +34,36 @@ const form = reactive({
   multiAppEnabled: MultiAppEnabledDict.YES as 1 | 0,
 });
 
-/** ���������� */
+/** 表单模板配置 */
 const formTemplate: FormItemConfig[] = [
   {
     key: 'typeName',
-    label: '��������',
+    label: '类型名称',
     component: 'el-input',
     testId: 'app-type-name-input',
-    placeholder: '��������������',
-    rules: [{ required: true, message: '��������������', trigger: 'blur' }],
+    placeholder: '请输入应用类型名称',
+    rules: [{ required: true, message: '请输入应用类型名称', trigger: 'blur' }],
   },
   {
     key: 'typeCode',
-    label: '���ͱ���',
+    label: '类型编码',
     component: 'el-input',
     testId: 'app-type-code-input',
-    placeholder: '���������ͱ���',
-    rules: [{ required: true, message: '���������ͱ���', trigger: 'blur' }],
+    placeholder: '请输入类型编码',
+    rules: [{ required: true, message: '请输入类型编码', trigger: 'blur' }],
   },
   {
     key: 'icon',
-    label: 'ͼ��',
+    label: '图标',
     component: MfwIconPicker,
     testId: 'app-type-icon-picker',
   },
   {
     key: 'typeDesc',
-    label: '����',
+    label: '描述',
     component: 'el-input',
     testId: 'app-type-desc-input',
-    placeholder: '����������',
+    placeholder: '请输入描述',
     elProps: {
       type: 'textarea',
       rows: 3,
@@ -71,7 +71,7 @@ const formTemplate: FormItemConfig[] = [
   },
   {
     key: 'multiAppEnabled',
-    label: '֧�ֶ�Ӧ��',
+    label: '支持多应用',
     component: 'el-switch',
     testId: 'app-type-multi-app-switch',
     value: MultiAppEnabledDict.YES,
@@ -82,10 +82,10 @@ const formTemplate: FormItemConfig[] = [
   },
 ];
 
-/** ��֤������ template �е� rules �������˴����������ͼ��ݣ� */
+/** 验证规则（template 中的 rules 已配置，此处可扩展自定义校验器） */
 const rules = {};
 
-/** ȷ���ύ - �� MfwPopup ���� */
+/** 确认提交 - 由 MfwPopup 调用 */
 const onConfirm = async () => {
   await formRef.value?.validate();
 
@@ -102,7 +102,7 @@ const onConfirm = async () => {
   }, { hintSuccess: true });
 };
 
-/** ��¶������ MfwPopup ���� */
+/** 暴露给父组件（MfwPopup 调用） */
 defineExpose({
   onConfirm,
 });

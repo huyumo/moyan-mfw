@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview ��ɫ����������
- * @description ���� MfwPopup �����Ľ�ɫ�������
+ * @fileoverview 角色分配表单组件
+ * @description 基于 MfwPopup 封装的角色分配表单
  */
 -->
 <template>
@@ -35,13 +35,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-/** ��ѡ��ɫ */
+/** 可选角色 */
 const availableRoles = ref<AvailableAvailableRoleDto[]>([]);
 
-/** ѡ�еĽ�ɫ ID */
+/** 选中的角色 ID */
 const selectedRoleIds = ref<string[]>([]);
 
-/** ���ؿ�ѡ��ɫ */
+/** 加载可选角色 */
 const loadAvailableRoles = async () => {
   if (!props.appId) return;
   const result = await new ApiAppMemberGetAvailableRoles({
@@ -50,11 +50,11 @@ const loadAvailableRoles = async () => {
   availableRoles.value = result || [];
 };
 
-/** ��ʼ�� */
+/** 初始化 */
 onMounted(async () => {
   await loadAvailableRoles();
 
-  // ���õ�ǰ��ɫ
+  // 设置当前角色
   if (props.member?.roles) {
     selectedRoleIds.value = props.member.roles.map((r) => r.roleId);
   }
@@ -62,7 +62,7 @@ onMounted(async () => {
 
 const isMemberOwner = computed(() => Number(props.member.isOwner) === IsOwnerDict.YES);
 
-/** ȷ���ύ */
+/** 确认提交 */
 const onConfirm = async () => {
   if (!props.appId || isMemberOwner.value) return;
 

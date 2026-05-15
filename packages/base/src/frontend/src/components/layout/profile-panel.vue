@@ -16,27 +16,27 @@
     <div class="info-list">
       <div class="list-row">
         <el-icon class="row-icon"><User /></el-icon>
-        <span class="row-label">�ǳ�</span>
+        <span class="row-label">昵称</span>
         <span class="row-value">{{ userInfo?.nickname || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Phone /></el-icon>
-        <span class="row-label">�ֻ���</span>
+        <span class="row-label">手机号</span>
         <span class="row-value">{{ userInfo?.phone || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Message /></el-icon>
-        <span class="row-label">����</span>
+        <span class="row-label">邮箱</span>
         <span class="row-value">{{ userInfo?.email || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Avatar /></el-icon>
-        <span class="row-label">�Ա�</span>
+        <span class="row-label">性别</span>
         <span class="row-value">{{ genderText }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Calendar /></el-icon>
-        <span class="row-label">ע��ʱ��</span>
+        <span class="row-label">注册时间</span>
         <span class="row-value">{{ formatDateTime(userInfo?.createdAt) }}</span>
       </div>
     </div>
@@ -46,11 +46,11 @@
     <div class="profile-actions">
       <el-button type="primary" data-testid="profile-edit-btn" @click="handleEditProfile">
         <el-icon><Edit /></el-icon>
-        �༭����
+        编辑资料
       </el-button>
       <el-button data-testid="profile-password-btn" @click="handleChangePassword">
         <el-icon><Lock /></el-icon>
-        �޸�����
+        修改密码
       </el-button>
       <slot name="actions" :user-info="userInfo" />
     </div>
@@ -71,7 +71,7 @@ import { toItems, StatusDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'ProfilePanel' });
 
-const GENDER_MAP: Record<number, string> = { 0: 'δ֪', 1: '��', 2: 'Ů' };
+const GENDER_MAP: Record<number, string> = { 0: '未知', 1: '男', 2: '女' };
 
 function formatDateTime(val: string | undefined): string {
   if (!val) return '--';
@@ -84,7 +84,7 @@ function formatDateTime(val: string | undefined): string {
 const authStore = useAuthStore();
 const userInfo = ref<UserResponseDto | null>(null);
 
-const displayName = computed(() => userInfo.value?.nickname || userInfo.value?.username || '�û�');
+const displayName = computed(() => userInfo.value?.nickname || userInfo.value?.username || '用户');
 
 const avatarUrl = computed(() => {
   const avatar = userInfo.value?.avatar;
@@ -92,7 +92,7 @@ const avatarUrl = computed(() => {
   return typeof avatar === 'string' ? avatar : (avatar as any).src;
 });
 
-const genderText = computed(() => GENDER_MAP[userInfo.value?.gender ?? 0] || 'δ֪');
+const genderText = computed(() => GENDER_MAP[userInfo.value?.gender ?? 0] || '未知');
 
 async function fetchUserInfo() {
   const userId = authStore.user?.id;
@@ -100,14 +100,14 @@ async function fetchUserInfo() {
   try {
     userInfo.value = await new ApiUserFindById({ params: { id: userId } });
   } catch (e) {
-    console.error('��ȡ�û���Ϣʧ��:', e);
+    console.error('获取用户信息失败:', e);
   }
 }
 
 function handleEditProfile() {
   if (!userInfo.value) return;
   MfwPopup.open({
-    title: '�༭����',
+    title: '编辑资料',
     type: 'dialog',
     component: UserForm,
     data: { ...userInfo.value },
@@ -123,7 +123,7 @@ function handleEditProfile() {
 
 function handleChangePassword() {
   MfwPopup.open({
-    title: '�޸�����',
+    title: '修改密码',
     type: 'dialog',
     component: PasswordChangeForm,
     popupProps: { width: 420 },
