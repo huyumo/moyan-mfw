@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { META_KEY, ITEMS_KEY } from './decorator'
+import { META_KEY, ITEMS_KEY } from './types'
 import type { DictItem, DictMetaOptions } from './types'
 
 const registry = new Map<string, any>()

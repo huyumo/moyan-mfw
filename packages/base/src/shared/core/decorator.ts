@@ -1,9 +1,7 @@
 import 'reflect-metadata'
 import type { DictMetaOptions, DictItem } from './types'
+import { META_KEY, ITEMS_KEY } from './types'
 import { registerDict } from './registry'
-
-export const META_KEY = Symbol('dict:meta')
-export const ITEMS_KEY = Symbol('dict:items')
 
 export function DictMeta(options: DictMetaOptions): ClassDecorator {
   return (target: any) => {
