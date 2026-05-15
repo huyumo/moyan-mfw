@@ -42,7 +42,7 @@ import AppForm from './AppForm.vue';
 import AppDetail from './AppDetail.vue';
 import { OwnerChanger } from '../../../components/business';
 import { getImageSrc } from '../../../utils/image';
-import { toItems, StatusDict } from 'moyan-mfw-base/shared';
+import { toItems, StatusDict } from '../../../../shared';
 
 defineOptions({ name: 'MfwAppList' });
 

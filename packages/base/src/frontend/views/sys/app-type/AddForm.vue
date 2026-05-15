@@ -20,7 +20,7 @@ import MfwFormCard from '../../../components/form/form-card';
 import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeCreate } from '../../../apis/sys';
-import { MultiAppEnabledDict } from 'moyan-mfw-base/shared';
+import { MultiAppEnabledDict } from '../../../../shared';
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();

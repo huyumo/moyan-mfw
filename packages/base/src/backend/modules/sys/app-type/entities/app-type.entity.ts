@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
 import { Base } from '../../../../common/entities/base.entity';
 import { ClassConstructor } from 'class-transformer';
-import { toDescription, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
+import { toDescription, StatusDict, MultiAppEnabledDict } from '../../../../../shared';
 
 /**
  * 应用类型实体

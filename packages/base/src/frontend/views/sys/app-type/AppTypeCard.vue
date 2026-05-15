@@ -44,7 +44,7 @@ import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import { MfwDictFormat } from '../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
+import { toItems, StatusDict, MultiAppEnabledDict } from '../../../../shared';
 
 defineOptions({ name: 'AppTypeCard' });
 

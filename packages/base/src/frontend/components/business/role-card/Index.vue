@@ -36,7 +36,7 @@ import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
+import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../shared';
 import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });

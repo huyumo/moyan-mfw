@@ -40,7 +40,7 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
-import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
+import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../shared';
 import { useRoute, useRouter } from 'vue-router';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {

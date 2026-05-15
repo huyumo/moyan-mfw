@@ -67,7 +67,7 @@ import type { UserResponseDto } from '../../apis/sys/schemas';
 import UserForm from '../../views/sys/user/UserForm.vue';
 import PasswordChangeForm from './password-change-form.vue';
 import { MfwDictFormat } from '..';
-import { toItems, StatusDict } from 'moyan-mfw-base/shared';
+import { toItems, StatusDict } from '../../../shared';
 
 defineOptions({ name: 'ProfilePanel' });
 

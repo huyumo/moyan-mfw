@@ -21,7 +21,7 @@ import MfwIconPicker from '../../../components/picker/icon-picker';
 import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
 import { ApiAppTypeUpdate } from '../../../apis/sys';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
-import { StatusDict } from 'moyan-mfw-base/shared';
+import { StatusDict } from '../../../../shared';
 
 /** Props */
 interface Props {

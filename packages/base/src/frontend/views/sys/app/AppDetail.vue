@@ -26,7 +26,7 @@ import { MfwCardPanel } from '../../../components';
 import type { CardPanelHeader, CardPanelItem } from '../../../components/display/mfw-card-panel/types';
 import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
 import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
-import { toItems, getLabel, StatusDict } from 'moyan-mfw-base/shared';
+import { toItems, getLabel, StatusDict } from '../../../../shared';
 
 interface Props {
   data?: AppDetailResponseDto;
