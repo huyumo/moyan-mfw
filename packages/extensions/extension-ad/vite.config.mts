@@ -1,7 +1,11 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import vueJsx from '@vitejs/plugin-vue-jsx'
-import { resolve } from 'path'
+/**
+ * @fileoverview Extension-AD frontend dev/build configuration.
+ */
+
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import { fileURLToPath } from 'url';
 
 export default defineConfig({
   plugins: [vue(), vueJsx()],
@@ -12,15 +16,31 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3002',
         changeOrigin: true,
-      }
-    }
+      },
+    },
   },
   resolve: {
     alias: {
-      '@': '/src/frontend',
-      'moyan-mfw-base/frontend': resolve(import.meta.dirname, '../../base/src/frontend'),
-      'moyan-mfw-base/shared': resolve(import.meta.dirname, '../../base/src/shared/index.ts'),
+      '@': fileURLToPath(new URL('./src/frontend', import.meta.url)),
     },
   },
-
-})
+  build: {
+    lib: {
+      entry: fileURLToPath(new URL('./src/frontend/index.ts', import.meta.url)),
+      formats: ['es', 'cjs'],
+      fileName: (format) => (format === 'es' ? 'index.mjs' : 'index.js'),
+    },
+    rollupOptions: {
+      external: [
+        'vue',
+        'vue-router',
+        'pinia',
+        'axios',
+        'element-plus',
+        '@element-plus/icons-vue',
+      ],
+    },
+    outDir: '../../dist/frontend',
+    sourcemap: true,
+  },
+});

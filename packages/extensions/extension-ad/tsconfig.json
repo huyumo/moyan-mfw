@@ -1,18 +1,8 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "strictPropertyInitialization": false,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "baseUrl": ".",
-    "paths": {
-      "typeorm": ["./node_modules/typeorm"],
-      "moyan-mfw-base/backend": ["../../base/dist/backend"],
-      "moyan-mfw-base/frontend": ["../../base/src/frontend/index.ts"]
-    }
-  },
-  "include": ["src/**/*"],
-  "exclude": ["src/frontend"]
+  "files": [],
+  "references": [
+    { "path": "./src/backend/tsconfig.json" },
+    { "path": "./src/frontend/tsconfig.json" },
+    { "path": "./src/shared/tsconfig.json" }
+  ]
 }

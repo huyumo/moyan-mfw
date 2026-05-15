@@ -1,19 +1,9 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./src/frontend/tsconfig.json",
   "compilerOptions": {
-    "target": "ES2021",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "jsx": "preserve",
+    "composite": false,
     "allowImportingTsExtensions": true,
     "noEmit": true,
-    "declaration": false,
-    "emitDecoratorMetadata": false,
-    "paths": {
-      "typeorm": ["./node_modules/typeorm"],
-      "@/*": ["./src/frontend/*"]
-    }
-  },
-  "include": ["src/frontend/**/*.ts", "src/frontend/**/*.vue", "vite.config.mts"],
-  "exclude": ["src/backend"]
+    "declaration": false
+  }
 }

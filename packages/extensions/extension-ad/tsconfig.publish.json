@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@internal/base-backend": ["moyan-mfw-base/backend"],
+      "@internal/base-frontend": ["moyan-mfw-base/frontend"],
+      "@internal/base-shared": ["moyan-mfw-base/shared"],
+      "@internal/ad-shared": ["./dist/shared/index.js"]
+    }
+  },
+  "include": ["./dist/**/*.js"]
+}

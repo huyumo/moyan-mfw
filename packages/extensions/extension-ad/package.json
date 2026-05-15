@@ -3,77 +3,41 @@
   "version": "0.1.0",
   "description": "MFW 广告管理扩展包",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "require": "./dist/index.js",
-      "default": "./src/index.ts"
-    },
     "./backend": {
-      "types": "./src/backend/index.ts",
-      "require": "./dist/backend/index.js",
-      "default": "./src/backend/index.ts"
+      "types": "./dist/backend/index.d.ts",
+      "require": "./dist/backend/index.js"
     },
     "./frontend": {
-      "types": "./src/frontend/index.ts",
-      "require": "./dist/frontend/index.js",
-      "default": "./src/frontend/index.ts"
+      "import": "./dist/frontend/index.mjs",
+      "types": "./dist/frontend/index.d.ts",
+      "require": "./dist/frontend/index.js"
     },
     "./shared": {
-      "types": "./src/shared/index.ts",
-      "require": "./dist/shared/index.js",
-      "default": "./src/shared/index.ts"
-    }
-  },
-  "typesVersions": {
-    "*": {
-      "backend": ["./src/backend/index.ts"],
-      "frontend": ["./src/frontend/index.ts"],
-      "shared": ["./src/shared/index.ts"]
+      "types": "./dist/shared/index.d.ts",
+      "require": "./dist/shared/index.js"
     }
   },
   "scripts": {
-    "dev:backend": "nest start --watch",
-    "dev:frontend": "vite",
-    "api:build": "node api.build.cjs",
-    "build:routes": "node scripts/build-routes.mjs",
-    "build": "tsc",
-    "prepublishOnly": "pnpm api:build && pnpm build:routes && pnpm build"
+    "build": "pnpm run build:shared && pnpm run build:frontend && pnpm run build:backend",
+    "build:shared": "pnpm --filter @internal/ad-shared build",
+    "build:frontend": "pnpm --filter @internal/ad-frontend build",
+    "build:backend": "pnpm --filter @internal/ad-backend build",
+    "convert:aliases": "tsc-alias -p tsconfig.publish.json",
+    "publish:build": "pnpm run build && pnpm run convert:aliases",
+    "dev:backend": "pnpm --filter @internal/ad-backend dev",
+    "dev:frontend": "pnpm --filter @internal/ad-frontend dev",
+    "prepublishOnly": "pnpm run publish:build"
   },
   "files": [
-    "dist",
-    "migrations",
-    "api.build.cjs",
-    "scripts",
-    "extension.json",
-    "src/frontend/routes.gen.ts"
+    "dist/",
+    "migrations/",
+    "extension.json"
   ],
-  "peerDependencies": {
-    "@nestjs/common": "catalog:",
-    "@nestjs/core": "catalog:",
-    "@nestjs/platform-express": "catalog:",
-    "@nestjs/swagger": "catalog:",
-    "@nestjs/typeorm": "catalog:",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
-    "moyan-mfw-base": "workspace:^",
-    "reflect-metadata": "catalog:",
-    "rxjs": "catalog:",
-    "typeorm": "catalog:",
-    "vue": "catalog:",
-    "vue-router": "catalog:"
-  },
   "devDependencies": {
-    "@nestjs/cli": "catalog:",
-    "@element-plus/icons-vue": "catalog:",
-    "@types/node": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
-    "@vitejs/plugin-vue-jsx": "catalog:",
-    "element-plus": "catalog:",
-    "moyan-api": "catalog:",
-    "moyan-mfw-base": "workspace:*",
-    "sass": "catalog:",
-    "tsx": "catalog:",
-    "vite": "catalog:",
-    "vue-tsc": "catalog:"
+    "@internal/ad-backend": "workspace:*",
+    "@internal/ad-frontend": "workspace:*",
+    "@internal/ad-shared": "workspace:*",
+    "tsc-alias": "catalog:",
+    "typescript": "catalog:"
   }
 }
