@@ -1,4 +1,15 @@
 packages:
+  # 子包注册（private，仅供 workspace 内部使用）
+  - packages/base/src/backend        # @internal/base-backend
+  - packages/base/src/frontend       # @internal/base-frontend
+  - packages/base/src/shared         # @internal/base-shared
+
+  # 扩展包子包
+  - packages/extensions/*/src/backend
+  - packages/extensions/*/src/frontend
+  - packages/extensions/*/src/shared
+
+  # 聚合包（public，发布到 npm）
   - packages/base
   - packages/extensions/*
   - packages/component-demo
@@ -85,6 +96,7 @@ catalog:
   "@types/dotenv": "^8.2.3"
 
   # Build tools
+  tsc-alias: ^1.8.17
   ts-loader: "^9.4.3"
   source-map-support: "^0.5.21"
   tsx: "^4.21.0"
