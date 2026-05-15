@@ -16,7 +16,10 @@
       "@/*": ["src/*"],
       "moyan-mfw-base/frontend": ["../packages/base/src/frontend/index.ts"],
       "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/*"],
-      "moyan-mfw-base/shared": ["../packages/base/src/shared"]
+      "moyan-mfw-base/shared": ["../packages/base/src/shared"],
+      "moyan-mfw-extension-ad/frontend": ["../packages/extensions/extension-ad/src/frontend/index.ts"],
+      "moyan-mfw-extension-ad/frontend/*": ["../packages/extensions/extension-ad/src/frontend/*"],
+      "moyan-mfw-extension-ad/shared": ["../packages/extensions/extension-ad/src/shared"]
     }
   },
   "include": ["src/**/*"],
