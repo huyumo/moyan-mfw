@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@internal/base-shared": ["./dist/shared/index.js"]
+    }
+  },
+  "include": ["./dist/**/*.js"]
+}
