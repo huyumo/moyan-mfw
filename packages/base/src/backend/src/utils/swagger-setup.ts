@@ -4,16 +4,16 @@
 
 import { INestApplication, Type } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { SwaggerGroupConfig } from '../../types/app-config.types';
-import { AuthModule } from '../../modules/sys/auth/auth.module';
-import { UserModule } from '../../modules/sys/user/user.module';
-import { RoleModule } from '../../modules/sys/role/role.module';
-import { PermissionModule } from '../../modules/sys/permission/permission.module';
-import { AppTypeModule } from '../../modules/sys/app-type/app-type.module';
-import { AppModule as SysAppModule } from '../../modules/sys/app/app.module';
-import { AuditLogModule } from '../../modules/sys/audit-log/audit-log.module';
-import { InstallModule } from '../../modules/sys/install/install.module';
-import { UploadFileModule } from '../../modules/sys/upload/upload.module';
+import { SwaggerGroupConfig } from '../types/app-config.types';
+import { AuthModule } from '../modules/sys/auth/auth.module';
+import { UserModule } from '../modules/sys/user/user.module';
+import { RoleModule } from '../modules/sys/role/role.module';
+import { PermissionModule } from '../modules/sys/permission/permission.module';
+import { AppTypeModule } from '../modules/sys/app-type/app-type.module';
+import { AppModule as SysAppModule } from '../modules/sys/app/app.module';
+import { AuditLogModule } from '../modules/sys/audit-log/audit-log.module';
+import { InstallModule } from '../modules/sys/install/install.module';
+import { UploadFileModule } from '../modules/sys/upload/upload.module';
 
 const SYS_SWAGGER_MODULES = [
   AuthModule,

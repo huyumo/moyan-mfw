@@ -39,7 +39,7 @@ import {
   Search,
   OfficeBuilding
 } from '@element-plus/icons-vue';
-import { getImageSrc } from '../../../../utils/image';
+import { getImageSrc } from '../../../utils/image';
 import type {
   MfwAppSelectorProps,
   MfwAppSelectorEmits,

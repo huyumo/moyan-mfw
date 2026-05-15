@@ -15,16 +15,16 @@ import { Repository, In } from 'typeorm';
 import {
   REQUIRE_PERMISSION,
   RequirePermissionOptions,
-} from '../../decorators/require-permission.decorator';
+} from '../decorators/require-permission.decorator';
 import {
   SKIP_PERMISSION_KEY,
-} from '../../decorators/skip-permission.decorator';
+} from '../decorators/skip-permission.decorator';
 import {
   buildPerValue,
-} from '../../constants/permissions';
-import { RolePermission } from '../../../modules/sys/role/entities/role-permission.entity';
-import { UserRole } from '../../../modules/sys/role/entities/user-role.entity';
-import { resolveAppId } from '../../decorators/app-id.decorator';
+} from '../constants/permissions';
+import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';
+import { UserRole } from '../../modules/sys/role/entities/user-role.entity';
+import { resolveAppId } from '../decorators/app-id.decorator';
 
 /**
  * 权限守卫

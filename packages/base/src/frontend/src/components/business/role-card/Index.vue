@@ -31,13 +31,13 @@
 import { computed } from 'vue';
 import { User } from '@element-plus/icons-vue';
 import { ElMessageBox } from 'element-plus';
-import { MfwPopup } from '../../../feedback';
-import { ApiRoleDelete } from '../../../../apis/sys';
-import type { RoleResponseDto } from '../../../../apis/sys/schemas';
-import { RolePermissionPanel } from '../../role-permission-panel';
+import { MfwPopup } from '../../feedback';
+import { ApiRoleDelete } from '../../../apis/sys';
+import type { RoleResponseDto } from '../../../apis/sys/schemas';
+import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../../shared/src';
-import { MfwDictFormat } from '../../../../components';
+import { IsBuiltinDict, IsOwnerDict, toItems } from 'moyan-mfw-base/shared';
+import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });
 

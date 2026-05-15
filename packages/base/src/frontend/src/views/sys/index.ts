@@ -1,4 +1,4 @@
-import { defineModuleConfig } from '../../../router/routes';
+import { defineModuleConfig } from '../../router/routes';
 
 export default defineModuleConfig({
   type: 'module',

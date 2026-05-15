@@ -42,9 +42,9 @@
 import { computed } from 'vue';
 import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
-import type { AppTypeResponseDto } from '../../../../apis/sys/schemas';
-import { MfwDictFormat } from '../../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from '../../../../../shared/src';
+import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
+import { MfwDictFormat } from '../../../components';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
 defineOptions({ name: 'AppTypeCard' });
 

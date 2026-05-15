@@ -5,7 +5,7 @@
 
 // Entities
 export { AuditLog } from './entities/audit-log.entity';
-export { AuditModule } from '../../../../common/decorators/audit-log.decorator';
+export { AuditModule } from '../../../common/decorators/audit-log.decorator';
 
 // Services
 export { AuditLogService } from './audit-log.service';

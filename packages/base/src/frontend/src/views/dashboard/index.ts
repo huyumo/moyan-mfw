@@ -1,5 +1,5 @@
-import { definePageConfig } from '../../../router/routes';
-import Dashboard from './Index.vue';
+import { definePageConfig } from '../../router/routes';
+import Dashboard from './index.vue';
 
 export default definePageConfig({
   page: Dashboard,

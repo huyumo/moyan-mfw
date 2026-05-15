@@ -1,8 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { SkipPermission } from '../../../../common/decorators/skip-permission.decorator';
-import { Public } from '../../../../common/decorators/public.decorator';
-import { getPermissionValueCache } from '../../../../common/constants/permissions';
+import { SkipPermission } from '../../../common/decorators/skip-permission.decorator';
+import { Public } from '../../../common/decorators/public.decorator';
+import { getPermissionValueCache } from '../../../common/constants/permissions';
 
 @ApiTags('permission-values', '权限值标签映射')
 @Controller('permission-values')

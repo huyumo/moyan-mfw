@@ -29,11 +29,11 @@ import {
 } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto, ResetPasswordDto, UserResponseDto } from './dto';
-import { AuthGuard } from '../../../../common/guards/auth.guard';
-import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
-import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
-import { ApiResponseUtil } from '../../../../common/types/api.types';
-import { ApiPaginatedResponse } from '../../../../common';
+import { AuthGuard } from '../../../common/guards/auth.guard';
+import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
+import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
+import { ApiResponseUtil } from '../../../common/types/api.types';
+import { ApiPaginatedResponse } from '../../../common';
 import { StatusDto } from '@/common/types/status.dto';
 
 /**

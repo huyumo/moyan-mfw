@@ -5,8 +5,8 @@
 
 import type { Directive, DirectiveBinding } from 'vue';
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '../../store/auth-store';
-import { buildPerValue, type PermissionName } from '../../utils/permissions';
+import { useAuthStore } from '../store/auth-store';
+import { buildPerValue, type PermissionName } from '../utils/permissions';
 
 /**
  * 权限指令值接口（新格式）

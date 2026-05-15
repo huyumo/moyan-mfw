@@ -10,10 +10,10 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import MfwFormCard from '../../form/form-card';
-import type { MfwFormCardInstance, FormItemConfig } from '../../form/form-card/types';
-import { ApiAuthChangePassword } from '../../../apis/sys';
-import { useAuthStore } from '../../../store/auth-store';
+import MfwFormCard from '../form/form-card';
+import type { MfwFormCardInstance, FormItemConfig } from '../form/form-card/types';
+import { ApiAuthChangePassword } from '../../apis/sys';
+import { useAuthStore } from '../../store/auth-store';
 
 defineOptions({ name: 'PasswordChangeForm' });
 

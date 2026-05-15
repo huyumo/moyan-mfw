@@ -1,10 +1,10 @@
 import './style.scss';
 
 import { defineComponent, ref, type PropType } from 'vue';
-import { MfwFormCard } from '../../../form/form-card/mod';
-import type { MfwFormCardInstance } from '../../../form/form-card/types';
-import { ApiUserAdminCreate, ApiUserUpdate } from '../../../../apis/sys';
-import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../../apis/sys/schemas';
+import { MfwFormCard } from '../../form/form-card/mod';
+import type { MfwFormCardInstance } from '../../form/form-card/types';
+import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
+import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas';
 import { UserPickerManager } from './manager';
 
 export default defineComponent({

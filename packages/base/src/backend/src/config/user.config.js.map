@@ -1,0 +1,1 @@
+{"version":3,"file":"user.config.js","sourceRoot":"","sources":["user.config.ts"],"names":[],"mappings":";;AAAA,kBAAe,GAAG,EAAE,CAAC,CAAC;IACpB,eAAe,EAAE;QACf,IAAI,EAAE,OAAO,CAAC,GAAG,CAAC,2BAA2B,IAAI,OAAO;QACxD,KAAK,EAAE,OAAO,CAAC,GAAG,CAAC,sBAAsB,IAAI,WAAW;KACzD;CACF,CAAC,CAAC"}

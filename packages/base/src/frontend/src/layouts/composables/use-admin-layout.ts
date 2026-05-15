@@ -4,13 +4,13 @@
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
 import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
-import { useLayoutStore } from '../../../store/layout-store';
-import { useAuthStore } from '../../../store/auth-store';
-import { resetRouteGuard } from '../../../router/guard';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../../../constants/storage-keys';
-import { useColorMode, useThemeSwitch } from '../../../composables';
-import { getAvailableThemes, themeRegistry, getTheme } from '../../../themes';
-import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../../types/layout-types';
+import { useLayoutStore } from '../../store/layout-store';
+import { useAuthStore } from '../../store/auth-store';
+import { resetRouteGuard } from '../../router/guard';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../../constants/storage-keys';
+import { useColorMode, useThemeSwitch } from '../../composables';
+import { getAvailableThemes, themeRegistry, getTheme } from '../../themes';
+import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
 
 type CssVarMapping = {
   cssVar: string;

@@ -28,8 +28,8 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import { registerPermissionValues, type PermissionName } from '../../utils/permissions';
-export { registerPermissionValues, createBusinessPageConfigFn } from '../../utils/permissions';
+import { registerPermissionValues, type PermissionName } from '../utils/permissions';
+export { registerPermissionValues, createBusinessPageConfigFn } from '../utils/permissions';
 
 /**
  * 模块配置接口（用于菜单分组，不生成嵌套路由）

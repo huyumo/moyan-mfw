@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { PermissionValue } from './entities/permission-value.entity';
-import { getPermissionValues, initPermissionValueCache } from '../../../../common/constants/permissions';
+import { getPermissionValues, initPermissionValueCache } from '../../../common/constants/permissions';
 
 @Injectable()
 export class PermissionValueSyncService {

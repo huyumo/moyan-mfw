@@ -11,7 +11,7 @@
  */
 
 import type { RouteRecordRaw } from 'vue-router';
-import type { SideMenuItem } from '../../types/layout-types';
+import type { SideMenuItem } from '../types/layout-types';
 import { buildRoutesFromConfigs } from './routes';
 
 /** 带 order 字段的内部菜单项，用于排序后剥离 */

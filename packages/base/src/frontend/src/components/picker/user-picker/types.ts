@@ -1,6 +1,6 @@
 import type { VNode } from 'vue'
-import type { FormItemConfig } from '../../../form/form-card/types'
-import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../../apis/sys/schemas'
+import type { FormItemConfig } from '../../form/form-card/types'
+import type { UserResponseDto, AdminCreateUserDto, UpdateUserDto } from '../../../apis/sys/schemas'
 
 export type { UserResponseDto, AdminCreateUserDto, UpdateUserDto }
 

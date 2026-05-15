@@ -5,8 +5,8 @@
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
-import { Ad } from '../../entities/ad.entity'
-import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../../dto'
+import { Ad } from '../entities/ad.entity'
+import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-mfw-base/backend'
 
 @Injectable()

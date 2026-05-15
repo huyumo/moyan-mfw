@@ -5,7 +5,7 @@
 
 import { config } from 'dotenv';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import databaseConfig from '../../config/database.config';
+import databaseConfig from '../config/database.config';
 
 // 加载 .env 文件
 config({ path: '.env' });

@@ -1,5 +1,5 @@
-import { definePageConfig } from '../../../router/routes';
-import NotFoundPage from './Index.vue';
+import { definePageConfig } from '../../router/routes';
+import NotFoundPage from './index.vue';
 
 export default definePageConfig({
   page: NotFoundPage,

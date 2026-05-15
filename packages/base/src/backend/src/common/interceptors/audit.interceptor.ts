@@ -16,8 +16,8 @@ import { mergeMap, catchError, tap } from 'rxjs/operators';
 import {
   AUDIT_LOG,
   AuditLogOptions,
-} from '../../decorators/audit-log.decorator';
-import { AuditLogService } from '../../../modules/sys/audit-log/audit-log.service';
+} from '../decorators/audit-log.decorator';
+import { AuditLogService } from '../../modules/sys/audit-log/audit-log.service';
 
 /**
  * 审计日志拦截器

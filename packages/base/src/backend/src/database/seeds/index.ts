@@ -4,18 +4,18 @@
  */
 
 import { DataSource } from 'typeorm';
-import { AppType } from '../../../modules/sys/app-type/entities/app-type.entity';
-import { App } from '../../../modules/sys/app/entities/app.entity';
-import { Permission, NodeType, ShowMode, PermissionType } from '../../../modules/sys/permission/entities/permission.entity';
-import { Role } from '../../../modules/sys/role/entities/role.entity';
-import { User } from '../../../modules/sys/user/entities/user.entity';
-import { UserRole } from '../../../modules/sys/role/entities/user-role.entity';
-import { RolePermission } from '../../../modules/sys/role/entities/role-permission.entity';
-import { hashPassword } from '../../../common/utils/encrypt';
-import { buildPerValue } from '../../../common/constants/permissions';
-import { AppTypePermissionEntity } from '../../../modules/sys/app-type/entities/app-type-permission.entity';
-import { AppMember } from '../../../modules/sys/app/entities/app-member.entity';
-import { PermissionValue } from '../../../modules/sys/permission/entities/permission-value.entity';
+import { AppType } from '../../modules/sys/app-type/entities/app-type.entity';
+import { App } from '../../modules/sys/app/entities/app.entity';
+import { Permission, NodeType, ShowMode, PermissionType } from '../../modules/sys/permission/entities/permission.entity';
+import { Role } from '../../modules/sys/role/entities/role.entity';
+import { User } from '../../modules/sys/user/entities/user.entity';
+import { UserRole } from '../../modules/sys/role/entities/user-role.entity';
+import { RolePermission } from '../../modules/sys/role/entities/role-permission.entity';
+import { hashPassword } from '../../common/utils/encrypt';
+import { buildPerValue } from '../../common/constants/permissions';
+import { AppTypePermissionEntity } from '../../modules/sys/app-type/entities/app-type-permission.entity';
+import { AppMember } from '../../modules/sys/app/entities/app-member.entity';
+import { PermissionValue } from '../../modules/sys/permission/entities/permission-value.entity';
 
 /**
  * 种子数据执行函数

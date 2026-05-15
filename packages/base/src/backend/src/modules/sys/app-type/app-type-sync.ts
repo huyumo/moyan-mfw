@@ -5,9 +5,9 @@
 
 import { DataSource, EntityManager } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
-import { Role } from '../../role/entities/role.entity';
-import { AppTypeConfig, RoleConfig } from '../../../../types/app-config.types';
-import { BUILTIN_APP_TYPES } from '../../../../utils/app-type-validator';
+import { Role } from '../role/entities/role.entity';
+import { AppTypeConfig, RoleConfig } from '../../../types/app-config.types';
+import { BUILTIN_APP_TYPES } from '../../../utils/app-type-validator';
 
 /**
  * 同步应用类型配置到数据库

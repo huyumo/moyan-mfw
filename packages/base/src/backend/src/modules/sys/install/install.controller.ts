@@ -5,7 +5,7 @@
 
 import { Controller, Get, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { Public } from '../../../../common/decorators/public.decorator';
+import { Public } from '../../../common/decorators/public.decorator';
 import { InstallService } from './install.service';
 import { InitRequestDto } from './dto/init-request.dto';
 import { InitResponseDto, InitStatusResponseDto } from './dto/init-response.dto';

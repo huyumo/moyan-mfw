@@ -39,9 +39,9 @@
 </template>
 
 <script setup lang="ts">
-import type { AppTypeResponseDto } from '../../../../apis/sys/schemas';
-import { MfwDictFormat } from '../../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from '../../../../../shared/src';
+import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
+import { MfwDictFormat } from '../../../components';
+import { toItems, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
 defineProps<{
   data?: AppTypeResponseDto | null;

@@ -3,15 +3,15 @@
  */
 
 import { markRaw } from 'vue';
-import { defaultLayoutStyleConfig } from '../../config/layout-defaults';
-import type { ColorMode } from '../../types/color-mode-types';
+import { defaultLayoutStyleConfig } from '../config/layout-defaults';
+import type { ColorMode } from '../types/color-mode-types';
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
   LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
-} from '../../types/layout-types';
+} from '../types/layout-types';
 import { containsPathInMenu, createHomeTab, cloneMenus } from './layout-store-utils';
 import {
   LAYOUT_PREFERENCES_STORAGE_KEY,

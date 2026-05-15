@@ -108,14 +108,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Monitor, OfficeBuilding, Check } from '@element-plus/icons-vue'
-import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../../apis/sys'
-import type { AppInstanceItemDto, PermissionTreeNodeDto } from '../../../../apis/sys/schemas'
-import { useAuthStore } from '../../../../store/auth-store'
-import { useLayoutStore } from '../../../../store/layout-store'
-import type { PopupComponentProps } from '../../../feedback/popup/types'
+import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../apis/sys'
+import type { AppInstanceItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
+import { useAuthStore } from '../../../store/auth-store'
+import { useLayoutStore } from '../../../store/layout-store'
+import type { PopupComponentProps } from '../../feedback/popup/types'
 import type { AppSelectorDialogData } from './types'
-import type { SideMenuItem } from '../../../../types/layout-types'
-import { getImageSrc } from '../../../../utils/image'
+import type { SideMenuItem } from '../../../types/layout-types'
+import { getImageSrc } from '../../../utils/image'
 
 defineOptions({ name: 'AppSelectorDialog' })
 

@@ -64,7 +64,7 @@
 
 <script setup lang="ts">
 import { Menu } from '@element-plus/icons-vue';
-import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../../types/layout-types';
+import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../types/layout-types';
 import NavigationPanel from './NavigationPanel.vue';
 import UserPanel from './UserPanel.vue';
 

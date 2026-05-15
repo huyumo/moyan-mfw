@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MfwDictFormat from '../../dict-format';
+import MfwDictFormat from '../dict-format';
 
 describe('MfwDictFormat', () => {
   const mockDict = [

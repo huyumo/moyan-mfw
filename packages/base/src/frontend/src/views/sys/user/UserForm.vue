@@ -15,12 +15,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
-import { MfwFormCard, MfwRadioGroup, MfwImageSingle, MfwImageGallery, MfwQuillEditor, MfwMdEditor } from '../../../../components';
-import type { MfwFormCardInstance, FormItemConfig } from '../../../../components/form/form-card/types';
-import type { ImageResource } from '../../../../components/upload/types';
-import { ApiUserAdminCreate, ApiUserUpdate } from '../../../../apis/sys';
-import type { UserResponseDto } from '../../../../apis/sys/schemas';
-import { toItems, GenderDict } from '../../../../../shared/src';
+import { MfwFormCard, MfwRadioGroup, MfwImageSingle, MfwImageGallery, MfwQuillEditor, MfwMdEditor } from '../../../components';
+import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
+import type { ImageResource } from '../../../components/upload/types';
+import { ApiUserAdminCreate, ApiUserUpdate } from '../../../apis/sys';
+import type { UserResponseDto } from '../../../apis/sys/schemas';
+import { toItems, GenderDict } from 'moyan-mfw-base/shared';
 
 const props = defineProps<UserResponseDto>();
 

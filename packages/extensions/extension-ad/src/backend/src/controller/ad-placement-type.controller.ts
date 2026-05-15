@@ -10,9 +10,9 @@ import {
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
-import { ApiResponseUtil } from '../../api-response'
-import { AdPlacementTypeService } from '../../service/ad-placement-type.service'
-import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../../dto'
+import { ApiResponseUtil } from '../api-response'
+import { AdPlacementTypeService } from '../service/ad-placement-type.service'
+import { CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto } from '../dto'
 
 @ApiTags('ad-placement-type', '广告位类型配置相关接口')
 @ApiBearerAuth('Authorization')

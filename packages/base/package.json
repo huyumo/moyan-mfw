@@ -2,60 +2,57 @@
   "name": "moyan-mfw-base",
   "version": "1.0.0",
   "description": "墨焱MFW核心框架",
-  "private": true,
+  "main": "./src/shared/dist/index.js",
+  "types": "./src/shared/dist/index.d.ts",
   "exports": {
-    "./backend": "./src/backend/src/index.ts",
-    "./frontend": "./src/frontend/src/index.ts",
-    "./shared": "./src/shared/src/index.ts"
+    "./backend": {
+      "require": "./src/backend/dist/index.js",
+      "types": "./src/backend/dist/index.d.ts"
+    },
+    "./backend/*": {
+      "require": "./src/backend/dist/*",
+      "types": "./src/backend/dist/*.d.ts"
+    },
+    "./frontend": {
+      "import": "./src/frontend/dist/index.mjs",
+      "require": "./src/frontend/dist/index.js",
+      "types": "./src/frontend/dist/index.d.ts"
+    },
+    "./frontend/*": {
+      "import": "./src/frontend/dist/*",
+      "require": "./src/frontend/dist/*",
+      "types": "./src/frontend/dist/*.d.ts"
+    },
+    "./shared": {
+      "require": "./src/shared/dist/index.js",
+      "types": "./src/shared/dist/index.d.ts"
+    },
+    "./shared/*": {
+      "require": "./src/shared/dist/*",
+      "types": "./src/shared/dist/*.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["./src/*/dist/*.d.ts", "./src/*/dist/index.d.ts"]
+    }
   },
   "scripts": {
-    "build:backend": "cd src/backend && tsc -p tsconfig.json",
-    "build:frontend": "cd src/frontend && vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
-    "build": "pnpm run build:backend && pnpm run build:frontend",
-    "dev:backend": "cd src/backend && nest start --config nest-cli.json --watch",
-    "dev:frontend": "cd src/frontend && vite --config vite.config.mts",
-    "typecheck:backend": "cd src/backend && tsc --noEmit -p tsconfig.json",
-    "typecheck:frontend": "cd src/frontend && vue-tsc --noEmit -p tsconfig.json",
-    "typecheck": "pnpm run typecheck:backend && pnpm run typecheck:frontend",
-    "test": "jest --config jest.config.ts"
-  },
-  "dependencies": {
-    "@nestjs/common": "catalog:",
-    "@nestjs/core": "catalog:",
-    "@nestjs/platform-express": "catalog:",
-    "@nestjs/typeorm": "catalog:",
-    "@nestjs/swagger": "catalog:",
-    "@nestjs/jwt": "catalog:",
-    "@nestjs/config": "catalog:",
-    "typeorm": "catalog:",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
-    "reflect-metadata": "catalog:",
-    "rxjs": "catalog:",
-    "dotenv": "catalog:",
-    "bcrypt": "catalog:",
-    "multer": "catalog:",
-    "mysql2": "catalog:",
-    "redis": "catalog:",
-    "vue": "catalog:",
-    "vue-router": "catalog:",
-    "element-plus": "catalog:",
-    "@element-plus/icons-vue": "catalog:",
-    "pinia": "catalog:",
-    "@vueuse/core": "catalog:",
-    "axios": "catalog:",
-    "md-editor-v3": "catalog:",
-    "quill": "catalog:",
-    "vue-advanced-cropper": "catalog:"
+    "build:shared": "pnpm --filter @internal/base-shared build",
+    "build:backend": "pnpm --filter @internal/base-backend build",
+    "build:frontend": "pnpm --filter @internal/base-frontend build",
+    "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",
+    "dev:backend": "pnpm --filter @internal/base-backend dev",
+    "dev:frontend": "pnpm --filter @internal/base-frontend dev",
+    "typecheck:shared": "pnpm --filter @internal/base-shared typecheck",
+    "typecheck:backend": "pnpm --filter @internal/base-backend typecheck",
+    "typecheck:frontend": "pnpm --filter @internal/base-frontend typecheck",
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
   },
   "devDependencies": {
-    "@nestjs/cli": "catalog:",
-    "@nestjs/schematics": "catalog:",
-    "vite": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
-    "@vitejs/plugin-vue-jsx": "catalog:",
-    "vue-tsc": "catalog:",
-    "sass": "catalog:",
+    "@internal/base-backend": "workspace:*",
+    "@internal/base-frontend": "workspace:*",
+    "@internal/base-shared": "workspace:*",
     "typescript": "catalog:"
   }
 }

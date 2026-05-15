@@ -8,7 +8,7 @@ import { defineComponent, ref, watch, onMounted, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import { uploadImage } from '../../../../config/upload-config';
+import { uploadImage } from '../../../config/upload-config';
 
 export default defineComponent({
   name: 'MfwQuillEditor',

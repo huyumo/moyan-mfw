@@ -7,10 +7,10 @@ import { Injectable, ConflictException, BadRequestException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, EntityManager } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { App } from '../../entities/app.entity';
-import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../../dto';
-import { NotFoundError } from '../../../../../common/exceptions/not-found.exception';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../../common';
+import { App } from '../entities/app.entity';
+import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
+import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
 
 /**
  * 应用服务

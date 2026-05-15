@@ -1,5 +1,5 @@
-import { definePageConfig } from '../../../router/routes';
-import LoginPage from './Index.vue';
+import { definePageConfig } from '../../router/routes';
+import LoginPage from './index.vue';
 
 export default definePageConfig({
   page: LoginPage,

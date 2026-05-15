@@ -24,19 +24,19 @@
 import { ref, h } from 'vue';
 import { ElMessageBox, ElSwitch, ElAvatar } from 'element-plus';
 import { Plus, Edit, Delete, Lock, User } from '@element-plus/icons-vue';
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../../components';
-import type { MfwListPageInstance } from '../../../../components/page/list-page/types';
-import { toItems, StatusDict, GenderDict, DeveloperDict } from '../../../../../shared/src'
-import { MfwPopup } from '../../../../components/feedback';
-import { renderActionButtons } from '../../../../components/table/action-buttons';
-import { getImageSrc } from '../../../../utils/image';
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwDictFormat } from '../../../components';
+import type { MfwListPageInstance } from '../../../components/page/list-page/types';
+import { toItems, StatusDict, GenderDict, DeveloperDict } from 'moyan-mfw-base/shared'
+import { MfwPopup } from '../../../components/feedback';
+import { renderActionButtons } from '../../../components/table/action-buttons';
+import { getImageSrc } from '../../../utils/image';
 import {
   ApiUserFindAll,
   ApiUserDelete,
   ApiUserUpdateStatus,
   ApiUserResetPassword,
-} from '../../../../apis/sys';
-import type { UserResponseDto } from '../../../../apis/sys/schemas';
+} from '../../../apis/sys';
+import type { UserResponseDto } from '../../../apis/sys/schemas';
 import UserForm from './UserForm.vue';
 
 defineOptions({ name: 'MfwUserList' });

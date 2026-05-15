@@ -9,9 +9,9 @@ import { Repository, DataSource, TreeRepository } from 'typeorm';
 import { Permission } from './entities/permission.entity';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto } from './dto';
 import { RouteNodeDto, PermissionTreeNodeDto } from './dto';
-import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
+import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 
 /**
  * 权限服务

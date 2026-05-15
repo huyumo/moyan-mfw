@@ -16,7 +16,7 @@ import {
 import { ElInput, ElIcon } from 'element-plus';
 import { Close } from '@element-plus/icons-vue';
 import * as IconMap from '@element-plus/icons-vue';
-import { MfwPopup } from '../../../feedback';
+import { MfwPopup } from '../../feedback';
 import type { MfwIconPickerProps, MfwIconPickerEmits, MfwIconPickerInstance, IconItem } from './types';
 import IconPickerPanel from './IconPickerPanel.vue';
 

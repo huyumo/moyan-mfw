@@ -5,7 +5,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw, type Router, type RouterHistory } from 'vue-router';
 import { buildBasePackageRoutes } from './routes';
 import { setupRouteGuard } from './guard';
-import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from '../../constants/storage-keys';
+import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from '../constants/storage-keys';
 
 /**
  * 路由创建参数。

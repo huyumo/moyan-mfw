@@ -34,7 +34,7 @@ import {
   ApiAdPlacementTypeCreate,
   ApiAdPlacementTypeUpdate,
   ApiAdPlacementTypeDelete,
-} from '../../../apis/ad'
+} from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }

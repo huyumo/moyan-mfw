@@ -4,7 +4,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
-import MfwImageFormat from '../../image-format';
+import MfwImageFormat from '../image-format';
 
 describe('MfwImageFormat', () => {
   describe('基础渲染', () => {

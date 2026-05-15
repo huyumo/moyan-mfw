@@ -7,10 +7,13 @@
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "noEmit": true,
+    "declaration": false,
     "types": ["vite/client", "node"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/src/*"],
+      "moyan-mfw-extension-ad/frontend/*": ["../packages/extensions/extension-ad/src/frontend/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],

@@ -3,16 +3,21 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "rootDir": "../..",
-    "outDir": "../../dist",
+    "rootDir": "./src",
+    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "allowImportingTsExtensions": true,
-    "types": ["vite/client", "node"]
+    "emitDeclarationOnly": true,
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
-  "exclude": ["node_modules", "src/**/__tests__/**"]
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/**/*-spec.ts"]
 }

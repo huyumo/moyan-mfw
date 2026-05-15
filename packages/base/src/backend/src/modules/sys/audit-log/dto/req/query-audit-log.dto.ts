@@ -5,8 +5,8 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
-import { AuditModule } from '../../../../../../common/decorators/audit-log.decorator';
-import { PaginationQueryDto } from '../../../../../../common';
+import { AuditModule } from '../../../../../common/decorators/audit-log.decorator';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 审计日志查询参数 DTO

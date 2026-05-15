@@ -12,7 +12,7 @@
 import { defineComponent, toRef, ref, computed, watch, type PropType, h } from 'vue';
 import { ElAvatar, ElTag, ElPopover, ElSkeleton } from 'element-plus';
 import type { UserFormatProps, UserInfo } from './types';
-import type { ImageResource } from '../../../upload/types';
+import type { ImageResource } from '../../upload/types';
 
 const defaultAvatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png';
 

@@ -73,12 +73,12 @@ import AsidePanel from './panels/AsidePanel.vue';
 import HeaderPanel from './panels/HeaderPanel.vue';
 import MainPanel from './panels/MainPanel.vue';
 import SettingsPanel from './panels/SettingsPanel.vue';
-import NoAppsEmpty from '../../components/business/no-apps-empty/Index.vue';
-import AppSelectorDrawer from '../../components/business/app-selector-drawer/Index.vue';
-import type { AppListItem } from '../../components/business/app-selector-panel/Index.vue';
+import NoAppsEmpty from '../components/business/no-apps-empty/Index.vue';
+import AppSelectorDrawer from '../components/business/app-selector-drawer/Index.vue';
+import type { AppListItem } from '../components/business/app-selector-panel/Index.vue';
 import { useAdminLayout } from './composables/use-admin-layout';
-import { useColorMode, useThemeSwitch } from '../../composables';
-import { useAuthStore } from '../../store/auth-store';
+import { useColorMode, useThemeSwitch } from '../composables';
+import { useAuthStore } from '../store/auth-store';
 
 const authStore = useAuthStore();
 const router = useRouter();

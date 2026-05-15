@@ -6,7 +6,7 @@ import type {
   LayoutStyleConfig,
   PageTabItem,
   SideMenuItem,
-} from '../../types/layout-types';
+} from '../types/layout-types';
 import { LAYOUT_PREFERENCES_STORAGE_KEY, LAYOUT_TABS_STORAGE_KEY, type LayoutPersistedState } from './layout-store-model';
 
 /**

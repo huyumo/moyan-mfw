@@ -4,8 +4,8 @@
  */
 
 import type { Router, RouteLocationNormalized } from 'vue-router';
-import { useAuthStore, TOKEN_KEY } from '../../store/auth-store';
-import { useAppLoadingStore } from '../../store/app-loading-store';
+import { useAuthStore, TOKEN_KEY } from '../store/auth-store';
+import { useAppLoadingStore } from '../store/app-loading-store';
 import { ElMessage } from 'element-plus';
 
 /** 白名单路由（无需登录即可访问） */

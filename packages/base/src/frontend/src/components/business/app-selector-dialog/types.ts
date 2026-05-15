@@ -3,7 +3,7 @@
  * @description 用于用户登录后选择应用
  */
 
-import type { AppInstanceItemDto } from '../../../../apis/sys/schemas'
+import type { AppInstanceItemDto } from '../../../apis/sys/schemas'
 
 /** 弹窗组件 Props */
 export interface AppSelectorDialogProps {

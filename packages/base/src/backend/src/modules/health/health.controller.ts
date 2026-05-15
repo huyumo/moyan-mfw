@@ -7,8 +7,8 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { Public } from '../../../common/decorators/public.decorator';
-import { ApiResponseUtil } from '../../../common/types/api.types';
+import { Public } from '../../common/decorators/public.decorator';
+import { ApiResponseUtil } from '../../common/types/api.types';
 
 /**
  * 健康检查响应 DTO

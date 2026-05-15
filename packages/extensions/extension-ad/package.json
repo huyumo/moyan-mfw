@@ -2,46 +2,56 @@
   "name": "moyan-mfw-extension-ad",
   "version": "0.1.0",
   "description": "MFW 广告管理扩展包",
-  "private": true,
   "exports": {
-    "./backend": "./src/backend/src/index.ts",
-    "./frontend": "./src/frontend/src/index.ts",
-    "./shared": "./src/shared/index.ts"
+    "./backend": {
+      "require": "./src/backend/dist/index.js",
+      "types": "./src/backend/dist/index.d.ts"
+    },
+    "./backend/*": {
+      "require": "./src/backend/dist/*",
+      "types": "./src/backend/dist/*.d.ts"
+    },
+    "./frontend": {
+      "import": "./src/frontend/dist/index.mjs",
+      "require": "./src/frontend/dist/index.js",
+      "types": "./src/frontend/dist/index.d.ts"
+    },
+    "./frontend/*": {
+      "import": "./src/frontend/dist/*",
+      "require": "./src/frontend/dist/*",
+      "types": "./src/frontend/dist/*.d.ts"
+    },
+    "./shared": {
+      "require": "./src/shared/dist/index.js",
+      "types": "./src/shared/dist/index.d.ts"
+    },
+    "./shared/*": {
+      "require": "./src/shared/dist/*",
+      "types": "./src/shared/dist/*.d.ts"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": ["./src/*/dist/*.d.ts", "./src/*/dist/index.d.ts"]
+    }
   },
   "scripts": {
-    "build:backend": "cd src/backend && tsc -p tsconfig.json",
-    "build:frontend": "cd src/frontend && vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
-    "build": "pnpm run build:backend && pnpm run build:frontend",
-    "dev:backend": "cd src/backend && nest start --watch",
-    "dev:frontend": "cd src/frontend && vite --config vite.config.mts",
-    "typecheck:backend": "cd src/backend && tsc --noEmit -p tsconfig.json",
-    "typecheck:frontend": "cd src/frontend && vue-tsc --noEmit -p tsconfig.json",
-    "typecheck": "pnpm run typecheck:backend && pnpm run typecheck:frontend"
-  },
-  "dependencies": {
-    "typeorm": "catalog:",
-    "@nestjs/common": "catalog:",
-    "@nestjs/core": "catalog:",
-    "@nestjs/typeorm": "catalog:",
-    "@nestjs/swagger": "catalog:",
-    "class-transformer": "catalog:",
-    "class-validator": "catalog:",
-    "reflect-metadata": "catalog:",
-    "rxjs": "catalog:",
-    "vue": "catalog:",
-    "vue-router": "catalog:",
-    "element-plus": "catalog:",
-    "@element-plus/icons-vue": "catalog:",
-    "moyan-mfw-base": "workspace:*"
+    "build:shared": "pnpm --filter @internal/ad-shared build",
+    "build:backend": "pnpm --filter @internal/ad-backend build",
+    "build:frontend": "pnpm --filter @internal/ad-frontend build",
+    "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",
+    "dev:backend": "pnpm --filter @internal/ad-backend dev",
+    "dev:frontend": "pnpm --filter @internal/ad-frontend dev",
+    "typecheck:shared": "pnpm --filter @internal/ad-shared typecheck",
+    "typecheck:backend": "pnpm --filter @internal/ad-backend typecheck",
+    "typecheck:frontend": "pnpm --filter @internal/ad-frontend typecheck",
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
   },
   "devDependencies": {
-    "@nestjs/cli": "catalog:",
-    "@nestjs/schematics": "catalog:",
-    "vite": "catalog:",
-    "@vitejs/plugin-vue": "catalog:",
-    "@vitejs/plugin-vue-jsx": "catalog:",
-    "vue-tsc": "catalog:",
-    "sass": "catalog:",
+    "@internal/ad-backend": "workspace:*",
+    "@internal/ad-frontend": "workspace:*",
+    "@internal/ad-shared": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
     "typescript": "catalog:"
   }
 }

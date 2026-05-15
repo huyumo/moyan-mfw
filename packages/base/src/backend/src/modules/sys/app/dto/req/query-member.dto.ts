@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
-import { PaginationQueryDto } from '../../../../../../common';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 成员查询参数 DTO

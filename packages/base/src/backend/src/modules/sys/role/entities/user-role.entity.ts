@@ -4,7 +4,7 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, Unique, Index } from 'typeorm';
-import { User } from '../../../user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import { Role } from './role.entity';
 
 /**

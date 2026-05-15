@@ -32,7 +32,7 @@
 <script setup lang="ts">
 import { MoreFilled } from '@element-plus/icons-vue';
 import { computed } from 'vue';
-import type { PageTabItem } from '../../../types/layout-types';
+import type { PageTabItem } from '../../types/layout-types';
 
 const props = defineProps<{
   /** 当前激活标签路径 */

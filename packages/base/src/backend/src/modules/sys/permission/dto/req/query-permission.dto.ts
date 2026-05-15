@@ -5,8 +5,8 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, IsEnum } from 'class-validator';
-import { PermissionType, NodeType } from '../../../entities/permission.entity';
-import { PaginationQueryDto } from '../../../../../../common';
+import { PermissionType, NodeType } from '../../entities/permission.entity';
+import { PaginationQueryDto } from '../../../../../common';
 
 /**
  * 权限查询参数 DTO

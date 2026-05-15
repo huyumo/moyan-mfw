@@ -16,12 +16,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import MfwFormCard from '../../../../components/form/form-card';
-import type { MfwFormCardInstance, FormItemConfig } from '../../../../components/form/form-card/types';
-import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../../apis/sys';
-import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../../apis/sys/schemas';
-import MfwImageSingle from '../../../../components/upload/image-single';
-import { StatusDict } from '../../../../../shared/src';
+import MfwFormCard from '../../../components/form/form-card';
+import type { MfwFormCardInstance, FormItemConfig } from '../../../components/form/form-card/types';
+import { ApiAppCreate, ApiAppUpdate, ApiAppTypeFindAllList } from '../../../apis/sys';
+import type { AppDetailResponseDto, AppTypeResponseDto, ImageResourceDto } from '../../../apis/sys/schemas';
+import MfwImageSingle from '../../../components/upload/image-single';
+import { StatusDict } from 'moyan-mfw-base/shared';
 
 const props = defineProps<AppDetailResponseDto>();
 

@@ -4,9 +4,9 @@
  */
 
 import { computed } from 'vue';
-import { useLayoutStore } from '../../store/layout-store';
-import { themeRegistry, defaultThemeKey, getTheme, getAvailableThemes } from '../../themes';
-import type { ThemeColors } from '../../types/theme-types';
+import { useLayoutStore } from '../store/layout-store';
+import { themeRegistry, defaultThemeKey, getTheme, getAvailableThemes } from '../themes';
+import type { ThemeColors } from '../types/theme-types';
 
 const LIGHT_LEVELS = [3, 5, 7, 8, 9] as const;
 const DARK_LEVELS = [2] as const;

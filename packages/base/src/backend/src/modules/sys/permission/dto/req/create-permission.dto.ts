@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional, IsEnum, IsInt, Min, Max } from 'class-validator';
-import { NodeType, ShowMode, PermissionType } from '../../../entities/permission.entity';
+import { NodeType, ShowMode, PermissionType } from '../../entities/permission.entity';
 
 /**
  * 创建权限请求 DTO

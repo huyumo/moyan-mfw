@@ -11,11 +11,11 @@ import {
   ApiAuthGetCurrentUser,
   ApiAuthGetUserApps,
   ApiAuthGetUserPermissions,
-} from '../../apis/sys';
-import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../../apis/sys/schemas';
-import type { SideMenuItem } from '../../types/layout-types';
-import { getImageSrc } from '../../utils/image';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../../constants/storage-keys';
+} from '../apis/sys';
+import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
+import type { SideMenuItem } from '../types/layout-types';
+import { getImageSrc } from '../utils/image';
+import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
 
 export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY };
 

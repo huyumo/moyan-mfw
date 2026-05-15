@@ -3,8 +3,8 @@
  * @description 定义接口所需的权限编码和权限值，支持多种调用方式
  */
 
-import { registerPermissionValues } from '../../constants/permissions';
-import type { BasePermissionName } from '../../constants/permissions';
+import { registerPermissionValues } from '../constants/permissions';
+import type { BasePermissionName } from '../constants/permissions';
 
 /**
  * 权限装饰器标识键
@@ -110,7 +110,7 @@ export function RequirePermission(
  * export const RequireBusinessPermission = createBusinessPermissionDecorator(BUSINESS_PERMISSION_VALUES);
  * 
  * // backend/src/modules/supplier/supplier.controller.ts
- * import { RequireBusinessPermission } from '../../permissions';
+ * import { RequireBusinessPermission } from '../permissions';
  * 
  * @RequireBusinessPermission('supplier:manage', ['上架', '发货', '添加'])  // 有完整类型推断
  * ```

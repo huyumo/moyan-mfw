@@ -1,0 +1,42 @@
+{
+  "name": "@internal/base-backend",
+  "private": true,
+  "version": "1.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc-alias",
+    "dev": "nest start --config nest-cli.json --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@internal/base-shared": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "@nestjs/jwt": "catalog:",
+    "@nestjs/config": "catalog:",
+    "typeorm": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "dotenv": "catalog:",
+    "bcrypt": "catalog:",
+    "multer": "catalog:",
+    "mysql2": "catalog:",
+    "redis": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "@types/bcrypt": "catalog:",
+    "@types/express": "catalog:",
+    "@types/multer": "catalog:",
+    "tsc-alias": "catalog:",
+    "typescript": "catalog:"
+  }
+}

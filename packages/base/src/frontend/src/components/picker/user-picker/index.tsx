@@ -11,9 +11,9 @@ import {
 } from 'vue'
 import { ElInput, ElButton, ElAvatar, ElMessage } from 'element-plus'
 import { Search, Plus, Close, Edit } from '@element-plus/icons-vue'
-import { MfwPopup } from '../../../feedback/popup/mod'
-import { ApiUserFindOneByKeyword, ApiUserFindById } from '../../../../apis/sys'
-import type { UserResponseDto } from '../../../../apis/sys/schemas'
+import { MfwPopup } from '../../feedback/popup/mod'
+import { ApiUserFindOneByKeyword, ApiUserFindById } from '../../../apis/sys'
+import type { UserResponseDto } from '../../../apis/sys/schemas'
 import CreatePanel from './create-panel'
 import { UserPickerManager } from './manager'
 import type {
@@ -21,7 +21,7 @@ import type {
   MfwUserPickerInstance,
   SearchBy
 } from './types'
-import { getImageSrc } from '../../../../utils/image'
+import { getImageSrc } from '../../../utils/image'
 
 export default defineComponent({
   name: 'MfwUserPicker',

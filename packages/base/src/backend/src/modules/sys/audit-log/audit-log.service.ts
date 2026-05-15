@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 import { QueryAuditLogDto } from './dto';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 
 /**
  * 审计日志服务

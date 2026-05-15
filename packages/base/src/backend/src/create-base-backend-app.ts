@@ -10,6 +10,7 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { Request, Response, NextFunction } from 'express';
 import * as path from 'path';
 
 import {
@@ -227,7 +228,7 @@ async function createDynamicAppModule(
  * 配置 BigInt 序列化
  */
 function setupBigIntSerialization(app: NestExpressApplication): void {
-  app.use((_req, res, next) => {
+  app.use((_req: Request, res: Response, next: NextFunction) => {
     const originalJson = res.json.bind(res);
     res.json = (data: any) => {
       return originalJson(

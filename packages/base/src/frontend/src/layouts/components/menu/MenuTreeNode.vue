@@ -49,7 +49,7 @@
 import * as IconMap from '@element-plus/icons-vue';
 import { computed } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
-import type { SideMenuItem } from '../../../../types/layout-types';
+import type { SideMenuItem } from '../../../types/layout-types';
 
 /** 组件选项 */
 defineOptions({

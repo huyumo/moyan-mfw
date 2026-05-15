@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type, Transform } from 'class-transformer';
-import { PermissionType, NodeType, ShowMode } from '../../../entities/permission.entity';
+import { PermissionType, NodeType, ShowMode } from '../../entities/permission.entity';
 
 /**
  * 权限树节点 DTO

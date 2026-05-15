@@ -1,4 +1,4 @@
-import { definePageConfig } from '../../../../router/routes';
+import { definePageConfig } from '../../../router/routes';
 import UserList from './Index.vue';
 
 export default definePageConfig({

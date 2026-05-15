@@ -24,11 +24,11 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
-import type { LayoutExtensionComponents } from '../../../types/layout-types';
-import { useAuthStore } from '../../../store/auth-store';
-import { MfwPopup } from '../../../components/feedback/popup';
-import { ProfilePanel } from '../../../components/layout';
-import { resetRouteGuard } from '../../../router/guard';
+import type { LayoutExtensionComponents } from '../../types/layout-types';
+import { useAuthStore } from '../../store/auth-store';
+import { MfwPopup } from '../../components/feedback/popup';
+import { ProfilePanel } from '../../components/layout';
+import { resetRouteGuard } from '../../router/guard';
 
 defineProps<{
   layoutExtensions: LayoutExtensionComponents;

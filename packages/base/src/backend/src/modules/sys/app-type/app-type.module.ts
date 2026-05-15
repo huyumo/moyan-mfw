@@ -6,7 +6,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppType } from './entities/app-type.entity';
-import { Role } from '../../role/entities/role.entity';
+import { Role } from '../role/entities/role.entity';
 import { AppTypeService } from './app-type.service';
 import { AppTypeController } from './app-type.controller';
 

@@ -1,7 +1,7 @@
-import type { FormItemConfig } from '../../../form/form-card/types'
-import type { UserResponseDto } from '../../../../apis/sys/schemas'
+import type { FormItemConfig } from '../../form/form-card/types'
+import type { UserResponseDto } from '../../../apis/sys/schemas'
 import type { UserPickerTheme, UserPickerThemeFn, SearchBy } from './types'
-import { MfwImageSingle } from '../../../upload'
+import { MfwImageSingle } from '../../upload'
 
 export type { UserPickerTheme, UserPickerThemeFn, SearchBy }
 

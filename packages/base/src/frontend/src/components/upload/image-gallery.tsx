@@ -2,7 +2,7 @@ import './style.scss';
 import { defineComponent, ref, computed, type PropType, defineExpose } from 'vue';
 import { ElUpload, ElMessage, type UploadRequestOptions } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
-import { uploadImage } from '../../../config/upload-config';
+import { uploadImage } from '../../config/upload-config';
 import type { ImageResource, UploadMethodType } from './types';
 
 const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {

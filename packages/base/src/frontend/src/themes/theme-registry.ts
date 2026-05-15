@@ -8,7 +8,7 @@ import natureTheme from './packages/nature/manifest.json';
 import auroraTheme from './packages/aurora/manifest.json';
 import sunsetTheme from './packages/sunset/manifest.json';
 
-import type { ThemeRegistry } from '../../types/theme-types';
+import type { ThemeRegistry } from '../types/theme-types';
 
 export const themeRegistry: ThemeRegistry = {
   default: defaultTheme,

@@ -51,7 +51,7 @@ import type { ToolbarNames, Themes } from 'md-editor-v3';
 import 'md-editor-v3/lib/style.css';
 import { Cellphone, Monitor } from '@element-plus/icons-vue';
 import type { MfwMdEditorProps, MfwMdEditorEmits, MfwMdEditorInstance } from './types';
-import { uploadImage } from '../../../../config/upload-config';
+import { uploadImage } from '../../../config/upload-config';
 
 defineOptions({ name: 'MfwMdEditor' });
 

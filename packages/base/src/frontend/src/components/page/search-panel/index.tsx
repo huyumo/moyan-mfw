@@ -37,7 +37,7 @@ import type {
   MfwSearchPanelInstance,
   MfwSearchPanelSlots
 } from './types';
-import type { SearchTemplateItem, SearchItemType } from '../../list-page/types';
+import type { SearchTemplateItem, SearchItemType } from '../list-page/types';
 
 export default defineComponent({
   name: 'MfwSearchPanel',

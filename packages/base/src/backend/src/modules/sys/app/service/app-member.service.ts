@@ -7,13 +7,13 @@ import { Injectable, ConflictException, BadRequestException, NotFoundException }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource, In } from 'typeorm';
 import { randomUUID } from 'crypto';
-import { AppMember } from '../../entities/app-member.entity';
-import { Role } from '../../../role/entities/role.entity';
-import { User } from '../../../user/entities/user.entity';
-import { App } from '../../entities/app.entity';
-import { AppType } from '../../../app-type/entities/app-type.entity';
-import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../../dto';
-import { PaginationX, WhereBuilder, PaginationResult } from '../../../../../common';
+import { AppMember } from '../entities/app-member.entity';
+import { Role } from '../../role/entities/role.entity';
+import { User } from '../../user/entities/user.entity';
+import { App } from '../entities/app.entity';
+import { AppType } from '../../app-type/entities/app-type.entity';
+import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
+import { PaginationX, WhereBuilder, PaginationResult } from '../../../../common';
 
 /**
  * 成员服务

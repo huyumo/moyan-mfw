@@ -5,7 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
-import { AuditModule } from '../../../../../../common/decorators/audit-log.decorator';
+import { AuditModule } from '../../../../../common/decorators/audit-log.decorator';
 
 /**
  * 审计日志响应 DTO

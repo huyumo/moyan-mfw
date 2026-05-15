@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import PermissionManager from '../../../../components/business/permission-manager/Index.vue';
+import PermissionManager from '../../../components/business/permission-manager/Index.vue';
 
 defineOptions({ name: 'MfwPermissionList' });
 </script>

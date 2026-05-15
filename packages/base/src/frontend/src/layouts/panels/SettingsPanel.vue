@@ -154,11 +154,11 @@ import {
   Sunny,
 } from '@element-plus/icons-vue';
 import { computed, reactive, ref, watch, type PropType } from 'vue';
-import LayoutModeIcon from '../../components/layout/LayoutModeIcon.vue';
-import type { LayoutMode, LayoutStyleConfig } from '../../../types/layout-types';
-import type { ThemePackage } from '../../../types/theme-types';
+import LayoutModeIcon from '../components/layout/LayoutModeIcon.vue';
+import type { LayoutMode, LayoutStyleConfig } from '../../types/layout-types';
+import type { ThemePackage } from '../../types/theme-types';
 import { settingsPanelText as text } from './settings-panel-text';
-import { useColorMode, useThemeSwitch } from '../../../composables';
+import { useColorMode, useThemeSwitch } from '../../composables';
 
 const { isDark, colorMode, setColorMode } = useColorMode();
 const { setTheme, availableThemes } = useThemeSwitch();

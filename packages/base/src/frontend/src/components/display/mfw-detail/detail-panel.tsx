@@ -19,10 +19,10 @@
 
 import { defineComponent, toRef, computed, h, type PropType } from 'vue';
 import { ElDescriptions, ElDescriptionsItem, ElSkeleton, ElEmpty } from 'element-plus';
-import MfwDateFormat from '../../mfw-format/date-format';
-import MfwImageFormat from '../../mfw-format/image-format';
-import MfwDictFormat from '../../mfw-format/dict-format';
-import MfwTagFormat from '../../mfw-format/tag-format';
+import MfwDateFormat from '../mfw-format/date-format';
+import MfwImageFormat from '../mfw-format/image-format';
+import MfwDictFormat from '../mfw-format/dict-format';
+import MfwTagFormat from '../mfw-format/tag-format';
 import MfwUserFormat from './user-format';
 import type { DetailPanelProps, DetailItem } from './types';
 

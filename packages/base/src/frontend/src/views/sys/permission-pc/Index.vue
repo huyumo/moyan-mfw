@@ -27,10 +27,10 @@ import { ref } from 'vue';
 import { Refresh } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
-import PermissionManager from '../../../../components/business/permission-manager/Index.vue';
-import type { RouteNodeDto } from '../../../../apis/sys/schemas';
-import { ApiPermissionSyncPermissions } from '../../../../apis/sys';
-import { buildPerValue } from '../../../../utils/permissions';
+import PermissionManager from '../../../components/business/permission-manager/Index.vue';
+import type { RouteNodeDto } from '../../../apis/sys/schemas';
+import { ApiPermissionSyncPermissions } from '../../../apis/sys';
+import { buildPerValue } from '../../../utils/permissions';
 
 defineOptions({ name: 'MfwPcPermissionList' });
 

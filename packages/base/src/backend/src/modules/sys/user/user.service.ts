@@ -8,11 +8,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
-import { UserRole } from '../../role/entities/user-role.entity';
+import { UserRole } from '../role/entities/user-role.entity';
 import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto } from './dto';
-import { hashPassword } from '../../../../common/utils/encrypt';
-import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
-import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { hashPassword } from '../../../common/utils/encrypt';
+import { NotFoundError } from '../../../common/exceptions/not-found.exception';
+import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 
 /**
  * 用户服务

@@ -4,9 +4,9 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm';
-import { Base } from '../../../../../common/entities/base.entity';
+import { Base } from '../../../../common/entities/base.entity';
 import { ImageResourceDto } from '@/common';
-import { toDescription, StatusDict } from '../../../../../../shared/src';
+import { toDescription, StatusDict } from 'moyan-mfw-base/shared';
 
 /**
  * 应用实例实体

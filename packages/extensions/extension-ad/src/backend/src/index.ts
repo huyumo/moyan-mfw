@@ -12,4 +12,4 @@ export {
   CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto,
   CreateAdDto, UpdateAdDto, QueryAdDto,
 } from './dto'
-export { AD_EXTENSION_PERMISSION_VALUES } from '../../shared'
+export { AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/shared'

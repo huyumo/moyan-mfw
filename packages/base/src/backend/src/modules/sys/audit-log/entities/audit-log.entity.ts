@@ -4,8 +4,8 @@
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, CreateDateColumn } from 'typeorm';
-import { AuditModule } from '../../../../../common/decorators/audit-log.decorator';
-import { toDescription, AuditModuleDict } from '../../../../../../shared/src';
+import { AuditModule } from '../../../../common/decorators/audit-log.decorator';
+import { toDescription, AuditModuleDict } from 'moyan-mfw-base/shared';
 
 /**
  * 审计日志实体

@@ -11,7 +11,7 @@
 import { defineComponent, h, toRef, computed, type PropType } from 'vue';
 import { ElImage } from 'element-plus';
 import type { ImageFormatProps } from './types';
-import type { ImageResource } from '../../../upload/types';
+import type { ImageResource } from '../../upload/types';
 
 function extractImageUrl(value: string | ImageResource): string {
   if (typeof value === 'string') return value;

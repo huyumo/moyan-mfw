@@ -3,7 +3,7 @@
  */
 
 import type { VNode } from 'vue';
-import type { TableColumnConfig, ActionColumnConfig } from '../../../table/table-list/types';
+import type { TableColumnConfig, ActionColumnConfig } from '../../table/table-list/types';
 
 /** 搜索表单项类型 */
 export type SearchItemType = 'input' | 'select' | 'date-picker' | 'date-range' | 'tree-select' | 'radio-group' | 'checkbox-group';
