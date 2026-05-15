@@ -61,4 +61,8 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
+    exclude: ['moyan-mfw-base', 'moyan-mfw-extension-ad'],
+  },
 });

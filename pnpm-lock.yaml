@@ -221,6 +221,12 @@ importers:
 
   backend:
     dependencies:
+      '@internal/base-backend':
+        specifier: workspace:*
+        version: link:../packages/base/src/backend
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../packages/base/src/shared
       '@nestjs/common':
         specifier: 'catalog:'
         version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
@@ -343,6 +349,12 @@ importers:
       '@element-plus/icons-vue':
         specifier: 'catalog:'
         version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      '@internal/base-frontend':
+        specifier: workspace:*
+        version: link:../packages/base/src/frontend
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../packages/base/src/shared
       element-plus:
         specifier: 'catalog:'
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))

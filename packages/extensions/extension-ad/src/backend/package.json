@@ -4,7 +4,7 @@
   "main": "../../dist/backend/index.js",
   "types": "../../dist/backend/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ../../scripts/fix-dist-imports.cjs",
     "dev": "nest start --config ../../nest-cli.json --watch"
   },
   "dependencies": {

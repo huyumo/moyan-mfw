@@ -5,16 +5,19 @@
   "exports": {
     "./backend": {
       "types": "./dist/backend/index.d.ts",
-      "require": "./dist/backend/index.js"
+      "require": "./dist/backend/index.js",
+      "default": "./dist/backend/index.js"
     },
     "./frontend": {
       "import": "./dist/frontend/index.mjs",
       "types": "./dist/frontend/index.d.ts",
-      "require": "./dist/frontend/index.js"
+      "require": "./dist/frontend/index.js",
+      "default": "./dist/frontend/index.mjs"
     },
     "./shared": {
       "types": "./dist/shared/index.d.ts",
-      "require": "./dist/shared/index.js"
+      "require": "./dist/shared/index.js",
+      "default": "./dist/shared/index.js"
     }
   },
   "scripts": {

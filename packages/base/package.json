@@ -7,12 +7,14 @@
   "exports": {
     "./backend": {
       "require": "./dist/backend/index.js",
-      "types": "./dist/backend/index.d.ts"
+      "types": "./dist/backend/index.d.ts",
+      "default": "./dist/backend/index.js"
     },
     "./frontend": {
       "import": "./dist/frontend/index.mjs",
       "require": "./dist/frontend/index.js",
-      "types": "./dist/frontend/index.d.ts"
+      "types": "./dist/frontend/index.d.ts",
+      "default": "./dist/frontend/index.mjs"
     },
     "./shared": {
       "types": "./dist/shared/index.d.ts",
