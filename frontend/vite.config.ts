@@ -9,6 +9,8 @@ import vueJsxPlugin from '@vitejs/plugin-vue-jsx';
 
 // base frontend source path
 const baseFrontendSrc = resolve(__dirname, '../packages/base/src/frontend');
+// extension-ad frontend source path  
+const adFrontendSrc = resolve(__dirname, '../packages/extensions/extension-ad/src/frontend');
 
 export default defineConfig({
   plugins: [vue(), vueJsxPlugin()],
@@ -26,6 +28,13 @@ export default defineConfig({
       // base package frontend entry
       'moyan-mfw-base/frontend': baseFrontendSrc,
       'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
+      // extension-ad package
+      'moyan-mfw-extension-ad/frontend': adFrontendSrc,
+      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
+      // @internal workspace packages → source (for dev mode, bypass dist)
+      '@internal/base-frontend': baseFrontendSrc,
+      '@internal/base-shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
+      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
     },
   },
   server: {
@@ -63,6 +72,5 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
-    exclude: ['moyan-mfw-base', 'moyan-mfw-extension-ad'],
   },
 });
