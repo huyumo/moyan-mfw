@@ -1,9 +1,8 @@
 {
   "name": "@internal/ad-frontend",
-  "private": true,
   "type": "module",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "../../dist/frontend/index.js",
+  "types": "../../dist/frontend/index.d.ts",
   "scripts": {
     "build": "vite build --config ../../vite.config.mts",
     "build:types": "vue-tsc --emitDeclarationOnly -p tsconfig.json",

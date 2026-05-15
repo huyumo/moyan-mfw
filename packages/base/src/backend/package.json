@@ -1,11 +1,10 @@
 {
   "name": "@internal/base-backend",
-  "private": true,
   "version": "1.0.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "../../dist/backend/index.js",
+  "types": "../../dist/backend/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && tsc-alias -p ../../tsconfig.publish.json",
     "dev": "nest start --config ../../nest-cli.json --watch"
   },
   "dependencies": {

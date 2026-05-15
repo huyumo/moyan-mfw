@@ -1,9 +1,8 @@
 {
   "name": "@internal/ad-shared",
-  "private": true,
   "version": "0.1.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
+  "main": "../../dist/shared/index.js",
+  "types": "../../dist/shared/index.d.ts",
   "scripts": {
     "build": "tsc"
   },

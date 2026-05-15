@@ -3,7 +3,8 @@
     "baseUrl": ".",
     "outDir": ".",
     "paths": {
-      "@internal/base-shared": ["./dist/shared/index.js"]
+      "@internal/base-shared": ["./dist/shared/index.js"],
+      "@/*": ["./dist/backend/*"]
     }
   },
   "include": ["./dist/**/*.js"]

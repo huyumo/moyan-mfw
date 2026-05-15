@@ -26,6 +26,8 @@
     "moyan-mfw-base": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-business-dict": "workspace:*",
+    "@internal/base-backend": "workspace:*",
+    "@internal/base-shared": "workspace:*",
     "dotenv": "catalog:",
     "@nestjs/common": "catalog:",
     "@nestjs/config": "catalog:",
