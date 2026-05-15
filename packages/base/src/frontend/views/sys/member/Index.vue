@@ -1,7 +1,7 @@
-ï»¿<!--
+<!--
 /**
- * @fileoverview æˆå‘˜ç®¡ç†åˆ—è¡¨é¡µé¢
- * @description ç®¡ç†åº”ç”¨å®ä¾‹ä¸‹çš„æˆå‘˜åŠå…¶è§’è‰²åˆ†é…
+ * @fileoverview ³ÉÔ±¹ÜÀíÁĞ±íÒ³Ãæ
+ * @description ¹ÜÀíÓ¦ÓÃÊµÀıÏÂµÄ³ÉÔ±¼°Æä½ÇÉ«·ÖÅä
  */
 -->
 <template>
@@ -9,7 +9,7 @@
     <template #header-extra>
         <el-button type="primary" data-testid="member-create-btn" @click="handleAdd">
           <el-icon><Plus /></el-icon>
-          æ·»åŠ æˆå‘˜
+          Ìí¼Ó³ÉÔ±
         </el-button>
       </template>
     <MfwListPage
@@ -40,7 +40,7 @@ import type { MemberResponseDto } from '../../../apis/sys/schemas';
 import AddMemberForm from './AddMemberForm.vue';
 import RoleAssignForm from './RoleAssignForm.vue';
 import { useAuthStore } from '../../../store/auth-store';
-import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../shared';
+import { IsBuiltinDict, IsOwnerDict, toItems } from '@internal/base-shared';
 import { useRoute, useRouter } from 'vue-router';
 
 function extractAvatarUrl(avatar: string | ImageResource | undefined): string | undefined {
@@ -59,11 +59,11 @@ const appId = computed(() =>
   authStore.currentApp?.appId || ''
 );
 
-/** è¡¨æ ¼åˆ— */
+/** ±í¸ñÁĞ */
 const columns = [
   {
     prop: 'avatar',
-    label: 'å¤´åƒ',
+    label: 'Í·Ïñ',
     width: 80,
     render: ({ row }: { row: MemberResponseDto }) => h(ElAvatar, {
       size: 40,
@@ -72,25 +72,25 @@ const columns = [
   },
   {
     prop: 'nickname',
-    label: 'æ˜µç§°',
+    label: 'êÇ³Æ',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.nickname || '-',
   },
   {
     prop: 'username',
-    label: 'ç”¨æˆ·å',
+    label: 'ÓÃ»§Ãû',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.username || '-',
   },
   {
     prop: 'phone',
-    label: 'æ‰‹æœºå·',
+    label: 'ÊÖ»úºÅ',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.phone || '-',
   },
   {
     prop: 'roles',
-    label: 'è§’è‰²',
+    label: '½ÇÉ«',
     minWidth: 200,
     render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'role-tags' },
       (row.roles || []).map((r) =>
@@ -106,21 +106,21 @@ const columns = [
   },
 ];
 
-/** æ“ä½œåˆ— */
+/** ²Ù×÷ÁĞ */
 const isNotOwner = (row: MemberResponseDto) => Number(row.isOwner) === IsOwnerDict.YES;
 
 const actionColumn = {
   prop: 'action',
-  label: 'æ“ä½œ',
+  label: '²Ù×÷',
   width: 150,
   fixed: 'right' as const,
   render: ({ row }: { row: MemberResponseDto }) => renderActionButtons([
-    { label: 'åˆ†é…è§’è‰²', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['ç¼–è¾‘'], disabled: isNotOwner, testId: 'member-assign-role-btn' },
-    { label: 'ç§»é™¤', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['åˆ é™¤'], disabled: isNotOwner, testId: 'member-remove-btn' },
+    { label: '·ÖÅä½ÇÉ«', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['±à¼­'], disabled: isNotOwner, testId: 'member-assign-role-btn' },
+    { label: 'ÒÆ³ı', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['É¾³ı'], disabled: isNotOwner, testId: 'member-remove-btn' },
   ], {}, row),
 };
 
-/** åŠ è½½æ•°æ® */
+/** ¼ÓÔØÊı¾İ */
 const loadData = async (params: Record<string, any>) => {
   if (!appId.value) {
     return { list: [], total: 0 };
@@ -135,10 +135,10 @@ const loadData = async (params: Record<string, any>) => {
   });
 };
 
-/** æ·»åŠ æˆå‘˜ */
+/** Ìí¼Ó³ÉÔ± */
 const handleAdd = () => {
   MfwPopup.open({
-    title: 'æ·»åŠ æˆå‘˜',
+    title: 'Ìí¼Ó³ÉÔ±',
     type: 'dialog',
     component: AddMemberForm,
     data: { appId: appId.value },
@@ -147,10 +147,10 @@ const handleAdd = () => {
   });
 };
 
-/** åˆ†é…è§’è‰² */
+/** ·ÖÅä½ÇÉ« */
 const handleEditRoles = (row: MemberResponseDto) => {
   MfwPopup.open({
-    title: 'åˆ†é…è§’è‰²',
+    title: '·ÖÅä½ÇÉ«',
     type: 'dialog',
     component: RoleAssignForm,
     data: { appId: appId.value, member: row },
@@ -159,12 +159,12 @@ const handleEditRoles = (row: MemberResponseDto) => {
   });
 };
 
-/** ç§»é™¤æˆå‘˜ */
+/** ÒÆ³ı³ÉÔ± */
 const handleRemove = async (row: MemberResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `ç¡®å®šè¦å°†ã€Œ${row.nickname || row.username}ã€ä»åº”ç”¨ä¸­ç§»é™¤å—ï¼Ÿ`,
-      'ç¡®è®¤ç§»é™¤',
+      `È·¶¨Òª½«¡¸${row.nickname || row.username}¡¹´ÓÓ¦ÓÃÖĞÒÆ³ıÂğ£¿`,
+      'È·ÈÏÒÆ³ı',
       { type: 'warning' }
     );
   } catch {

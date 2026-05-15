@@ -1,7 +1,7 @@
-ï»¿<!--
+<!--
 /**
- * @fileoverview åº”ç”¨ç±»å‹å¡ç‰‡ç»„ä»¶
- * @description ç”¨äºåº”ç”¨ç±»å‹ç®¡ç†é¡µé¢çš„å¡ç‰‡å±•ç¤º
+ * @fileoverview Ó¦ÓÃÀàĞÍ¿¨Æ¬×é¼ş
+ * @description ÓÃÓÚÓ¦ÓÃÀàĞÍ¹ÜÀíÒ³ÃæµÄ¿¨Æ¬Õ¹Ê¾
  */
 -->
 <template>
@@ -11,7 +11,7 @@
         <el-icon v-if="currentIcon" size="24">
           <component :is="currentIcon" />
         </el-icon>
-        <span v-else class="icon-text">ğŸ“Š</span>
+        <span v-else class="icon-text">??</span>
       </div>
       <div class="app-type-card__title-area">
         <h3 class="app-type-card__title">{{ data.typeName }}</h3>
@@ -20,7 +20,7 @@
     </div>
 
     <div class="app-type-card__body">
-      <p class="app-type-card__desc">{{ data.typeDesc || 'æš‚æ— æè¿°' }}</p>
+      <p class="app-type-card__desc">{{ data.typeDesc || 'ÔİÎŞÃèÊö' }}</p>
       <div class="app-type-card__tags">
         <MfwDictFormat :value="data.typeStatus" :dict="toItems(StatusDict)" as-tag />
         <MfwDictFormat :value="data.multiAppEnabled" :dict="toItems(MultiAppEnabledDict)" as-tag />
@@ -28,11 +28,11 @@
     </div>
 
     <div class="app-type-card__footer">
-      <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} ä¸ªå†…ç½®è§’è‰²</span>
+      <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} ¸öÄÚÖÃ½ÇÉ«</span>
       <div class="app-type-card__actions">
-        <el-button type="primary" size="small" data-testid="app-type-edit-btn" v-permission="{ value: ['ç¼–è¾‘'] }" @click="$emit('edit', data)">ç¼–è¾‘</el-button>
-        <el-button size="small" data-testid="app-type-permission-btn" v-permission="{ value: ['æƒé™æ± '] }" @click="$emit('permission', data)">æƒé™æ± </el-button>
-        <el-button size="small" data-testid="app-type-role-btn" v-permission="{ value: ['å†…ç½®è§’è‰²'] }" @click="$emit('role', data)">å†…ç½®è§’è‰²</el-button>
+        <el-button type="primary" size="small" data-testid="app-type-edit-btn" v-permission="{ value: ['±à¼­'] }" @click="$emit('edit', data)">±à¼­</el-button>
+        <el-button size="small" data-testid="app-type-permission-btn" v-permission="{ value: ['È¨ÏŞ³Ø'] }" @click="$emit('permission', data)">È¨ÏŞ³Ø</el-button>
+        <el-button size="small" data-testid="app-type-role-btn" v-permission="{ value: ['ÄÚÖÃ½ÇÉ«'] }" @click="$emit('role', data)">ÄÚÖÃ½ÇÉ«</el-button>
       </div>
     </div>
   </el-card>
@@ -44,7 +44,7 @@ import { ElIcon } from 'element-plus';
 import * as IconMap from '@element-plus/icons-vue';
 import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import { MfwDictFormat } from '../../../components';
-import { toItems, StatusDict, MultiAppEnabledDict } from '../../../../shared';
+import { toItems, StatusDict, MultiAppEnabledDict } from '@internal/base-shared';
 
 defineOptions({ name: 'AppTypeCard' });
 

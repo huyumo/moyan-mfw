@@ -1,7 +1,7 @@
-ï»¿<!--
+<!--
 /**
- * @fileoverview è§’è‰²å¡ç‰‡ç»„ä»¶
- * @description ç”¨äºè§’è‰²ç®¡ç†é¡µé¢å’Œå†…ç½®è§’è‰²å¼¹çª—çš„å¡ç‰‡å±•ç¤ºï¼Œå†…éƒ¨å¤„ç†ç¼–è¾‘/æƒé™/åˆ é™¤æ“ä½œ
+ * @fileoverview ½ÇÉ«¿¨Æ¬×é¼ş
+ * @description ÓÃÓÚ½ÇÉ«¹ÜÀíÒ³ÃæºÍÄÚÖÃ½ÇÉ«µ¯´°µÄ¿¨Æ¬Õ¹Ê¾£¬ÄÚ²¿´¦Àí±à¼­/È¨ÏŞ/É¾³ı²Ù×÷
  */
 -->
 <template>
@@ -16,13 +16,13 @@
 
     <div class="role-card__body">
       <div class="role-card__code">{{ data.roleCode }}</div>
-      <p class="role-card__desc">{{ data.roleDesc || 'æš‚æ— æè¿°' }}</p>
+      <p class="role-card__desc">{{ data.roleDesc || 'ÔİÎŞÃèÊö' }}</p>
     </div>
 
     <div class="role-card__footer">
-      <el-button type="primary" size="small" link :disabled="!canEdit" data-testid="role-permission-btn" v-permission="{ value: ['ç¼–è¾‘'] }" @click="handlePermission">é…ç½®æƒé™</el-button>
-      <el-button size="small" link :disabled="!canEdit" data-testid="role-edit-btn" v-permission="{ value: ['ç¼–è¾‘'] }" @click="handleEdit">ç¼–è¾‘</el-button>
-      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" data-testid="role-delete-btn" v-permission="{ value: ['åˆ é™¤'] }" @click="handleDelete">åˆ é™¤</el-button>
+      <el-button type="primary" size="small" link :disabled="!canEdit" data-testid="role-permission-btn" v-permission="{ value: ['±à¼­'] }" @click="handlePermission">ÅäÖÃÈ¨ÏŞ</el-button>
+      <el-button size="small" link :disabled="!canEdit" data-testid="role-edit-btn" v-permission="{ value: ['±à¼­'] }" @click="handleEdit">±à¼­</el-button>
+      <el-button type="danger" size="small" link :disabled="isBuiltin || isOwner" data-testid="role-delete-btn" v-permission="{ value: ['É¾³ı'] }" @click="handleDelete">É¾³ı</el-button>
     </div>
   </el-card>
 </template>
@@ -36,7 +36,7 @@ import { ApiRoleDelete } from '../../../apis/sys';
 import type { RoleResponseDto } from '../../../apis/sys/schemas';
 import { RolePermissionPanel } from '../role-permission-panel';
 import { RoleForm } from '..';
-import { IsBuiltinDict, IsOwnerDict, toItems } from '../../../../shared';
+import { IsBuiltinDict, IsOwnerDict, toItems } from '@internal/base-shared';
 import { MfwDictFormat } from '../../../components';
 
 defineOptions({ name: 'RoleCard' });
@@ -56,7 +56,7 @@ const canEdit = computed(() => !isBuiltin.value || props.canEditBuiltin);
 
 const handlePermission = () => {
   MfwPopup.open({
-    title: `é…ç½®è§’è‰²æƒé™ - ${props.data.roleName}`,
+    title: `ÅäÖÃ½ÇÉ«È¨ÏŞ - ${props.data.roleName}`,
     type: 'dialog',
     component: RolePermissionPanel,
     data: {
@@ -68,8 +68,8 @@ const handlePermission = () => {
       top: '10vh',
     },
     footer: {
-      cancelText: 'å…³é—­',
-      confirmText: 'ä¿å­˜',
+      cancelText: '¹Ø±Õ',
+      confirmText: '±£´æ',
     },
     on: {
       confirm: () => {
@@ -81,7 +81,7 @@ const handlePermission = () => {
 
 const handleEdit = () => {
   MfwPopup.open({
-    title: 'ç¼–è¾‘è§’è‰²',
+    title: '±à¼­½ÇÉ«',
     type: 'dialog',
     component: RoleForm,
     data: {
@@ -94,8 +94,8 @@ const handleEdit = () => {
       size: '500px',
     },
     footer: {
-      cancelText: 'å–æ¶ˆ',
-      confirmText: 'ç¡®å®š',
+      cancelText: 'È¡Ïû',
+      confirmText: 'È·¶¨',
     },
     on: {
       confirm: () => {
@@ -108,8 +108,8 @@ const handleEdit = () => {
 const handleDelete = async () => {
   try {
     await ElMessageBox.confirm(
-      `ç¡®å®šè¦åˆ é™¤è§’è‰²ã€Œ${props.data.roleName}ã€å—ï¼Ÿ`,
-      'ç¡®è®¤åˆ é™¤',
+      `È·¶¨ÒªÉ¾³ı½ÇÉ«¡¸${props.data.roleName}¡¹Âğ£¿`,
+      'È·ÈÏÉ¾³ı',
       { type: 'warning' },
     );
     await new ApiRoleDelete({ params: { id: props.data.id } }, { hintSuccess: true });

@@ -1,4 +1,4 @@
-ï»¿<template>
+<template>
   <div class="mfw-profile-panel">
     <div class="profile-header">
       <el-avatar :size="48" :src="avatarUrl" class="profile-avatar">
@@ -16,27 +16,27 @@
     <div class="info-list">
       <div class="list-row">
         <el-icon class="row-icon"><User /></el-icon>
-        <span class="row-label">æ˜µç§°</span>
+        <span class="row-label">êÇ³Æ</span>
         <span class="row-value">{{ userInfo?.nickname || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Phone /></el-icon>
-        <span class="row-label">æ‰‹æœºå·</span>
+        <span class="row-label">ÊÖ»úºÅ</span>
         <span class="row-value">{{ userInfo?.phone || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Message /></el-icon>
-        <span class="row-label">é‚®ç®±</span>
+        <span class="row-label">ÓÊÏä</span>
         <span class="row-value">{{ userInfo?.email || '--' }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Avatar /></el-icon>
-        <span class="row-label">æ€§åˆ«</span>
+        <span class="row-label">ĞÔ±ğ</span>
         <span class="row-value">{{ genderText }}</span>
       </div>
       <div class="list-row">
         <el-icon class="row-icon"><Calendar /></el-icon>
-        <span class="row-label">æ³¨å†Œæ—¶é—´</span>
+        <span class="row-label">×¢²áÊ±¼ä</span>
         <span class="row-value">{{ formatDateTime(userInfo?.createdAt) }}</span>
       </div>
     </div>
@@ -46,11 +46,11 @@
     <div class="profile-actions">
       <el-button type="primary" data-testid="profile-edit-btn" @click="handleEditProfile">
         <el-icon><Edit /></el-icon>
-        ç¼–è¾‘èµ„æ–™
+        ±à¼­×ÊÁÏ
       </el-button>
       <el-button data-testid="profile-password-btn" @click="handleChangePassword">
         <el-icon><Lock /></el-icon>
-        ä¿®æ”¹å¯†ç 
+        ĞŞ¸ÄÃÜÂë
       </el-button>
       <slot name="actions" :user-info="userInfo" />
     </div>
@@ -67,11 +67,11 @@ import type { UserResponseDto } from '../../apis/sys/schemas';
 import UserForm from '../../views/sys/user/UserForm.vue';
 import PasswordChangeForm from './password-change-form.vue';
 import { MfwDictFormat } from '..';
-import { toItems, StatusDict } from '../../../shared';
+import { toItems, StatusDict } from '@internal/base-shared';
 
 defineOptions({ name: 'ProfilePanel' });
 
-const GENDER_MAP: Record<number, string> = { 0: 'æœªçŸ¥', 1: 'ç”·', 2: 'å¥³' };
+const GENDER_MAP: Record<number, string> = { 0: 'Î´Öª', 1: 'ÄĞ', 2: 'Å®' };
 
 function formatDateTime(val: string | undefined): string {
   if (!val) return '--';
@@ -84,7 +84,7 @@ function formatDateTime(val: string | undefined): string {
 const authStore = useAuthStore();
 const userInfo = ref<UserResponseDto | null>(null);
 
-const displayName = computed(() => userInfo.value?.nickname || userInfo.value?.username || 'ç”¨æˆ·');
+const displayName = computed(() => userInfo.value?.nickname || userInfo.value?.username || 'ÓÃ»§');
 
 const avatarUrl = computed(() => {
   const avatar = userInfo.value?.avatar;
@@ -92,7 +92,7 @@ const avatarUrl = computed(() => {
   return typeof avatar === 'string' ? avatar : (avatar as any).src;
 });
 
-const genderText = computed(() => GENDER_MAP[userInfo.value?.gender ?? 0] || 'æœªçŸ¥');
+const genderText = computed(() => GENDER_MAP[userInfo.value?.gender ?? 0] || 'Î´Öª');
 
 async function fetchUserInfo() {
   const userId = authStore.user?.id;
@@ -100,14 +100,14 @@ async function fetchUserInfo() {
   try {
     userInfo.value = await new ApiUserFindById({ params: { id: userId } });
   } catch (e) {
-    console.error('è·å–ç”¨æˆ·ä¿¡æ¯å¤±è´¥:', e);
+    console.error('»ñÈ¡ÓÃ»§ĞÅÏ¢Ê§°Ü:', e);
   }
 }
 
 function handleEditProfile() {
   if (!userInfo.value) return;
   MfwPopup.open({
-    title: 'ç¼–è¾‘èµ„æ–™',
+    title: '±à¼­×ÊÁÏ',
     type: 'dialog',
     component: UserForm,
     data: { ...userInfo.value },
@@ -123,7 +123,7 @@ function handleEditProfile() {
 
 function handleChangePassword() {
   MfwPopup.open({
-    title: 'ä¿®æ”¹å¯†ç ',
+    title: 'ĞŞ¸ÄÃÜÂë',
     type: 'dialog',
     component: PasswordChangeForm,
     popupProps: { width: 420 },
