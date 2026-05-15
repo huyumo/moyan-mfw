@@ -1,0 +1,29 @@
+{
+  "name": "@internal/ad-backend",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nest start --config ../../nest-cli.json --watch"
+  },
+  "dependencies": {
+    "@internal/base-backend": "workspace:*",
+    "@internal/base-shared": "workspace:*",
+    "@internal/ad-shared": "workspace:*",
+    "typeorm": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "typescript": "catalog:"
+  }
+}
