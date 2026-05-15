@@ -24,32 +24,32 @@ const REPLACEMENT_RULES = [
   {
     name: 'base/backend → @internal/base-backend (import)',
     pattern: /from\s+['"]moyan-mfw-base\/backend['"]/g,
-    replacement: "from '@internal/base-backend'",
+    replacement: "from '../backend'",
   },
   {
     name: 'base/backend → @internal/base-backend (require)',
     pattern: /require\(['"]moyan-mfw-base\/backend['"]\)/g,
-    replacement: "require('@internal/base-backend')",
+    replacement: "require('../backend')",
   },
   {
     name: 'base/frontend → @internal/base-frontend (import)',
     pattern: /from\s+['"]moyan-mfw-base\/frontend['"]/g,
-    replacement: "from '@internal/base-frontend'",
+    replacement: "from '../frontend'",
   },
   {
     name: 'base/frontend → @internal/base-frontend (side-effect)',
     pattern: /import\s+['"]moyan-mfw-base\/frontend/g,
-    replacement: "import '@internal/base-frontend",
+    replacement: "import '../frontend",
   },
   {
     name: 'base/shared → @internal/base-shared',
     pattern: /from\s+['"]moyan-mfw-base\/shared['"]/g,
-    replacement: "from '@internal/base-shared'",
+    replacement: "from '../shared'",
   },
   {
     name: '内部 shared 相对路径 → @internal/ad-shared',
     pattern: /from\s+['"]((?:\.\.\/)+shared(?:\/[\w-]+)?)['"]/g,
-    replacement: "from '@internal/ad-shared'",
+    replacement: "from '../dist/shared/index.js'",
   },
 ];
 
