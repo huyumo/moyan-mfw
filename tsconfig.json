@@ -10,8 +10,8 @@
     "rootDir": ".",
     "paths": {
       "moyan-mfw-core": ["./packages/core/dist"],
-      "moyan-mfw-base/backend": ["./packages/base/dist/backend"],
-      "moyan-mfw-base/frontend": ["./packages/base/src/frontend/index.ts"],
+      "moyan-mfw-base/backend": ["./packages/base/src/backend/src/index.ts"],
+      "moyan-mfw-base/frontend": ["./packages/base/src/frontend/src/index.ts"],
       "moyan-mfw-base-api": ["./packages/base-api/dist"]
     }
   },
