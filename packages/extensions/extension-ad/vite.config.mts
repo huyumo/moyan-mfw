@@ -38,6 +38,7 @@ export default defineConfig({
         'axios',
         'element-plus',
         '@element-plus/icons-vue',
+        'moyan-api',
       ],
     },
     outDir: '../../dist/frontend',
