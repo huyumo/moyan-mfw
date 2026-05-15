@@ -1,9 +1,0 @@
-{
-  "extends": "./src/frontend/tsconfig.json",
-  "compilerOptions": {
-    "composite": false,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
-    "declaration": false
-  }
-}

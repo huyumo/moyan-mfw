@@ -1,8 +1,0 @@
-{
-  "sourceRoot": "src/backend",
-  "entryFile": "main",
-  "compilerOptions": {
-    "tsConfigPath": "src/backend/tsconfig.json",
-    "deleteOutDir": true
-  }
-}
