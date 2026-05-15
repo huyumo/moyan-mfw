@@ -7,4 +7,3 @@ export declare class DeveloperDict {
     static YES: number;
     static NO: number;
 }
-//# sourceMappingURL=user.d.ts.map

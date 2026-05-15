@@ -8,4 +8,3 @@ export interface DictMetaOptions {
     label: string;
     module?: string;
 }
-//# sourceMappingURL=types.d.ts.map
