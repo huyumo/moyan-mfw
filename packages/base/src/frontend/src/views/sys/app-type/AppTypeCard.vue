@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview Ӧ�����Ϳ�Ƭ���
- * @description ����Ӧ�����͹���ҳ��Ŀ�Ƭչʾ
+ * @fileoverview 应用类型卡片
+ * @description 应用类型卡片组件
  */
 -->
 <template>
@@ -11,7 +11,7 @@
         <el-icon v-if="currentIcon" size="24">
           <component :is="currentIcon" />
         </el-icon>
-        <span v-else class="icon-text">??</span>
+        <span v-else class="icon-text">--</span>
       </div>
       <div class="app-type-card__title-area">
         <h3 class="app-type-card__title">{{ data.typeName }}</h3>
@@ -20,7 +20,7 @@
     </div>
 
     <div class="app-type-card__body">
-      <p class="app-type-card__desc">{{ data.typeDesc || '��������' }}</p>
+      <p class="app-type-card__desc">{{ data.typeDesc || '--' }}</p>
       <div class="app-type-card__tags">
         <MfwDictFormat :value="data.typeStatus" :dict="toItems(StatusDict)" as-tag />
         <MfwDictFormat :value="data.multiAppEnabled" :dict="toItems(MultiAppEnabledDict)" as-tag />
@@ -28,11 +28,11 @@
     </div>
 
     <div class="app-type-card__footer">
-      <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} �����ý�ɫ</span>
+      <span class="app-type-card__meta">{{ data.builtinRoleCount ?? 0 }} 个内置角色</span>
       <div class="app-type-card__actions">
-        <el-button type="primary" size="small" data-testid="app-type-edit-btn" v-permission="{ value: ['�༭'] }" @click="$emit('edit', data)">�༭</el-button>
-        <el-button size="small" data-testid="app-type-permission-btn" v-permission="{ value: ['Ȩ�޳�'] }" @click="$emit('permission', data)">Ȩ�޳�</el-button>
-        <el-button size="small" data-testid="app-type-role-btn" v-permission="{ value: ['���ý�ɫ'] }" @click="$emit('role', data)">���ý�ɫ</el-button>
+        <el-button type="primary" size="small" data-testid="app-type-edit-btn" v-permission="{ value: ['edit'] }" @click="$emit('edit', data)">编辑</el-button>
+        <el-button size="small" data-testid="app-type-permission-btn" v-permission="{ value: ['permission'] }" @click="$emit('permission', data)">权限</el-button>
+        <el-button size="small" data-testid="app-type-role-btn" v-permission="{ value: ['role'] }" @click="$emit('role', data)">角色</el-button>
       </div>
     </div>
   </el-card>
