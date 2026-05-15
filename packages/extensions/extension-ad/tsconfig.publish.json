@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
+    "outDir": ".",
     "paths": {
       "@internal/base-backend": ["moyan-mfw-base/backend"],
       "@internal/base-frontend": ["moyan-mfw-base/frontend"],
