@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview �û��������
- * @description �½�/�༭�û��ı���
+ * @fileoverview 用户表单组件
+ * @description 新建/编辑用户的表单
  */
 -->
 <template>
@@ -42,7 +42,7 @@ const form = reactive({
 const formTemplate: FormItemConfig[] = [
   {
     key: 'avatar',
-    label: 'ͷ��',
+    label: '头像',
     component: MfwImageSingle,
     testId: 'user-avatar-upload',
     elProps: {
@@ -50,54 +50,54 @@ const formTemplate: FormItemConfig[] = [
       cropRatio: 1,
       cropWidth: 200,
       cropHeight: 200,
-      placeholder: '����ϴ�ͷ��',
+      placeholder: '点击上传头像',
     },
   },
   {
     key: 'username',
-    label: '�û���',
+    label: '用户名',
     component: 'el-input',
     testId: 'user-username-input',
     disabled: isEdit.value,
     rules: [
-      { required: true, message: '�������û���', trigger: 'blur' },
-      { pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '�û���������ĸ��ͷ����������ĸ�����֣��20λ', trigger: 'blur' },
+      { required: true, message: '请输入用户名', trigger: 'blur' },
+      { pattern: /^[a-zA-Z][a-zA-Z0-9]{0,19}$/, message: '用户名必须以字母开头，只能包含字母和数字，最长20位', trigger: 'blur' },
     ],
     elProps: {
-      placeholder: '�������û���',
+      placeholder: '请输入用户名',
       clearable: true,
     },
   },
   {
     key: 'nickname',
-    label: '�ǳ�',
+    label: '昵称',
     component: 'el-input',
     testId: 'user-nickname-input',
     rules: [
-      { max: 50, message: '�ǳƳ��Ȳ��ܳ��� 50 ���ַ�', trigger: 'blur' },
+      { max: 50, message: '昵称长度不能超过 50 个字符', trigger: 'blur' },
     ],
     elProps: {
-      placeholder: '�������ǳ�',
+      placeholder: '请输入昵称',
       clearable: true,
     },
   },
   {
     key: 'phone',
-    label: '�ֻ���',
+    label: '手机号',
     component: 'el-input',
     testId: 'user-phone-input',
     rules: [
-      { required: true, message: '�������ֻ���', trigger: 'blur' },
-      { pattern: /^1[3-9]\d{9}$/, message: '��������ȷ���ֻ���', trigger: 'blur' },
+      { required: true, message: '请输入手机号', trigger: 'blur' },
+      { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' },
     ],
     elProps: {
-      placeholder: '�������ֻ���',
+      placeholder: '请输入手机号',
       clearable: true,
     },
   },
   {
     key: 'gender',
-    label: '�Ա�',
+    label: '性别',
     component: MfwRadioGroup,
     testId: 'user-gender-radio',
     elProps: {
@@ -108,7 +108,7 @@ const formTemplate: FormItemConfig[] = [
 
 const onConfirm = async () => {
   const valid = await formRef.value?.validate();
-  if (!valid) throw new Error('������֤ʧ��');
+  if (!valid) throw new Error('表单验证失败');
 
   if (isEdit.value) {
     await new ApiUserUpdate({

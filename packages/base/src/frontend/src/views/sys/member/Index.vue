@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview ��Ա�����б�ҳ��
- * @description ����Ӧ��ʵ���µĳ�Ա�����ɫ����
+ * @fileoverview 成员管理列表页
+ * @description 管理应用实例下的成员与角色分配
  */
 -->
 <template>
@@ -9,7 +9,7 @@
     <template #header-extra>
         <el-button type="primary" data-testid="member-create-btn" @click="handleAdd">
           <el-icon><Plus /></el-icon>
-          ���ӳ�Ա
+          添加成员
         </el-button>
       </template>
     <MfwListPage
@@ -59,11 +59,11 @@ const appId = computed(() =>
   authStore.currentApp?.appId || ''
 );
 
-/** ������ */
+/** 列表列 */
 const columns = [
   {
     prop: 'avatar',
-    label: 'ͷ��',
+    label: '头像',
     width: 80,
     render: ({ row }: { row: MemberResponseDto }) => h(ElAvatar, {
       size: 40,
@@ -72,25 +72,25 @@ const columns = [
   },
   {
     prop: 'nickname',
-    label: '�ǳ�',
+    label: '昵称',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.nickname || '-',
   },
   {
     prop: 'username',
-    label: '�û���',
+    label: '用户名',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.username || '-',
   },
   {
     prop: 'phone',
-    label: '�ֻ���',
+    label: '手机号',
     minWidth: 120,
     render: ({ row }: { row: MemberResponseDto }) => row.phone || '-',
   },
   {
     prop: 'roles',
-    label: '��ɫ',
+    label: '角色',
     minWidth: 200,
     render: ({ row }: { row: MemberResponseDto }) => h('div', { class: 'role-tags' },
       (row.roles || []).map((r) =>
@@ -106,21 +106,21 @@ const columns = [
   },
 ];
 
-/** ������ */
+/** 操作列 */
 const isNotOwner = (row: MemberResponseDto) => Number(row.isOwner) === IsOwnerDict.YES;
 
 const actionColumn = {
   prop: 'action',
-  label: '����',
+  label: '操作',
   width: 150,
   fixed: 'right' as const,
   render: ({ row }: { row: MemberResponseDto }) => renderActionButtons([
-    { label: '�����ɫ', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['�༭'], disabled: isNotOwner, testId: 'member-assign-role-btn' },
-    { label: '�Ƴ�', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['ɾ��'], disabled: isNotOwner, testId: 'member-remove-btn' },
+    { label: '分配角色', type: 'primary', icon: Edit, onClick: handleEditRoles, permission: ['编辑'], disabled: isNotOwner, testId: 'member-assign-role-btn' },
+    { label: '移除', type: 'danger', icon: Delete, onClick: handleRemove, permission: ['删除'], disabled: isNotOwner, testId: 'member-remove-btn' },
   ], {}, row),
 };
 
-/** �������� */
+/** 加载数据 */
 const loadData = async (params: Record<string, any>) => {
   if (!appId.value) {
     return { list: [], total: 0 };
@@ -135,10 +135,10 @@ const loadData = async (params: Record<string, any>) => {
   });
 };
 
-/** ���ӳ�Ա */
+/** 添加成员 */
 const handleAdd = () => {
   MfwPopup.open({
-    title: '���ӳ�Ա',
+    title: '添加成员',
     type: 'dialog',
     component: AddMemberForm,
     data: { appId: appId.value },
@@ -147,10 +147,10 @@ const handleAdd = () => {
   });
 };
 
-/** �����ɫ */
+/** 分配角色 */
 const handleEditRoles = (row: MemberResponseDto) => {
   MfwPopup.open({
-    title: '�����ɫ',
+    title: '分配角色',
     type: 'dialog',
     component: RoleAssignForm,
     data: { appId: appId.value, member: row },
@@ -159,12 +159,12 @@ const handleEditRoles = (row: MemberResponseDto) => {
   });
 };
 
-/** �Ƴ���Ա */
+/** 移除成员 */
 const handleRemove = async (row: MemberResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `ȷ��Ҫ����${row.nickname || row.username}����Ӧ�����Ƴ���`,
-      'ȷ���Ƴ�',
+      `确定要将${row.nickname || row.username}从此应用中移除？`,
+      '确认移除',
       { type: 'warning' }
     );
   } catch {

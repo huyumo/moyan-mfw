@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview Ӧ�����ͱ༭�������
- * @description ���� MfwPopup �����ı༭����
+ * @fileoverview 应用类型编辑表单组件
+ * @description 基于 MfwPopup 封装的编辑表单
  */
 -->
 <template>
@@ -30,10 +30,10 @@ interface Props {
 
 const props = defineProps<Props>();
 
-/** �������� */
+/** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
 
-/** �������� */
+/** 表单数据 */
 const form = reactive({
   typeName: '',
   typeCode: '',
@@ -42,35 +42,35 @@ const form = reactive({
   typeStatus: StatusDict.ENABLED as 1 | 0,
 });
 
-/** ���������� */
+/** 表单模板配置 */
 const formTemplate: FormItemConfig[] = [
   {
     key: 'typeName',
-    label: '��������',
+    label: '类型名称',
     component: 'el-input',
     testId: 'app-type-name-input',
-    placeholder: '��������������',
-    rules: [{ required: true, message: '��������������', trigger: 'blur' }],
+    placeholder: '请输入应用类型名称',
+    rules: [{ required: true, message: '请输入应用类型名称', trigger: 'blur' }],
   },
   {
     key: 'typeCode',
-    label: '���ͱ���',
+    label: '类型编码',
     component: 'el-input',
     testId: 'app-type-code-input',
     disabled: true,
   },
   {
     key: 'icon',
-    label: 'ͼ��',
+    label: '图标',
     component: MfwIconPicker,
     testId: 'app-type-icon-picker',
   },
   {
     key: 'typeDesc',
-    label: '����',
+    label: '描述',
     component: 'el-input',
     testId: 'app-type-desc-input',
-    placeholder: '����������',
+    placeholder: '请输入描述',
     elProps: {
       type: 'textarea',
       rows: 3,
@@ -78,7 +78,7 @@ const formTemplate: FormItemConfig[] = [
   },
   {
     key: 'typeStatus',
-    label: '״̬',
+    label: '状态',
     component: 'el-switch',
     testId: 'app-type-status-switch',
     value: StatusDict.ENABLED,
@@ -86,16 +86,16 @@ const formTemplate: FormItemConfig[] = [
     elProps: {
       activeValue: StatusDict.ENABLED,
       inactiveValue: StatusDict.DISABLED,
-      activeText: '����',
-      inactiveText: '����',
+      activeText: '启用',
+      inactiveText: '禁用',
     },
   },
 ];
 
-/** ��֤���� */
+/** 验证规则 */
 const rules = {};
 
-/** ��ʼ������ */
+/** 初始化数据 */
 onMounted(() => {
   if (props.data) {
     form.typeName = props.data.typeName;
@@ -106,7 +106,7 @@ onMounted(() => {
   }
 });
 
-/** ȷ���ύ - �� MfwPopup ���� */
+/** 确认提交 - 由 MfwPopup 调用 */
 const onConfirm = async () => {
   await formRef.value?.validate();
 
@@ -121,7 +121,7 @@ const onConfirm = async () => {
   },{hintSuccess: true});
 };
 
-/** ��¶������ MfwPopup ���� */
+/** 暴露给父组件（MfwPopup 调用） */
 defineExpose({
   onConfirm,
 });

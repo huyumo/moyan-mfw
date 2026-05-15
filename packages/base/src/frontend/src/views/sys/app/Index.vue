@@ -1,7 +1,7 @@
-?<!--
+<!--
 /**
- * @fileoverview Ӧ��ʵ�������б�ҳ��
- * @description ����Ӧ��ʵ���Ĵ������༭��ɾ����ӵ���߹���
+ * @fileoverview 应用实例管理列表页
+ * @description 管理应用实例的创建、编辑、删除和拥有者管理
  */
 -->
 <template>
@@ -9,7 +9,7 @@
     <template #header-extra>
       <el-button type="primary" data-testid="app-create-btn" @click="handleAdd">
         <el-icon><Plus /></el-icon>
-        �½�Ӧ��
+        新建应用
       </el-button>
     </template>
 
@@ -48,48 +48,48 @@ defineOptions({ name: 'MfwAppList' });
 
 const listPage = ref<MfwListPageInstance>();
 
-/** Ӧ�������б�����������ģ�壩 */
+/** 应用类型列表（用于搜索模板） */
 const appTypeList = ref<AppTypeResponseDto[]>([]);
 
-/** ����ģ�� */
+/** 搜索模板 */
 const searchTemplate = ref([
   {
     key: 'appName',
-    label: 'Ӧ������',
+    label: '应用名称',
     type: 'input' as const,
     testId: 'app-search-name',
-    placeholder: '������Ӧ������',
+    placeholder: '请输入应用名称',
   },
   {
     key: 'appCode',
-    label: 'Ӧ�ñ���',
+    label: '应用编码',
     type: 'input' as const,
     testId: 'app-search-code',
-    placeholder: '������Ӧ�ñ���',
+    placeholder: '请输入应用编码',
   },
   {
     key: 'appTypeId',
-    label: 'Ӧ������',
+    label: '应用类型',
     type: 'select' as const,
     testId: 'app-search-type',
-    placeholder: '��ѡ��Ӧ������',
+    placeholder: '请选择应用类型',
     elProps: {
       options: [] as { label: string; value: string }[],
     },
   },
   {
     key: 'appStatus',
-    label: '״̬',
+    label: '状态',
     type: 'select' as const,
     testId: 'app-search-status',
-    placeholder: '��ѡ��״̬',
+    placeholder: '请选择状态',
     elProps: {
       options: toItems(StatusDict),
     },
   },
 ]);
 
-/** ������ */
+/** 列表列 */
 const columns = [
   {
     prop: 'logo',
@@ -98,55 +98,55 @@ const columns = [
     align: 'center' as const,
     render: ({ row }: { row: AppDetailResponseDto }) => h(ElAvatar, { size: 36, src: getImageSrc(row.logo), icon: Picture, shape: 'square' }),
   },
-  { prop: 'appName', label: 'Ӧ������', minWidth: 150 },
-  { prop: 'appCode', label: 'Ӧ�ñ���', minWidth: 120 },
+  { prop: 'appName', label: '应用名称', minWidth: 150 },
+  { prop: 'appCode', label: '应用编码', minWidth: 120 },
   {
     prop: 'appType',
-    label: 'Ӧ������',
+    label: '应用类型',
     minWidth: 120,
     render: ({ row }: { row: AppDetailResponseDto }) => (row.appType as any)?.typeName || '-',
   },
   {
     prop: 'owner',
-    label: 'ӵ����',
+    label: '拥有者',
     minWidth: 120,
     render: ({ row }: { row: AppDetailResponseDto }) => (row.owner as any)?.nickname || (row.owner as any)?.username || '-',
   },
   {
     prop: 'appStatus',
-    label: '״̬',
+    label: '状态',
     width: 80,
     render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDictFormat, { value: row.appStatus, dict: toItems(StatusDict), asTag: true }),
   },
-  { prop: 'sortOrder', label: '����', width: 80 },
+  { prop: 'sortOrder', label: '排序', width: 80 },
   {
     prop: 'createdAt',
-    label: '����ʱ��',
+    label: '创建时间',
     width: 180,
     render: ({ row }: { row: AppDetailResponseDto }) => h(MfwDateFormat, { value: row.createdAt }),
   },
 ];
 
-/** ������ */
+/** 操作列 */
 const actionColumn = {
   prop: 'action',
-  label: '����',
+  label: '操作',
   width: 200,
   fixed: 'right' as const,
   render: ({ row }: { row: AppDetailResponseDto }) => renderActionButtons([
-    { label: '����', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
-    { label: '�༭', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['�༭'], testId: 'app-edit-btn' },
-    { label: 'ӵ����', type: 'warning', icon: User, onClick: handleOwner, permission: ['�༭'], testId: 'app-owner-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
-    { label: 'ɾ��', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['ɾ��'], testId: 'app-delete-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
+    { label: '查看', type: 'primary', icon: View, onClick: handleDetail, testId: 'app-detail-btn' },
+    { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'app-edit-btn' },
+    { label: '拥有者', type: 'warning', icon: User, onClick: handleOwner, permission: ['编辑'], testId: 'app-owner-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
+    { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'], testId: 'app-delete-btn', visible: (row: AppDetailResponseDto) => row.appCode !== 'system-instance' },
   ], { maxVisible: 2 }, row),
 };
 
-/** ����Ӧ�������б� */
+/** 加载应用类型列表 */
 const loadAppTypes = async () => {
   const result = await new ApiAppTypeFindAllList({});
   appTypeList.value = result || [];
 
-  // ��������ģ���Ӧ������ѡ��
+  // 动态更新搜索模板中的应用类型选项
   const typeOptions = (result || []).map((item: AppTypeResponseDto) => ({
     label: item.typeName,
     value: item.id,
@@ -156,7 +156,7 @@ const loadAppTypes = async () => {
   }
 };
 
-/** �������� */
+/** 加载数据 */
 const loadData = async (params: Record<string, unknown>) => {
   return await new ApiAppFindAll({
     query: {
@@ -170,11 +170,11 @@ const loadData = async (params: Record<string, unknown>) => {
   });
 };
 
-/** �鿴���� */
+/** 查看详情 */
 const handleDetail = async (row: AppDetailResponseDto) => {
   const detail = await new ApiAppFindById({ params: { id: row.id } });
   MfwPopup.open({
-    title: 'Ӧ������',
+    title: '应用详情',
     type: 'drawer',
     component: AppDetail,
     data: detail,
@@ -183,10 +183,10 @@ const handleDetail = async (row: AppDetailResponseDto) => {
   });
 };
 
-/** �½� */
+/** 新建 */
 const handleAdd = () => {
   MfwPopup.open({
-    title: '�½�Ӧ��',
+    title: '新建应用',
     type: 'dialog',
     component: AppForm,
     popupProps: { width: 550 },
@@ -194,10 +194,10 @@ const handleAdd = () => {
   });
 };
 
-/** �༭ */
+/** 编辑 */
 const handleEdit = (row: AppDetailResponseDto) => {
   MfwPopup.open({
-    title: '�༭Ӧ��',
+    title: '编辑应用',
     type: 'dialog',
     component: AppForm,
     data: { ...row },
@@ -206,12 +206,12 @@ const handleEdit = (row: AppDetailResponseDto) => {
   });
 };
 
-/** ɾ�� */
+/** 删除 */
 const handleDelete = async (row: AppDetailResponseDto) => {
   try {
     await ElMessageBox.confirm(
-      `ȷ��Ҫɾ��Ӧ�á�${row.appName}����`,
-      'ȷ��ɾ��',
+      `确定要删除应用"${row.appName}"？`,
+      '确认删除',
       { type: 'warning' }
     );
   } catch {
@@ -221,11 +221,11 @@ const handleDelete = async (row: AppDetailResponseDto) => {
   listPage.value?.refresh();
 };
 
-/** ӵ���߹��� */
+/** 拥有者管理 */
 const handleOwner = (row: AppDetailResponseDto) => {
   const owner = (row.owner as any) || {};
   MfwPopup.open({
-    title: `���ӵ���� �� ${row.appName}`,
+    title: `变更拥有者 - ${row.appName}`,
     type: 'dialog',
     component: OwnerChanger,
     data: {
@@ -243,4 +243,3 @@ onMounted(() => {
   loadAppTypes();
 });
 </script>
-

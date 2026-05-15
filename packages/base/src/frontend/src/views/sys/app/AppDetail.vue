@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview Ӧ������������
- * @description �Կ�Ƭ����չʾӦ��ʵ��������Ϣ
+ * @fileoverview 应用实例详情组件
+ * @description 以卡片形式展示应用实例的详细信息
  */
 -->
 <template>
@@ -53,11 +53,11 @@ const headerConfig = computed<CardPanelHeader>(() => ({
 }));
 
 const infoItems: CardPanelItem[] = [
-  { key: 'appType', label: 'Ӧ������', icon: Folder },
-  { key: 'owner', label: 'ӵ����', icon: User },
-  { key: 'appDesc', label: 'Ӧ������', icon: Document },
-  { key: 'sortOrder', label: '�����', icon: Sort },
-  { key: 'createdAt', label: '����ʱ��', icon: Calendar, format: 'date' },
-  { key: 'updateAt', label: '����ʱ��', icon: Calendar, format: 'date' },
+  { key: 'appType', label: '应用类型', icon: Folder },
+  { key: 'owner', label: '拥有者', icon: User },
+  { key: 'appDesc', label: '应用描述', icon: Document },
+  { key: 'sortOrder', label: '排序号', icon: Sort },
+  { key: 'createdAt', label: '创建时间', icon: Calendar, format: 'date' },
+  { key: 'updateAt', label: '更新时间', icon: Calendar, format: 'date' },
 ];
 </script>

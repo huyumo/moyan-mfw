@@ -1,7 +1,7 @@
 <!--
 /**
- * @fileoverview ��ɫ�����б�ҳ��
- * @description ����Ӧ�ü���ɫ�����ý�ɫ
+ * @fileoverview 角色管理列表页
+ * @description 管理应用级角色和内置角色
  */
 -->
 <template>
@@ -11,11 +11,11 @@
         <el-icon>
           <Plus />
         </el-icon>
-        �½���ɫ
+        新建角色
       </el-button>
     </template>
     <MfwCardListPage ref="cardListPage" :search-template="searchTemplate" :load-data="loadData" render-mode="card"
-      empty-text="���޽�ɫ">
+      empty-text="暂无角色">
       <template #card-item="{ item }">
         <RoleCard :data="item" @refresh="cardListPage?.refresh()" />
       </template>
@@ -43,24 +43,24 @@ const appId = computed(() => authStore.currentApp?.appId || '');
 const searchTemplate = [
   {
     key: 'roleName',
-    label: '��ɫ����',
+    label: '角色名称',
     type: 'input' as const,
     testId: 'role-search-name',
-    placeholder: '�������ɫ����',
+    placeholder: '请输入角色名称',
   },
   {
     key: 'roleCode',
-    label: '��ɫ����',
+    label: '角色编码',
     type: 'input' as const,
     testId: 'role-search-code',
-    placeholder: '�������ɫ����',
+    placeholder: '请输入角色编码',
   },
   {
     key: 'roleStatus',
-    label: '״̬',
+    label: '状态',
     type: 'select' as const,
     testId: 'role-search-status',
-    placeholder: '��ѡ��״̬',
+    placeholder: '请选择状态',
     elProps: {
       options: toItems(StatusDict),
     },
@@ -80,7 +80,7 @@ const loadData = async (params: Record<string, unknown>) => {
 
 const handleAdd = () => {
   MfwPopup.open({
-    title: '�½���ɫ',
+    title: '新建角色',
     type: 'dialog',
     component: RoleForm,
     data: { appId: appId.value },
