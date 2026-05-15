@@ -19,7 +19,7 @@ export default defineConfig({
       fileName: (format) => format === 'es' ? 'index.mjs' : 'index.js',
     },
     rollupOptions: {
-      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'pinia', '@vueuse/core', 'axios', 'md-editor-v3', 'quill', 'vue-advanced-cropper'],
+      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'pinia', '@vueuse/core', 'axios', 'md-editor-v3', 'quill', 'vue-advanced-cropper', 'moyan-mfw-base/shared'],
       output: {
         exports: 'named',
         globals: {
