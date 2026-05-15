@@ -7,4 +7,3 @@ export declare function getAllDicts(): Array<{
     module?: string;
     items: DictItem[];
 }>;
-//# sourceMappingURL=registry.d.ts.map

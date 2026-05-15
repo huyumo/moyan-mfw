@@ -23,4 +23,3 @@ export declare class IsCacheDict {
     static YES: number;
     static NO: number;
 }
-//# sourceMappingURL=permission.d.ts.map

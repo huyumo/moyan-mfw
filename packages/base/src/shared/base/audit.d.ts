@@ -9,4 +9,3 @@ export declare class AuditModuleDict {
     static SYSTEM: string;
     static UPLOAD: string;
 }
-//# sourceMappingURL=audit.d.ts.map

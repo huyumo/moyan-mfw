@@ -8,4 +8,3 @@ export declare function toDbItems<T extends Object>(dictClass: T): Array<{
     value: string | number;
     label: string;
 }>;
-//# sourceMappingURL=helper.d.ts.map
