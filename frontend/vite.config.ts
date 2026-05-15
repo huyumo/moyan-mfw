@@ -9,7 +9,7 @@ import vueJsxPlugin from '@vitejs/plugin-vue-jsx';
 
 // base frontend source path
 const baseFrontendSrc = resolve(__dirname, '../packages/base/src/frontend');
-// extension-ad frontend source path  
+// extension-ad frontend source path
 const adFrontendSrc = resolve(__dirname, '../packages/extensions/extension-ad/src/frontend');
 
 export default defineConfig({
@@ -23,40 +23,26 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // frontend self alias
       '@': resolve(__dirname, 'src'),
-      // base package frontend entry
+      // Vue SFC 入口 → 源码（Vite 原生处理 .vue）
       'moyan-mfw-base/frontend': baseFrontendSrc,
-      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
-      // extension-ad package
       'moyan-mfw-extension-ad/frontend': adFrontendSrc,
-      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
-      // @internal workspace packages → source (for dev mode, bypass dist)
       '@internal/base-frontend': baseFrontendSrc,
-      '@internal/base-shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
-      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
+      // shared 模块 → 已编译的 dist/CJS（由 optimizeDeps 预打包为 ESM）
+      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/dist/shared'),
+      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/dist/shared'),
+      '@internal/base-shared': resolve(__dirname, '../packages/base/dist/shared'),
+      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/dist/shared'),
     },
   },
   server: {
     port: 5173,
     host: true,
     proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/v1': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/docs': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/docs-json': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
+      '/api': { target: 'http://localhost:3000', changeOrigin: true },
+      '/v1': { target: 'http://localhost:3000', changeOrigin: true },
+      '/docs': { target: 'http://localhost:3000', changeOrigin: true },
+      '/docs-json': { target: 'http://localhost:3000', changeOrigin: true },
     },
   },
   build: {
@@ -71,13 +57,9 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
-    exclude: [
-      // workspace shared 模块不能预构建 —
-      // esbuild 打包 decorator.ts→registry.ts 链时因 reflect-metadata
-      // 解析失败导致导出丢失（DictEntry 等），排除后 Vite 按需逐文件 serve
-      'moyan-mfw-base/shared',
-      'moyan-mfw-extension-ad/shared',
+    include: [
+      'vue-router', 'element-plus', '@element-plus/icons-vue',
+      'reflect-metadata',
       '@internal/base-shared',
       '@internal/ad-shared',
     ],
