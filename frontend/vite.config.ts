@@ -28,7 +28,7 @@ export default defineConfig({
       'moyan-mfw-base/frontend': baseFrontendSrc,
       'moyan-mfw-extension-ad/frontend': adFrontendSrc,
       '@internal/base-frontend': baseFrontendSrc,
-      // shared 模块 → 源码（已安装 reflect-metadata，esbuild transform 正常）
+      // shared 模块 → 源码（已安装 reflect-metadata）
       'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
       '@internal/base-shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
@@ -57,6 +57,11 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
+    include: [
+      'vue-router', 'element-plus', '@element-plus/icons-vue',
+      '@internal/base-shared',
+      '@internal/ad-shared',
+      'reflect-metadata',
+    ],
   },
 });
