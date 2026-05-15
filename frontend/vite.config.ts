@@ -28,11 +28,11 @@ export default defineConfig({
       'moyan-mfw-base/frontend': baseFrontendSrc,
       'moyan-mfw-extension-ad/frontend': adFrontendSrc,
       '@internal/base-frontend': baseFrontendSrc,
-      // shared 模块 → 已编译的 dist/CJS（由 optimizeDeps 预打包为 ESM）
-      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/dist/shared'),
-      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/dist/shared'),
-      '@internal/base-shared': resolve(__dirname, '../packages/base/dist/shared'),
-      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/dist/shared'),
+      // shared 模块 → 源码（已安装 reflect-metadata，esbuild transform 正常）
+      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
+      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
+      '@internal/base-shared': resolve(__dirname, '../packages/base/src/shared/index.ts'),
+      '@internal/ad-shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/index.ts'),
     },
   },
   server: {
@@ -57,11 +57,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: [
-      'vue-router', 'element-plus', '@element-plus/icons-vue',
-      'reflect-metadata',
-      '@internal/base-shared',
-      '@internal/ad-shared',
-    ],
+    include: ['vue-router', 'element-plus', '@element-plus/icons-vue'],
   },
 });
