@@ -5,7 +5,8 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "scripts": {
-    "build": "vite build --config ../../vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "build": "vite build --config ../../vite.config.mts",
+    "build:types": "vue-tsc --emitDeclarationOnly -p tsconfig.json",
     "dev": "vite --config ../../vite.config.mts"
   },
   "dependencies": {
