@@ -1,0 +1,20 @@
+{
+  "extends": "../../../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "composite": true,
+    "outDir": "../../dist/frontend",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    },
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "allowImportingTsExtensions": true,
+    "types": ["vite/client", "node"]
+  },
+  "include": ["./**/*.ts", "./**/*.tsx", "./**/*.vue", "./**/*.json"],
+  "exclude": ["node_modules"]
+}
