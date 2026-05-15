@@ -6,7 +6,7 @@
   "exports": {
     "./backend": "./src/backend/src/index.ts",
     "./frontend": "./src/frontend/src/index.ts",
-    "./shared": "./src/shared/index.ts"
+    "./shared": "./src/shared/src/index.ts"
   },
   "scripts": {
     "build:backend": "cd src/backend && tsc -p tsconfig.json",
