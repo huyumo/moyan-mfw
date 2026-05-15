@@ -1,0 +1,47 @@
+{
+  "name": "moyan-mfw-extension-ad",
+  "version": "0.1.0",
+  "description": "MFW 广告管理扩展包",
+  "private": true,
+  "exports": {
+    "./backend": "./src/backend/src/index.ts",
+    "./frontend": "./src/frontend/src/index.ts",
+    "./shared": "./src/shared/index.ts"
+  },
+  "scripts": {
+    "build:backend": "cd src/backend && tsc -p tsconfig.json",
+    "build:frontend": "cd src/frontend && vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "build": "pnpm run build:backend && pnpm run build:frontend",
+    "dev:backend": "cd src/backend && nest start --watch",
+    "dev:frontend": "cd src/frontend && vite --config vite.config.mts",
+    "typecheck:backend": "cd src/backend && tsc --noEmit -p tsconfig.json",
+    "typecheck:frontend": "cd src/frontend && vue-tsc --noEmit -p tsconfig.json",
+    "typecheck": "pnpm run typecheck:backend && pnpm run typecheck:frontend"
+  },
+  "dependencies": {
+    "typeorm": "catalog:",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "element-plus": "catalog:",
+    "@element-plus/icons-vue": "catalog:",
+    "moyan-mfw-base": "workspace:*"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "vite": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "vue-tsc": "catalog:",
+    "sass": "catalog:",
+    "typescript": "catalog:"
+  }
+}
