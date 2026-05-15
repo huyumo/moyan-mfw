@@ -10,7 +10,9 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
       'moyan-mfw-base/frontend': resolve(__dirname, '../packages/base/src/frontend/src'),
+      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/src/index.ts'),
       'moyan-mfw-extension-ad/frontend': resolve(__dirname, '../packages/extensions/extension-ad/src/frontend/src'),
+      'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/src/index.ts'),
     },
   },
   server: {
