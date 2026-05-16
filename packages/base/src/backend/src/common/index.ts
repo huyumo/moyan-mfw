@@ -66,9 +66,9 @@ export type {
 } from './types/common.types';
 export type {
   ApiResponse,
-  ApiResponseUtil,
   ErrorResponse,
 } from './types/api.types';
+export { ApiResponseUtil } from './types/api.types';
 export {
   ImageResourceDto,
   MediaResourceDto,

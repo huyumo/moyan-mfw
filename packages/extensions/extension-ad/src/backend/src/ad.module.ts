@@ -4,22 +4,21 @@
  */
 
 import { Module } from '@nestjs/common'
-import { AdCoreModule } from './ad-core.module'
 import { AdPlacementController } from './controller/ad-placement.controller'
 import { AdController } from './controller/ad.controller'
+import { RouterModule } from '@nestjs/core'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { Ad, AdPlacement } from './entities'
+import { AdPlacementService, AdService } from './service'
 
 @Module({
-  imports: [AdCoreModule],
+  imports: [
+    TypeOrmModule.forFeature([AdPlacement, Ad]),
+    RouterModule.register([{ path: 'ext/ad', module: AdModule }]),
+  ],
   controllers: [AdPlacementController, AdController],
-  exports: [AdCoreModule],
-})
-export class AdModule {}
+  providers: [AdPlacementService, AdService],
+  exports: [AdPlacementService, AdService],
 
-/**
- * 广告模块路由前缀配置
- * @description 固化扩展包的接口路由前缀，业务层直接引用即可，无需关心具体值
- */
-export const adModuleRoute = {
-  path: 'ext/ad',
-  module: AdModule,
-} as const
+})
+export class AdModule { }
