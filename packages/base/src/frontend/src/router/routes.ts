@@ -67,6 +67,8 @@ export interface PageConfig<T extends string = PermissionName> {
   permissions?: T[];
   /** 权限值（由 definePageConfig 根据 permissions 自动计算，请勿手动设置） */
   permissionValue?: bigint;
+  /** 权限编码（如 'ext:ad:placement'），定义后直接使用，否则由后端生成 */
+  permCode?: string;
   /** 子页面配置 */
   children?: PageConfig<T>[];
 }
@@ -115,15 +117,19 @@ export function definePageConfig<T extends string = PermissionName>(
  * @param allConfigs - import.meta.glob 扫描结果
  * @param options.skipPaths - 需要跳过的路径（如 '/not-found/', '/forbidden/'）
  * @param options.minSegments - 页面配置所需的最小路径段数（默认 2，跳过只有 1 层的路径）
+ * @param options.routePrefix - 路由路径前缀（如 '/ext/ad'），用于扩展包区分路由命名空间
  */
 export function buildRoutesFromConfigs(
   allConfigs: Record<string, unknown>,
   options: {
     skipPaths?: string[];
     minSegments?: number;
+    routePrefix?: string;
   } = {}
 ): RouteRecordRaw[] {
-  const { skipPaths = ['/not-found/', '/forbidden/', '/login/', '/install/', '/route-group/'], minSegments = 2 } = options;
+  const { skipPaths = ['/not-found/', '/forbidden/', '/login/', '/install/', '/route-group/'], minSegments = 2, routePrefix } = options;
+  const prefixPath = routePrefix ? routePrefix.replace(/^\/+|\/+$/g, '') : '';
+  const prefixName = prefixPath ? prefixPath.replace(/[^a-zA-Z0-9]+/g, '_') : '';
 
   // 步骤 1：分离模块配置和页面配置
   const moduleMap = new Map<string, ModuleConfig>();
@@ -167,10 +173,12 @@ export function buildRoutesFromConfigs(
     // 路由路径：有模块前缀时保留（如 'sys/user'），无模块时直接使用页面路径（如 'dashboard'）
     const pagePath = config.path || segments[segments.length - 1] || '';
     const routePath = modulePath ? `${modulePath}/${pagePath}` : pagePath;
+    const fullPath = prefixPath ? `${prefixPath}/${routePath}` : routePath;
+    const fullName = `Route_${prefixName ? prefixName + '_' : ''}${segments.join('_')}`;
 
     const route: RouteRecordRaw = {
-      path: routePath,
-      name: `Route_${segments.join('_')}` || 'Root',
+      path: fullPath,
+      name: fullName || 'Root',
       component: config.page as RouteRecordRaw['component'],
       meta: {
         title: config.name,
@@ -181,6 +189,7 @@ export function buildRoutesFromConfigs(
         hidden: config.hidden,
         permissions: config.permissions,
         permissionValue: config.permissionValue?.toString(),
+        permCode: config.permCode,
         // 将模块信息注入 meta，供菜单构建时按模块分组
         ...(moduleConfig
           ? {
@@ -216,9 +225,11 @@ export function buildRoutesFromConfigs(
       });
 
       routes.push({
-        path: modulePath,
-        name: `Module_${modulePath}`,
-        redirect: firstChildRoute?.name ? { name: firstChildRoute.name as string } : `/${modulePath}`,
+        path: prefixPath ? `${prefixPath}/${modulePath}` : modulePath,
+        name: `Module_${prefixName ? prefixName + '_' : ''}${modulePath}`,
+        redirect: firstChildRoute?.name
+          ? { name: firstChildRoute.name as string }
+          : `/${prefixPath ? `${prefixPath}/${modulePath}` : modulePath}`,
         meta: {
           title: moduleConfig.name,
           menuLabel: moduleConfig.name,

@@ -182,20 +182,21 @@ export function setupRouteGuard(router: Router): void {
  * @returns 是否有权限
  */
 function checkPagePermission(to: RouteLocationNormalized, authStore: ReturnType<typeof useAuthStore>): boolean {
-  // 如果页面标记为不需要认证，直接通过
   if (to.meta.requiresAuth === false) {
     return true;
   }
 
-  // 如果页面标记为菜单页面，检查权限菜单
   if (to.meta.menu !== false) {
     const permissionMenu = authStore.permissionMenu;
     if (permissionMenu.length === 0) {
-      // 没有权限菜单数据，暂时允许通过（可能在加载中）
       return true;
     }
 
-    // 检查路由路径是否在权限菜单中
+    const permCode = to.meta.permCode as string | undefined;
+    if (permCode) {
+      return checkPermCodeInMenu(permCode, permissionMenu);
+    }
+
     const routePath = to.path;
     const hasPermission = checkRouteInMenu(routePath, permissionMenu);
     if (!hasPermission) {
@@ -214,14 +215,33 @@ function checkPagePermission(to: RouteLocationNormalized, authStore: ReturnType<
  */
 function checkRouteInMenu(routePath: string, menu: any[]): boolean {
   for (const item of menu) {
-    // 检查当前节点的路由路径
     if (item.routePath === routePath) {
       return true;
     }
 
-    // 递归检查子节点
     if (item.children && item.children.length > 0) {
       if (checkRouteInMenu(routePath, item.children)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * 检查权限编码是否在权限菜单中
+ * @param permCode 权限编码
+ * @param menu 权限菜单
+ * @returns 是否在菜单中
+ */
+function checkPermCodeInMenu(permCode: string, menu: any[]): boolean {
+  for (const item of menu) {
+    if (item.permCode === permCode) {
+      return true;
+    }
+
+    if (item.children && item.children.length > 0) {
+      if (checkPermCodeInMenu(permCode, item.children)) {
         return true;
       }
     }

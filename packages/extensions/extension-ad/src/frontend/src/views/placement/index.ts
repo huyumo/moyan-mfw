@@ -8,5 +8,6 @@ export default definePageConfig({
   icon: 'CollectionTag',
   auth: true,
   order: 1,
+  permCode:'ext:ad:placement',
   permissions: ['添加', '编辑', '删除'],
 })
