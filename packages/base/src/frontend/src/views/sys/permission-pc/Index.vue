@@ -125,19 +125,37 @@ const buildRouteTree = (flatRoutes: Array<{ path: string; name: string; permissi
     const depth = pathSegments.length;
 
     if (depth === 1) {
-      // 顶级路由，作为根节点
       rootNodes.push(node);
     } else {
-      // 查找父节点路径
       const parentPath = '/' + pathSegments.slice(0, -1).join('/');
       const parent = nodeMap.get(parentPath);
 
       if (parent) {
-        // 父节点存在，挂载到父节点下
         parent.children!.push(node);
       } else {
-        // 父节点不存在，作为根节点（可能是路径不连续）
-        rootNodes.push(node);
+        let childNode: typeof node = node;
+        for (let i = depth - 2; i >= 0; i--) {
+          const ancestorPath = '/' + pathSegments.slice(0, i + 1).join('/');
+          let ancestorNode = nodeMap.get(ancestorPath);
+
+          if (!ancestorNode) {
+            ancestorNode = {
+              path: ancestorPath,
+              name: pathSegments[i],
+              children: [],
+            };
+            nodeMap.set(ancestorPath, ancestorNode);
+
+            if (i === 0) {
+              rootNodes.push(ancestorNode);
+            }
+          }
+
+          if (!ancestorNode.children!.includes(childNode)) {
+            ancestorNode.children!.push(childNode);
+          }
+          childNode = ancestorNode;
+        }
       }
     }
   }
