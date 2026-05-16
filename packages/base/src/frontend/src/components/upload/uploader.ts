@@ -80,7 +80,21 @@ export class FormUploader extends BaseUploader {
             reject(error);
           }
         } else {
-          const error = new Error(`上传失败：${xhr.statusText}`);
+          let errorMessage = `上传失败：${xhr.statusText}`;
+          try {
+            const response = JSON.parse(xhr.responseText);
+            if (response.message) {
+              errorMessage = response.message;
+            }
+            if (xhr.status === 401) {
+              errorMessage = '请先登录后再上传文件';
+            }
+          } catch {
+            if (xhr.status === 401) {
+              errorMessage = '请先登录后再上传文件';
+            }
+          }
+          const error = new Error(errorMessage);
           onError?.(error);
           reject(error);
         }

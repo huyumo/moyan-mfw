@@ -41,7 +41,6 @@ export class UploadFileController {
   @ApiOperation({ summary: '上传单个文件', description: '上传单个文件，返回可访问的 URL' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: '上传成功' })
-  @AuditLog({ module: 'UPLOAD', event: 'UPLOAD_FILE', description: '上传文件' })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,

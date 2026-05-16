@@ -1,10 +1,10 @@
-﻿/**
+/**
  * @fileoverview 广告内容实体
  * @description 定义广告位中的具体广告内容
  */
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, ManyToOne, JoinColumn } from 'typeorm'
-import { Base } from 'moyan-mfw-base/backend'
+import { Base, ImageResourceDto, MediaResourceDto } from 'moyan-mfw-base/backend'
 import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
 import { AdPlacement } from './ad-placement.entity'
 
@@ -23,8 +23,20 @@ export class Ad extends Base {
   @Column({ type: 'varchar', length: 128, comment: '广告标题' })
   title: string
 
-  @Column({ type: 'varchar', length: 500, comment: '广告图片 URL' })
-  imageUrl: string
+  @Column({
+    type: 'enum',
+    enum: ['image', 'video'],
+    default: 'image',
+    comment: '媒体类型'
+  })
+  mediaType: 'image' | 'video'
+
+  @Column({
+    type: 'json',
+    nullable: true,
+    comment: '媒体资源（图片或视频）'
+  })
+  media: ImageResourceDto | MediaResourceDto
 
   @Column({ type: 'varchar', length: 500, nullable: true, comment: '跳转链接' })
   linkUrl: string
