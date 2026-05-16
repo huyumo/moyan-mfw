@@ -9,9 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      'moyan-mfw-base/frontend/styles': resolve(__dirname, '../../../base/src/frontend/src/styles'),
-      'moyan-mfw-base/frontend': resolve(__dirname, '../../../base/src/frontend/src/index.ts'),
-      'moyan-mfw-base/shared': resolve(__dirname, '../../../base/src/shared/src/index.ts'),
+      'moyan-mfw-base/frontend/styles': resolve(__dirname, '../../../../base/src/frontend/src/styles'),
+      'moyan-mfw-base/frontend': resolve(__dirname, '../../../../base/src/frontend/src/index.ts'),
+      'moyan-mfw-base/shared': resolve(__dirname, '../../../../base/src/shared/src/index.ts'),
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../shared/src/index.ts'),
     },
   },
