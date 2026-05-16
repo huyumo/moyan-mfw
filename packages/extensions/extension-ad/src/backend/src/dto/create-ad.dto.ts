@@ -4,7 +4,9 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsInt, IsDateString, IsIn, Min, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsString, IsOptional, IsUUID, IsInt, IsDateString, IsIn, Min, MaxLength, IsEnum, ValidateNested, ValidateIf } from 'class-validator'
+import { Type } from 'class-transformer'
+import { ImageResourceDto, MediaResourceDto } from 'moyan-mfw-base/backend'
 
 export class CreateAdDto {
   @ApiProperty({ description: '广告位 ID' })
@@ -18,11 +20,15 @@ export class CreateAdDto {
   @MaxLength(128, { message: '标题长度不能超过 128 个字符' })
   title: string
 
-  @ApiProperty({ description: '广告图片 URL' })
-  @IsNotEmpty({ message: '广告图片不能为空' })
-  @IsString()
-  @MaxLength(500)
-  imageUrl: string
+  @ApiProperty({ description: '媒体类型', enum: ['image', 'video'], default: 'image' })
+  @IsEnum(['image', 'video'])
+  mediaType: 'image' | 'video'
+
+  @ApiProperty({ description: '媒体资源（图片或视频）' })
+  @IsNotEmpty({ message: '媒体资源不能为空' })
+  @ValidateNested()
+  @Type(() => Object)
+  media: ImageResourceDto | MediaResourceDto
 
   @ApiProperty({ description: '跳转类型', enum: ['miniapp', 'internal', 'external'], example: 'miniapp' })
   @IsNotEmpty({ message: '跳转类型不能为空' })

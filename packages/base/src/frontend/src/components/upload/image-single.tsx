@@ -116,9 +116,14 @@ export default defineComponent({
         URL.revokeObjectURL(pendingImageUrl.value);
         pendingImageUrl.value = '';
       }
-      const file = pendingFile.value;
+      const originalFile = pendingFile.value;
       pendingFile.value = null;
-      await handleUpload(blob);
+      
+      const ext = originalFile?.name?.split('.').pop() || 'jpg';
+      const fileName = originalFile?.name || `cropped-image.${ext}`;
+      const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+      
+      await handleUpload(file);
     };
 
     const handleRemove = (e: Event) => {

@@ -58,18 +58,33 @@ export type UpdateAdPlacementDto = {
   sortOrder?: number // 排序号
 }
 
+export type ImageResource = {
+  src: string
+  width: number
+  height: number
+}
+
+export type MediaResource = {
+  url: string
+  name: string
+  type: string
+  size?: number
+  duration?: number
+}
+
 export type CreateAdDto = {
-  placementId: string // 广告位 ID
-  title: string // 广告标题
-  imageUrl: string // 广告图片 URL
-  linkType: string // 跳转类型
-  linkUrl?: string // 跳转链接
-  miniAppId?: string // 小程序 AppId（linkType=miniapp 时）
-  miniAppPath?: string // 小程序路径（linkType=miniapp 时）
-  internalRoute?: string // App 内部路由路径（linkType=internal 时）
-  startTime?: string // 投放开始时间
-  endTime?: string // 投放结束时间
-  sortOrder: number // 排序号
+  placementId: string
+  title: string
+  mediaType: 'image' | 'video'
+  media: ImageResource | MediaResource
+  linkType: string
+  linkUrl?: string
+  miniAppId?: string
+  miniAppPath?: string
+  internalRoute?: string
+  startTime?: string
+  endTime?: string
+  sortOrder: number
 }
 
 export type AdPlacementBriefDto = {
@@ -79,36 +94,38 @@ export type AdPlacementBriefDto = {
 }
 
 export type AdResponseDto = {
-  id: string // 广告 ID
-  placementId: string // 所属广告位 ID
-  placement: AdPlacementBriefDto // 所属广告位简要信息
-  title: string // 广告标题
-  imageUrl: string // 广告图片 URL
-  linkUrl: string // 跳转链接
-  linkType: string // 跳转类型: miniapp | internal | external
-  miniAppId: string // 小程序 AppId（linkType=miniapp 时）
-  miniAppPath: string // 小程序路径（linkType=miniapp 时）
-  internalRoute: string // App 内部路由路径（linkType=internal 时）
-  startTime: string // 投放开始时间
-  endTime: string // 投放结束时间
-  status: number // 状态: 1=启用 0=禁用
-  sortOrder: number // 排序号
-  createdAt: string // 创建时间
-  updateAt: string // 更新时间
+  id: string
+  placementId: string
+  placement: AdPlacementBriefDto
+  title: string
+  mediaType: 'image' | 'video'
+  media: ImageResource | MediaResource
+  linkUrl?: string
+  linkType: string
+  miniAppId?: string
+  miniAppPath?: string
+  internalRoute?: string
+  startTime?: string
+  endTime?: string
+  status: number
+  sortOrder: number
+  createdAt: string
+  updateAt: string
 }
 
 export type UpdateAdDto = {
-  title?: string // 广告标题
-  imageUrl?: string // 广告图片 URL
-  linkType?: string // 跳转类型
-  linkUrl?: string // 跳转链接
-  miniAppId?: string // 小程序 AppId
-  miniAppPath?: string // 小程序路径
-  internalRoute?: string // App 内部路由路径
-  startTime?: string // 投放开始时间
-  endTime?: string // 投放结束时间
-  status?: number // 状态: 1=启用 0=禁用
-  sortOrder?: number // 排序号
+  title?: string
+  mediaType?: 'image' | 'video'
+  media?: ImageResource | MediaResource
+  linkType?: string
+  linkUrl?: string
+  miniAppId?: string
+  miniAppPath?: string
+  internalRoute?: string
+  startTime?: string
+  endTime?: string
+  status?: number
+  sortOrder?: number
 }
 
 export type SortItem = {

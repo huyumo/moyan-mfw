@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { classToPlain } from 'class-transformer';
+import { instanceToPlain } from 'class-transformer';
 
 /**
  * 标准响应接口
@@ -47,7 +47,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
     return next.handle().pipe(
       map((data) => {
         // 使用 classToPlain 转换 DTO，触发 @Transform 装饰器
-        const plainData = classToPlain(data);
+        const plainData = instanceToPlain(data);
 
         // 如果数据已经是标准响应格式（包含 code 字段），直接返回
         if (plainData && typeof plainData === 'object' && 'code' in plainData) {

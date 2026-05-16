@@ -9,14 +9,14 @@
     <!-- 轮播预览区 -->
     <div class="carousel-wrapper" :style="carouselStyle">
       <el-carousel
-        v-if="ads.length > 0"
+        v-if="imageAds.length > 0"
         :height="carouselHeight"
         :autoplay="true"
         :interval="3000"
         indicator-position="none"
       >
-        <el-carousel-item v-for="ad in ads" :key="ad.id">
-          <img :src="ad.imageUrl" :alt="ad.title" class="ad-image" />
+        <el-carousel-item v-for="ad in imageAds" :key="ad.id">
+          <img :src="getAdImageSrc(ad)" :alt="ad.title" class="ad-image" />
         </el-carousel-item>
       </el-carousel>
       <div v-else class="empty-placeholder">
@@ -94,10 +94,10 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Picture } from '@element-plus/icons-vue'
+import { Picture, VideoPlay } from '@element-plus/icons-vue'
 import { StatusDict, toItems } from 'moyan-mfw-base/shared'
 import { MfwDictFormat } from 'moyan-mfw-base/frontend'
-import type { AdPlacementResponseDto, AdResponseDto } from '../../apis/ad/schemas'
+import type { AdPlacementResponseDto, AdResponseDto, ImageResource } from '../../apis/ad/schemas'
 
 interface Props {
   placement: AdPlacementResponseDto
@@ -129,6 +129,17 @@ const carouselHeight = computed(() => {
 const carouselStyle = computed(() => ({
   height: `${carouselHeight.value}px`
 }))
+
+const imageAds = computed(() => {
+  return props.ads.filter(ad => ad.mediaType === 'image' && ad.media)
+})
+
+const getAdImageSrc = (ad: AdResponseDto): string => {
+  if (ad.mediaType === 'image' && ad.media) {
+    return (ad.media as ImageResource).src
+  }
+  return ''
+}
 
 const handleManageAds = () => {
   emit('manage-ads', props.placement)

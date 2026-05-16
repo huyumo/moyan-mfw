@@ -11,25 +11,26 @@
     "build:api": "tsx api.build.cjs"
   },
   "dependencies": {
-    "@internal/base-shared": "workspace:*",
-    "@internal/ad-shared": "workspace:*",
-    "moyan-mfw-base": "workspace:*",
-    "moyan-mfw-extension-ad": "workspace:*",
-    "vue": "catalog:",
-    "vue-router": "catalog:",
-    "element-plus": "catalog:",
     "@element-plus/icons-vue": "catalog:",
-    "pinia": "catalog:",
+    "@internal/ad-shared": "workspace:*",
+    "@internal/base-shared": "workspace:*",
     "@vueuse/core": "catalog:",
     "axios": "catalog:",
-    "moyan-api": "catalog:"
+    "element-plus": "catalog:",
+    "moyan-api": "catalog:",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-ad": "workspace:*",
+    "pinia": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
-    "vite": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "@vitejs/plugin-vue-jsx": "catalog:",
-    "vue-tsc": "catalog:",
     "sass": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

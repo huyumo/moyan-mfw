@@ -5,12 +5,7 @@
  */
 -->
 <template>
-  <MfwFormCard
-    ref="formRef"
-    :form-data="form"
-    :template="formTemplate"
-    :form-props="{ labelWidth: '100px' }"
-  />
+  <MfwFormCard ref="formRef" :form-data="form" :template="formTemplate" :form-props="{ labelWidth: '100px' }" />
 </template>
 
 <script setup lang="ts">
@@ -42,22 +37,34 @@ const form = reactive({
 })
 
 const formTemplate = computed<FormItemConfig[]>(() => [
-  { key: 'name', label: '广告位名称', component: 'el-input',
+  {
+    key: 'name', label: '广告位名称', component: 'el-input',
     rules: [{ required: true, message: '请输入广告位名称', trigger: 'blur' }],
-    elProps: { placeholder: '如 首页顶部横幅', clearable: true } },
-  { key: 'code', label: '广告位编码', component: 'el-input',
+    elProps: { placeholder: '如 首页顶部横幅', clearable: true }
+  },
+  {
+    key: 'code', label: '广告位编码', component: 'el-input',
     rules: [{ required: true, message: '请输入广告位编码', trigger: 'blur' }],
-    elProps: { placeholder: '如 home-top-banner', clearable: true } },
-  { key: 'width', label: '宽度(px)', component: 'el-input-number',
+    elProps: { placeholder: '如 home-top-banner', clearable: true }
+  },
+  {
+    key: 'width', label: '宽度(px)', component: 'el-input-number',
     rules: [{ required: true, message: '请输入宽度', trigger: 'blur' }],
-    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 750' } },
-  { key: 'height', label: '高度(px)', component: 'el-input-number',
+    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 750' }
+  },
+  {
+    key: 'height', label: '高度(px)', component: 'el-input-number',
     rules: [{ required: true, message: '请输入高度', trigger: 'blur' }],
-    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 300' } },
-  { key: 'description', label: '描述', component: 'el-input',
-    elProps: { placeholder: '请输入描述', type: 'textarea', rows: 2 } },
-  { key: 'sortOrder', label: '排序', component: 'el-input-number',
-    elProps: { min: 0, controlsPosition: 'right' } },
+    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 300' }
+  },
+  {
+    key: 'description', label: '描述', component: 'el-input',
+    elProps: { placeholder: '请输入描述', type: 'textarea', rows: 2 }
+  },
+  {
+    key: 'sortOrder', label: '排序', component: 'el-input-number',
+    elProps: { min: 0, controlsPosition: 'right' }
+  },
 ])
 
 const onConfirm = async () => {
