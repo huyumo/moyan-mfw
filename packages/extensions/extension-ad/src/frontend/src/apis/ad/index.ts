@@ -6,10 +6,12 @@ import type { MoMethod } from 'moyan-api'
 
 import type {
   CreateAdPlacementDto,
-  Object,
+  AdPlacementResponseDto,
   PageResponseDto,
   UpdateAdPlacementDto,
   CreateAdDto,
+  AdPlacementBriefDto,
+  AdResponseDto,
   UpdateAdDto,
   SortItem,
   BatchUpdateSortDto,
@@ -58,7 +60,7 @@ export class ApiAdPlacementFindAll extends ApiCall<
     }
   },
   PageResponseDto & {
-    list: Array<Object>
+    list: Array<AdPlacementResponseDto>
   }
 > {
   readonly path = '/api/ext/ad/ad-placements'
@@ -162,7 +164,7 @@ export class ApiAdFindAll extends ApiCall<
     }
   },
   PageResponseDto & {
-    list: Array<Object>
+    list: Array<AdResponseDto>
   }
 > {
   readonly path = '/api/ext/ad/ad-contents'

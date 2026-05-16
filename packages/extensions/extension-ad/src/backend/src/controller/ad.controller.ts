@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdService } from '../service/ad.service'
-import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto } from '../dto'
+import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto, AdResponseDto } from '../dto'
 
 @ApiTags('ad-content', '广告内容相关接口')
 @ApiBearerAuth('Authorization')
@@ -33,7 +33,7 @@ export class AdController {
 
   @Get()
   @ApiOperation({ summary: '查询广告内容列表', description: '分页查询广告内容列表' })
-  @ApiPaginatedResponse(Object)
+  @ApiPaginatedResponse(AdResponseDto)
   @RequirePermission({ permCode: 'ext:ad:*' })
   async findAll(@Query() query: QueryAdDto) {
     const result = await this.service.findAll(query)
