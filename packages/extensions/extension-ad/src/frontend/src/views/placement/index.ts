@@ -7,6 +7,6 @@ export default definePageConfig({
   name: '广告位管理',
   icon: 'CollectionTag',
   auth: true,
-  order: 2,
+  order: 1,
   permissions: ['添加', '编辑', '删除'],
 })

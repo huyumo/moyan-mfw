@@ -23,23 +23,16 @@ export class AdPlacementService {
   }
 
   async findAll(query: QueryAdPlacementDto): Promise<PaginationResult<any>> {
-    const { name, code, placementTypeId, status } = query
+    const { name, code, status } = query
     const whereBuilder = new WhereBuilder()
-    whereBuilder.like('p.name', name).like('p.code', code)
-      .eq('p.placementTypeId', placementTypeId).eq('p.status', status)
+    whereBuilder.like('p.name', name).like('p.code', code).eq('p.status', status)
     const pager = new PaginationX(this.placementRepo.manager.connection as any, query)
     const result = await pager.where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''
-        return `SELECT ${select} FROM ext_ad_placements p LEFT JOIN ext_ad_placement_types t ON p.placementTypeId = t.id ${whereClause} ${orderBy} ${limit}`
-      }).select(`p.*, JSON_OBJECT('id', t.id, 'name', t.name, 'code', t.code, 'width', t.width, 'height', t.height) as placementType`)
+        return `SELECT ${select} FROM ext_ad_placements p ${whereClause} ${orderBy} ${limit}`
+      }).select('p.*')
       .defaultOrderBy('p.sortOrder ASC, p.createdAt DESC').getData()
-    if (result.data?.length) {
-      result.data = result.data.map((item: any) => ({
-        ...item,
-        placementType: item.placementType ? JSON.parse(item.placementType) : null,
-      }))
-    }
     return result
   }
 

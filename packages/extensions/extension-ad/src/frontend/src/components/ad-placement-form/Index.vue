@@ -14,28 +14,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base/frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
-import { ApiAdPlacementCreate, ApiAdPlacementUpdate, ApiAdPlacementTypeFindAll } from '../../apis/ad'
+import { ApiAdPlacementCreate, ApiAdPlacementUpdate } from '../../apis/ad'
 
 const props = defineProps<{
   id?: string
   name?: string
   code?: string
-  placementTypeId?: string
+  width?: number
+  height?: number
   description?: string
   sortOrder?: number
 }>()
 defineOptions({ name: 'MfwAdPlacementForm' })
 const formRef = ref<MfwFormCardInstance>()
 const isEdit = computed(() => !!props?.id)
-const typeOptions = ref<{ label: string; value: string }[]>([])
 
 const form = reactive({
   name: props?.name || '',
   code: props?.code || '',
-  placementTypeId: props?.placementTypeId || '',
+  width: props?.width ?? 750,
+  height: props?.height ?? 300,
   description: props?.description || '',
   sortOrder: props?.sortOrder ?? 0,
 })
@@ -47,20 +48,17 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   { key: 'code', label: '广告位编码', component: 'el-input',
     rules: [{ required: true, message: '请输入广告位编码', trigger: 'blur' }],
     elProps: { placeholder: '如 home-top-banner', clearable: true } },
-  { key: 'placementTypeId', label: '类型配置', component: 'el-select',
-    rules: [{ required: true, message: '请选择类型配置', trigger: 'change' }],
-    elProps: { placeholder: '请选择广告位类型', options: typeOptions.value, filterable: true } },
+  { key: 'width', label: '宽度(px)', component: 'el-input-number',
+    rules: [{ required: true, message: '请输入宽度', trigger: 'blur' }],
+    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 750' } },
+  { key: 'height', label: '高度(px)', component: 'el-input-number',
+    rules: [{ required: true, message: '请输入高度', trigger: 'blur' }],
+    elProps: { min: 1, controlsPosition: 'right', placeholder: '如 300' } },
   { key: 'description', label: '描述', component: 'el-input',
     elProps: { placeholder: '请输入描述', type: 'textarea', rows: 2 } },
   { key: 'sortOrder', label: '排序', component: 'el-input-number',
     elProps: { min: 0, controlsPosition: 'right' } },
 ])
-
-onMounted(async () => {
-  const res = await new ApiAdPlacementTypeFindAll({ query: { page: 1, pageSize: 999, status: 1 } })
-  const list = res.list || []
-  typeOptions.value = list.map((t: any) => ({ label: `${t.name} (${t.width}x${t.height})`, value: t.id }))
-})
 
 const onConfirm = async () => {
   const valid = await formRef.value?.validate()

@@ -17,12 +17,12 @@ export type array = Array<unknown>
 export type text = string
 export type decimal = number | string
 
-export type CreateAdPlacementTypeDto = {
-  name: string // 类型名称
-  code: string // 类型编码
+export type CreateAdPlacementDto = {
+  name: string // 广告位名称
+  code: string // 广告位编码
   width: number // 宽度(px)
   height: number // 高度(px)
-  description?: string // 描述
+  description?: string // 广告位描述
   sortOrder: number // 排序号
 }
 
@@ -37,28 +37,11 @@ export type PageResponseDto = {
   hasPrev: boolean // 是否有上一页
 }
 
-export type UpdateAdPlacementTypeDto = {
-  name?: string // 类型名称
-  code?: string // 类型编码
-  width?: number // 宽度(px)
-  height?: number // 高度(px)
-  description?: string // 描述
-  status?: number // 状态: 1=启用 0=禁用
-  sortOrder?: number // 排序号
-}
-
-export type CreateAdPlacementDto = {
-  name: string // 广告位名称
-  code: string // 广告位编码
-  placementTypeId: string // 广告位类型 ID
-  description?: string // 广告位描述
-  sortOrder: number // 排序号
-}
-
 export type UpdateAdPlacementDto = {
   name?: string // 广告位名称
   code?: string // 广告位编码
-  placementTypeId?: string // 广告位类型 ID
+  width?: number // 宽度(px)
+  height?: number // 高度(px)
   description?: string // 广告位描述
   status?: number // 状态: 1=启用 0=禁用
   sortOrder?: number // 排序号
@@ -90,4 +73,13 @@ export type UpdateAdDto = {
   endTime?: string // 投放结束时间
   status?: number // 状态: 1=启用 0=禁用
   sortOrder?: number // 排序号
+}
+
+export type SortItem = {
+  id: string // 广告 ID
+  sortOrder: number // 排序号
+}
+
+export type BatchUpdateSortDto = {
+  items: Array<SortItem> // 排序项列表
 }

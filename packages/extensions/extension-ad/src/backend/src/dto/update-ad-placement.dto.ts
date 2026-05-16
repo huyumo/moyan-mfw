@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsOptional, IsString, IsUUID, IsInt, Min, MaxLength } from 'class-validator'
+import { IsOptional, IsString, IsInt, Min, MaxLength } from 'class-validator'
 
 export class UpdateAdPlacementDto {
   @ApiProperty({ description: '广告位名称', required: false })
@@ -19,10 +19,17 @@ export class UpdateAdPlacementDto {
   @MaxLength(64)
   code?: string
 
-  @ApiProperty({ description: '广告位类型 ID', required: false })
+  @ApiProperty({ description: '宽度(px)', required: false })
   @IsOptional()
-  @IsUUID()
-  placementTypeId?: string
+  @IsInt()
+  @Min(1)
+  width?: number
+
+  @ApiProperty({ description: '高度(px)', required: false })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  height?: number
 
   @ApiProperty({ description: '广告位描述', required: false })
   @IsOptional()

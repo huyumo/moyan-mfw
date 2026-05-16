@@ -11,7 +11,7 @@ const { Program } = require(path.join(moyanApiDir, 'dist', 'program.js'))
 
 const configs = [
   {
-    jsonurl: 'http://localhost:3002/api-docs/ad-json',
+    jsonurl: 'http://localhost:3002/api-docs/moyan-mfw-extension-ad-json',
     output: './src/apis',
     dirname: 'ad',
   },

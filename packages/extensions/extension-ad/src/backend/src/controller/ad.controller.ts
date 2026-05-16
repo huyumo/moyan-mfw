@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdService } from '../service/ad.service'
-import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'
+import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto } from '../dto'
 
 @ApiTags('ad-content', '广告内容相关接口')
 @ApiBearerAuth('Authorization')
@@ -66,5 +66,13 @@ export class AdController {
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.service.delete(id)
     return ApiResponseUtil.success(null, '删除成功')
+  }
+
+  @Put('batch-sort')
+  @ApiOperation({ summary: '批量更新广告排序', description: '用于广告拖拽排序后批量更新 sortOrder' })
+  @RequirePermission({ permCode: 'ad:content:update', permissionValue: ['编辑'] })
+  async batchUpdateSort(@Body() dto: BatchUpdateSortDto) {
+    await this.service.batchUpdateSort(dto)
+    return ApiResponseUtil.success(null, '排序更新成功')
   }
 }

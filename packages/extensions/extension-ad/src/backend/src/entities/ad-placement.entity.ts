@@ -3,10 +3,9 @@
  * @description 定义广告位，关联广告位类型
  */
 
-import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, Unique, Index, OneToMany } from 'typeorm'
 import { Base } from 'moyan-mfw-base/backend'
 import { toDescription, StatusDict } from 'moyan-mfw-base/shared'
-import { AdPlacementType } from './ad-placement-type.entity'
 import { Ad } from './ad.entity'
 
 @Entity('ext_ad_placements')
@@ -21,12 +20,11 @@ export class AdPlacement extends Base {
   @Column({ type: 'varchar', length: 64, comment: '广告位编码 - 唯一标识' })
   code: string
 
-  @Column({ type: 'char', length: 36, comment: '广告位类型 ID' })
-  placementTypeId: string
+  @Column({ type: 'int', comment: '宽度(px)' })
+  width: number
 
-  @ManyToOne(() => AdPlacementType)
-  @JoinColumn({ name: 'placementTypeId' })
-  placementType: AdPlacementType
+  @Column({ type: 'int', comment: '高度(px)' })
+  height: number
 
   @Column({ type: 'varchar', length: 255, nullable: true, comment: '广告位描述' })
   description: string

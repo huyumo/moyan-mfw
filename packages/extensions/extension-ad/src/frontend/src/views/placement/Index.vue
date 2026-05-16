@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 广告位管理列表页
- * @description 管理广告位及其关联的类型配置
+ * @description 管理广告位及其尺寸配置，点击行查看广告详情
  */
 -->
 <template>
@@ -18,14 +18,16 @@
       :columns="columns"
       :action-column="actionColumn"
       :load-data="loadData"
+      :row-click="handleRowClick"
     />
+
+    <AdPlacementDetail ref="detailRef" />
   </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { useRouter } from 'vue-router'
-import { Plus, Edit, Delete, Document } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
 import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
@@ -37,12 +39,12 @@ import {
   ApiAdPlacementDelete,
 } from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
-import { AD_PATHS } from 'moyan-mfw-extension-ad/shared'
+import AdPlacementDetail from '../../components/ad-placement-detail/Index.vue'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
 const listPage = ref<MfwListPageInstance>()
-const router = useRouter()
+const detailRef = ref<InstanceType<typeof AdPlacementDetail>>()
 
 const searchTemplate = [
   { key: 'name', label: '广告位名称', type: 'input' as const, placeholder: '请输入广告位名称' },
@@ -55,6 +57,9 @@ const searchTemplate = [
 const columns = [
   { prop: 'name', label: '广告位名称', minWidth: 140 },
   { prop: 'code', label: '广告位编码', minWidth: 120 },
+  { prop: 'size', label: '尺寸', width: 120,
+    render: ({ row }: any) => h('span', `${row.width}x${row.height}px`),
+  },
   { prop: 'description', label: '描述', minWidth: 180, showOverflowTooltip: true },
   { prop: 'sortOrder', label: '排序', width: 80 },
   { prop: 'status', label: '状态', width: 80,
@@ -68,18 +73,22 @@ const columns = [
 ]
 
 const actionColumn = {
-  prop: 'action', label: '操作', width: 220, fixed: 'right' as const,
+  prop: 'action', label: '操作', width: 160, fixed: 'right' as const,
   render: ({ row }: any) => renderActionButtons([
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
-    { label: '广告内容', icon: Document, onClick: handleManageAd },
     { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
-  ], { maxVisible: 3 }, row),
+  ], { maxVisible: 2 }, row),
 }
 
 const loadData = async (params: Record<string, unknown>) => {
   const res = await new ApiAdPlacementFindAll({ query: params as any })
   return (res as any).list
 }
+
+const handleRowClick = (row: any) => {
+  detailRef.value?.open(row.id, row)
+}
+
 const handleAdd = () => {
   MfwPopup.open({
     title: '新建广告位', type: 'dialog',
@@ -96,9 +105,6 @@ const handleEdit = (row: any) => {
     popupProps: { width: 550 },
     on: { confirm: listPage.value?.refresh },
   })
-}
-const handleManageAd = (row: any) => {
-  router.push(`${AD_PATHS.CONTENT}?placementId=${row.id}`)
 }
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告位「${row.name}」吗？关联的广告内容也将被清除`, '确认删除', { type: 'warning' }) }

@@ -5,11 +5,11 @@
 
 export { AdCoreModule } from './ad-core.module'
 export { AdModule, AdModule as default } from './ad.module'
-export { AdPlacementType, AdPlacement, Ad } from './entities'
-export { AdPlacementTypeService, AdPlacementService, AdService } from './service'
+export { AdPlacement, Ad } from './entities'
+export { AdPlacementService, AdService } from './service'
 export {
-  CreateAdPlacementTypeDto, UpdateAdPlacementTypeDto, QueryAdPlacementTypeDto,
   CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto,
   CreateAdDto, UpdateAdDto, QueryAdDto,
+  BatchUpdateSortDto,
 } from './dto'
 export { AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/shared'
