@@ -129,6 +129,10 @@ export default defineComponent({
     elProps: {
       type: Object as PropType<MfwListPageProps['elProps']>,
       default: () => ({})
+    },
+    /** 搜索标签宽度 */
+    searchLabelWidth: {
+      type: String as PropType<MfwListPageProps['searchLabelWidth']>
     }
   },
 
@@ -339,6 +343,7 @@ export default defineComponent({
             searchTemplate: props.searchTemplate,
             searchTrigger: resolvedSearchTrigger.value,
             loading: loading.value,
+            labelWidth: props.searchLabelWidth,
             onSearch: handleSearch,
             onReset: handleReset
           }, {

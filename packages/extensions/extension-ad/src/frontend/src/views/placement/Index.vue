@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 广告位管理列表页
- * @description 管理广告位及其尺寸配置，点击行查看广告详情
+ * @description 管理广告位及其尺寸配置，点击行查看广告详情，支持状态切换
  */
 -->
 <template>
@@ -19,32 +19,32 @@
       :action-column="actionColumn"
       :load-data="loadData"
       :row-click="handleRowClick"
+      search-label-width="100px"
     />
 
-    <AdPlacementDetail ref="detailRef" />
+    <MfwAdPlacementDetail ref="detailRef" />
   </MfwPageWrapper>
 </template>
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { Plus, Edit, Delete } from '@element-plus/icons-vue'
+import { Plus, Edit, Delete, CircleCheck, CircleClose } from '@element-plus/icons-vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
+import { MfwPageWrapper, MfwListPage, MfwDateFormat, MfwPopup, renderActionButtons } from 'moyan-mfw-base/frontend'
 import type { MfwListPageInstance } from 'moyan-mfw-base/frontend'
-import { renderActionButtons } from 'moyan-mfw-base/frontend'
 import {
   ApiAdPlacementFindAll,
-  ApiAdPlacementCreate,
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
 } from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
-import AdPlacementDetail from '../../components/ad-placement-detail/Index.vue'
+import MfwAdPlacementForm from '../../components/ad-placement-form/Index.vue'
+import MfwAdPlacementDetail from '../../components/ad-placement-detail/Index.vue'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
 const listPage = ref<MfwListPageInstance>()
-const detailRef = ref<InstanceType<typeof AdPlacementDetail>>()
+const detailRef = ref<InstanceType<typeof MfwAdPlacementDetail>>()
 
 const searchTemplate = [
   { key: 'name', label: '广告位名称', type: 'input' as const, placeholder: '请输入广告位名称' },
@@ -62,7 +62,7 @@ const columns = [
   },
   { prop: 'description', label: '描述', minWidth: 180, showOverflowTooltip: true },
   { prop: 'sortOrder', label: '排序', width: 80 },
-  { prop: 'status', label: '状态', width: 80,
+  { prop: 'status', label: '状态', width: 90,
     render: ({ row }: any) => h(ElTag, {
       type: row.status === STATUS.ENABLED ? 'success' : 'danger', size: 'small',
     }, () => row.status === STATUS.ENABLED ? '启用' : '禁用'),
@@ -73,11 +73,18 @@ const columns = [
 ]
 
 const actionColumn = {
-  prop: 'action', label: '操作', width: 160, fixed: 'right' as const,
+  prop: 'action', label: '操作', width: 200, fixed: 'right' as const,
   render: ({ row }: any) => renderActionButtons([
+    {
+      label: row.status === STATUS.ENABLED ? '禁用' : '启用',
+      type: row.status === STATUS.ENABLED ? 'warning' : 'success',
+      icon: row.status === STATUS.ENABLED ? CircleClose : CircleCheck,
+      onClick: handleToggleStatus,
+      permission: ['编辑'],
+    },
     { label: '编辑', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'] },
     { label: '删除', type: 'danger', icon: Delete, onClick: handleDelete, permission: ['删除'] },
-  ], { maxVisible: 2 }, row),
+  ], { maxVisible: 3 }, row),
 }
 
 const loadData = async (params: Record<string, unknown>) => {
@@ -92,7 +99,7 @@ const handleRowClick = (row: any) => {
 const handleAdd = () => {
   MfwPopup.open({
     title: '新建广告位', type: 'dialog',
-    component: () => import('../../components/ad-placement-form/Index.vue'),
+    component: MfwAdPlacementForm,
     popupProps: { width: 550 },
     on: { confirm: listPage.value?.refresh },
   })
@@ -100,16 +107,30 @@ const handleAdd = () => {
 const handleEdit = (row: any) => {
   MfwPopup.open({
     title: '编辑广告位', type: 'dialog',
-    component: () => import('../../components/ad-placement-form/Index.vue'),
+    component: MfwAdPlacementForm,
     data: { ...row },
     popupProps: { width: 550 },
     on: { confirm: listPage.value?.refresh },
   })
 }
+
+const handleToggleStatus = async (row: any) => {
+  const newStatus = row.status === STATUS.ENABLED ? STATUS.DISABLED : STATUS.ENABLED
+  const actionText = newStatus === STATUS.ENABLED ? '启用' : '禁用'
+  try {
+    await ElMessageBox.confirm(`确定${actionText}广告位「${row.name}」？`, `确认${actionText}`, { type: 'warning' })
+  } catch { return }
+  await new ApiAdPlacementUpdate(
+    { params: { id: row.id }, body: { status: newStatus } },
+    { hintSuccess: true, successMsg: `${actionText}成功` },
+  )
+  listPage.value?.refresh()
+}
+
 const handleDelete = async (row: any) => {
   try { await ElMessageBox.confirm(`确定删除广告位「${row.name}」吗？关联的广告内容也将被清除`, '确认删除', { type: 'warning' }) }
   catch { return }
-  await new ApiAdPlacementDelete({ params: { id: row.id } })
+  await new ApiAdPlacementDelete({ params: { id: row.id } }, { hintSuccess: true })
   listPage.value?.refresh()
 }
 </script>
