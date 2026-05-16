@@ -211,25 +211,36 @@ export function buildRoutesFromConfigs(
   // 当用户访问模块路径（如 /sys）时，自动重定向到该模块下的第一个子路由
   // 不需要 EmptyLayout，仅作 redirect 用途
   for (const [modulePath, moduleConfig] of moduleMap.entries()) {
-    const hasChildRoutes = routes.some(r => {
-      const meta = (r.meta ?? {}) as Record<string, unknown>;
-      const info = meta.moduleInfo as { modulePath: string } | undefined;
-      return info?.modulePath === modulePath;
-    });
+    const hasChildRoutes = modulePath
+      ? routes.some(r => {
+          const meta = (r.meta ?? {}) as Record<string, unknown>;
+          const info = meta.moduleInfo as { modulePath: string } | undefined;
+          return info?.modulePath === modulePath;
+        })
+      : routes.length > 0;
 
     if (hasChildRoutes) {
-      const firstChildRoute = routes.find(r => {
-        const meta = (r.meta ?? {}) as Record<string, unknown>;
-        const info = meta.moduleInfo as { modulePath: string } | undefined;
-        return info?.modulePath === modulePath;
-      });
+      const firstChildRoute = modulePath
+        ? routes.find(r => {
+            const meta = (r.meta ?? {}) as Record<string, unknown>;
+            const info = meta.moduleInfo as { modulePath: string } | undefined;
+            return info?.modulePath === modulePath;
+          })
+        : routes.find(r => {
+            const meta = (r.meta ?? {}) as Record<string, unknown>;
+            return meta?.title && meta?.menu !== false;
+          });
+
+      const moduleRedirectPath = prefixPath
+        ? (modulePath ? `${prefixPath}/${modulePath}` : prefixPath)
+        : modulePath;
 
       routes.push({
-        path: prefixPath ? `${prefixPath}/${modulePath}` : modulePath,
-        name: `Module_${prefixName ? prefixName + '_' : ''}${modulePath}`,
+        path: moduleRedirectPath,
+        name: `Module_${prefixName ? prefixName + '_' : ''}${modulePath || 'root'}`,
         redirect: firstChildRoute?.name
           ? { name: firstChildRoute.name as string }
-          : `/${prefixPath ? `${prefixPath}/${modulePath}` : modulePath}`,
+          : `/${moduleRedirectPath}`,
         meta: {
           title: moduleConfig.name,
           menuLabel: moduleConfig.name,
@@ -254,4 +265,81 @@ export function buildBasePackageRoutes(): RouteRecordRaw[] {
     import: 'default',
   });
   return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
+}
+
+/**
+ * 扩展包路由构建器：自动拼接 `ext/模块名/页面` 前缀。
+ *
+ * 生成的路径结构：
+ *   无 namespaceName → 三层：ext/ad（模块重定向）→ ext/ad/placement（页面）
+ *   有 namespaceName → 两层：ext（作为模块入口，title=namespaceName）→ ext/ad/placement（页面）
+ *
+ * @param allConfigs - `import.meta.glob('./views/.../index.{ts,tsx}')` 的扫描结果
+ * @param moduleName  - 扩展模块名（如 'ad'），自动拼接为 `/ext/${moduleName}` 前缀
+ * @param options.minSegments   - 页面最小路径段数（默认 1，允许单层路由）
+ * @param options.skipPaths     - 需要跳过的路径
+ * @param options.namespaceName - 命名空间显示名称（如 '广告管理'），存在时 ext 路由作为模块入口，不再生成 ext/moduleName 中间层
+ */
+export function buildExtensionRoutes(
+  allConfigs: Record<string, unknown>,
+  moduleName: string,
+  options?: {
+    minSegments?: number;
+    skipPaths?: string[];
+    namespaceName?: string;
+  }
+): RouteRecordRaw[] {
+  const routes = buildRoutesFromConfigs(allConfigs, {
+    ...options,
+    minSegments: options?.minSegments ?? 1,
+    routePrefix: `/ext/${moduleName}`,
+  });
+
+  const prefixPath = `ext/${moduleName}`;
+
+  if (!options?.namespaceName) {
+    const moduleConfigEntry = Object.entries(allConfigs).find(([, config]) =>
+      isModuleConfig(config)
+    );
+    const moduleDisplayName =
+      (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.name || moduleName;
+
+    const moduleRedirectRoute: RouteRecordRaw = {
+      path: prefixPath,
+      name: `Module_ext_${moduleName}`,
+      redirect: `/${prefixPath}/${routes[0]?.path?.replace(`${prefixPath}/`, '')}`,
+      meta: {
+        title: moduleDisplayName,
+        menuLabel: moduleDisplayName,
+        menuIcon: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.icon,
+        menuOrder: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.order ?? 50,
+        menu: true,
+      },
+    } as RouteRecordRaw;
+
+    if (!routes.some(r => r.path === prefixPath)) {
+      routes.unshift(moduleRedirectRoute);
+    }
+  }
+
+  if (options?.namespaceName) {
+    const moduleConfigEntry = Object.entries(allConfigs).find(([, config]) =>
+      isModuleConfig(config)
+    );
+
+    routes.push({
+      path: 'ext',
+      name: 'Namespace_ext',
+      redirect: `/${prefixPath}/${routes[0]?.path?.replace(`${prefixPath}/`, '')}`,
+      meta: {
+        title: options.namespaceName,
+        menuLabel: options.namespaceName,
+        menuIcon: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.icon,
+        menuOrder: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.order ?? 50,
+        menu: true,
+      },
+    } as RouteRecordRaw);
+  }
+
+  return routes;
 }

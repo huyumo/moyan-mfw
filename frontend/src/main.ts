@@ -5,7 +5,7 @@
 import { createBaseAdminApp, registerPermissionValues } from 'moyan-mfw-base/frontend';
 import { HeaderCommonActions } from './components/Layout';
 import { businessRoutes } from './router';
-import { adTypeRoutes, adPlacementRoutes } from 'moyan-mfw-extension-ad/frontend';
+import { adRoutes } from 'moyan-mfw-extension-ad/frontend';
 import { AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/shared';
 import './permissions'
 
@@ -13,7 +13,7 @@ registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
 
 const admin = createBaseAdminApp({
   title: '墨焱前端演示',
-  routes: [...businessRoutes, ...adTypeRoutes, ...adPlacementRoutes],
+  routes: [...businessRoutes, ...adRoutes],
   layout: {
     layoutMode: 'dual',
     showTabs: true,
