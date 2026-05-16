@@ -4,6 +4,7 @@
  */
 
 export const LINK_TYPE = {
+  NONE: 'none',
   MINIAPP: 'miniapp',
   INTERNAL: 'internal',
   EXTERNAL: 'external',
@@ -12,6 +13,7 @@ export const LINK_TYPE = {
 export type LinkType = (typeof LINK_TYPE)[keyof typeof LINK_TYPE]
 
 export const LINK_TYPE_LABELS: Record<LinkType, string> = {
+  none: '不跳转',
   miniapp: '小程序跳转',
   internal: 'App内部跳转',
   external: '外部链接跳转',

@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 广告内容表单组件
- * @description 新建/编辑广告内容的表单，支持图片/视频媒体类型和小程序/App内部/外部链接三种跳转方式
+ * @description 新建/编辑广告内容的表单，支持图片/视频媒体类型和小程序/App内部/外部链接/不跳转四种跳转方式
  */
 -->
 <template>
@@ -51,7 +51,7 @@ const form = reactive({
   mediaType: props?.mediaType || 'image' as MediaType,
   media: props?.media || undefined as ImageResource | MediaResource | undefined,
   title: props?.title || '',
-  linkType: props?.linkType || LINK_TYPE.EXTERNAL,
+  linkType: props?.linkType || LINK_TYPE.NONE,
   linkUrl: props?.linkUrl || '',
   miniAppId: props?.miniAppId || '',
   miniAppPath: props?.miniAppPath || '',

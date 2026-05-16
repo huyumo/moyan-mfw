@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 广告内容查询参数 DTO
  * @description 广告列表查询参数
  */
@@ -18,7 +18,7 @@ export class QueryAdDto extends PaginationQueryDto {
   @IsString()
   title?: string
 
-  @ApiProperty({ description: '跳转类型', enum: ['miniapp', 'internal', 'external'], required: false })
+  @ApiProperty({ description: '跳转类型', enum: ['none', 'miniapp', 'internal', 'external'], required: false })
   @IsOptional()
   @IsString()
   linkType?: string

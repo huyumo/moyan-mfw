@@ -134,8 +134,13 @@ export class PermissionGuard implements CanActivate {
     for (const options of permissionsArray) {
       const { permCode, permissionValue } = this.normalizeOptions(options);
 
+      console.log('[PermissionGuard] 检查权限:', { permCode, permissionValue: permissionValue.toString() });
+      console.log('[PermissionGuard] 用户权限映射:', Object.fromEntries([...userPermissionMap].map(([k, v]) => [k, v.toString()])));
+
       if (permCode.endsWith('*')) {
-        if (this.matchWildcard(permCode, permissionValue, userPermissionMap)) {
+        const result = this.matchWildcard(permCode, permissionValue, userPermissionMap);
+        console.log('[PermissionGuard] 通配符匹配结果:', result);
+        if (result) {
           return true;
         }
         continue;
@@ -177,11 +182,18 @@ export class PermissionGuard implements CanActivate {
   }
 
   /**
-   * 通配符权限匹配：`ext:ad:*` 匹配任意包含 `ext:ad:` 的权限编码。
+   * 通配符权限匹配
+   * @description 支持三种通配符模式：
+   *   - `ext:ad:*`      后缀通配符，匹配包含 `ext:ad:` 的权限码
+   *   - `*:ext:ad`      前缀通配符，匹配以 `ext:ad` 结尾的权限码
+   *   - `*:ext:ad:*`    前后通配符，匹配包含 `ext:ad:` 的权限码
    *
-   * 示例：permCode `pc_root:ext:ad:placement` 包含前缀 `ext:ad:` → 匹配通过
+   * @example
+   *   `*:ext:ad:*` 匹配 `pc_root:ext:ad:placement` → 通过
+   *   `ext:ad:*` 匹配 `pc_root:ext:ad:placement` → 通过
+   *   `*:ext:ad` 匹配 `pc_root:ext:ad` → 通过
    *
-   * @param wildcardPermCode - 如 'ext:ad:*'
+   * @param wildcardPermCode - 通配符权限码
    * @param requiredValue    - 需求的位运算权限值，为 0n 时仅检查是否存在
    * @param userPermissionMap - 用户权限映射
    */
@@ -190,11 +202,11 @@ export class PermissionGuard implements CanActivate {
     requiredValue: bigint,
     userPermissionMap: Map<string, bigint>,
   ): boolean {
-    const prefix = wildcardPermCode.slice(0, -1);
+    const { hasPrefixWildcard, hasSuffixWildcard, pattern } = this.parseWildcardPattern(wildcardPermCode);
 
     if (requiredValue === 0n) {
       for (const permCode of userPermissionMap.keys()) {
-        if (permCode.includes(prefix)) {
+        if (this.matchPattern(permCode, pattern, hasPrefixWildcard, hasSuffixWildcard)) {
           return true;
         }
       }
@@ -202,13 +214,69 @@ export class PermissionGuard implements CanActivate {
     }
 
     for (const [permCode, userValue] of userPermissionMap) {
-      if (permCode.includes(prefix)) {
+      if (this.matchPattern(permCode, pattern, hasPrefixWildcard, hasSuffixWildcard)) {
         if ((userValue & requiredValue) !== 0n) {
           return true;
         }
       }
     }
     return false;
+  }
+
+  /**
+   * 解析通配符模式
+   * @description 提取前缀/后缀通配符标志和中间匹配模式
+   */
+  private parseWildcardPattern(wildcardPermCode: string): {
+    hasPrefixWildcard: boolean;
+    hasSuffixWildcard: boolean;
+    pattern: string;
+  } {
+    const hasPrefixWildcard = wildcardPermCode.startsWith('*:');
+    const hasSuffixWildcard = wildcardPermCode.endsWith(':*') || wildcardPermCode.endsWith('*');
+
+    let pattern = wildcardPermCode;
+
+    if (hasPrefixWildcard) {
+      pattern = pattern.slice(2);
+    }
+    if (hasSuffixWildcard) {
+      if (pattern.endsWith(':*')) {
+        pattern = pattern.slice(0, -2);
+      } else if (pattern.endsWith('*')) {
+        pattern = pattern.slice(0, -1);
+      }
+    }
+
+    if (!pattern.endsWith(':') && hasSuffixWildcard) {
+      pattern = pattern + ':';
+    }
+
+    return { hasPrefixWildcard, hasSuffixWildcard, pattern };
+  }
+
+  /**
+   * 匹配权限码与模式
+   */
+  private matchPattern(
+    permCode: string,
+    pattern: string,
+    hasPrefixWildcard: boolean,
+    hasSuffixWildcard: boolean,
+  ): boolean {
+    if (hasPrefixWildcard && hasSuffixWildcard) {
+      return permCode.includes(pattern);
+    }
+
+    if (hasPrefixWildcard) {
+      return permCode.endsWith(pattern);
+    }
+
+    if (hasSuffixWildcard) {
+      return permCode.includes(pattern);
+    }
+
+    return permCode === pattern;
   }
 
   /**
