@@ -56,7 +56,7 @@ export class AdResponseDto {
   @Expose()
   linkUrl?: string
 
-  @ApiProperty({ description: '跳转类型: miniapp | internal | external' })
+  @ApiProperty({ description: '跳转类型: none | miniapp | internal | external' })
   @Expose()
   linkType: string
 

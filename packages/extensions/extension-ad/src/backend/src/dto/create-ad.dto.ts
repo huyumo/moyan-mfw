@@ -30,10 +30,10 @@ export class CreateAdDto {
   @Type(() => Object)
   media: ImageResourceDto | MediaResourceDto
 
-  @ApiProperty({ description: '跳转类型', enum: ['miniapp', 'internal', 'external'], example: 'miniapp' })
+  @ApiProperty({ description: '跳转类型', enum: ['none', 'miniapp', 'internal', 'external'], example: 'none' })
   @IsNotEmpty({ message: '跳转类型不能为空' })
   @IsString()
-  @IsIn(['miniapp', 'internal', 'external'], { message: '跳转类型只能是 miniapp / internal / external' })
+  @IsIn(['none', 'miniapp', 'internal', 'external'], { message: '跳转类型只能是 none / miniapp / internal / external' })
   linkType: string
 
   @ApiProperty({ description: '跳转链接', required: false })

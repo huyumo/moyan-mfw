@@ -41,7 +41,7 @@ export class Ad extends Base {
   @Column({ type: 'varchar', length: 500, nullable: true, comment: '跳转链接' })
   linkUrl: string
 
-  @Column({ type: 'varchar', length: 32, comment: '跳转类型: miniapp | internal | external' })
+  @Column({ type: 'varchar', length: 32, comment: '跳转类型: none | miniapp | internal | external' })
   @Index()
   linkType: string
 
