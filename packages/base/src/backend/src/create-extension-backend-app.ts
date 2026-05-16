@@ -69,6 +69,8 @@ export async function createExtensionBackendApp(
 
   const shortName = options.manifest.name.replace('moyan-extension-', '')
 
+  const routePath = options.manifest.routePrefix.replace(/^\/+|\/+$/g, '');
+
   const swaggerGroup = {
     name: shortName,
     title: `${options.manifest.displayName} API`,
@@ -79,6 +81,7 @@ export async function createExtensionBackendApp(
   const result = await createBaseBackendApp({
     name: options.name,
     modules: [options.module],
+    moduleRoutes: [{ path: routePath, module: options.module }],
     extraEntities: options.entities || [],
     cors: true,
     syncAppTypes: false,

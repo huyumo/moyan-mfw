@@ -37,7 +37,7 @@ export class ApiAdPlacementCreate extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-placements'
+  readonly path = '/api/ext/ad/ad-placements'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }
@@ -61,7 +61,23 @@ export class ApiAdPlacementFindAll extends ApiCall<
     list: Array<Object>
   }
 > {
-  readonly path = '/api/ad-placements'
+  readonly path = '/api/ext/ad/ad-placements'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * ad-placement|广告位相关接口->按编码获取广告位及广告（公开接口）
+ */
+export class ApiAdPlacementGetByCode extends ApiCall<
+  {
+    query: {
+      code: string //广告位编码
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/ext/ad/ad-placements/by-code'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -77,7 +93,7 @@ export class ApiAdPlacementFindById extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-placements/{id}'
+  readonly path = '/api/ext/ad/ad-placements/{id}'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -94,7 +110,7 @@ export class ApiAdPlacementUpdate extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-placements/{id}'
+  readonly path = '/api/ext/ad/ad-placements/{id}'
   readonly method: MoMethod = 'PUT'
   readonly auth = true
 }
@@ -110,7 +126,7 @@ export class ApiAdPlacementDelete extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-placements/{id}'
+  readonly path = '/api/ext/ad/ad-placements/{id}'
   readonly method: MoMethod = 'DELETE'
   readonly auth = true
 }
@@ -124,7 +140,7 @@ export class ApiAdCreate extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-contents'
+  readonly path = '/api/ext/ad/ad-contents'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }
@@ -149,7 +165,7 @@ export class ApiAdFindAll extends ApiCall<
     list: Array<Object>
   }
 > {
-  readonly path = '/api/ad-contents'
+  readonly path = '/api/ext/ad/ad-contents'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -165,7 +181,7 @@ export class ApiAdFindById extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-contents/{id}'
+  readonly path = '/api/ext/ad/ad-contents/{id}'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -182,7 +198,7 @@ export class ApiAdUpdate extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-contents/{id}'
+  readonly path = '/api/ext/ad/ad-contents/{id}'
   readonly method: MoMethod = 'PUT'
   readonly auth = true
 }
@@ -198,7 +214,7 @@ export class ApiAdDelete extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-contents/{id}'
+  readonly path = '/api/ext/ad/ad-contents/{id}'
   readonly method: MoMethod = 'DELETE'
   readonly auth = true
 }
@@ -212,7 +228,7 @@ export class ApiAdBatchUpdateSort extends ApiCall<
   },
   unknown
 > {
-  readonly path = '/api/ad-contents/batch-sort'
+  readonly path = '/api/ext/ad/ad-contents/batch-sort'
   readonly method: MoMethod = 'PUT'
   readonly auth = true
 }

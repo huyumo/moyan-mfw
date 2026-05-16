@@ -14,3 +14,12 @@ import { AdController } from './controller/ad.controller'
   exports: [AdCoreModule],
 })
 export class AdModule {}
+
+/**
+ * 广告模块路由前缀配置
+ * @description 固化扩展包的接口路由前缀，业务层直接引用即可，无需关心具体值
+ */
+export const adModuleRoute = {
+  path: 'ext/ad',
+  module: AdModule,
+} as const

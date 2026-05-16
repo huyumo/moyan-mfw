@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 广告位服务
  */
 
@@ -9,6 +9,7 @@ import { AdPlacement } from '../entities/ad-placement.entity'
 import { Ad } from '../entities/ad.entity'
 import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-mfw-base/backend'
+import { StatusDict } from 'moyan-mfw-base/shared'
 
 @Injectable()
 export class AdPlacementService {
@@ -60,5 +61,30 @@ export class AdPlacementService {
       throw new ConflictException(`该广告位下有 ${childCount} 条广告内容，请先删除关联广告内容`)
     }
     await this.placementRepo.softDelete(entity.id)
+  }
+
+  /**
+   * 按编码查询广告位及有效广告（公开接口，无需登录）
+   * @returns 广告位信息 + 当前有效的广告列表
+   */
+  async findByCodeWithAds(code: string): Promise<AdPlacement & { ads: Ad[] }> {
+    const placement = await this.placementRepo.findOne({
+      where: { code, status: StatusDict.ENABLED },
+    })
+    if (!placement) throw new NotFoundError('广告位')
+
+    const now = new Date()
+    const ads = await this.placementRepo.manager.getRepository(Ad).find({
+      where: { placementId: placement.id, status: StatusDict.ENABLED },
+      order: { sortOrder: 'ASC' },
+    })
+
+    const validAds = ads.filter((ad) => {
+      if (ad.startTime && ad.startTime > now) return false
+      if (ad.endTime && ad.endTime < now) return false
+      return true
+    })
+
+    return { ...placement, ads: validAds }
   }
 }

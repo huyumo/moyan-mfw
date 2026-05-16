@@ -41,6 +41,7 @@ export {
 export { ApiPaginatedResponse } from './decorators/api-paginated-response.decorator';
 export { User } from './decorators/user.decorator';
 export { AppId } from './decorators/app-id.decorator';
+export { SkipPermission, SKIP_PERMISSION_KEY } from './decorators/skip-permission.decorator';
 
 // Utils
 export { hashPassword, verifyPassword } from './utils/encrypt';
