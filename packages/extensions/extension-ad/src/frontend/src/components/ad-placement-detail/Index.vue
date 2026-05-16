@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 广告位详情抽屉组件
- * @description 在广告位详情中管理具体广告内容，支持拖拽排序
+ * @description 在广告位详情中管理具体广告内容，支持调整排序和状态切换
  */
 -->
 <template>
@@ -36,9 +36,23 @@
           row-key="id"
           style="width: 100%"
         >
-          <el-table-column label="" width="50">
-            <template #default>
-              <el-icon class="drag-handle" style="cursor: move"><Rank /></el-icon>
+          <el-table-column label="排序" width="120">
+            <template #default="{ row, $index }">
+              <el-button
+                size="small"
+                :icon="Top"
+                :disabled="$index === 0"
+                @click="handleMoveUp(row, $index)"
+                v-permission="'编辑'"
+              />
+              <el-button
+                size="small"
+                :icon="Bottom"
+                :disabled="$index === ads.length - 1"
+                @click="handleMoveDown(row, $index)"
+                v-permission="'编辑'"
+              />
+              <span style="margin-left: 8px; color: #909399; font-size: 12px">{{ row.sortOrder }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="title" label="广告标题" min-width="140" />
@@ -52,7 +66,6 @@
               <el-tag type="info" size="small">{{ LINK_TYPE_LABELS[row.linkType as keyof typeof LINK_TYPE_LABELS] || row.linkType }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="sortOrder" label="排序" width="80" />
           <el-table-column prop="status" label="状态" width="80">
             <template #default="{ row }">
               <el-tag :type="row.status === STATUS.ENABLED ? 'success' : 'danger'" size="small">
@@ -60,8 +73,15 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="140" fixed="right">
+          <el-table-column label="操作" width="220" fixed="right">
             <template #default="{ row }">
+              <el-button
+                type="warning" link
+                @click="handleToggleAdStatus(row)"
+                v-permission="'编辑'"
+              >
+                {{ row.status === STATUS.ENABLED ? '禁用' : '启用' }}
+              </el-button>
               <el-button type="primary" link @click="handleEditAd(row)" v-permission="'编辑'">编辑</el-button>
               <el-button type="danger" link @click="handleDeleteAd(row)" v-permission="'删除'">删除</el-button>
             </template>
@@ -73,21 +93,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
-import { Plus, Refresh, Rank } from '@element-plus/icons-vue'
+import { ref, computed } from 'vue'
+import { Plus, Refresh, Top, Bottom } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
 import { MfwPopup } from 'moyan-mfw-base/frontend'
-import { ApiAdFindAll, ApiAdCreate, ApiAdUpdate, ApiAdDelete } from '../../apis/ad'
+import { ApiAdFindAll, ApiAdUpdate, ApiAdDelete, ApiAdBatchUpdateSort } from '../../apis/ad'
 import { StatusDict } from 'moyan-mfw-base/shared'
 import { LINK_TYPE_LABELS } from 'moyan-mfw-extension-ad/shared'
+import MfwAdForm from '../ad-form/Index.vue'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementDetail' })
-
-const props = defineProps<{
-  placementId?: string
-  placementInfo?: { name: string; code: string; width: number; height: number }
-}>()
 
 const visible = ref(false)
 const loading = ref(false)
@@ -120,7 +136,7 @@ const handleAddAd = () => {
   MfwPopup.open({
     title: '新建广告',
     type: 'dialog',
-    component: () => import('../ad-form/Index.vue'),
+    component: MfwAdForm,
     data: { placementId: placementIdRef.value },
     popupProps: { width: 620 },
     on: { confirm: loadAds },
@@ -131,21 +147,62 @@ const handleEditAd = (row: any) => {
   MfwPopup.open({
     title: '编辑广告',
     type: 'dialog',
-    component: () => import('../ad-form/Index.vue'),
+    component: MfwAdForm,
     data: { ...row },
     popupProps: { width: 620 },
     on: { confirm: loadAds },
   })
 }
 
+const handleToggleAdStatus = async (row: any) => {
+  const newStatus = row.status === STATUS.ENABLED ? STATUS.DISABLED : STATUS.ENABLED
+  const actionText = newStatus === STATUS.ENABLED ? '启用' : '禁用'
+  try {
+    await ElMessageBox.confirm(`确定${actionText}广告「${row.title}」？`, `确认${actionText}`, { type: 'warning' })
+  } catch { return }
+  await new ApiAdUpdate(
+    { params: { id: row.id }, body: { status: newStatus } },
+    { hintSuccess: true, successMsg: `${actionText}成功` },
+  )
+  loadAds()
+}
+
 const handleDeleteAd = async (row: any) => {
   try {
     await ElMessageBox.confirm(`确定删除广告「${row.title}」吗？`, '确认删除', { type: 'warning' })
-  } catch {
-    return
-  }
-  await new ApiAdDelete({ params: { id: row.id } })
+  } catch { return }
+  await new ApiAdDelete({ params: { id: row.id } }, { hintSuccess: true })
   loadAds()
+}
+
+const handleMoveUp = async (row: any, index: number) => {
+  if (index === 0) return
+  const list = [...ads.value]
+  const item = list.splice(index, 1)[0]
+  list.splice(index - 1, 0, item)
+  ads.value = list
+  await batchSaveSort(list)
+}
+
+const handleMoveDown = async (row: any, index: number) => {
+  if (index >= ads.value.length - 1) return
+  const list = [...ads.value]
+  const item = list.splice(index, 1)[0]
+  list.splice(index + 1, 0, item)
+  ads.value = list
+  await batchSaveSort(list)
+}
+
+const batchSaveSort = async (list: any[]) => {
+  const items = list.map((item: any, index: number) => ({
+    id: item.id,
+    sortOrder: (list.length - index) * 10,
+  }))
+  try {
+    await new ApiAdBatchUpdateSort({ body: { items } }, { hintSuccess: true })
+  } catch {
+    loadAds()
+  }
 }
 
 const handleClose = () => {
@@ -167,8 +224,5 @@ defineExpose({ open, close: handleClose })
   margin-bottom: 16px;
   display: flex;
   gap: 8px;
-}
-.drag-handle {
-  cursor: move;
 }
 </style>

@@ -72,6 +72,11 @@ export default defineComponent({
     itemSpan: {
       type: Number,
       default: 6
+    },
+    /** 标签宽度 */
+    labelWidth: {
+      type: String,
+      default: '80px'
     }
   },
 
@@ -382,7 +387,7 @@ export default defineComponent({
             model={formData}
             inline
             class="search-panel__form"
-            labelWidth="80px"
+            labelWidth={props.labelWidth}
           >
             {visibleItems.value.map(renderFormItem)}
           </ElForm>
