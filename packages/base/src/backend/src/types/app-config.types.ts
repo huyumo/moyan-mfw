@@ -153,6 +153,14 @@ export interface CreateBaseBackendAppOptions {
   permissionValues?: string[];
   seeds?: SeedConfig[];
   modules?: Type<any>[];
+  /**
+   * 模块路由前缀配置，用于为指定模块的控制器路径添加前缀。
+   * 内部通过 NestJS RouterModule 实现，前缀格式如 'ext/ad'。
+   *
+   * @example [{ path: 'ext/ad', module: AdModule }]
+   * 效果：AdModule 中 @Controller('ad-placements') → /api/ext/ad/ad-placements
+   */
+  moduleRoutes?: Array<{ path: string; module: Type<any> }>;
   extraEntities?: Array<new (...args: any[]) => any>;
   providers?: Provider[];
   middlewares?: Array<NestMiddleware>;

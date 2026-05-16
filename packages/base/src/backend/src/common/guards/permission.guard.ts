@@ -134,23 +134,25 @@ export class PermissionGuard implements CanActivate {
     for (const options of permissionsArray) {
       const { permCode, permissionValue } = this.normalizeOptions(options);
 
+      if (permCode.endsWith('*')) {
+        if (this.matchWildcard(permCode, permissionValue, userPermissionMap)) {
+          return true;
+        }
+        continue;
+      }
+
       if (!permissionValue) {
-        // 没有指定 permissionValue，只检查 permCode
         if (userPermissionMap.has(permCode)) {
           return true;
         }
       } else {
-        // 检查用户是否有该 permCode 的权限
         const userValue = userPermissionMap.get(permCode);
         if (!userValue) {
-          continue; // 用户没有该 permCode 的权限，检查下一个装饰器
+          continue;
         }
 
-        // 位运算检查：用户权限是否包含所需权限
-        // 公式：(userValue & requiredValue) === requiredValue
-        // 或者至少包含一位：(userValue & requiredValue) !== 0n
         if ((userValue & permissionValue) !== 0n) {
-          return true; // 用户拥有至少一位匹配的权限
+          return true;
         }
       }
     }
@@ -166,13 +168,45 @@ export class PermissionGuard implements CanActivate {
     permCode: string;
     permissionValue: bigint;
   } {
-    // 字符串数组转换为 bigint
     const permissionValue = buildPerValue(options.permissionValue || []);
 
     return {
       permCode: options.permCode,
       permissionValue,
     };
+  }
+
+  /**
+   * 通配符权限匹配：`ext:ad:*` 匹配任意以 `ext:ad:` 开头的权限编码。
+   *
+   * @param wildcardPermCode - 如 'ext:ad:*'
+   * @param requiredValue    - 需求的位运算权限值，为 0n 时仅检查是否存在
+   * @param userPermissionMap - 用户权限映射
+   */
+  private matchWildcard(
+    wildcardPermCode: string,
+    requiredValue: bigint,
+    userPermissionMap: Map<string, bigint>,
+  ): boolean {
+    const prefix = wildcardPermCode.slice(0, -1);
+
+    if (requiredValue === 0n) {
+      for (const permCode of userPermissionMap.keys()) {
+        if (permCode.startsWith(prefix)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    for (const [permCode, userValue] of userPermissionMap) {
+      if (permCode.startsWith(prefix)) {
+        if ((userValue & requiredValue) !== 0n) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**

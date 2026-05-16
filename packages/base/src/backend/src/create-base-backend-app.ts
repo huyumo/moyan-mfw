@@ -149,8 +149,13 @@ async function createDynamicAppModule(
   allAppTypes: any[],
 ): Promise<any> {
   const { Module } = await import('@nestjs/common');
+  const { RouterModule } = await import('@nestjs/core');
   const { SysModule } = await import('./modules/sys/sys.module');
   const { HealthModule } = await import('./modules/health/health.module');
+
+  const routerImports = options.moduleRoutes?.length
+    ? [RouterModule.register(options.moduleRoutes.map(r => ({ path: r.path, module: r.module })))]
+    : [];
 
   @Module({
     imports: [
@@ -196,6 +201,7 @@ async function createDynamicAppModule(
       }),
       SysModule,
       HealthModule,
+      ...routerImports,
       ...(options.modules || []),
     ],
     providers: [
