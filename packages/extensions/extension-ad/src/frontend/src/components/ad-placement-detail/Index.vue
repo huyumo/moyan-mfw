@@ -22,7 +22,7 @@
     <template #default>
       <div class="drawer-content">
         <div class="action-bar">
-          <el-button type="primary" @click="handleAddAd" v-permission="'添加'">
+          <el-button type="primary" @click="handleAddAd" v-permission="{ value: ['添加'] }">
             <el-icon><Plus /></el-icon>新建广告
           </el-button>
           <el-button @click="loadAds" :loading="loading">
@@ -43,14 +43,14 @@
                 :icon="Top"
                 :disabled="$index === 0"
                 @click="handleMoveUp(row, $index)"
-                v-permission="'编辑'"
+                v-permission="{ value: ['编辑'] }"
               />
               <el-button
                 size="small"
                 :icon="Bottom"
                 :disabled="$index === ads.length - 1"
                 @click="handleMoveDown(row, $index)"
-                v-permission="'编辑'"
+                v-permission="{ value: ['编辑'] }"
               />
               <span style="margin-left: 8px; color: #909399; font-size: 12px">{{ row.sortOrder }}</span>
             </template>
@@ -78,12 +78,12 @@
               <el-button
                 type="warning" link
                 @click="handleToggleAdStatus(row)"
-                v-permission="'编辑'"
+                v-permission="{ value: ['编辑'] }"
               >
                 {{ row.status === STATUS.ENABLED ? '禁用' : '启用' }}
               </el-button>
-              <el-button type="primary" link @click="handleEditAd(row)" v-permission="'编辑'">编辑</el-button>
-              <el-button type="danger" link @click="handleDeleteAd(row)" v-permission="'删除'">删除</el-button>
+              <el-button type="primary" link @click="handleEditAd(row)" v-permission="{ value: ['编辑'] }">编辑</el-button>
+              <el-button type="danger" link @click="handleDeleteAd(row)" v-permission="{ value: ['删除'] }">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
