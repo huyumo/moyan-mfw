@@ -9,10 +9,12 @@ const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
   import: 'default',
 })
 
-const allRoutes = buildRoutesFromConfigs(allConfigs, { minSegments: 1 })
+const allRoutes = buildRoutesFromConfigs(allConfigs, {
+  minSegments: 1,
+  routePrefix:'/ext/ad',
+})
 
-export const adTypeRoutes = allRoutes.filter(r => r.path?.startsWith('type'))
-export const adPlacementRoutes = allRoutes.filter(r => r.path?.startsWith('placement'))
-export const adContentRoutes = allRoutes.filter(r => r.path?.startsWith('content'))
+console.log(allRoutes);
+
 
 export const adRoutes = allRoutes
