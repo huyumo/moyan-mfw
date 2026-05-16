@@ -177,7 +177,9 @@ export class PermissionGuard implements CanActivate {
   }
 
   /**
-   * 通配符权限匹配：`ext:ad:*` 匹配任意以 `ext:ad:` 开头的权限编码。
+   * 通配符权限匹配：`ext:ad:*` 匹配任意包含 `ext:ad:` 的权限编码。
+   *
+   * 示例：permCode `pc_root:ext:ad:placement` 包含前缀 `ext:ad:` → 匹配通过
    *
    * @param wildcardPermCode - 如 'ext:ad:*'
    * @param requiredValue    - 需求的位运算权限值，为 0n 时仅检查是否存在
@@ -192,7 +194,7 @@ export class PermissionGuard implements CanActivate {
 
     if (requiredValue === 0n) {
       for (const permCode of userPermissionMap.keys()) {
-        if (permCode.startsWith(prefix)) {
+        if (permCode.includes(prefix)) {
           return true;
         }
       }
@@ -200,7 +202,7 @@ export class PermissionGuard implements CanActivate {
     }
 
     for (const [permCode, userValue] of userPermissionMap) {
-      if (permCode.startsWith(prefix)) {
+      if (permCode.includes(prefix)) {
         if ((userValue & requiredValue) !== 0n) {
           return true;
         }
