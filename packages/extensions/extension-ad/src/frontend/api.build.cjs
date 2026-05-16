@@ -1,17 +1,9 @@
-const path = require('path')
-
-const moyanApiDir = path.dirname(
-  require.resolve('moyan-api/package.json', {
-    paths: [path.join(__dirname, '..', '..', 'base')],
-  }),
-)
-
-const { ApisdkCreator } = require(path.join(moyanApiDir, 'dist', 'main.js'))
-const { Program } = require(path.join(moyanApiDir, 'dist', 'program.js'))
+const ApisdkCreator = require('moyan-api/dist/main.js').ApisdkCreator
+const Program = require('moyan-api/dist/program.js').Program
 
 const configs = [
   {
-    jsonurl: 'http://localhost:3002/api-docs/moyan-mfw-extension-ad-json',
+    jsonurl: 'http://localhost:3000/api-docs/ad-extension-json',
     output: './src/apis',
     dirname: 'ad',
   },

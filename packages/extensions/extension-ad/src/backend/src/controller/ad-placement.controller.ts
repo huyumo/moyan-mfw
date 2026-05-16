@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery }
 import { AuthGuard, RequirePermission, ApiPaginatedResponse, Public, SkipPermission } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdPlacementService } from '../service/ad-placement.service'
-import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto } from '../dto'
+import { CreateAdPlacementDto, UpdateAdPlacementDto, QueryAdPlacementDto, AdPlacementResponseDto } from '../dto'
 
 @ApiTags('ad-placement', '广告位相关接口')
 @ApiBearerAuth('Authorization')
@@ -33,7 +33,7 @@ export class AdPlacementController {
 
   @Get()
   @ApiOperation({ summary: '查询广告位列表', description: '分页查询广告位列表，包含关联的类型配置' })
-  @ApiPaginatedResponse(Object)
+  @ApiPaginatedResponse(AdPlacementResponseDto)
   @RequirePermission({ permCode: 'ext:ad:*' })
   async findAll(@Query() query: QueryAdPlacementDto) {
     const result = await this.service.findAll(query)

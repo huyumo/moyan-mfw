@@ -88,8 +88,7 @@ const actionColumn = {
 }
 
 const loadData = async (params: Record<string, unknown>) => {
-  const res = await new ApiAdPlacementFindAll({ query: params as any })
-  return (res as any).list
+  return await new ApiAdPlacementFindAll({ query: params as any })
 }
 
 const handleRowClick = (row: any) => {
