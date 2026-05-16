@@ -5,13 +5,12 @@
 
 import { Module } from '@nestjs/common'
 import { AdCoreModule } from './ad-core.module'
-import { AdPlacementTypeController } from './controller/ad-placement-type.controller'
 import { AdPlacementController } from './controller/ad-placement.controller'
 import { AdController } from './controller/ad.controller'
 
 @Module({
   imports: [AdCoreModule],
-  controllers: [AdPlacementTypeController, AdPlacementController, AdController],
+  controllers: [AdPlacementController, AdController],
   exports: [AdCoreModule],
 })
 export class AdModule {}

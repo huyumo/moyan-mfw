@@ -5,14 +5,14 @@ import { ApiCall } from 'moyan-api'
 import type { MoMethod } from 'moyan-api'
 
 import type {
-  CreateAdPlacementTypeDto,
+  CreateAdPlacementDto,
   Object,
   PageResponseDto,
-  UpdateAdPlacementTypeDto,
-  CreateAdPlacementDto,
   UpdateAdPlacementDto,
   CreateAdDto,
   UpdateAdDto,
+  SortItem,
+  BatchUpdateSortDto,
   ObjectId,
   int,
   char,
@@ -27,93 +27,6 @@ import type {
   float,
   decimal,
 } from './schemas'
-
-/**
- * ad-placement-type|广告位类型配置相关接口->创建广告位类型配置
- */
-export class ApiAdPlacementTypeCreate extends ApiCall<
-  {
-    body: CreateAdPlacementTypeDto
-  },
-  unknown
-> {
-  readonly path = '/api/ad-placement-types'
-  readonly method: MoMethod = 'POST'
-  readonly auth = true
-}
-
-/**
- * ad-placement-type|广告位类型配置相关接口->查询类型配置列表
- */
-export class ApiAdPlacementTypeFindAll extends ApiCall<
-  {
-    query: {
-      page: number //页码
-      pageSize: number //每页数量
-      sortField?: string //排序字段
-      sortOrder?: string //排序方向
-      name?: string //类型名称（模糊查询）
-      code?: string //类型编码（模糊查询）
-      status?: number //状态
-    }
-  },
-  PageResponseDto & {
-    list: Array<Object>
-  }
-> {
-  readonly path = '/api/ad-placement-types'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * ad-placement-type|广告位类型配置相关接口->查询类型配置详情
- */
-export class ApiAdPlacementTypeFindById extends ApiCall<
-  {
-    params: {
-      id: string //类型 ID
-    }
-  },
-  unknown
-> {
-  readonly path = '/api/ad-placement-types/{id}'
-  readonly method: MoMethod = 'GET'
-  readonly auth = true
-}
-
-/**
- * ad-placement-type|广告位类型配置相关接口->更新类型配置
- */
-export class ApiAdPlacementTypeUpdate extends ApiCall<
-  {
-    body: UpdateAdPlacementTypeDto
-    params: {
-      id: string //类型 ID
-    }
-  },
-  unknown
-> {
-  readonly path = '/api/ad-placement-types/{id}'
-  readonly method: MoMethod = 'PUT'
-  readonly auth = true
-}
-
-/**
- * ad-placement-type|广告位类型配置相关接口->删除类型配置
- */
-export class ApiAdPlacementTypeDelete extends ApiCall<
-  {
-    params: {
-      id: string //类型 ID
-    }
-  },
-  unknown
-> {
-  readonly path = '/api/ad-placement-types/{id}'
-  readonly method: MoMethod = 'DELETE'
-  readonly auth = true
-}
 
 /**
  * ad-placement|广告位相关接口->创建广告位
@@ -141,7 +54,6 @@ export class ApiAdPlacementFindAll extends ApiCall<
       sortOrder?: string //排序方向
       name?: string //广告位名称（模糊查询）
       code?: string //广告位编码（模糊查询）
-      placementTypeId?: string //广告位类型 ID
       status?: number //状态
     }
   },
@@ -288,5 +200,19 @@ export class ApiAdDelete extends ApiCall<
 > {
   readonly path = '/api/ad-contents/{id}'
   readonly method: MoMethod = 'DELETE'
+  readonly auth = true
+}
+
+/**
+ * ad-content|广告内容相关接口->批量更新广告排序
+ */
+export class ApiAdBatchUpdateSort extends ApiCall<
+  {
+    body: BatchUpdateSortDto
+  },
+  unknown
+> {
+  readonly path = '/api/ad-contents/batch-sort'
+  readonly method: MoMethod = 'PUT'
   readonly auth = true
 }

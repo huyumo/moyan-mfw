@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Ad } from '../entities/ad.entity'
-import { CreateAdDto, UpdateAdDto, QueryAdDto } from '../dto'
+import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto } from '../dto'
 import { NotFoundError, PaginationResult, PaginationX, WhereBuilder } from 'moyan-mfw-base/backend'
 
 @Injectable()
@@ -55,5 +55,14 @@ export class AdService {
   async delete(id: string): Promise<void> {
     const entity = await this.findById(id)
     await this.adRepo.softDelete(entity.id)
+  }
+
+  async batchUpdateSort(dto: BatchUpdateSortDto): Promise<void> {
+    // 使用事务批量更新排序
+    await this.adRepo.manager.transaction(async (manager) => {
+      for (const item of dto.items) {
+        await manager.update(Ad, { id: item.id }, { sortOrder: item.sortOrder })
+      }
+    })
   }
 }

@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString, IsOptional, IsUUID, IsInt, Min, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsString, IsOptional, IsInt, Min, MaxLength } from 'class-validator'
 
 export class CreateAdPlacementDto {
   @ApiProperty({ description: '广告位名称', example: '首页顶部横幅' })
@@ -19,10 +19,17 @@ export class CreateAdPlacementDto {
   @MaxLength(64, { message: '广告位编码长度不能超过 64 个字符' })
   code: string
 
-  @ApiProperty({ description: '广告位类型 ID' })
-  @IsNotEmpty({ message: '广告位类型不能为空' })
-  @IsUUID()
-  placementTypeId: string
+  @ApiProperty({ description: '宽度(px)', example: 750 })
+  @IsNotEmpty({ message: '宽度不能为空' })
+  @IsInt()
+  @Min(1, { message: '宽度最小值为 1' })
+  width: number
+
+  @ApiProperty({ description: '高度(px)', example: 300 })
+  @IsNotEmpty({ message: '高度不能为空' })
+  @IsInt()
+  @Min(1, { message: '高度最小值为 1' })
+  height: number
 
   @ApiProperty({ description: '广告位描述', required: false })
   @IsOptional()

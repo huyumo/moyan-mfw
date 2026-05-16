@@ -18,11 +18,6 @@ export class QueryAdPlacementDto extends PaginationQueryDto {
   @IsString()
   code?: string
 
-  @ApiProperty({ description: '广告位类型 ID', required: false })
-  @IsOptional()
-  @IsString()
-  placementTypeId?: string
-
   @ApiProperty({ description: '状态', enum: [0, 1], required: false })
   @IsOptional()
   @IsInt()
