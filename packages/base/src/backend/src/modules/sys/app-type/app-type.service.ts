@@ -20,6 +20,7 @@ import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
 import { PermissionTreeNodeDto } from '../permission';
+import { CustomMenuItem } from './entities/app-type.entity';
 
 /**
  * 应用类型服务
@@ -345,6 +346,35 @@ export class AppTypeService {
     sortTree(tree);
 
     return tree;
+  }
+
+  /**
+   * 获取自定义菜单
+   */
+  async getCustomMenu(appTypeId: string): Promise<CustomMenuItem[] | null> {
+    const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
+    if (!appType) throw new NotFoundError('应用类型');
+    return appType.customMenu || null;
+  }
+
+  /**
+   * 保存自定义菜单
+   */
+  async saveCustomMenu(appTypeId: string, data: CustomMenuItem[]): Promise<AppType> {
+    const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
+    if (!appType) throw new NotFoundError('应用类型');
+    appType.customMenu = data;
+    return this.appTypeRepository.save(appType);
+  }
+
+  /**
+   * 清空自定义菜单
+   */
+  async clearCustomMenu(appTypeId: string): Promise<AppType> {
+    const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
+    if (!appType) throw new NotFoundError('应用类型');
+    appType.customMenu = null;
+    return this.appTypeRepository.save(appType);
   }
 
   /**

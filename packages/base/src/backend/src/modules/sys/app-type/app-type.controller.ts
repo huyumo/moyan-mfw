@@ -40,6 +40,7 @@ import { ApiResponseUtil } from '../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../common';
 import { PermissionTreeNodeDto } from '../permission';
 import { StatusDto } from '@/common/types/status.dto';
+import { SaveCustomMenuDto } from './dto/req/save-custom-menu.dto';
 
 /**
  * 应用类型控制器
@@ -219,5 +220,47 @@ export class AppTypeController {
   ) {
     const result = await this.appTypeService.updateStatus(id, body.status);
     return ApiResponseUtil.success(result, '更新成功');
+  }
+
+  /**
+   * 获取自定义菜单
+   */
+  @Get(':id/custom-menu')
+  @ApiOperation({ summary: '获取自定义菜单', description: '获取应用类型的自定义菜单配置' })
+  @ApiParam({ name: 'id', description: '应用类型 ID' })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  async getCustomMenu(@Param('id', ParseUUIDPipe) id: string) {
+    const result = await this.appTypeService.getCustomMenu(id);
+    return ApiResponseUtil.success(result, '查询成功');
+  }
+
+  /**
+   * 保存自定义菜单
+   */
+  @Put(':id/custom-menu')
+  @ApiOperation({ summary: '保存自定义菜单', description: '保存应用类型的自定义菜单配置' })
+  @ApiParam({ name: 'id', description: '应用类型 ID' })
+  @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_CUSTOM_MENU', description: '更新自定义菜单' })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  async saveCustomMenu(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: SaveCustomMenuDto,
+  ) {
+    const result = await this.appTypeService.saveCustomMenu(id, dto.data);
+    return ApiResponseUtil.success(result, '保存成功');
+  }
+
+  /**
+   * 清空自定义菜单
+   */
+  @Delete(':id/custom-menu')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '清空自定义菜单', description: '清空应用类型的自定义菜单配置' })
+  @ApiParam({ name: 'id', description: '应用类型 ID' })
+  @AuditLog({ module: AuditModule.APP_TYPE, event: 'CLEAR_CUSTOM_MENU', description: '清空自定义菜单' })
+  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  async clearCustomMenu(@Param('id', ParseUUIDPipe) id: string) {
+    await this.appTypeService.clearCustomMenu(id);
+    return ApiResponseUtil.success(null, '清空成功');
   }
 }

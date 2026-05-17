@@ -33,6 +33,7 @@
         <el-button type="primary" size="small" data-testid="app-type-edit-btn" v-permission="{ value: ['edit'] }" @click="$emit('edit', data)">编辑</el-button>
         <el-button size="small" data-testid="app-type-permission-btn" v-permission="{ value: ['permission'] }" @click="$emit('permission', data)">权限</el-button>
         <el-button size="small" data-testid="app-type-role-btn" v-permission="{ value: ['role'] }" @click="$emit('role', data)">角色</el-button>
+        <el-button size="small" type="warning" plain data-testid="app-type-menu-btn" @click="$emit('customMenu', data)">菜单</el-button>
       </div>
     </div>
   </el-card>
@@ -56,6 +57,7 @@ defineEmits<{
   (e: 'edit', data: AppTypeResponseDto): void;
   (e: 'permission', data: AppTypeResponseDto): void;
   (e: 'role', data: AppTypeResponseDto): void;
+  (e: 'customMenu', data: AppTypeResponseDto): void;
 }>();
 
 const currentIcon = computed(() => {
