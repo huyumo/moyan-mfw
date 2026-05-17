@@ -7,7 +7,6 @@
 | 文档 | 说明 | 适用场景 |
 |------|------|----------|
 | [编写指南](./writing-guide.md) | 10 章核心教程，从零到发布 | **首次开发必读** |
-| [Manifest 规范](./manifest-spec.md) | `extension.json` 字段详解与约束 | 编写/校验清单文件 |
 | [架构说明](./architecture.md) | 运行时加载流程与数据流 | 排查集成问题 |
 | [反模式清单](./reference/anti-patterns.md) | 常见错误与正确做法 | 代码审查/自查 |
 
@@ -48,7 +47,6 @@ extension-xxx/
 │   ├── frontend/    → Vue3 + Vite 应用（@internal/xxx-frontend）
 │   └── shared/      → 纯 TypeScript 类型（@internal/xxx-shared）
 ├── database/migrations/
-└── extension.json          ← 清单文件（可选，也可在 main.ts 内联声明）
 ```
 
 扩展通过 `moyan-mfw-base` 的三层导出获得框架能力：

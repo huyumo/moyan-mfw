@@ -2,6 +2,7 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
 import { createCommand } from './commands/create.js'
+import { createBusinessCommand } from './commands/create-business.js'
 
 const program = new Command()
 
@@ -12,6 +13,7 @@ program
 
 const createCmd = new Command('create').description('Create a new extension or resource')
 createCmd.addCommand(createCommand)
+createCmd.addCommand(createBusinessCommand)
 
 program.addCommand(createCmd)
 

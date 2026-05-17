@@ -1,0 +1,93 @@
+<template>
+  <div class="dashboard">
+    <el-card class="welcome-card">
+      <h1>欢迎使用 TestShop</h1>
+      <p>基于 Moyan MFW 框架构建的管理后台</p>
+    </el-card>
+
+    <el-row :gutter="16" class="stats-row">
+      <el-col :span="8">
+        <el-card shadow="hover">
+          <div class="stat-item">
+            <div class="stat-label">后端服务</div>
+            <div class="stat-value" style="color: #22c55e">运行中</div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover">
+          <div class="stat-item">
+            <div class="stat-label">API 端点</div>
+            <div class="stat-value"></div>
+          </div>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="hover">
+          <div class="stat-item">
+            <div class="stat-label">框架版本</div>
+            <div class="stat-value">1.0.0</div>
+          </div>
+        </el-card>
+      </el-col>
+    </el-row>
+
+    <el-card class="quick-start-card">
+      <template #header>
+        <span>快速开始</span>
+      </template>
+      <el-steps :active="2" finish-status="success">
+        <el-step title="创建项目" description="通过 mfw CLI 初始化" />
+        <el-step title="添加模块" description="使用 plop 生成业务模块" />
+        <el-step title="集成扩展" description="在 AppModule 中引入扩展模块" />
+        <el-step title="部署上线" description="构建并发布到生产环境" />
+      </el-steps>
+    </el-card>
+  </div>
+</template>
+
+<script setup lang="ts">
+const apiCount = 0;
+</script>
+
+<style scoped>
+.dashboard {
+  padding: 16px;
+}
+
+.welcome-card {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.welcome-card h1 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.welcome-card p {
+  color: #64748b;
+}
+
+.stats-row {
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #3b82f6;
+}
+</style>

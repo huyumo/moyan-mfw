@@ -1,0 +1,36 @@
+{
+  "name": "{{name}}-backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prebuild": "pnpm --filter {{name}}-shared build && pnpm --filter moyan-mfw-base build",
+    "dev": "pnpm run prebuild && nest start --watch",
+    "build": "nest build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "start": "node dist/main",
+    "start:prod": "node dist/main"
+  },
+  "dependencies": {
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/platform-express": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "typeorm": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "mysql2": "catalog:",
+    "dotenv": "catalog:",
+    "moyan-mfw-base": "workspace:*",
+    "{{name}}-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "typescript": "catalog:",
+    "ts-node": "catalog:",
+    "tsconfig-paths": "catalog:"
+  }
+}

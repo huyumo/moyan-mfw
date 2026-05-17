@@ -9,13 +9,12 @@
 - [第 1 章：概述与架构](#第-1-章概述与架构)
 - [第 2 章：快速开始](#第-2-章快速开始)
 - [第 3 章：目录结构规范](#第-3-章目录结构规范)
-- [第 4 章：Manifest 规范](#第-4-章manifest-规范extensionjson)
-- [第 5 章：Shared 层编写规范](#第-5-章shared-层编写规范)
-- [第 6 章：Backend 层编写规范](#第-6-章backend-层编写规范)
-- [第 7 章：Frontend 层编写规范](#第-7-章frontend-层编写规范)
-- [第 8 章：路由与权限](#第-8-章路由与权限)
-- [第 9 章：构建工作流](#第-9-章构建工作流)
-- [第 10 章：Checklist](#第-10-章checklist)
+- [第 4 章：Shared 层编写规范](#第-4-章shared-层编写规范)
+- [第 5 章：Backend 层编写规范](#第-5-章backend-层编写规范)
+- [第 6 章：Frontend 层编写规范](#第-6-章frontend-层编写规范)
+- [第 7 章：路由与权限](#第-7-章路由与权限)
+- [第 8 章：构建工作流](#第-8-章构建工作流)
+- [第 9 章：Checklist](#第-9-章checklist)
 
 ---
 
@@ -32,14 +31,13 @@ extension-xxx/
 │   ├── frontend/    → Vue3 + Vite 应用（@internal/xxx-frontend）
 │   └── shared/      → 纯 TypeScript 类型（@internal/xxx-shared）
 ├── database/migrations/
-└── extension.json          ← 清单文件（可选）
 ```
 
 **设计原则**：
 
 - **松耦合**：扩展之间通过 `requiredExtensions` / `optionalExtensions` 声明依赖
 - **三层导出**：`./backend`、`./frontend`、`./shared` 分别对应不同消费场景
-- **清单驱动**：`extension.json`（或 `main.ts` 内联）声明元数据，框架自动校验
+- **简洁启动**：`createExtensionBackendApp({ name, module })` 只需最少参数即可启动
 
 ### 1.2 与 base 包的关系
 
@@ -272,127 +270,7 @@ extension-ad/
 
 ---
 
-## 第 4 章：Manifest 规范（extension.json）
-
-### 4.1 完整字段表
-
-| 字段 | 类型 | 必选 | 说明 | 示例 |
-|------|------|------|------|------|
-| `name` | `string` | ✅ | 扩展包名（`moyan-mfw-extension-{name}`） | `"moyan-mfw-extension-ad"` |
-| `version` | `string` | ✅ | 语义化版本号 | `"0.1.0"` |
-| `displayName` | `string` | ✅ | 显示名称（中文） | `"广告管理"` |
-| `description` | `string` | ✅ | 功能描述 | `"提供广告位管理功能..."` |
-| `routePrefix` | `string` | ✅ | API 路由前缀（**必须 `/ext/` 开头**） | `"/ext/ad"` |
-| `permCodePrefix` | `string` | ❌ | 权限编码前缀（默认从 routePrefix 提取） | `"ext:ad"` |
-| `namespaceName` | `string` | ❌ | 命名空间显示名 | `"广告管理"` |
-| `permCodeNodes` | `Array<PermCodeNode>` | ✅ | 权限节点列表 | 见下方示例 |
-| `provides` | `Record<string, unknown>` | ❌ | 声明提供的服务/字典/实体 | `{ dicts: ['ad_link_type'] }` |
-| `requiredExtensions` | `string[]` | ✅ | 必须依赖的其他扩展 | `[]` |
-| `optionalExtensions` | `string[]` | ✅ | 可选依赖的其他扩展 | `[]` |
-| `appTypes` | `string[]` | ✅ | 适用应用类型（`['*']` 表示全部） | `['*']` |
-| `minFrameworkVersion` | `string` | ✅ | 最低框架版本要求 | `"1.0.0"` |
-
-**PermCodeNode 结构**：
-
-```typescript
-interface PermCodeNode {
-  permCode: string    // 权限编码（格式：`{ns}:{resource}:{action}`）
-  permName: string    // 权限名称（中文）
-  nodeType: 'TAG'     // 节点类型（固定为 TAG）
-  group: string       // 所属权限组
-}
-```
-
-### 4.2 routePrefix 约束
-
-`routePrefix` **必须**以 `/ext/` 开头，框架会在启动时校验：
-
-```typescript
-// create-extension-backend-app.ts 中的校验逻辑
-if (!manifest.routePrefix.startsWith('/ext/')) {
-  throw new Error(
-    `[Extension] routePrefix 必须 /ext/{ns} 格式，当前: "${manifest.routePrefix}"`,
-  )
-}
-```
-
-同时，`permCodeNodes` 中每个节点的 `permCode` 必须以命名空间开头（从 routePrefix 提取）：
-
-```typescript
-const ns = manifest.routePrefix.replace('/ext/', '')  // "ad"
-for (const node of manifest.permCodeNodes) {
-  if (!node.permCode.startsWith(`${ns}:`)) {
-    throw new Error(`[Extension] permCode 必须以命名空间 "${ns}:" 开头`)
-  }
-}
-```
-
-### 4.3 与 ExtensionManifest TypeScript 接口的映射
-
-Manifest 字段与 [ExtensionManifest](../../../packages/base/src/backend/src/create-extension-backend-app.ts) 接口完全对应：
-
-```typescript
-export interface ExtensionManifest {
-  name: string
-  version: string
-  displayName: string
-  description: string
-  routePrefix: string
-  permCodeNodes: Array<{
-    permCode: string
-    permName: string
-    nodeType: string
-    group: string
-  }>
-  requiredExtensions: string[]
-  optionalExtensions: string[]
-  appTypes: string[]
-  minFrameworkVersion: string
-  provides?: Record<string, unknown>
-}
-```
-
-### 4.4 示例：extension-ad 的 Manifest（内联于 main.ts）
-
-```typescript
-// src/backend/src/main.ts
-async function bootstrap() {
-  const result = await createExtensionBackendApp({
-    name: '广告管理',
-    module: AdModule,
-    entities: [AdPlacement, Ad],
-    manifest: {
-      name: 'moyan-mfw-extension-ad',
-      version: '0.1.0',
-      displayName: '广告管理',
-      description: '提供广告位管理功能，支持在广告位详情中管理广告内容',
-      routePrefix: '/ext/ad',
-      permCodeNodes: [
-        { permCode: 'ad:placement:view',   permName: '查看广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:create', permName: '创建广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:update', permName: '编辑广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:delete', permName: '删除广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:view',     permName: '查看广告内容', nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:create',   permName: '创建广告内容', nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:update',   permName: '编辑广告内容', nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:delete',   permName: '删除广告内容', nodeType: 'TAG', group: '广告管理' },
-      ],
-      requiredExtensions: [],
-      optionalExtensions: [],
-      appTypes: ['*'],
-      minFrameworkVersion: '1.0.0',
-    },
-  })
-
-  await result.listen(3002)
-}
-```
-
-> **注意**：Manifest 可以内联在 `main.ts` 中（如上例），也可以独立为 `extension.json` 文件。两种方式等效。
-
----
-
-## 第 5 章：Shared 层编写规范
+## 第 4 章：Shared 层编写规范
 
 ### 5.1 概述
 
@@ -617,7 +495,7 @@ export type { AdExtensionPermissionName } from './permission-values'
 
 ---
 
-## 第 6 章：Backend 层编写规范
+## 第 5 章：Backend 层编写规范
 
 ### 6.1 NestJS 分层架构
 
@@ -853,7 +731,6 @@ async function bootstrap() {
     name: '广告管理',
     module: AdModule,
     entities: [AdPlacement, Ad],
-    manifest: { /* ... */ },
   })
 
   await result.listen(3002)
@@ -866,11 +743,12 @@ bootstrap()
 
 - 必须导入 `'reflect-metadata'`（NestJS 要求）
 - 使用 `createExtensionBackendApp` 而非直接 `NestFactory.create`
+- `name` 为 kebab-case 简名，框架自动推导路由前缀 `/ext/{name}`
 - 传入 `entities` 数组以注册数据库实体
 
 ---
 
-## 第 7 章：Frontend 层编写规范
+## 第 6 章：Frontend 层编写规范
 
 ### 7.1 views/ vs components/ 分工
 
@@ -1143,7 +1021,7 @@ const handleDelete = async (row: any) => {
 
 ---
 
-## 第 8 章：路由与权限
+## 第 7 章：路由与权限
 
 ### 8.1 definePageConfig 权限配置
 
@@ -1240,7 +1118,7 @@ ad:content:create      → 广告内容：创建
 
 ---
 
-## 第 9 章：构建工作流
+## 第 8 章：构建工作流
 
 ### 9.1 Build 顺序
 
@@ -1318,7 +1196,7 @@ pnpm typecheck:frontend
 
 ---
 
-## 第 10 章：Checklist
+## 第 9 章：Checklist
 
 ### 发布前检查清单（15 项）
 
