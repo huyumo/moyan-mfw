@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 /**
  * @fileoverview 广告位表单组件
  * @description 新建/编辑广告位的表单
@@ -9,7 +9,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base/frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
 import { ApiAdPlacementCreate, ApiAdPlacementUpdate } from '../../apis/ad'
@@ -28,13 +28,26 @@ const formRef = ref<MfwFormCardInstance>()
 const isEdit = computed(() => !!props?.id)
 
 const form = reactive({
-  name: props?.name || '',
-  code: props?.code || '',
-  width: props?.width ?? 750,
-  height: props?.height ?? 300,
-  description: props?.description || '',
-  sortOrder: props?.sortOrder ?? 0,
+  name: '',
+  code: '',
+  width: 750,
+  height: 300,
+  description: '',
+  sortOrder: 0,
 })
+
+watch(
+  () => props,
+  (p) => {
+    form.name = p?.name || ''
+    form.code = p?.code || ''
+    form.width = p?.width ?? 750
+    form.height = p?.height ?? 300
+    form.description = p?.description || ''
+    form.sortOrder = p?.sortOrder ?? 0
+  },
+  { immediate: true },
+)
 
 const formTemplate = computed<FormItemConfig[]>(() => [
   {
