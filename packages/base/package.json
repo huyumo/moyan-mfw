@@ -6,10 +6,12 @@
   "types": "./src/shared/dist/index.d.ts",
   "exports": {
     "./backend": {
+      "import": "./src/backend/dist/index.js",
       "require": "./src/backend/dist/index.js",
       "types": "./src/backend/dist/index.d.ts"
     },
     "./backend/*": {
+      "import": "./src/backend/dist/*.js",
       "require": "./src/backend/dist/*",
       "types": "./src/backend/dist/*.d.ts"
     },
