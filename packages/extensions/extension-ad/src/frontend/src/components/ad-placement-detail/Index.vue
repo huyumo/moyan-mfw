@@ -166,8 +166,13 @@ const handleDragEnd = async (event: { oldIndex: number; newIndex: number }) => {
   }
 }
 
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const handleClose = () => {
   visible.value = false
+  emit('close')
 }
 
 defineExpose({ open, close: handleClose })

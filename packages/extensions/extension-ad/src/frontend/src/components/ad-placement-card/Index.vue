@@ -9,7 +9,7 @@
     <div class="carousel-wrapper" :style="carouselStyle">
       <el-carousel
         v-if="mediaAds.length > 0"
-        :height="carouselHeight"
+        :height="carouselHeight + 'px'"
         :autoplay="true"
         :interval="3000"
         indicator-position="none"
@@ -201,9 +201,6 @@ const handleToggleStatus = () => {
 .carousel-wrapper {
   width: 100%;
   background: #f5f7fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
@@ -221,7 +218,7 @@ const handleToggleStatus = () => {
   justify-content: center;
   color: #909399;
   gap: 8px;
-  height: 150px;
+  height: 100%;
 }
 
 .hover-overlay {

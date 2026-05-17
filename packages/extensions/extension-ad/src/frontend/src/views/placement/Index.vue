@@ -12,29 +12,17 @@
       </el-button>
     </template>
 
-    <!-- 搜索栏 -->
-    <div class="search-bar">
-      <el-form :inline="true" :model="searchForm">
-        <el-form-item label="广告位名称">
-          <el-input v-model="searchForm.name" placeholder="请输入广告位名称" clearable />
-        </el-form-item>
-        <el-form-item label="广告位编码">
-          <el-input v-model="searchForm.code" placeholder="请输入广告位编码" clearable />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
-            <el-option label="启用" :value="StatusDict.ENABLED" />
-            <el-option label="禁用" :value="StatusDict.DISABLED" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch" data-testid="search-btn">搜索</el-button>
-          <el-button @click="handleReset" data-testid="reset-btn">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+    <MfwSearchPanel
+      ref="searchPanelRef"
+      :search-template="searchTemplate"
+      search-trigger="submit"
+    >
+      <template #search-extra>
+        <el-button type="primary" @click="handleSearch">搜索</el-button>
+        <el-button @click="handleReset">重置</el-button>
+      </template>
+    </MfwSearchPanel>
 
-    <!-- 卡片网格 -->
     <div v-loading="loading" class="card-grid">
       <MfwAdPlacementCard
         v-for="placement in placements"
@@ -47,9 +35,11 @@
         @delete="handleDelete"
         @toggle-status="handleToggleStatus"
       />
+      <div v-if="!loading && placements.length === 0" class="empty-state">
+        <el-empty description="暂无广告位数据" />
+      </div>
     </div>
 
-    <!-- 分页 -->
     <el-pagination
       v-model:current-page="pagination.page"
       v-model:page-size="pagination.pageSize"
@@ -60,7 +50,7 @@
       @current-change="loadPlacements"
     />
 
-    <MfwAdPlacementDetail ref="detailRef" />
+    <MfwAdPlacementDetail ref="detailRef" @close="loadPlacements" />
   </MfwPageWrapper>
 </template>
 
@@ -68,7 +58,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwPopup } from 'moyan-mfw-base/frontend'
+import { MfwPageWrapper, MfwSearchPanel, MfwPopup } from 'moyan-mfw-base/frontend'
 import {
   ApiAdPlacementFindAll,
   ApiAdPlacementUpdate,
@@ -89,11 +79,34 @@ const placements = ref<AdPlacementResponseDto[]>([])
 const placementAds = ref<Record<string, AdResponseDto[]>>({})
 const placementAdCounts = ref<Record<string, number>>({})
 
-const searchForm = reactive({
-  name: '',
-  code: '',
-  status: undefined as number | undefined,
-})
+const searchPanelRef = ref<{ getFormValues: () => Record<string, any>; reset: () => void }>()
+
+const searchTemplate = [
+  {
+    key: 'name',
+    label: '广告位名称',
+    type: 'input' as const,
+    placeholder: '请输入广告位名称',
+  },
+  {
+    key: 'code',
+    label: '广告位编码',
+    type: 'input' as const,
+    placeholder: '请输入广告位编码',
+  },
+  {
+    key: 'status',
+    label: '状态',
+    type: 'select' as const,
+    placeholder: '请选择状态',
+    elProps: {
+      options: [
+        { label: '启用', value: StatusDict.ENABLED },
+        { label: '禁用', value: StatusDict.DISABLED },
+      ],
+    },
+  },
+]
 
 const pagination = reactive({
   page: 1,
@@ -106,13 +119,12 @@ const detailRef = ref<InstanceType<typeof MfwAdPlacementDetail>>()
 const loadPlacements = async () => {
   loading.value = true
   try {
+    const searchParams = searchPanelRef.value?.getFormValues() || {}
     const params: any = {
       page: pagination.page,
       pageSize: pagination.pageSize,
+      ...searchParams,
     }
-    if (searchForm.name) params.name = searchForm.name
-    if (searchForm.code) params.code = searchForm.code
-    if (searchForm.status !== undefined) params.status = searchForm.status
 
     const res = await new ApiAdPlacementFindAll({ query: params })
     placements.value = res.list || []
@@ -142,9 +154,7 @@ const handleSearch = () => {
 }
 
 const handleReset = () => {
-  searchForm.name = ''
-  searchForm.code = ''
-  searchForm.status = undefined
+  searchPanelRef.value?.reset()
   pagination.page = 1
   loadPlacements()
 }
@@ -201,22 +211,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.search-bar {
-  margin-bottom: 20px;
-  padding: 16px;
-  background: #fff;
-  border-radius: 4px;
-}
-
-.search-bar .el-select {
-  width: 120px;
-}
-
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
   margin-bottom: 20px;
+  min-height: 200px;
+}
+
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   min-height: 200px;
 }
 </style>
