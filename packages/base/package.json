@@ -51,6 +51,15 @@
     "typecheck:frontend": "pnpm --filter @internal/base-frontend typecheck",
     "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
   },
+  "license": "MIT",
+  "keywords": ["moyan", "mfw", "admin", "framework", "nestjs", "vue3"],
+  "files": [
+    "src/backend/dist",
+    "src/frontend/dist",
+    "src/shared/dist",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "@internal/base-backend": "workspace:*",
     "@internal/base-frontend": "workspace:*",

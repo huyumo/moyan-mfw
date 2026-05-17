@@ -7,7 +7,6 @@ export { createBaseBackendApp } from './create-base-backend-app';
 export { createExtensionBackendApp } from './create-extension-backend-app';
 export type {
   CreateExtensionBackendAppOptions,
-  ExtensionManifest,
 } from './create-extension-backend-app';
 export type {
   CreateBaseBackendAppOptions,

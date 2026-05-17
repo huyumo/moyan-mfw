@@ -1,40 +1,34 @@
 /**
- * @fileoverview 广告扩展包后端自启动入口
- * @description 独立运行扩展包后端，不依赖业务层
+ * @fileoverview 广告管理扩展包后端独立启动入口
  */
-import 'reflect-metadata'
+import { NestFactory } from '@nestjs/core'
+import { AdModule } from './ad.module'
 import { createExtensionBackendApp } from 'moyan-mfw-base/backend'
-import { AdModule, AdPlacement, Ad } from './index'
 
 async function bootstrap() {
-  const result = await createExtensionBackendApp({
-    name: '广告管理',
-    module: AdModule,
-    entities: [AdPlacement, Ad],
-    manifest: {
-      name: 'moyan-mfw-extension-ad',
-      version: '0.1.0',
-      displayName: '广告管理',
-      description: '提供广告位管理功能，支持在广告位详情中管理广告内容',
-      routePrefix: '/ext/ad',
-      permCodeNodes: [
-        { permCode: 'ad:placement:view',   permName: '查看广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:create', permName: '创建广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:update', permName: '编辑广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:placement:delete', permName: '删除广告位',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:view',     permName: '查看广告内容', nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:create',   permName: '创建广告内容', nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:update',   permName: '编辑广告内容',   nodeType: 'TAG', group: '广告管理' },
-        { permCode: 'ad:content:delete',   permName: '删除广告内容',   nodeType: 'TAG', group: '广告管理' },
-      ],
-      requiredExtensions: [],
-      optionalExtensions: [],
-      appTypes: ['*'],
-      minFrameworkVersion: '1.0.0',
-    },
-  })
+  const startTime = Date.now()
 
-  await result.listen(3002)
+  console.log('[Ad] ====== Bootstrap Start ======')
+  console.log(`[Ad] Node.js: ${process.version}`)
+  console.log(`[Ad] ENV: ${process.env.NODE_ENV ?? 'development'}`)
+  console.log(`[Ad] PORT: ${process.env.PORT ?? '3001 (default)'}`)
+
+  try {
+    const app = await createExtensionBackendApp({
+      name: 'ad',
+      module: AdModule,
+    })
+
+    const port = Number(process.env.PORT) || 3001
+    await app.listen(port)
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+    console.log(`\n[Ad] ✅ Server listening on http://localhost:${port} (${elapsed}s)`)
+  } catch (error) {
+    console.error('\n[Ad] ❌ Bootstrap failed:')
+    console.error(error)
+    process.exit(1)
+  }
 }
 
 bootstrap()
