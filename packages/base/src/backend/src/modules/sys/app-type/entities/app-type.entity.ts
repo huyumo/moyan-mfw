@@ -8,6 +8,22 @@ import { Base } from '../../../../common/entities/base.entity';
 import { ClassConstructor } from 'class-transformer';
 import { toDescription, StatusDict, MultiAppEnabledDict } from 'moyan-mfw-base/shared';
 
+/** 自定义菜单节点 */
+export interface CustomMenuItem {
+  /** 权限编码 — 必须对应 sys_permissions 中的真实权限 */
+  permCode: string;
+  /** 菜单显示名称 */
+  permName: string;
+  /** 图标 */
+  icon?: string;
+  /** 路由路径 */
+  routePath?: string;
+  /** 排序 */
+  sortOrder?: number;
+  /** 子节点 */
+  children?: CustomMenuItem[];
+}
+
 /**
  * 应用类型实体
  * @description 应用分类表，定义系统中的应用类型
@@ -63,5 +79,12 @@ export class AppType {
    */
   @Column({ type: 'int', default: 0, comment: '排序号 - 数值越小越靠前' })
   sortOrder: number;
+
+  /**
+   * 自定义菜单
+   * @description JSON 结构，存在时替换默认权限菜单
+   */
+  @Column({ type: 'json', nullable: true, comment: '自定义菜单树 - JSON 结构，存在时替换默认权限菜单' })
+  customMenu: CustomMenuItem[] | null;
 }
  

@@ -32,6 +32,7 @@ import { hashPassword } from '../../../common/utils/encrypt';
 import { executeRawSql } from '../../../common/utils/sql.util';
 import { PermissionTreeNodeDto } from '../permission';
 import { flatToTree } from '@/common/utils/tree.util';
+import { AppType, CustomMenuItem } from '../app-type/entities/app-type.entity';
 
 /**
  * 认证服务
@@ -285,7 +286,6 @@ export class AuthService {
     `
 
     const [appTypeIdResult, result] = await executeRawSql(this.entityManager, sql, { userId, appId }, true);
-    const menuTree = flatToTree(result as any[])
     const permissions = result.map((item: any) => item.permCode)
     const appTypeId = appTypeIdResult[0]?.appTypeId || ''
 
@@ -294,6 +294,25 @@ export class AuthService {
     for (const item of result) {
       if (item.permissionValue) {
         permissionValueMap[item.permCode] = item.permissionValue.toString();
+      }
+    }
+
+    let menuTree = flatToTree(result as any[])
+
+    // 检测自定义菜单：存在时按自定义菜单结构重建 menuTree
+    if (appTypeId) {
+      const appTypeRepository = this.entityManager.getRepository(AppType);
+      const appType = await appTypeRepository.findOne({
+        where: { id: appTypeId },
+        select: ['id', 'customMenu'],
+      });
+
+      if (appType?.customMenu?.length) {
+        const nodeMap = new Map<string, any>();
+        for (const item of result) {
+          nodeMap.set(item.permCode, item);
+        }
+        menuTree = buildCustomMenuTree(appType.customMenu, nodeMap);
       }
     }
 
@@ -453,4 +472,28 @@ export class AuthService {
     // 直接调用 getUserPermissions 重新获取权限
     return this.getUserPermissions(userId, appId);
   }
+}
+
+/**
+ * 根据自定义菜单结构重建菜单树
+ */
+function buildCustomMenuTree(
+  customMenus: CustomMenuItem[],
+  nodeMap: Map<string, any>,
+): any[] {
+  return customMenus
+    .map((item) => {
+      const dbNode = nodeMap.get(item.permCode);
+      if (!dbNode) return null;
+      return {
+        ...dbNode,
+        permName: item.permName,
+        iconName: item.icon || dbNode.iconName,
+        sortOrder: item.sortOrder ?? dbNode.sortOrder,
+        children: item.children?.length
+          ? buildCustomMenuTree(item.children, nodeMap)
+          : dbNode.children || [],
+      };
+    })
+    .filter(Boolean);
 }

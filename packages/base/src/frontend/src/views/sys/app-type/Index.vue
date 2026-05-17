@@ -11,7 +11,7 @@
         render-mode="card" empty-text="暂无应用类型" :card-grid="{ minWidth: 320 }">
         <template #card-item="{ item }">
           <AppTypeCard :data="item" @edit="handleEdit" @permission="handleConfigPermissionPool"
-            @role="handleConfigBuiltinRoles" />
+            @role="handleConfigBuiltinRoles" @customMenu="handleCustomMenu" />
         </template>
       </MfwCardListPage>
     </div>
@@ -31,6 +31,7 @@ import EditForm from './EditForm.vue';
 import AddForm from './AddForm.vue';
 import { PermissionPoolPanel } from '../../../components/business/permission-pool-panel';
 import { BuiltinRoleDialog } from '../../../components/business/builtin-role-dialog/mod';
+import CustomMenuEditor from '../../../components/business/custom-menu-editor/Index.vue';
 
 defineOptions({ name: 'MfwAppTypeList' });
 
@@ -78,6 +79,22 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
     component: BuiltinRoleDialog,
     data: { appTypeId: row.id, typeName: row.typeName },
     popupProps: { width: '600px' },
+  });
+};
+
+const handleCustomMenu = (row: AppTypeResponseDto) => {
+  if (!row.id) {
+    ElMessage.warning('请先保存应用类型');
+    return;
+  }
+  MfwPopup.open({
+    title: `自定义菜单 - ${row.typeName}`,
+    type: 'drawer',
+    position: 'rtl',
+    component: CustomMenuEditor,
+    data: { appTypeId: row.id },
+    popupProps: { size: '90%' },
+    on: { confirm: cardListPage.value?.refresh },
   });
 };
 </script>
