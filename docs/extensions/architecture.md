@@ -83,64 +83,49 @@ MFW 扩展采用**三段式分层架构**，每个扩展独立包含后端、前
 │ 2. 调用 createExtensionBackendApp(options)               │
 │                                                          │
 │    options = {                                           │
-│      name: '广告管理',                                   │
-│      module: AdModule,          // NestJS 根模块         │
-│      entities: [AdPlacement, Ad], // TypeORM 实体        │
-│      manifest: { /* ... */ },   // 清单配置              │
+│      name: 'ad',          // kebab-case 简名（必选）     │
+│      module: AdModule,    // NestJS 根模块（必选）       │
+│      entities: [AdPlacement, Ad], // TypeORM 实体（可选）│
 │    }                                                     │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 3. validateManifest(manifest)                           │
+│ 3. 自动构建配置                                          │
 │                                                          │
-│    检查项：                                               │
-│    ✅ 必填字段完整性 (name, version, displayName...)      │
-│    ✅ routePrefix 格式 (/ext/ 开头)                      │
-│    ✅ permCode 命名空间一致性                             │
+│    • routePrefix = `/ext/${name}` → `/ext/ad`            │
+│    • displayName = toPascalCase(name) → "Ad"            │
+│    • Swagger 分组自动配置                                │
+│    • CORS 跨域已启用                                     │
 │                                                          │
-│    输出: [Extension] ✅ 广告管理 v0.1.0 清单校验通过      │
-└──────────────────────┬──────────────────────────────────┘
-                       │ 校验失败则 throw Error
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│ 4. 构建 Swagger 配置                                     │
-│                                                          │
-│    const swaggerGroup = {                                │
-│      name: 'ad',                                         │
-│      title: '广告管理 API',                              │
-│      description: manifest.description,                  │
-│      include: [AdModule],                                │
-│    }                                                     │
+│    输出: [Extension] 🚀 启动扩展: Ad                     │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 5. 调用 createBaseBackendApp()                          │
+│ 4. 调用 createBaseBackendApp()                          │
 │                                                          │
 │    内部流程：                                             │
 │    a. 创建 NestJS Application 实例                       │
 │    b. 注册全局模块 (ConfigModule, TypeOrmModule...)      │
 │    c. 注册扩展模块 (AdModule)                            │
-│    d. 配置 CORS (允许跨域)                               │
-│    e. 配置 Swagger 文档                                  │
-│    f. 注册全局管道 (ValidationPipe)                      │
-│    g. 注册全局过滤器 (AllExceptionsFilter)              │
-│    h. 注册全局拦截器 (LoggingInterceptor)               │
+│    d. 配置 Swagger 文档                                  │
+│    e. 注册全局管道 (ValidationPipe)                      │
+│    f. 注册全局过滤器 (AllExceptionsFilter)              │
+│    g. 注册全局拦截器 (LoggingInterceptor)               │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 6. result.listen(3002)                                   │
+│ 5. result.listen(3002)                                   │
 │                                                          │
 │    输出:                                                  │
 │    [NestApplication] Nest application successfully       │
 │    started on http://localhost:3002                      │
 │                                                          │
 │    可访问:                                                │
-│    - http://localhost:3000/api-docs → Swagger UI        │
-│    - http://localhost:3002/ext/ad/ad-contents → API     │
+│    - http://localhost:3002/api-docs/sys → Swagger UI    │
+│    - http://localhost:3002/ext/ad/* → Extension API      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -149,54 +134,28 @@ MFW 扩展采用**三段式分层架构**，每个扩展独立包含后端、前
 **入口文件** ([main.ts](../../../packages/extensions/extension-ad/src/backend/src/main.ts))：
 
 ```typescript
-import 'reflect-metadata'
+import { NestFactory } from '@nestjs/core'
+import { AdModule } from './ad.module'
 import { createExtensionBackendApp } from 'moyan-mfw-base/backend'
-import { AdModule, AdPlacement, Ad } from './index'
 
 async function bootstrap() {
-  const result = await createExtensionBackendApp({
-    name: '广告管理',
+  const app = await createExtensionBackendApp({
+    name: 'ad',
     module: AdModule,
     entities: [AdPlacement, Ad],
-    manifest: {
-      name: 'moyan-mfw-extension-ad',
-      version: '0.1.0',
-      // ... 其他字段
-    },
   })
 
-  await result.listen(3002)
+  await app.listen(3002)
 }
 
 bootstrap()
 ```
 
-**校验逻辑** ([create-extension-backend-app.ts](../../../packages/base/src/backend/src/create-extension-backend-app.ts))：
-
-```typescript
-function validateManifest(manifest: ExtensionManifest): void {
-  // 1. 必填字段检查
-  const required = ['name', 'version', 'displayName', 'description', 'routePrefix', 'permCodeNodes']
-  for (const field of required) {
-    if (!(manifest as any)[field]) {
-      throw new Error(`[Extension] extension.json 缺少必填字段: ${field}`)
-    }
-  }
-
-  // 2. routePrefix 格式检查
-  if (!manifest.routePrefix.startsWith('/ext/')) {
-    throw new Error(`[Extension] routePrefix 必须 /ext/{ns} 格式`)
-  }
-
-  // 3. permCode 命名空间检查
-  const ns = manifest.routePrefix.replace('/ext/', '')
-  for (const node of manifest.permCodeNodes) {
-    if (!node.permCode.startsWith(`${ns}:`)) {
-      throw new Error(`[Extension] permCode 必须以命名空间 "${ns}" 开头`)
-    }
-  }
-}
-```
+`createExtensionBackendApp` 内部自动完成：
+- 路由前缀推导（`/ext/ad`）
+- displayName 推导（`Ad`）
+- Swagger 分组配置
+- CORS 启用
 
 ### 后端请求处理流水线
 
@@ -696,7 +655,7 @@ import { LinkType, AD_PATHS } from 'moyan-mfw-extension-ad/shared'
 
 ### 架构优势
 
-1. **松耦合**：扩展间通过 Manifest 声明依赖，无硬编码耦合
+1. **松耦合**：扩展间通过 `requiredExtensions` 声明依赖，无硬编码耦合
 2. **类型安全**：Shared 层确保前后端接口一致性
 3. **独立开发**：每层可独立启动，降低开发门槛
 4. **统一规范**：Base 包封装通用逻辑，避免重复代码
@@ -706,9 +665,8 @@ import { LinkType, AD_PATHS } from 'moyan-mfw-extension-ad/shared'
 
 | 问题现象 | 可能原因 | 排查方向 |
 |----------|----------|----------|
-| 启动报错 `缺少必填字段` | Manifest 配置不完整 | 检查 `main.ts` 或 `extension.json` |
-| `routePrefix 格式错误` | 未使用 `/ext/` 前缀 | 修改 routePrefix 格式 |
-| `permCode 命名空间不匹配` | 权限编码前缀不一致 | 确保 permCode 以 namespace 开头 |
+| 启动报错 `缺少模块` | NestJS 模块未注册 | 检查 `main.ts` 中 `module` 参数是否正确 |
+| API 路由无法访问 | routePrefix 不正确 | 框架自动推导 `/ext/{name}`，检查 name 参数 |
 | 前端路由 404 | views 目录结构不符合约定 | 检查 `index.ts` 是否存在且导出 default |
 | API 调用 404 | 后端 Controller 路由未注册 | 检查 Module 中 RouterModule 配置 |
 | 类型检查失败 | Shared 层类型不同步 | 重新 build shared 并重启前后端 |

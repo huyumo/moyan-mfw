@@ -1,0 +1,17 @@
+{
+  "name": "test-shop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TestShop 业务项目",
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "build": "pnpm run -r build",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}

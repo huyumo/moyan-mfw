@@ -1,0 +1,30 @@
+{
+  "name": "@internal/test-ext-frontend",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": { "types": "./src/index.d.ts", "import": "./src/index.mjs", "require": "./src/index.js" }
+  },
+  "scripts": {
+    "build": "vite build && vue-tsc --emitOnly",
+    "typecheck": "vue-tsc --noEmit",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "moyan-mfw-base/frontend": "workspace:",
+    "@internal/test-ext-shared": "workspace:*",
+    "vue": "catalog:",
+    "vue-router": "catalog:",
+    "element-plus": "catalog:",
+    "@element-plus/icons-vue": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:",
+    "typescript": "catalog:"
+  }
+}

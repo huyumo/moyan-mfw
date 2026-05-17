@@ -1,1 +1,0 @@
-{"name": "ad", "displayName": "广告管理", "description": "提供广告位管理功能，支持在广告位详情中管理广告内容", "version": "0.1.0", "routePrefix": "/ext/ad"}

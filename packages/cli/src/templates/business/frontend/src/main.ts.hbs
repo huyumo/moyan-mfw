@@ -1,0 +1,24 @@
+import { createBaseAdminApp, registerPermissionValues } from 'moyan-mfw-base/frontend'
+import { businessRoutes } from './router'
+import './permissions'
+
+const admin = createBaseAdminApp({
+  title: '{{displayName}}',
+  routes: [...businessRoutes],
+  layout: {
+    layoutMode: 'dual',
+    showTabs: true,
+    colorMode: 'system',
+    themePackage: 'default',
+  },
+  navigation: {
+    brandName: '{{displayName}}',
+    brandTagline: '{{description}}',
+    homePath: '/dashboard',
+  },
+})
+
+const values = await admin.fetchPermissionValues()
+admin.initPermissionCache(values)
+
+await admin.mount('#app')

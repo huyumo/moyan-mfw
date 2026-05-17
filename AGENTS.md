@@ -62,7 +62,6 @@ packages/
         ├── src/backend/    # Extension backend
         ├── src/frontend/   # Extension frontend
         └── src/shared/     # Extension shared
-        └── extension.json  # Extension manifest (permissions, routes, entities)
 ```
 
 ### Multi-entry Package Exports
@@ -106,17 +105,13 @@ Create extensions in `packages/extensions/<name>/` with this structure:
 
 ```
 extension-xxx/
-├── extension.json          # Manifest: name, permissions, routes, entities
 ├── src/backend/            # NestJS module(s)
 ├── src/frontend/           # Vue pages/components
 ├── src/shared/             # Shared permission values
 ├── migrations/             # Database migrations
 ```
 
-The `extension.json` manifest defines:
-- `permCodeNodes`: Permission codes with names and groups
-- `routePrefix`: URL prefix for all extension routes
-- `provides`: Services, dicts, routes, entities exposed
+Extensions are initialized via `createExtensionBackendApp({ name, module, entities? })` which auto-derives route prefix (`/ext/{name}`) and Swagger config.
 
 ## Frontend Routing
 
