@@ -345,6 +345,19 @@ export type UpdateAppTypeDto = {
   sortOrder?: number // 排序号
 }
 
+export type CustomMenuItemDto = {
+  permCode: string // 权限编码
+  permName: string // 菜单名称
+  icon?: string // 图标
+  routePath?: string // 路由路径
+  sortOrder?: number // 排序
+  children?: Array<CustomMenuItemDto> // 子节点
+}
+
+export type SaveCustomMenuDto = {
+  data: Array<CustomMenuItemDto> // 自定义菜单节点数组
+}
+
 export type CreateAppDto = {
   appTypeId: string // 应用类型 ID
   appName: string // 应用名称

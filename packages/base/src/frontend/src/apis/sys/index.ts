@@ -43,6 +43,8 @@ import type {
   UpdatePermissionPoolDto,
   UpdatePermissionPoolResponseDto,
   UpdateAppTypeDto,
+  CustomMenuItemDto,
+  SaveCustomMenuDto,
   CreateAppDto,
   AppDetailResponseDto,
   UpdateAppDto,
@@ -775,6 +777,55 @@ export class ApiAppTypeUpdateStatus extends ApiCall<
 > {
   readonly path = '/api/app-types/{id}/status'
   readonly method: MoMethod = 'PUT'
+  readonly auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->获取自定义菜单
+ */
+export class ApiAppTypeGetCustomMenu extends ApiCall<
+  {
+    params: {
+      id: string //应用类型 ID
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/app-types/{id}/custom-menu'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->保存自定义菜单
+ */
+export class ApiAppTypeSaveCustomMenu extends ApiCall<
+  {
+    body: SaveCustomMenuDto
+    params: {
+      id: string //应用类型 ID
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/app-types/{id}/custom-menu'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
+}
+
+/**
+ * app-type|应用类型相关接口->清空自定义菜单
+ */
+export class ApiAppTypeClearCustomMenu extends ApiCall<
+  {
+    params: {
+      id: string //应用类型 ID
+    }
+  },
+  unknown
+> {
+  readonly path = '/api/app-types/{id}/custom-menu'
+  readonly method: MoMethod = 'DELETE'
   readonly auth = true
 }
 
