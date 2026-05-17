@@ -1,0 +1,13 @@
+/**
+ * @fileoverview {{DisplayName}}扩展包前端自启动入口
+ */
+import 'moyan-mfw-base/frontend/styles/base-admin.scss'
+import { createExtensionFrontendApp } from 'moyan-mfw-base/frontend'
+import { {{pascalCase name}}Routes } from './index'
+
+const app = createExtensionFrontendApp({
+  name: '{{displayName}}',
+  routes: {{pascalCase name}}Routes,
+})
+
+app.mount('#app')

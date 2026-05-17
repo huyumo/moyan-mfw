@@ -1,30 +1,10 @@
 /**
  * @fileoverview 扩展包后端启动入口
- * @description 为扩展包提供统一的 NestJS 启动逻辑，封装 manifest 校验、CORS、Swagger。
+ * @description 为扩展包提供统一的 NestJS 启动逻辑，封装路由前缀、CORS、Swagger。
  */
 import { createBaseBackendApp } from './create-base-backend-app'
 
-export interface ExtensionManifest {
-  name: string
-  version: string
-  displayName: string
-  description: string
-  routePrefix: string
-  permCodeNodes: Array<{
-    permCode: string
-    permName: string
-    nodeType: string
-    group: string
-  }>
-  requiredExtensions: string[]
-  optionalExtensions: string[]
-  appTypes: string[]
-  minFrameworkVersion: string
-  provides?: Record<string, unknown>
-}
-
 export interface CreateExtensionBackendAppOptions {
-  manifest: ExtensionManifest
   name: string
   module: any
   entities?: any[]
@@ -33,60 +13,52 @@ export interface CreateExtensionBackendAppOptions {
 
 export type { BaseBackendAppInstance as ExtensionBackendAppInstance } from './types/app-config.types'
 
-function validateManifest(manifest: ExtensionManifest): void {
-  const required = ['name', 'version', 'displayName', 'description', 'routePrefix', 'permCodeNodes'] as const
-  for (const field of required) {
-    if (!(manifest as any)[field]) {
-      throw new Error(`[Extension] extension.json 缺少必填字段: ${field}`)
-    }
-  }
-
-  if (!manifest.routePrefix.startsWith('/ext/')) {
-    throw new Error(
-      `[Extension] routePrefix 必须 /ext/{ns} 格式，当前: "${manifest.routePrefix}"`,
-    )
-  }
-
-  const ns = manifest.routePrefix.replace('/ext/', '')
-  for (const node of manifest.permCodeNodes) {
-    if (!node.permCode || !node.permName) {
-      throw new Error(`[Extension] permCodeNode 缺少 permCode 或 permName`)
-    }
-    if (!node.permCode.startsWith(`${ns}:`)) {
-      throw new Error(
-        `[Extension] permCode "${node.permCode}" 必须以命名空间 "${ns}:" 开头`,
-      )
-    }
-  }
-
-  console.log(`[Extension] ✅ ${manifest.displayName} v${manifest.version} 清单校验通过`)
+function toPascalCase(str: string): string {
+  return str.replace(/(^\w|-\w)/g, (c) => c.slice(-1).toUpperCase())
 }
 
-export async function createExtensionBackendApp(
-  options: CreateExtensionBackendAppOptions,
-) {
-  validateManifest(options.manifest)
+export async function createExtensionBackendApp(options: CreateExtensionBackendAppOptions) {
+  const startTime = Date.now()
+  const shortName = options.name
+  const routePrefix = `/ext/${shortName}`
+  const displayName = toPascalCase(shortName)
 
-  const shortName = options.manifest.name.replace('moyan-extension-', '')
-
-  const routePath = options.manifest.routePrefix.replace(/^\/+|\/+$/g, '');
+  console.log('\n' + '='.repeat(50))
+  console.log(`[Extension] 🚀 启动扩展: ${displayName}`)
+  console.log(`[Extension]    名称: ${shortName}`)
+  console.log(`[Extension]    路由前缀: ${routePrefix}`)
+  console.log(`[Extension]    模块: ${options.module?.name ?? 'unknown'}`)
+  if (options.entities?.length) {
+    console.log(`[Extension]    额外实体: ${options.entities.length} 个`)
+  }
+  console.log('='.repeat(50) + '\n')
 
   const swaggerGroup = {
     name: shortName,
-    title: `${options.manifest.displayName} API`,
-    description: options.manifest.description,
+    title: `${displayName} API`,
+    description: '',
     include: [options.module],
   }
 
-  const result = await createBaseBackendApp({
-    name: options.name,
-    modules: [options.module],
-    moduleRoutes: [{ path: routePath, module: options.module }],
-    extraEntities: options.entities || [],
-    cors: true,
-    syncAppTypes: false,
-    swagger: [swaggerGroup],
-  })
+  try {
+    const result = await createBaseBackendApp({
+      name: options.name,
+      modules: [options.module],
+      moduleRoutes: [{ path: routePrefix, module: options.module }],
+      extraEntities: options.entities || [],
+      cors: true,
+      syncAppTypes: false,
+      swagger: [swaggerGroup],
+    })
 
-  return result
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
+    console.log(`\n[Extension] ✅ ${displayName} 启动完成 (${elapsed}s)`)
+    console.log(`[Extension]    Swagger 文档: /api/swagger-${shortName}`)
+    console.log(`[Extension]    API 路由: ${routePrefix}/*`)
+    return result
+  } catch (error) {
+    console.error(`\n[Extension] ❌ ${displayName} 启动失败:`)
+    console.error(error)
+    throw error
+  }
 }
