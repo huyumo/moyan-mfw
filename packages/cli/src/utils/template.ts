@@ -15,6 +15,11 @@ Handlebars.registerHelper('camelCase', (str: string) =>
   str.replace(/-(\w)/g, (_, c) => c.toUpperCase()),
 )
 
+Handlebars.registerHelper('pascalCaseUpper', (str: string) => {
+  const pascal = str.replace(/(^\w|-\w)/g, (c) => c.slice(-1).toUpperCase())
+  return pascal.toUpperCase()
+})
+
 function getParser(filePath: string): string | null {
   const ext = path.extname(filePath)
   const map: Record<string, string> = {
@@ -79,7 +84,8 @@ export async function renderTemplateToDir(
   for (const file of files) {
     const relative = path.relative(templateDir, file)
     if (!relative.endsWith('.hbs')) continue
-    const outputName = relative.replace(/\.hbs$/, '')
+    const outputNameRaw = relative.replace(/\.hbs$/, '').replace(/\\/g, '/')
+    const outputName = Handlebars.compile(outputNameRaw)(vars)
     const outputPath = path.join(outputDir, outputName)
     const raw = await renderTemplate(file, vars)
     const content = await formatContent(raw, outputPath)
