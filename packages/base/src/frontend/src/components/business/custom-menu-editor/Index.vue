@@ -8,7 +8,7 @@
   <div class="custom-menu-editor" v-loading="loading">
     <div class="custom-menu-editor__toolbar">
       <el-button type="success" @click="handleSave">保存</el-button>
-      <el-button type="primary" @click="handleReset">恢复到默认</el-button>
+      <el-button type="primary" @click="handleReset">重置为默认</el-button>
       <el-button type="danger" @click="handleClear">清空自定义</el-button>
     </div>
     <div class="custom-menu-editor__body">
@@ -22,7 +22,9 @@
           >
             <template #default="{ data }">
               <div class="tree-node">
-                <i :class="data.iconName" v-if="data.iconName"></i>
+                <el-icon v-if="data.iconName" size="16">
+                  <component :is="data.iconName" />
+                </el-icon>
                 <span class="tree-node__name">{{ data.permName }}</span>
                 <span class="tree-node__code">{{ data.permCode }}</span>
               </div>
@@ -40,25 +42,20 @@
             :data="customMenus"
             node-key="permCode"
             draggable
-            :allow-drop="allowDrop"
-            :allow-drag="allowDrag"
             :expand-on-click-node="false"
           >
             <template #default="{ node, data }">
               <div class="tree-node tree-node--editable">
-                <i
-                  :class="data.icon"
-                  class="tree-node__icon"
-                  @click.stop="handleEditIcon(data)"
-                ></i>
+                <el-icon class="tree-node__icon" size="16" @click.stop="handleEditIcon(data)">
+                  <component :is="data.icon" />
+                </el-icon>
                 <span
                   class="tree-node__name"
                   :class="{ 'is-change': data.is_change, 'is-new': data.is_new }"
                   v-if="!data.editTitle"
-                  @click.stop="handleEditTitle(data)"
+                  @click.stop="handleEditTitle(data, $event)"
                 >{{ data.permName }}</span>
                 <el-input
-                  ref="titleInputRef"
                   class="tree-node__input"
                   size="small"
                   v-model="data.permName"
@@ -71,7 +68,6 @@
                   type="danger"
                   link
                   size="small"
-                  class="tree-node__del"
                   @click.stop="handleDelete(node, data)"
                 >删除</el-button>
               </div>
@@ -81,12 +77,7 @@
       </div>
     </div>
 
-    <!-- 添加节点弹窗 -->
-    <el-dialog
-      v-model="addDialogVisible"
-      title="选择权限节点"
-      width="500px"
-    >
+    <el-dialog v-model="addDialogVisible" title="选择权限节点" width="500px" :close-on-click-modal="false">
       <el-tree
         :data="defaultMenus"
         node-key="permCode"
@@ -101,21 +92,16 @@
       </template>
     </el-dialog>
 
-    <!-- 图标选择弹窗 -->
-    <el-dialog
-      v-model="iconDialogVisible"
-      title="选择图标"
-      width="500px"
-    >
+    <el-dialog v-model="iconDialogVisible" title="选择图标" width="600px" :close-on-click-modal="false">
       <div class="icon-grid">
         <div
-          v-for="icon in iconList"
-          :key="icon"
+          v-for="name in iconNames"
+          :key="name"
           class="icon-grid__item"
-          :class="{ 'is-active': icon === editingIcon }"
-          @click="editingIcon = icon"
+          :class="{ 'is-active': name === editingIcon }"
+          @click="editingIcon = name"
         >
-          <i :class="icon"></i>
+          <el-icon size="20"><component :is="(Icons as Record<string, any>)[name]" /></el-icon>
         </div>
       </div>
       <template #footer>
@@ -127,31 +113,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, computed, nextTick, onMounted } from 'vue';
 import { ElMessage, ElMessageBox, ElScrollbar } from 'element-plus';
-import type { AllowDropType } from 'element-plus/es/components/tree/src/tree.type';
+import * as Icons from '@element-plus/icons-vue';
 import type { CustomMenuNode, PermissionTreeNode } from './types';
-import {
-  ApiAppTypeGetPermissionPool,
-  ApiAppTypeGetCustomMenu,
-  ApiAppTypeSaveCustomMenu,
-  ApiAppTypeClearCustomMenu,
-} from '../../../apis/sys';
+import { TOKEN_KEY } from '../../../constants/storage-keys';
 
-interface TreeNode {
-  data: Record<string, any>;
-  parent: TreeNode;
-  children?: TreeNode[];
+defineOptions({ name: 'CustomMenuEditor' });
+
+interface ElTreeNode {
+  nodeData: Record<string, any>;
+  parent: ElTreeNode;
+  children?: ElTreeNode[];
 }
 
 const props = defineProps<{
-  appTypeId: string;
+  data: { appTypeId: string };
 }>();
+
+const appTypeId = computed(() => props.data?.appTypeId);
 
 const loading = ref(false);
 const defaultMenus = ref<PermissionTreeNode[]>([]);
 const customMenus = ref<CustomMenuNode[]>([]);
-const titleInputRef = ref<any>(null);
 const addDialogVisible = ref(false);
 const addTreeRef = ref<any>(null);
 const addTargetNode = ref<CustomMenuNode | null>(null);
@@ -159,17 +143,41 @@ const iconDialogVisible = ref(false);
 const editingIcon = ref('');
 const editingIconNode = ref<CustomMenuNode | null>(null);
 
-const iconList = [
-  'el-icon-s-home', 'el-icon-s-grid', 'el-icon-s-data', 'el-icon-s-order',
-  'el-icon-s-tools', 'el-icon-s-custom', 'el-icon-s-check', 'el-icon-s-operation',
-  'el-icon-s-platform', 'el-icon-s-fold', 'el-icon-s-unfold', 'el-icon-s-release',
-  'el-icon-s-marketing', 'el-icon-s-shop', 'el-icon-s-finance', 'el-icon-s-claim',
+const iconNames = [
+  'HomeFilled', 'Menu', 'Grid', 'DataAnalysis', 'DataBoard', 'Sort',
+  'Tools', 'UserFilled', 'Checked', 'Operation', 'Platform',
+  'Fold', 'Expand', 'Collection', 'CollectionTag',
+  'MarketingFilled', 'Shop', 'Coin', 'Ticket', 'Money',
+  'ChatLineSquare', 'BellFilled', 'Setting', 'InfoFilled',
+  'Document', 'Files', 'Folder', 'PictureFilled',
 ];
+
+const token = () => localStorage.getItem(TOKEN_KEY) || '';
+
+async function apiGet(path: string) {
+  const res = await fetch('/api' + path, { headers: { Authorization: 'Bearer ' + token() } });
+  const json = await res.json();
+  return json?.data ?? json;
+}
+
+async function apiPut(path: string, body: any) {
+  const res = await fetch('/api' + path, {
+    method: 'PUT',
+    headers: { Authorization: 'Bearer ' + token(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json();
+  return json?.data ?? json;
+}
+
+async function apiDelete(path: string) {
+  await fetch('/api' + path, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token() } });
+}
 
 async function loadData() {
   loading.value = true;
   try {
-    const pool = await new ApiAppTypeGetPermissionPool({ params: { appTypeId: props.appTypeId } });
+    const pool = await apiGet(`/app-types/${appTypeId.value}/permission-pool`);
     const treeData = pool?.permissionTrees?.pcTree || pool?.permissionTrees?.normalTree;
     if (treeData?.length) {
       const root = treeData[0];
@@ -177,7 +185,7 @@ async function loadData() {
         ? flattenTreeForDisplay(root.children)
         : flattenTreeForDisplay(treeData);
     }
-    const menu = await new ApiAppTypeGetCustomMenu({ params: { id: props.appTypeId } });
+    const menu = await apiGet(`/app-types/${appTypeId.value}/custom-menu`);
     if (menu && Array.isArray(menu) && menu.length > 0) {
       customMenus.value = menu as CustomMenuNode[];
     }
@@ -188,7 +196,6 @@ async function loadData() {
   }
 }
 
-/** 为左侧只读展示做扁平化：去掉不需要的字段，保留 tree 结构 */
 function flattenTreeForDisplay(nodes: any[]): PermissionTreeNode[] {
   return nodes.map((node: any) => ({
     id: node.id,
@@ -201,19 +208,6 @@ function flattenTreeForDisplay(nodes: any[]): PermissionTreeNode[] {
   }));
 }
 
-/** 拖拽限制：PAGE 节点不允许作为容器 */
-function allowDrop(_draggingNode: TreeNode, dropNode: TreeNode, type: AllowDropType) {
-  if (['PAGE', 'TAG'].includes(dropNode.data.nodeType)) {
-    return type !== 'inner';
-  }
-  return true;
-}
-
-function allowDrag() {
-  return true;
-}
-
-/** 添加节点：弹出权限选择器 */
 function handleAdd(parent: CustomMenuNode | null) {
   addTargetNode.value = parent;
   addDialogVisible.value = true;
@@ -226,61 +220,72 @@ function confirmAdd() {
     return;
   }
 
-  const newNodes = findNodesByPermCodes(defaultMenus.value, checkedKeys);
+  const matchedTrees = cloneSubtreeByPermCodes(defaultMenus.value, checkedKeys);
   const targetList = addTargetNode.value
     ? (addTargetNode.value.children = addTargetNode.value.children || [])
     : customMenus.value;
 
-  for (const node of newNodes) {
-    targetList.push({
-      permCode: node.permCode,
-      permName: node.permName,
-      icon: node.iconName || 'el-icon-s-grid',
-      routePath: node.routePath,
-      sortOrder: node.sortOrder,
-      children: [],
-      is_new: true,
-    });
+  for (const node of matchedTrees) {
+    targetList.push(toCustomMenuNode(node));
   }
 
   addDialogVisible.value = false;
 }
 
-function findNodesByPermCodes(nodes: PermissionTreeNode[], codes: string[]): PermissionTreeNode[] {
+function cloneSubtreeByPermCodes(nodes: PermissionTreeNode[], codes: string[]): PermissionTreeNode[] {
   const result: PermissionTreeNode[] = [];
   for (const node of nodes) {
     if (codes.includes(node.permCode)) {
-      result.push(node);
-    }
-    if (node.children) {
-      result.push(...findNodesByPermCodes(node.children, codes));
+      result.push(cloneTree(node));
+    } else if (node.children) {
+      const matched = cloneSubtreeByPermCodes(node.children, codes);
+      if (matched.length > 0) {
+        result.push({ ...node, children: matched });
+      }
     }
   }
   return result;
 }
 
-/** 删除节点 */
-function handleDelete(node: TreeNode, data: CustomMenuNode) {
-  ElMessageBox.confirm(`确定要删除【${data.permName}】节点吗？`, '提示', {
+function cloneTree(node: PermissionTreeNode): PermissionTreeNode {
+  return {
+    ...node,
+    children: node.children ? node.children.map(cloneTree) : [],
+  };
+}
+
+function toCustomMenuNode(node: PermissionTreeNode): CustomMenuNode {
+  return {
+    permCode: node.permCode,
+    permName: node.permName,
+    icon: node.iconName || 'Menu',
+    routePath: node.routePath,
+    sortOrder: node.sortOrder,
+    children: node.children?.map(toCustomMenuNode) || [],
+    is_new: true,
+  };
+}
+
+function handleDelete(node: ElTreeNode, itemData: CustomMenuNode) {
+  ElMessageBox.confirm(`确定要删除【${itemData.permName}】节点吗？`, '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
     const parent = node.parent;
-    const children: CustomMenuNode[] = parent.data.children || parent.data;
-    const index = children.findIndex((d: any) => d.permCode === data.permCode);
-    if (index > -1) children.splice(index, 1);
+    const siblings: CustomMenuNode[] = parent.nodeData.children || (parent.nodeData as any);
+    const index = siblings.findIndex((d: any) => d.permCode === itemData.permCode);
+    if (index > -1) siblings.splice(index, 1);
   }).catch(() => {});
 }
 
-/** 编辑名称 */
-function handleEditTitle(data: CustomMenuNode) {
+function handleEditTitle(data: CustomMenuNode, event: MouseEvent) {
   data.editTitle = true;
   data.old_title = data.old_title || data.permName;
   nextTick(() => {
-    const inputs = document.querySelectorAll('.tree-node__input input');
-    const last = inputs[inputs.length - 1] as HTMLInputElement;
-    last?.focus();
+    const container = (event.target as HTMLElement).closest('.tree-node--editable');
+    const input = container?.querySelector('.tree-node__input input') as HTMLInputElement;
+    input?.focus();
   });
 }
 
@@ -289,10 +294,9 @@ function handleTitleBlur(data: CustomMenuNode) {
   data.is_change = data.old_title !== data.permName && !data.is_new;
 }
 
-/** 编辑图标 */
 function handleEditIcon(data: CustomMenuNode) {
   editingIconNode.value = data;
-  editingIcon.value = data.icon || '';
+  editingIcon.value = data.icon || 'Menu';
   iconDialogVisible.value = true;
 }
 
@@ -303,30 +307,17 @@ function confirmIcon() {
   iconDialogVisible.value = false;
 }
 
-/** 重置为默认菜单 */
 function handleReset() {
-  customMenus.value = defaultMenus.value.map(mapToCustomNode);
+  customMenus.value = defaultMenus.value.map(toCustomMenuNode);
 }
 
-function mapToCustomNode(node: PermissionTreeNode): CustomMenuNode {
-  return {
-    permCode: node.permCode,
-    permName: node.permName,
-    icon: node.iconName || 'el-icon-s-grid',
-    routePath: node.routePath,
-    sortOrder: node.sortOrder,
-    children: node.children?.map(mapToCustomNode) || [],
-  };
-}
-
-/** 保存 */
 async function handleSave() {
   loading.value = true;
   try {
-    await new ApiAppTypeSaveCustomMenu(
-      { params: { id: props.appTypeId }, body: { data: customMenus.value.map(stripEditState) } },
-      { hintSuccess: true },
-    );
+    await apiPut(`/app-types/${appTypeId.value}/custom-menu`, {
+      data: customMenus.value.map(stripEditState),
+    });
+    ElMessage.success('保存成功');
     await loadData();
   } catch {
     ElMessage.error('保存失败');
@@ -346,7 +337,6 @@ function stripEditState(node: CustomMenuNode): any {
   };
 }
 
-/** 清空 */
 function handleClear() {
   ElMessageBox.confirm('确定要清空自定义菜单吗？', '提示', {
     confirmButtonText: '确定',
@@ -355,8 +345,9 @@ function handleClear() {
   }).then(async () => {
     loading.value = true;
     try {
-      await new ApiAppTypeClearCustomMenu({ params: { id: props.appTypeId } }, { hintSuccess: true });
+      await apiDelete(`/app-types/${appTypeId.value}/custom-menu`);
       customMenus.value = [];
+      ElMessage.success('已清空');
     } catch {
       ElMessage.error('清空失败');
     } finally {
@@ -459,10 +450,6 @@ onMounted(() => {
   &__input {
     width: 120px;
   }
-
-  &__del {
-    flex-shrink: 0;
-  }
 }
 
 .icon-grid {
@@ -478,7 +465,6 @@ onMounted(() => {
     border: 1px solid var(--el-border-color);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 20px;
 
     &:hover { border-color: var(--el-color-primary); }
     &.is-active { border-color: var(--el-color-primary); background: var(--el-color-primary-light-9); }

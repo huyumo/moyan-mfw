@@ -7,12 +7,13 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppType } from './entities/app-type.entity';
 import { Role } from '../role/entities/role.entity';
+import { Permission } from '../permission/entities/permission.entity';
 import { AppTypeService } from './app-type.service';
 import { AppTypeController } from './app-type.controller';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AppType, Role]),
+    TypeOrmModule.forFeature([AppType, Role, Permission]),
   ],
   providers: [AppTypeService],
   controllers: [AppTypeController],

@@ -3,12 +3,12 @@
  * @description 处理应用类型相关业务逻辑
  */
 
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { AppType } from './entities/app-type.entity';
 import { AppTypePermissionEntity } from './entities/app-type-permission.entity';
-import { PermissionType } from '../permission/entities/permission.entity';
+import { PermissionType, Permission } from '../permission/entities/permission.entity';
 import { Role } from '../role/entities/role.entity';
 import { CreateAppTypeDto, UpdateAppTypeDto, QueryAppTypeDto } from './dto';
 import { UpdatePermissionPoolDto } from './dto/req/update-permission-pool.dto';
@@ -32,6 +32,8 @@ export class AppTypeService {
     private appTypeRepository: Repository<AppType>,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private permissionRepository: Repository<Permission>,
     private dataSource: DataSource,
   ) {}
 
@@ -363,6 +365,20 @@ export class AppTypeService {
   async saveCustomMenu(appTypeId: string, data: CustomMenuItem[]): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
     if (!appType) throw new NotFoundError('应用类型');
+
+    const permCodes = collectPermCodes(data);
+    if (permCodes.length > 0) {
+      const existing = await this.permissionRepository.find({
+        where: { permCode: In(permCodes) },
+        select: ['permCode'],
+      });
+      const existingCodes = new Set(existing.map(p => p.permCode));
+      const missing = permCodes.filter(c => !existingCodes.has(c));
+      if (missing.length > 0) {
+        throw new BadRequestException(`权限编码不存在: ${missing.join(', ')}`);
+      }
+    }
+
     appType.customMenu = data;
     return this.appTypeRepository.save(appType);
   }
@@ -398,4 +414,16 @@ export class AppTypeService {
       }
     }
   }
+}
+
+/** 递归收集自定义菜单中所有 permCode */
+function collectPermCodes(menus: CustomMenuItem[]): string[] {
+  const codes: string[] = [];
+  for (const item of menus) {
+    codes.push(item.permCode);
+    if (item.children?.length) {
+      codes.push(...collectPermCodes(item.children));
+    }
+  }
+  return codes;
 }
