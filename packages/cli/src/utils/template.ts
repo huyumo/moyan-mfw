@@ -15,6 +15,52 @@ Handlebars.registerHelper('camelCase', (str: string) =>
   str.replace(/-(\w)/g, (_, c) => c.toUpperCase()),
 )
 
+function getParser(filePath: string): string | null {
+  const ext = path.extname(filePath)
+  const map: Record<string, string> = {
+    '.ts': 'typescript',
+    '.tsx': 'typescript',
+    '.js': 'babel',
+    '.jsx': 'babel',
+    '.mjs': 'babel',
+    '.cjs': 'babel',
+    '.vue': 'vue',
+    '.json': 'json',
+    '.md': 'markdown',
+    '.html': 'html',
+    '.css': 'css',
+    '.scss': 'scss',
+    '.less': 'less',
+    '.yaml': 'yaml',
+    '.yml': 'yaml',
+  }
+  return map[ext] ?? null
+}
+
+async function formatContent(content: string, filePath: string): Promise<string> {
+  const parser = getParser(filePath)
+  if (!parser) return content
+  try {
+    // @ts-expect-error prettier is an optional runtime dependency
+    const mod = await import('prettier')
+    const fmt = mod.default ?? mod
+    if (typeof fmt.format !== 'function') return content
+    const formatted = await fmt.format(content, {
+      parser,
+      semi: true,
+      singleQuote: true,
+      trailingComma: 'all',
+      printWidth: 100,
+      tabWidth: 2,
+      useTabs: false,
+      endOfLine: 'lf',
+    })
+    return formatted
+  } catch {
+    return content
+  }
+}
+
 export async function renderTemplate(
   templatePath: string,
   vars: TemplateVars,
@@ -35,7 +81,8 @@ export async function renderTemplateToDir(
     if (!relative.endsWith('.hbs')) continue
     const outputName = relative.replace(/\.hbs$/, '')
     const outputPath = path.join(outputDir, outputName)
-    const content = await renderTemplate(file, vars)
+    const raw = await renderTemplate(file, vars)
+    const content = await formatContent(raw, outputPath)
     await writeFile(outputPath, content)
   }
 }
