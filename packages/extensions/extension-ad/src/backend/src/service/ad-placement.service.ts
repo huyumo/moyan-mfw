@@ -26,14 +26,57 @@ export class AdPlacementService {
   async findAll(query: QueryAdPlacementDto): Promise<PaginationResult<any>> {
     const { name, code, status } = query
     const whereBuilder = new WhereBuilder()
-    whereBuilder.like('p.name', name).like('p.code', code).eq('p.status', status)
+    whereBuilder.like('p.name', name).like('p.code', code).eq('p.status', status).isNull('p.deleteAt')
+
     const pager = new PaginationX(this.placementRepo.manager.connection as any, query)
     const result = await pager.where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''
-        return `SELECT ${select} FROM ext_ad_placements p ${whereClause} ${orderBy} ${limit}`
-      }).select('p.*')
-      .defaultOrderBy('p.sortOrder ASC, p.createdAt DESC').getData()
+        return `
+          WITH ad_agg AS (
+            SELECT
+              a.placementId,
+              JSON_ARRAYAGG(
+                JSON_OBJECT(
+                  'id', a.id,
+                  'title', a.title,
+                  'mediaType', a.mediaType,
+                  'media', a.media
+                )
+              ) AS ads,
+              COUNT(*) AS adCount
+            FROM (
+              SELECT *, ROW_NUMBER() OVER (
+                PARTITION BY placementId
+                ORDER BY sortOrder ASC, createdAt DESC
+              ) AS rn
+              FROM ext_ad_contents
+              WHERE status = ${StatusDict.ENABLED} AND deleteAt IS NULL
+            ) a
+            WHERE a.rn <= 10
+            GROUP BY a.placementId
+          )
+          SELECT
+            ${select}
+          FROM ext_ad_placements p
+          LEFT JOIN ad_agg ON ad_agg.placementId = p.id
+          ${whereClause}
+          ${orderBy}
+          ${limit}
+        `
+      })
+      .select('p.*, COALESCE(ad_agg.ads, JSON_ARRAY()) AS ads, COALESCE(ad_agg.adCount, 0) AS adCount')
+      .defaultOrderBy('p.sortOrder ASC, p.createdAt DESC')
+      .getData()
+
+    if (result.list?.length) {
+      result.list = result.list.map((item: any) => ({
+        ...item,
+        ads: typeof item.ads === 'string' ? JSON.parse(item.ads) : (item.ads || []),
+        adCount: Number(item.adCount) || 0,
+      }))
+    }
+
     return result
   }
 

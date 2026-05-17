@@ -1,15 +1,15 @@
 <!--
 /**
  * @fileoverview 广告位卡片组件
- * @description 展示广告位信息，支持轮播预览广告效果，hover时显示信息和操作按钮
+ * @description 以卡片形式展示广告位信息，含轮播预览、基本信息和操作按钮
  */
 -->
 <template>
-  <el-card class="ad-placement-card" :body-style="{ padding: '0' }" shadow="hover">
-    <div class="carousel-wrapper" :style="carouselStyle">
+  <el-card class="ad-placement-card" shadow="hover">
+    <div class="ad-placement-card__media">
       <el-carousel
         v-if="mediaAds.length > 0"
-        :height="carouselHeight + 'px'"
+        :height="CAROUSEL_HEIGHT + 'px'"
         :autoplay="true"
         :interval="3000"
         indicator-position="none"
@@ -19,86 +19,61 @@
             v-if="ad.mediaType === 'image'"
             :src="getAdImageSrc(ad)"
             :alt="ad.title"
-            class="ad-image"
+            class="ad-placement-card__image"
           />
           <video
             v-else-if="ad.mediaType === 'video'"
             :src="getAdVideoSrc(ad)"
-            class="ad-video"
+            class="ad-placement-card__video"
             muted
             preload="metadata"
           />
         </el-carousel-item>
       </el-carousel>
-      <div v-else class="empty-placeholder">
-        <el-icon :size="48"><Picture /></el-icon>
+      <div v-else class="ad-placement-card__empty">
+        <el-icon :size="36"><Picture /></el-icon>
         <span>暂无广告</span>
       </div>
     </div>
 
-    <div class="hover-overlay">
-      <div class="info-section">
-        <div class="info-row">
-          <span class="label">名称：</span>
-          <span class="value">{{ placement.name }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">编码：</span>
-          <span class="value">{{ placement.code }}</span>
-        </div>
-        <div class="info-row">
-          <span class="label">尺寸：</span>
-          <span class="value">{{ placement.width }}x{{ placement.height }}px</span>
-        </div>
-        <div class="info-row">
-          <span class="label">广告数：</span>
-          <el-tag :type="adCount > 0 ? 'success' : 'info'" size="small">
-            {{ adCount }}
-          </el-tag>
-        </div>
-        <div class="info-row">
-          <span class="label">状态：</span>
-          <MfwDictFormat :value="placement.status" :dict="toItems(StatusDict)" as-tag />
-        </div>
-      </div>
+    <div class="ad-placement-card__header">
+      <span class="ad-placement-card__name">{{ placement.name }}</span>
+    </div>
 
-      <div class="action-section">
-        <el-button
-          type="info"
-          size="small"
-          @click="handleManageAds"
-          data-testid="manage-ads-btn"
-        >
-          管理广告
-        </el-button>
-        <el-button
-          :type="placement.status === STATUS.ENABLED ? 'warning' : 'success'"
-          size="small"
-          @click="handleToggleStatus"
-          v-permission="{ value: ['编辑'] }"
-          data-testid="toggle-status-btn"
-        >
-          {{ placement.status === STATUS.ENABLED ? '禁用' : '启用' }}
-        </el-button>
-        <el-button
-          type="primary"
-          size="small"
-          @click="handleEdit"
-          v-permission="{ value: ['编辑'] }"
-          data-testid="edit-btn"
-        >
-          编辑
-        </el-button>
-        <el-button
-          type="danger"
-          size="small"
-          @click="handleDelete"
-          v-permission="{ value: ['删除'] }"
-          data-testid="delete-btn"
-        >
-          删除
-        </el-button>
+    <div class="ad-placement-card__body">
+      <div class="ad-placement-card__row">
+        <span class="ad-placement-card__label">编码</span>
+        <span class="ad-placement-card__value">{{ placement.code }}</span>
       </div>
+      <div class="ad-placement-card__row">
+        <span class="ad-placement-card__label">尺寸</span>
+        <span class="ad-placement-card__value">{{ placement.width }}:{{ placement.height }}</span>
+        <el-tag :type="adCount > 0 ? 'success' : 'info'" size="small">广告 {{ adCount }}</el-tag>
+      </div>
+    </div>
+
+    <div class="ad-placement-card__footer">
+      <el-button type="info" size="small" @click="handleManageAds" data-testid="manage-ads-btn">
+        管理广告
+      </el-button>
+      <el-button
+        type="primary"
+        size="small"
+        @click="handleEdit"
+        v-permission="{ value: ['编辑'] }"
+        data-testid="edit-btn"
+      >
+        编辑
+      </el-button>
+      <el-button
+        type="danger"
+        size="small"
+        @click="handleDelete"
+        v-permission="{ value: ['删除'] }"
+        data-testid="delete-btn"
+      >
+        删除
+      </el-button>
     </div>
   </el-card>
 </template>
@@ -106,9 +81,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
-import { StatusDict, toItems } from 'moyan-mfw-base/shared'
-import { MfwDictFormat } from 'moyan-mfw-base/frontend'
-import type { ImageResource, MediaResource } from 'moyan-mfw-base/frontend'
 import type { AdPlacementResponseDto, AdResponseDto } from '../../apis/ad/schemas'
 
 interface Props {
@@ -123,24 +95,13 @@ interface Emits {
   (e: 'manage-ads', placement: AdPlacementResponseDto): void
   (e: 'edit', placement: AdPlacementResponseDto): void
   (e: 'delete', placement: AdPlacementResponseDto): void
-  (e: 'toggle-status', placement: AdPlacementResponseDto): void
 }
 
 const emit = defineEmits<Emits>()
 
 defineOptions({ name: 'MfwAdPlacementCard' })
 
-const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
-
-const carouselHeight = computed(() => {
-  const ratio = props.placement.height / props.placement.width
-  const calculatedHeight = 280 * ratio
-  return Math.min(250, Math.max(150, calculatedHeight))
-})
-
-const carouselStyle = computed(() => ({
-  height: `${carouselHeight.value}px`
-}))
+const CAROUSEL_HEIGHT = 180
 
 const mediaAds = computed(() => {
   return props.ads.filter(ad => {
@@ -180,38 +141,30 @@ const handleEdit = () => {
 const handleDelete = () => {
   emit('delete', props.placement)
 }
-
-const handleToggleStatus = () => {
-  emit('toggle-status', props.placement)
-}
 </script>
 
 <style scoped>
 .ad-placement-card {
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-width: 340px;
 }
 
-.ad-placement-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.carousel-wrapper {
+.ad-placement-card__media {
   width: 100%;
+  height: v-bind(CAROUSEL_HEIGHT + 'px');
   background: #f5f7fa;
   overflow: hidden;
 }
 
-.ad-image,
-.ad-video {
+.ad-placement-card__image,
+.ad-placement-card__video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.empty-placeholder {
+.ad-placement-card__empty {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -221,51 +174,51 @@ const handleToggleStatus = () => {
   height: 100%;
 }
 
-.hover-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
-  color: #fff;
-  transform: translateY(100%);
-  transition: transform 0.3s ease;
-}
-
-.ad-placement-card:hover .hover-overlay {
-  transform: translateY(0);
-}
-
-.hover-overlay .info-section {
-  padding: 12px 16px;
-}
-
-.hover-overlay .info-row {
+.ad-placement-card__header {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 12px 16px 0;
 }
 
-.hover-overlay .info-row:last-child {
+.ad-placement-card__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.ad-placement-card__body {
+  padding: 8px 16px;
+}
+
+.ad-placement-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.ad-placement-card__row:last-child {
   margin-bottom: 0;
 }
 
-.hover-overlay .label {
-  color: rgba(255, 255, 255, 0.7);
-  min-width: 60px;
+.ad-placement-card__label {
+  color: var(--el-text-color-secondary);
+  min-width: 28px;
 }
 
-.hover-overlay .value {
-  color: #fff;
+.ad-placement-card__value {
+  color: var(--el-text-color-regular);
   flex: 1;
 }
 
-.hover-overlay .action-section {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+.ad-placement-card__footer {
   display: flex;
+  justify-content: flex-end;
   gap: 8px;
-  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-top: 1px solid var(--el-border-color-lighter);
+  margin-top: auto;
 }
 </style>
