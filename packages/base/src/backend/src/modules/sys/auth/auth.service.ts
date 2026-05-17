@@ -490,8 +490,8 @@ function buildCustomMenuTree(
         permName: item.permName,
         iconName: item.icon || dbNode.iconName,
         sortOrder: item.sortOrder ?? dbNode.sortOrder,
-        children: item.children?.length
-          ? buildCustomMenuTree(item.children, nodeMap)
+        children: item.children !== undefined
+          ? (item.children.length > 0 ? buildCustomMenuTree(item.children, nodeMap) : [])
           : dbNode.children || [],
       };
     })
