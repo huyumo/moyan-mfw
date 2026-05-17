@@ -4,12 +4,12 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, ValidateNested, IsString, IsInt, Min } from 'class-validator'
+import { IsArray, ValidateNested, IsUUID, IsInt, Min } from 'class-validator'
 import { Type } from 'class-transformer'
 
 class SortItem {
   @ApiProperty({ description: '广告 ID' })
-  @IsString()
+  @IsUUID()
   id: string
 
   @ApiProperty({ description: '排序号', example: 0 })

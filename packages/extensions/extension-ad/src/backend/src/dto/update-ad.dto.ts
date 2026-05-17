@@ -23,7 +23,7 @@ export class UpdateAdDto {
   @ApiProperty({ description: '媒体资源（图片或视频）', required: false })
   @IsOptional()
   @ValidateNested()
-  @Type(() => Object)
+  @Type(() => ImageResourceDto)
   media?: ImageResourceDto | MediaResourceDto
 
   @ApiProperty({ description: '跳转类型', enum: ['none', 'miniapp', 'internal', 'external'], required: false })
