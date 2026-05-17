@@ -60,10 +60,7 @@
     "README.md",
     "LICENSE"
   ],
-  "devDependencies": {
-    "@internal/base-backend": "workspace:*",
-    "@internal/base-frontend": "workspace:*",
-    "@internal/base-shared": "workspace:*",
-    "typescript": "catalog:"
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

@@ -59,11 +59,7 @@
     "README.md",
     "LICENSE"
   ],
-  "devDependencies": {
-    "@internal/ad-backend": "workspace:*",
-    "@internal/ad-frontend": "workspace:*",
-    "@internal/ad-shared": "workspace:*",
-    "moyan-mfw-base": "workspace:*",
-    "typescript": "catalog:"
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
