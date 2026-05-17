@@ -11,10 +11,10 @@ export interface CustomMenuNode {
   routePath?: string;
   sortOrder?: number;
   children?: CustomMenuNode[];
-  editTitle?: boolean;
-  old_title?: string;
-  is_change?: boolean;
-  is_new?: boolean;
+  /** 前端内部状态：是否已修改 */
+  _changed?: boolean;
+  /** 前端内部状态：是否新增 */
+  _new?: boolean;
 }
 
 /** 权限池树节点 */

@@ -7,7 +7,8 @@
   "scripts": {
     "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
     "dev": "vite --config vite.config.mts",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "build:api":"tsx api.build.cjs"
   },
   "dependencies": {
     "@internal/base-shared": "workspace:*",
