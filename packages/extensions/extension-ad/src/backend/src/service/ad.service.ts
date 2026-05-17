@@ -24,7 +24,8 @@ export class AdService {
       .eq('a.placementId', placementId)
       .like('a.title', title)
       .eq('a.linkType', linkType)
-      .eq('a.status', status);
+      .eq('a.status', status)
+      .isNull('a.deleteAt');
     const pager = new PaginationX(this.adRepo.manager.connection as any, query);
     const result = await pager
       .where('main', whereBuilder)

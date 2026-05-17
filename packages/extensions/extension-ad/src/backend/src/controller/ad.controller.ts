@@ -49,6 +49,14 @@ export class AdController {
     return ApiResponseUtil.success(result, '查询成功')
   }
 
+  @Put('batch-sort')
+  @ApiOperation({ summary: '批量更新广告排序', description: '用于广告拖拽排序后批量更新 sortOrder' })
+  @RequirePermission({ permCode: '*:ext:ad:*', permissionValue: ['编辑'] })
+  async batchUpdateSort(@Body() dto: BatchUpdateSortDto) {
+    await this.service.batchUpdateSort(dto)
+    return ApiResponseUtil.success(null, '排序更新成功')
+  }
+
   @Put(':id')
   @ApiOperation({ summary: '更新广告内容' })
   @ApiParam({ name: 'id', description: '广告 ID' })
@@ -66,13 +74,5 @@ export class AdController {
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.service.delete(id)
     return ApiResponseUtil.success(null, '删除成功')
-  }
-
-  @Put('batch-sort')
-  @ApiOperation({ summary: '批量更新广告排序', description: '用于广告拖拽排序后批量更新 sortOrder' })
-  @RequirePermission({ permCode: '*:ext:ad:*', permissionValue: ['编辑'] })
-  async batchUpdateSort(@Body() dto: BatchUpdateSortDto) {
-    await this.service.batchUpdateSort(dto)
-    return ApiResponseUtil.success(null, '排序更新成功')
   }
 }
