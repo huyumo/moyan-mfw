@@ -35,13 +35,17 @@
             v-model="ads"
             class="ad-grid"
             item-key="id"
-            animation="200"
+            animation="300"
             ghost-class="ghost-card"
+            chosen-class="chosen-card"
+            drag-class="drag-card"
             @end="handleDragEnd"
           >
             <template #item="{ element }">
               <MfwAdCard
                 :ad="element"
+                :placement-width="placementInfoRef.width"
+                :placement-height="placementInfoRef.height"
                 @edit="handleEditAd"
                 @delete="handleDeleteAd"
                 @toggle-status="handleToggleAdStatus"
@@ -186,14 +190,29 @@ defineExpose({ open, close: handleClose })
   min-height: 200px;
 }
 .ad-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   min-height: 100px;
+}
+.ad-grid > * {
+  width: 100%;
+  max-width: 400px;
 }
 .ghost-card {
   opacity: 0.5;
   background: #c8ebfb;
+  border-radius: 8px;
+}
+.chosen-card {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: scale(1.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.drag-card {
+  opacity: 0.9;
+  transform: rotate(2deg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
 }
 .empty-state {
   display: flex;

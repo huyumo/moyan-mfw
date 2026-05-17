@@ -1,22 +1,33 @@
 <!--
 /**
  * @fileoverview 广告位卡片组件
- * @description 展示广告位信息，支持轮播预览广告效果
+ * @description 展示广告位信息，支持轮播预览广告效果，hover时显示信息和操作按钮
  */
 -->
 <template>
   <el-card class="ad-placement-card" :body-style="{ padding: '0' }" shadow="hover">
-    <!-- 轮播预览区 -->
     <div class="carousel-wrapper" :style="carouselStyle">
       <el-carousel
-        v-if="imageAds.length > 0"
+        v-if="mediaAds.length > 0"
         :height="carouselHeight"
         :autoplay="true"
         :interval="3000"
         indicator-position="none"
       >
-        <el-carousel-item v-for="ad in imageAds" :key="ad.id">
-          <img :src="getAdImageSrc(ad)" :alt="ad.title" class="ad-image" />
+        <el-carousel-item v-for="ad in mediaAds" :key="ad.id">
+          <img
+            v-if="ad.mediaType === 'image'"
+            :src="getAdImageSrc(ad)"
+            :alt="ad.title"
+            class="ad-image"
+          />
+          <video
+            v-else-if="ad.mediaType === 'video'"
+            :src="getAdVideoSrc(ad)"
+            class="ad-video"
+            muted
+            preload="metadata"
+          />
         </el-carousel-item>
       </el-carousel>
       <div v-else class="empty-placeholder">
@@ -25,79 +36,80 @@
       </div>
     </div>
 
-    <!-- 信息展示区 -->
-    <div class="info-section">
-      <div class="info-row">
-        <span class="label">名称：</span>
-        <span class="value">{{ placement.name }}</span>
+    <div class="hover-overlay">
+      <div class="info-section">
+        <div class="info-row">
+          <span class="label">名称：</span>
+          <span class="value">{{ placement.name }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">编码：</span>
+          <span class="value">{{ placement.code }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">尺寸：</span>
+          <span class="value">{{ placement.width }}x{{ placement.height }}px</span>
+        </div>
+        <div class="info-row">
+          <span class="label">广告数：</span>
+          <el-tag :type="adCount > 0 ? 'success' : 'info'" size="small">
+            {{ adCount }}
+          </el-tag>
+        </div>
+        <div class="info-row">
+          <span class="label">状态：</span>
+          <MfwDictFormat :value="placement.status" :dict="toItems(StatusDict)" as-tag />
+        </div>
       </div>
-      <div class="info-row">
-        <span class="label">编码：</span>
-        <span class="value">{{ placement.code }}</span>
-      </div>
-      <div class="info-row">
-        <span class="label">尺寸：</span>
-        <span class="value">{{ placement.width }}x{{ placement.height }}px</span>
-      </div>
-      <div class="info-row">
-        <span class="label">广告数：</span>
-        <el-tag :type="adCount > 0 ? 'success' : 'info'" size="small">
-          {{ adCount }}
-        </el-tag>
-      </div>
-      <div class="info-row">
-        <span class="label">状态：</span>
-        <MfwDictFormat :value="placement.status" :dict="toItems(StatusDict)" as-tag />
-      </div>
-    </div>
 
-    <!-- 操作按钮区 -->
-    <div class="action-section">
-      <el-button
-        type="info"
-        size="small"
-        @click="handleManageAds"
-        data-testid="manage-ads-btn"
-      >
-        管理广告
-      </el-button>
-      <el-button
-        :type="placement.status === STATUS.ENABLED ? 'warning' : 'success'"
-        size="small"
-        @click="handleToggleStatus"
-        v-permission="{ value: ['编辑'] }"
-        data-testid="toggle-status-btn"
-      >
-        {{ placement.status === STATUS.ENABLED ? '禁用' : '启用' }}
-      </el-button>
-      <el-button
-        type="primary"
-        size="small"
-        @click="handleEdit"
-        v-permission="{ value: ['编辑'] }"
-        data-testid="edit-btn"
-      >
-        编辑
-      </el-button>
-      <el-button
-        type="danger"
-        size="small"
-        @click="handleDelete"
-        v-permission="{ value: ['删除'] }"
-        data-testid="delete-btn"
-      >
-        删除
-      </el-button>
+      <div class="action-section">
+        <el-button
+          type="info"
+          size="small"
+          @click="handleManageAds"
+          data-testid="manage-ads-btn"
+        >
+          管理广告
+        </el-button>
+        <el-button
+          :type="placement.status === STATUS.ENABLED ? 'warning' : 'success'"
+          size="small"
+          @click="handleToggleStatus"
+          v-permission="{ value: ['编辑'] }"
+          data-testid="toggle-status-btn"
+        >
+          {{ placement.status === STATUS.ENABLED ? '禁用' : '启用' }}
+        </el-button>
+        <el-button
+          type="primary"
+          size="small"
+          @click="handleEdit"
+          v-permission="{ value: ['编辑'] }"
+          data-testid="edit-btn"
+        >
+          编辑
+        </el-button>
+        <el-button
+          type="danger"
+          size="small"
+          @click="handleDelete"
+          v-permission="{ value: ['删除'] }"
+          data-testid="delete-btn"
+        >
+          删除
+        </el-button>
+      </div>
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Picture, VideoPlay } from '@element-plus/icons-vue'
+import { Picture } from '@element-plus/icons-vue'
 import { StatusDict, toItems } from 'moyan-mfw-base/shared'
 import { MfwDictFormat } from 'moyan-mfw-base/frontend'
-import type { AdPlacementResponseDto, AdResponseDto, ImageResource } from '../../apis/ad/schemas'
+import type { ImageResource, MediaResource } from 'moyan-mfw-base/frontend'
+import type { AdPlacementResponseDto, AdResponseDto } from '../../apis/ad/schemas'
 
 interface Props {
   placement: AdPlacementResponseDto
@@ -130,13 +142,29 @@ const carouselStyle = computed(() => ({
   height: `${carouselHeight.value}px`
 }))
 
-const imageAds = computed(() => {
-  return props.ads.filter(ad => ad.mediaType === 'image' && ad.media)
+const mediaAds = computed(() => {
+  return props.ads.filter(ad => {
+    if (!ad.media || typeof ad.media !== 'object') return false
+    const media = ad.media as Record<string, unknown>
+    if (Object.keys(media).length === 0) return false
+    if (ad.mediaType === 'image' && media.src) return true
+    if (ad.mediaType === 'video' && media.url) return true
+    return false
+  })
 })
 
 const getAdImageSrc = (ad: AdResponseDto): string => {
-  if (ad.mediaType === 'image' && ad.media) {
-    return (ad.media as ImageResource).src
+  if (ad.mediaType === 'image' && ad.media && typeof ad.media === 'object') {
+    const media = ad.media as Record<string, unknown>
+    if (media.src) return media.src as string
+  }
+  return ''
+}
+
+const getAdVideoSrc = (ad: AdResponseDto): string => {
+  if (ad.mediaType === 'video' && ad.media && typeof ad.media === 'object') {
+    const media = ad.media as Record<string, unknown>
+    if (media.url) return media.url as string
   }
   return ''
 }
@@ -160,6 +188,8 @@ const handleToggleStatus = () => {
 
 <style scoped>
 .ad-placement-card {
+  position: relative;
+  overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -177,10 +207,11 @@ const handleToggleStatus = () => {
   overflow: hidden;
 }
 
-.ad-image {
+.ad-image,
+.ad-video {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .empty-placeholder {
@@ -193,34 +224,49 @@ const handleToggleStatus = () => {
   height: 150px;
 }
 
-.info-section {
+.hover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.4));
+  color: #fff;
+  transform: translateY(100%);
+  transition: transform 0.3s ease;
+}
+
+.ad-placement-card:hover .hover-overlay {
+  transform: translateY(0);
+}
+
+.hover-overlay .info-section {
   padding: 12px 16px;
 }
 
-.info-row {
+.hover-overlay .info-row {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
   font-size: 14px;
 }
 
-.info-row:last-child {
+.hover-overlay .info-row:last-child {
   margin-bottom: 0;
 }
 
-.info-row .label {
-  color: #909399;
+.hover-overlay .label {
+  color: rgba(255, 255, 255, 0.7);
   min-width: 60px;
 }
 
-.info-row .value {
-  color: #303133;
+.hover-overlay .value {
+  color: #fff;
   flex: 1;
 }
 
-.action-section {
+.hover-overlay .action-section {
   padding: 12px 16px;
-  border-top: 1px solid #ebeef5;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   display: flex;
   gap: 8px;
   flex-wrap: wrap;

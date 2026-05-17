@@ -137,7 +137,20 @@ const formTemplate = computed<FormItemConfig[]>(() => [
 const onConfirm = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) throw new Error('表单验证失败')
-  if (!form.media) throw new Error('请上传媒体资源')
+  if (!form.media || (typeof form.media === 'object' && Object.keys(form.media).length === 0)) {
+    throw new Error('请上传媒体资源')
+  }
+  if (form.mediaType === 'image') {
+    const img = form.media as ImageResource
+    if (!img.src || !img.width || !img.height) {
+      throw new Error('图片资源信息不完整，请重新上传')
+    }
+  } else if (form.mediaType === 'video') {
+    const vid = form.media as MediaResource
+    if (!vid.url || !vid.name || !vid.type) {
+      throw new Error('视频资源信息不完整，请重新上传')
+    }
+  }
   const body = {
     placementId: form.placementId,
     mediaType: form.mediaType,
