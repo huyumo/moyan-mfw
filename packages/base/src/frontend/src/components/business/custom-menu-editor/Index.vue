@@ -130,8 +130,13 @@
 import { ref, nextTick, onMounted } from 'vue';
 import { ElMessage, ElMessageBox, ElScrollbar } from 'element-plus';
 import type { AllowDropType } from 'element-plus/es/components/tree/src/tree.type';
-import { TOKEN_KEY } from '../../../constants/storage-keys';
 import type { CustomMenuNode, PermissionTreeNode } from './types';
+import {
+  ApiAppTypeGetPermissionPool,
+  ApiAppTypeGetCustomMenu,
+  ApiAppTypeSaveCustomMenu,
+  ApiAppTypeClearCustomMenu,
+} from '../../../apis/sys';
 
 interface TreeNode {
   data: Record<string, any>;
@@ -161,40 +166,23 @@ const iconList = [
   'el-icon-s-marketing', 'el-icon-s-shop', 'el-icon-s-finance', 'el-icon-s-claim',
 ];
 
-const TOKEN = () => localStorage.getItem(TOKEN_KEY) || '';
-
-async function apiGet(path: string) {
-  const res = await fetch(path, { headers: { Authorization: `Bearer ${TOKEN()}` } });
-  const json = await res.json();
-  return json?.data ?? json;
-}
-
-async function apiPut(path: string, body: any) {
-  const res = await fetch(path, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${TOKEN()}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  const json = await res.json();
-  return json?.data ?? json;
-}
-
-async function apiDelete(path: string) {
-  await fetch(path, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${TOKEN()}` },
-  });
-}
-
 async function loadData() {
   loading.value = true;
   try {
-    const pool = await apiGet(`/api/app-types/${props.appTypeId}/permission-pool`);
-    if (pool?.permissionTrees?.normalTree) {
-      defaultMenus.value = flattenTreeForDisplay(pool.permissionTrees.normalTree);
+    const pool = await new ApiAppTypeGetPermissionPool({ params: { appTypeId: props.appTypeId } });
+    const treeData = pool?.permissionTrees?.pcTree || pool?.permissionTrees?.normalTree;
+    if (treeData?.length) {
+      const root = treeData[0];
+      defaultMenus.value = root?.children
+        ? flattenTreeForDisplay(root.children)
+        : flattenTreeForDisplay(treeData);
     }
-    const menu = await apiGet(`/api/app-types/${props.appTypeId}/custom-menu`);
-    customMenus.value = menu && menu.length > 0 ? menu : [];
+    const menu = await new ApiAppTypeGetCustomMenu({ params: { id: props.appTypeId } });
+    if (menu && Array.isArray(menu) && menu.length > 0) {
+      customMenus.value = menu as CustomMenuNode[];
+    }
+  } catch (e) {
+    console.error('[CustomMenuEditor] loadData error:', e);
   } finally {
     loading.value = false;
   }
@@ -335,10 +323,10 @@ function mapToCustomNode(node: PermissionTreeNode): CustomMenuNode {
 async function handleSave() {
   loading.value = true;
   try {
-    await apiPut(`/api/app-types/${props.appTypeId}/custom-menu`, {
-      data: customMenus.value.map(stripEditState),
-    });
-    ElMessage.success('保存成功');
+    await new ApiAppTypeSaveCustomMenu(
+      { params: { id: props.appTypeId }, body: { data: customMenus.value.map(stripEditState) } },
+      { hintSuccess: true },
+    );
     await loadData();
   } catch {
     ElMessage.error('保存失败');
@@ -367,9 +355,8 @@ function handleClear() {
   }).then(async () => {
     loading.value = true;
     try {
-      await apiDelete(`/api/app-types/${props.appTypeId}/custom-menu`);
+      await new ApiAppTypeClearCustomMenu({ params: { id: props.appTypeId } }, { hintSuccess: true });
       customMenus.value = [];
-      ElMessage.success('已清空');
     } catch {
       ElMessage.error('清空失败');
     } finally {

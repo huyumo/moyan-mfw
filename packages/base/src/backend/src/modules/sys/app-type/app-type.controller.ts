@@ -254,7 +254,6 @@ export class AppTypeController {
    * 清空自定义菜单
    */
   @Delete(':id/custom-menu')
-  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '清空自定义菜单', description: '清空应用类型的自定义菜单配置' })
   @ApiParam({ name: 'id', description: '应用类型 ID' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'CLEAR_CUSTOM_MENU', description: '清空自定义菜单' })
