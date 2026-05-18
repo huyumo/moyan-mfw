@@ -15,7 +15,7 @@
     },
     "./frontend": {
       "import": "./src/frontend/dist/index.mjs",
-      "require": "./src/frontend/dist/index.js",
+      "require": "./src/frontend/dist/index.mjs",
       "types": "./src/frontend/dist/index.d.ts"
     },
     "./frontend/*": {

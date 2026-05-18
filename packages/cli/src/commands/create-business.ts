@@ -49,7 +49,11 @@ export const createBusinessCommand = new Command('business')
       }
     }
 
-    const answers = opts.yes
+    if (!process.stdin.isTTY && !opts.yes) {
+      console.log(chalk.yellow('⚠ 非交互式终端，将使用默认值创建（使用 -y 可跳过此提示）'))
+    }
+
+    const answers = opts.yes || !process.stdin.isTTY
       ? defaultBusinessAnswers(className)
       : await inquirer.prompt<Answers>([
           {
@@ -113,9 +117,11 @@ export const createBusinessCommand = new Command('business')
     console.log(`\n${chalk.bold('📋 后续步骤:')}`)
     console.log(`   1. cd ${path.relative(process.cwd(), targetDir)}`)
     console.log(`   2. 编辑 backend/.env 配置数据库连接`)
-    console.log(`   3. pnpm install && pnpm build`)
-    console.log(`   4. pnpm --filter ${name}-backend dev   # 启动后端`)
-    console.log(`   5. pnpm --filter ${name}-frontend dev  # 启动前端`)
-    console.log(`\n${chalk.gray('💡 添加扩展模块: 在 backend/src/app.modules.ts 中引入扩展 Module')}`)
+    console.log(`   3. 在 MySQL 中创建数据库（默认 DB_NAME 见 backend/.env）`)
+    console.log(`   4. pnpm install --no-frozen-lockfile && pnpm build`)
+    console.log(`   5. pnpm --filter ${name}-backend dev   # 启动后端`)
+    console.log(`   6. pnpm --filter ${name}-frontend dev  # 启动前端`)
+    console.log(`\n${chalk.yellow('⚠ 首次安装请使用 --no-frozen-lockfile，否则会因缺少 lock 文件报错')}`)
+    console.log(`${chalk.gray('💡 添加扩展模块: 在 backend/src/app.modules.ts 中引入扩展 Module')}`)
     console.log(`${chalk.gray('💡 添加业务模块: 在 backend/src/modules/ 下创建新的 NestJS 模块')}`)
   })

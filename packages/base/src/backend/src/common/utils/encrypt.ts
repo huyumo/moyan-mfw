@@ -3,7 +3,7 @@
  * @description 提供密码加密、验证等加密相关功能
  */
 
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 /**
  * 默认盐值 rounds

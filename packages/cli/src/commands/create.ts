@@ -56,7 +56,11 @@ export const createCommand = new Command('extension')
       }
     }
 
-    const answers = opts.yes
+    if (!process.stdin.isTTY && !opts.yes) {
+      console.log(chalk.yellow('⚠ 非交互式终端，将使用默认值创建（使用 -y 可跳过此提示）'))
+    }
+
+    const answers = opts.yes || !process.stdin.isTTY
       ? defaultExtensionAnswers(name, className)
       : await inquirer.prompt<Answers>([
           { name: 'displayName', message: '显示名称:', default: className },

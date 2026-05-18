@@ -25,7 +25,7 @@
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
     "dotenv": "catalog:",
-    "bcrypt": "catalog:",
+    "bcryptjs": "catalog:",
     "multer": "catalog:",
     "mysql2": "catalog:",
     "redis": "catalog:"
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@nestjs/cli": "catalog:",
     "@nestjs/schematics": "catalog:",
-    "@types/bcrypt": "catalog:",
+    "@types/bcryptjs": "catalog:",
     "@types/express": "catalog:",
     "@types/multer": "catalog:",
     "tsc-alias": "catalog:",
