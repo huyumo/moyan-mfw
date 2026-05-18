@@ -1,3 +1,0 @@
-import { AppTypeConfig } from 'moyan-mfw-base/backend';
-
-export const appTypesConfig: AppTypeConfig[] = [];

@@ -1,8 +1,0 @@
-{
-  "references": [
-    { "path": "./src/shared/tsconfig.json" },
-    { "path": "./src/backend/tsconfig.json" },
-    { "path": "./src/frontend/tsconfig.json" }
-  ],
-  "compilerOptions": { "composite": true }
-}

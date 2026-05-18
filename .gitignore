@@ -17,3 +17,5 @@ packages/*/test-results/
 **/agent-memory/
 
 uploads/
+
+_test-output/
