@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "prebuild": "pnpm --filter {{name}}-shared build && pnpm --filter moyan-mfw-base build",
+    "prebuild": "pnpm --filter {{name}}-shared build",
     "dev": "pnpm run prebuild && nest start --watch",
     "build": "nest build",
     "typecheck": "tsc --noEmit -p tsconfig.json",
@@ -23,7 +23,8 @@
     "rxjs": "catalog:",
     "mysql2": "catalog:",
     "dotenv": "catalog:",
-    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-base": "^1.0.0",
+    "moyan-mfw-extension-ad": "^0.1.0",
     "{{name}}-shared": "workspace:*"
   },
   "devDependencies": {

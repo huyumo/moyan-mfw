@@ -1,6 +1,8 @@
 import Handlebars from 'handlebars'
 import * as fs from 'node:fs/promises'
+import * as fsSync from 'node:fs'
 import * as path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { writeFile } from './fs.js'
 
 interface TemplateVars {
@@ -21,6 +23,15 @@ Handlebars.registerHelper('pascalCaseUpper', (str: string) => {
 })
 
 Handlebars.registerHelper('snakeCase', (str: string) => str.replace(/-/g, '_'))
+
+export function getTemplateDir(type: 'extension' | 'business'): string {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url))
+  const distTemplate = path.resolve(currentDir, `templates/${type}`)
+  const srcTemplate = path.resolve(currentDir, `../templates/${type}`)
+  if (fsSync.existsSync(distTemplate)) return distTemplate
+  if (fsSync.existsSync(srcTemplate)) return srcTemplate
+  return distTemplate
+}
 
 function getParser(filePath: string): string | null {
   const ext = path.extname(filePath)
@@ -48,7 +59,6 @@ async function formatContent(content: string, filePath: string): Promise<string>
   const parser = getParser(filePath)
   if (!parser) return content
   try {
-    // @ts-expect-error prettier is an optional runtime dependency
     const mod = await import('prettier')
     const fmt = mod.default ?? mod
     if (typeof fmt.format !== 'function') return content

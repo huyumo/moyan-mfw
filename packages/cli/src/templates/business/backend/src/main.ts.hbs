@@ -2,8 +2,16 @@ import 'dotenv/config'
 import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-mfw-base/backend'
 import { appTypesConfig } from './app-types.config'
 import { AppModule } from './app.modules'
+import { AdModule, AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/backend'
 
-const swaggerGroups: SwaggerGroupConfig[] = []
+const swaggerGroups: SwaggerGroupConfig[] = [
+  {
+    name: 'ad-extension',
+    title: '广告管理API文档',
+    description: '广告位类型、广告位、广告内容管理 API',
+    include: [AdModule],
+  },
+]
 
 async function bootstrap() {
   const startTime = Date.now()
@@ -16,7 +24,7 @@ async function bootstrap() {
       syncAppTypes: true,
       modules: [AppModule],
       swagger: swaggerGroups,
-      permissionValues: [],
+      permissionValues: [...AD_EXTENSION_PERMISSION_VALUES],
       hooks: {
         onAppInit: async (ctx) => {
           console.log('[{{displayName}}] 应用初始化完成')

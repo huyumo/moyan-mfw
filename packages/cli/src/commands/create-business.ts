@@ -2,17 +2,13 @@ import { Command } from 'commander'
 import inquirer from 'inquirer'
 import chalk from 'chalk'
 import * as path from 'node:path'
-import { dirname } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { exists, ensureDir, writeFile } from '../utils/fs.js'
-import { renderTemplateToDir } from '../utils/template.js'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+import { renderTemplateToDir, getTemplateDir } from '../utils/template.js'
 
 interface CreateBusinessOptions {
   dir?: string
   force?: boolean
+  yes?: boolean
 }
 
 interface Answers {
@@ -22,11 +18,21 @@ interface Answers {
   frontendPort: string
 }
 
+function defaultBusinessAnswers(className: string): Answers {
+  return {
+    displayName: className,
+    description: `${className} 业务项目`,
+    port: '3000',
+    frontendPort: '5173',
+  }
+}
+
 export const createBusinessCommand = new Command('business')
   .description('Create a new business project (backend + frontend + shared)')
   .argument('<name>', 'Project name in kebab-case (e.g., "my-shop")')
   .option('-d, --dir <path>', 'Output directory', '.')
   .option('-f, --force', 'Force overwrite existing directory', false)
+  .option('-y, --yes', 'Skip prompts and use default values', false)
   .action(async (name: string, opts: CreateBusinessOptions) => {
     if (!/^[a-z][a-z0-9-]*$/.test(name)) {
       console.error(chalk.red(`Invalid name "${name}". Must be kebab-case (e.g., "my-shop").`))
@@ -43,36 +49,38 @@ export const createBusinessCommand = new Command('business')
       }
     }
 
-    const answers = await inquirer.prompt<Answers>([
-      {
-        name: 'displayName',
-        message: '显示名称:',
-        default: className,
-      },
-      {
-        name: 'description',
-        message: '描述:',
-        default: `${className} 业务项目`,
-      },
-      {
-        name: 'port',
-        message: '后端端口:',
-        default: '3000',
-        validate: (v: string) => {
-          const n = Number(v)
-          return (n > 0 && n < 65536) ? true : '端口号必须在 1-65535 之间'
-        },
-      },
-      {
-        name: 'frontendPort',
-        message: '前端端口:',
-        default: '5173',
-        validate: (v: string) => {
-          const n = Number(v)
-          return (n > 0 && n < 65536) ? true : '端口号必须在 1-65535 之间'
-        },
-      },
-    ])
+    const answers = opts.yes
+      ? defaultBusinessAnswers(className)
+      : await inquirer.prompt<Answers>([
+          {
+            name: 'displayName',
+            message: '显示名称:',
+            default: className,
+          },
+          {
+            name: 'description',
+            message: '描述:',
+            default: `${className} 业务项目`,
+          },
+          {
+            name: 'port',
+            message: '后端端口:',
+            default: '3000',
+            validate: (v: string) => {
+              const n = Number(v)
+              return (n > 0 && n < 65536) ? true : '端口号必须在 1-65535 之间'
+            },
+          },
+          {
+            name: 'frontendPort',
+            message: '前端端口:',
+            default: '5173',
+            validate: (v: string) => {
+              const n = Number(v)
+              return (n > 0 && n < 65536) ? true : '端口号必须在 1-65535 之间'
+            },
+          },
+        ])
 
     const vars = {
       name,
@@ -85,7 +93,7 @@ export const createBusinessCommand = new Command('business')
       year: new Date().getFullYear(),
     }
 
-    const templateDir = path.resolve(__dirname, '../templates/business')
+    const templateDir = getTemplateDir('business')
     console.log(chalk.blue(`\n🔨 Generating business project "${name}" at ${targetDir}...`))
 
     await renderTemplateToDir(templateDir, targetDir, vars)

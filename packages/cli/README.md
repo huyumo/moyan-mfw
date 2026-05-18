@@ -57,6 +57,12 @@ extension-my-ext/
 └── package.json
 ```
 
+**非交互模式**（跳过所有提示，使用默认值）：
+
+```bash
+mfw create extension my-ext -y
+```
+
 **后续步骤**：
 
 ```bash
@@ -81,6 +87,12 @@ mfw create business my-shop
 | 描述 | `{Name} 业务项目` | 项目描述 |
 | 后端端口 | `3000` | NestJS 服务端口 |
 | 前端端口 | `5173` | Vite 开发服务器端口 |
+
+**非交互模式**（跳过所有提示，使用默认值）：
+
+```bash
+mfw create business my-shop -y
+```
 
 **生成目录结构**：
 
@@ -119,67 +131,6 @@ pnpm install && pnpm build
 pnpm --filter my-shop-backend dev    # 启动后端
 pnpm --filter my-shop-frontend dev   # 启动前端
 ```
-
-## 模板说明
-
-### Handlebars 模板变量
-
-| 变量 | 示例值 | 说明 |
-|------|--------|------|
-| `{{name}}` | `my-ext` | kebab-case 项目名 |
-| `{{displayName}}` | `MyExt` | 显示名称 |
-| `{{description}}` | 用户输入 | 项目描述 |
-| `{{className}}` | `MyExt` | PascalCase 类名 |
-| `{{version}}` | `0.1.0` | 初始版本 |
-| `{{year}}` | `2026` | 当前年份 |
-
-### 自定义 Helpers
-
-| Helper | 输入 | 输出 | 说明 |
-|--------|------|------|------|
-| `pascalCase` | `my-ext` | `MyExt` | 转 PascalCase |
-| `pascalCaseUpper` | `my-ext` | `MYEXT` | 转大写 PascalCase |
-| `camelCase` | `my-ext` | `myExt` | 转 camelCase |
-| `snakeCase` | `my-ext` | `my_ext` | 转 snake_case |
-
-### 模板变量示例
-
-```hbs
-<!-- 权限常量声明 -->
-export const {{pascalCaseUpper name}}_PERMISSION_VALUES = [...]
-
-<!-- 数据库名 -->
-DB_NAME={{snakeCase name}}
-
-<!-- 包名引用 -->
-"moyan-mfw-extension-{{name}}": "workspace:*"
-```
-
-## 开发
-
-```bash
-# 克隆仓库后进入 CLI 目录
-cd packages/cli
-
-# 安装依赖
-pnpm install
-
-# 开发模式（watch）
-pnpm dev
-
-# 构建
-pnpm build
-
-# 类型检查
-pnpm typecheck
-```
-
-### 添加新模板
-
-1. 在 `src/templates/` 下创建新目录
-2. 编写 `.hbs` 模板文件
-3. 在 `src/commands/` 添加对应命令
-4. 在 `src/utils/template.ts` 注册 helpers（如需）
 
 ## 已知修复
 

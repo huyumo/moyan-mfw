@@ -15,6 +15,13 @@ export default defineConfig({
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/src/index.ts'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['legacy-js-api'],
+      },
+    },
+  },
   server: {
     port: 5173,
     proxy: {
