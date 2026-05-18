@@ -133,8 +133,8 @@ if (frontendPkg.dependencies['test-shop-shared']) {
 
 // 检查8: .env 变量替换正确
 const envFile = await fs.readFile(path.join(outputDir, 'backend/.env'), 'utf-8')
-if (envFile.includes('DB_DATABASE=test-shop') && envFile.includes('PORT=3000')) {
-  console.log('✅ PASS: backend/.env 变量替换正确')
+if (envFile.includes('DB_NAME=test_shop') && envFile.includes('PORT=3000') && envFile.includes('NODE_ENV=development')) {
+  console.log('✅ PASS: backend/.env 变量替换正确 (DB_NAME=test_shop, NODE_ENV=development)')
   pass++
 } else {
   console.log('❌ FAIL: backend/.env 变量替换有误')

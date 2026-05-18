@@ -47,6 +47,12 @@ pnpm gen:component          # Generate frontend component
 pnpm gen                    # Interactive plop menu
 ```
 
+### CLI Scaffolding
+```bash
+mfw create extension <name> # Create a new extension package
+mfw create business <name>  # Create a new business project (backend + frontend + shared)
+```
+
 ## Architecture
 
 ### Package Structure (pnpm workspace)
