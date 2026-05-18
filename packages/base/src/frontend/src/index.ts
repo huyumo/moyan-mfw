@@ -15,5 +15,4 @@ export { createBusinessPageConfigFn, initPermissionCache, getPermissionValueCach
 
 export * from './components';
 export * from './utils/image';
-export * from './components'
 export * from './composables'
