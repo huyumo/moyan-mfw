@@ -1,4 +1,4 @@
 import { createBusinessPageConfigFn } from 'moyan-mfw-base/frontend'
-import { BUSINESS_PERMISSION_VALUES } from '{{name}}-shared'
+import { {{pascalCaseUpper name}}_PERMISSION_VALUES } from '{{name}}-shared'
 
-export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES)
+export const defineBusinessPageConfig = createBusinessPageConfigFn({{pascalCaseUpper name}}_PERMISSION_VALUES)

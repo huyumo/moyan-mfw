@@ -1,4 +1,4 @@
 import { createBusinessPermissionDecorator } from 'moyan-mfw-base/backend'
-import { BUSINESS_PERMISSION_VALUES } from '{{name}}-shared'
+import { {{pascalCaseUpper name}}_PERMISSION_VALUES } from '{{name}}-shared'
 
-export const Permission = createBusinessPermissionDecorator(BUSINESS_PERMISSION_VALUES)
+export const Permission = createBusinessPermissionDecorator({{pascalCaseUpper name}}_PERMISSION_VALUES)

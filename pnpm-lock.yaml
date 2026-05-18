@@ -525,6 +525,82 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  packages/cli/_test-output/test-shop: {}
+
+  packages/cli/_test-output/test-shop/backend:
+    dependencies:
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/platform-express':
+        specifier: 'catalog:'
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)
+      '@nestjs/swagger':
+        specifier: 'catalog:'
+        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)
+      '@nestjs/typeorm':
+        specifier: 'catalog:'
+        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))
+      class-transformer:
+        specifier: 'catalog:'
+        version: 0.5.1
+      class-validator:
+        specifier: 'catalog:'
+        version: 0.14.4
+      dotenv:
+        specifier: 'catalog:'
+        version: 17.3.1
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      mysql2:
+        specifier: 'catalog:'
+        version: 3.20.0(@types/node@22.19.15)
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      test-shop-shared:
+        specifier: workspace:*
+        version: link:../shared
+      typeorm:
+        specifier: 'catalog:'
+        version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
+    devDependencies:
+      '@nestjs/cli':
+        specifier: 'catalog:'
+        version: 10.4.9
+      '@nestjs/schematics':
+        specifier: 'catalog:'
+        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.3)
+      ts-node:
+        specifier: 'catalog:'
+        version: 10.9.2(@types/node@22.19.15)(typescript@5.9.3)
+      tsconfig-paths:
+        specifier: 'catalog:'
+        version: 4.2.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/cli/_test-output/test-shop/shared:
+    dependencies:
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   packages/extensions/extension-ad: {}
 
   packages/extensions/extension-ad/src/backend:
