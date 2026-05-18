@@ -19,3 +19,5 @@ packages/*/test-results/
 uploads/
 
 _test-output/
+
+temp/

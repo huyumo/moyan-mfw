@@ -16,7 +16,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../../dist/frontend',
+    outDir: 'dist',
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       formats: ['es'],
