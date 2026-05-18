@@ -20,6 +20,8 @@ Handlebars.registerHelper('pascalCaseUpper', (str: string) => {
   return pascal.toUpperCase()
 })
 
+Handlebars.registerHelper('snakeCase', (str: string) => str.replace(/-/g, '_'))
+
 function getParser(filePath: string): string | null {
   const ext = path.extname(filePath)
   const map: Record<string, string> = {

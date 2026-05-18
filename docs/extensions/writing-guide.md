@@ -1234,6 +1234,7 @@ pnpm typecheck:frontend
 | 命令 | 说明 |
 |------|------|
 | `mfw create extension <name>` | 创建新扩展项目 |
+| `mfw create business <name>` | 创建新业务项目（后端+前端+共享层） |
 | `pnpm install` | 安装依赖 |
 | `pnpm dev:backend` | 启动后端开发服务器 |
 | `pnpm dev:frontend` | 启动前端开发服务器 |
