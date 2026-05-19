@@ -9,7 +9,7 @@
 #   v* 标签       → typecheck + build → publish（手动确认发布）
 #
 # 发布流程：
-#   1. 本地执行：pnpm release:patch （或 minor/major）
+#   1. 本地执行：pnpm release:patch（或 minor/major）
 #   2. 自动推送标签到 Gitee
 #   3. Gitee CI 自动构建并发布 3 个包到 npm
 #   4. 在 Gitee CI/CD 页面手动确认 publish 阶段
@@ -19,15 +19,22 @@
 #   - NPM_TOKEN = npm_xxxxxxxxxxxx（npm access token）
 # ============================================================
 
-image: node:20
+# 使用 Ubuntu 基础镜像，手动安装 Node.js 20
+image: ubuntu:22.04
 
 variables:
+  NODE_VERSION: "20"
   PNPM_HOME: /root/.local/share/pnpm
   NODE_OPTIONS: --max-old-space-size=4096
 
 before_script:
+  - apt-get update && apt-get install -y curl
+  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  - apt-get install -y nodejs
   - npm install -g pnpm@latest
   - pnpm config set store-dir .pnpm-store
+  - node --version
+  - pnpm --version
 
 stages:
   - check
