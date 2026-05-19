@@ -1,113 +1,77 @@
-
-# ============================================================
-# moyan-mfw CI/CD 流水线
-# 平台：Gitee Go
-#
-# 触发规则：
-#   PR 到 main   → typecheck + build（门禁）
-#   推送到 main   → typecheck + build（验证）
-#   v* 标签       → typecheck + build → publish（手动确认发布）
-#
-# 发布流程：
-#   1. 本地执行：pnpm release:patch（或 minor/major）
-#   2. 自动推送标签到 Gitee
-#   3. Gitee CI 自动构建并发布 3 个包到 npm
-#   4. 在 Gitee CI/CD 页面手动确认 publish 阶段
-#
-# 发布前准备：
-#   在 Gitee 项目设置 → CI/CD → 变量 中添加：
-#   - NPM_TOKEN = npm_xxxxxxxxxxxx（npm access token）
-#
-# 注意：Gitee Go node 插件强制使用 Node.js 14，需要临时降低 engines 要求
-# ============================================================
-
-# 使用官方 Node.js 20 镜像
-image: node:20-alpine
-
+version: '1.0'
+name: moyan-mfw-ci
+displayName: moyan-mfw CI/CD
+triggers:
+  trigger: auto
+  push:
+    branches:
+      include:
+        - main
+        - .*
+    tags:
+      prefix:
+        - v
 variables:
-  PNPM_HOME: /root/.local/share/pnpm
-  NODE_OPTIONS: --max-old-space-size=4096
-
-# 禁用 Gitee node 插件的自动 npm install
-plugin:
-  node:
-    enabled: false
-
-before_script:
-  - npm install -g pnpm@latest
-  - pnpm config set store-dir .pnpm-store
-  - node --version
-  - pnpm --version
-
+  global:
+    - NPM_TOKEN
 stages:
-  - check
-  - build
-  - publish
-
-cache:
-  paths:
-    - .pnpm-store
-    - node_modules
-
-# ======================================================================
-#  阶段 1 — 类型检查
-# ======================================================================
-
-typecheck:
-  stage: check
-  script:
-    - pnpm install --no-frozen-lockfile
-    - pnpm run typecheck
-
-# ======================================================================
-#  阶段 2 — 构建（仅构建 3 个可发布包）
-# ======================================================================
-
-build:
-  stage: build
-  script:
-    - pnpm install --no-frozen-lockfile
-    - pnpm --filter moyan-mfw-base build
-    - pnpm --filter moyan-mfw-extension-ad build
-    - pnpm --filter moyan-mfw-cli build
-  artifacts:
-    paths:
-      - packages/base/src/backend/dist/
-      - packages/base/src/frontend/dist/
-      - packages/base/src/shared/dist/
-      - packages/extensions/extension-ad/src/backend/dist/
-      - packages/extensions/extension-ad/src/frontend/dist/
-      - packages/extensions/extension-ad/src/shared/dist/
-      - packages/cli/dist/
-      - packages/cli/dist/templates/
-    expire_in: 1 hour
-
-# ======================================================================
-#  阶段 3 — npm 发布（仅标签推送时执行，需手动确认）
-# ======================================================================
-
-publish:
-  stage: publish
-  only:
-    - tags
-  script:
-    - echo ">>> 从根 package.json 读取版本号..."
-    - VERSION=$(node -p "require('./package.json').version")
-    - echo ">>> 当前版本：v${VERSION}"
-    - echo ""
-    - echo ">>> 配置 npm 认证..."
-    - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-    - echo ""
-    - echo ">>> 发布 moyan-mfw-base@${VERSION}..."
-    - cd packages/base && npm publish --access public
-    - echo ""
-    - echo ">>> 发布 moyan-mfw-extension-ad@${VERSION}..."
-    - cd ../extensions/extension-ad && npm publish --access public
-    - echo ""
-    - echo ">>> 发布 moyan-mfw-cli@${VERSION}..."
-    - cd ../../cli && npm publish --access public
-    - echo ""
-    - echo "✅ 所有包发布完成！"
-  when: manual
-  dependencies:
-    - build
+  - name: check
+    displayName: 类型检查
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@nodejs
+        name: typecheck
+        displayName: TypeScript 类型检查
+        nodeVersion: 22.3.0
+        commands:
+          - npm install -g pnpm@latest
+          - pnpm install --no-frozen-lockfile
+          - pnpm run typecheck
+  - name: build
+    displayName: 构建
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@nodejs
+        name: build_packages
+        displayName: 构建可发布包
+        nodeVersion: 22.3.0
+        commands:
+          - npm install -g pnpm@latest
+          - pnpm install --no-frozen-lockfile
+          - pnpm --filter moyan-mfw-base build
+          - pnpm --filter moyan-mfw-extension-ad build
+          - pnpm --filter moyan-mfw-cli build
+        artifacts:
+          - name: BUILD_ARTIFACT
+            path:
+              - ./packages/base/src/backend/dist
+              - ./packages/base/src/frontend/dist
+              - ./packages/base/src/shared/dist
+              - ./packages/extensions/extension-ad/src/backend/dist
+              - ./packages/extensions/extension-ad/src/frontend/dist
+              - ./packages/extensions/extension-ad/src/shared/dist
+              - ./packages/cli/dist
+              - ./packages/cli/dist/templates
+  - name: publish
+    displayName: 发布到 npm
+    strategy: naturally
+    trigger: manual
+    steps:
+      - step: build@nodejs
+        name: npm_publish
+        displayName: npm 发布
+        nodeVersion: 22.3.0
+        commands:
+          - npm install -g pnpm@latest
+          - pnpm install --no-frozen-lockfile
+          - VERSION=$(node -p "require('./package.json').version")
+          - echo ">>> 当前版本：v${VERSION}"
+          - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          - cd packages/base && npm publish --access public
+          - cd ../extensions/extension-ad && npm publish --access public
+          - cd ../../cli && npm publish --access public
+          - echo "✅ 所有包发布完成！"
+        dependsOn:
+          - build_packages
