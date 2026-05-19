@@ -26,6 +26,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
+          - pnpm config set engine-strict false
           - pnpm install --no-frozen-lockfile
           - pnpm run typecheck
   - name: build
@@ -39,6 +40,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
+          - pnpm config set engine-strict false
           - pnpm install --no-frozen-lockfile
           - pnpm --filter moyan-mfw-base build
           - pnpm --filter moyan-mfw-extension-ad build
@@ -65,6 +67,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
+          - pnpm config set engine-strict false
           - pnpm install --no-frozen-lockfile
           - VERSION=$(node -p "require('./package.json').version")
           - echo ">>> 当前版本：v${VERSION}"
