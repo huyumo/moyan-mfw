@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-base",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "description": "墨焱MFW核心框架",
   "main": "./src/shared/dist/index.js",
   "types": "./src/shared/dist/index.d.ts",
@@ -44,6 +44,7 @@
       ]
     }
   },
+  "private": true,
   "scripts": {
     "build:shared": "pnpm --filter @internal/base-shared build",
     "build:backend": "pnpm --filter @internal/base-backend build",
@@ -54,10 +55,7 @@
     "typecheck:shared": "pnpm --filter @internal/base-shared typecheck",
     "typecheck:backend": "pnpm --filter @internal/base-backend typecheck",
     "typecheck:frontend": "pnpm --filter @internal/base-frontend typecheck",
-    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
-    "release:patch": "npm version patch && pnpm build && npm publish",
-    "release:minor": "npm version minor && pnpm build && npm publish",
-    "release:major": "npm version major && pnpm build && npm publish"
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
   },
   "license": "MIT",
   "keywords": [

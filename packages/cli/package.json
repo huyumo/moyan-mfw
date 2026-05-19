@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-cli",
-  "version": "0.1.3",
+  "version": "1.0.1",
   "description": "MFW framework CLI — extension scaffolding, validation, and publishing tools",
   "type": "module",
   "bin": {
@@ -19,15 +19,12 @@
     "README.md",
     "LICENSE"
   ],
-  "private": false,
+  "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "copy-templates": "node --input-type=module -e \"import fs from 'node:fs'; fs.cpSync('src/templates','dist/templates',{recursive:true})\"",
     "build": "tsup src/index.ts --format esm,cjs --dts --clean && pnpm copy-templates",
-    "typecheck": "tsc --noEmit",
-    "release:patch": "npm version patch && pnpm build && npm publish",
-    "release:minor": "npm version minor && pnpm build && npm publish",
-    "release:major": "npm version major && pnpm build && npm publish"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "commander": "^12.0.0",

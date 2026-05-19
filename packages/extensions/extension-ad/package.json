@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-extension-ad",
-  "version": "0.1.2",
+  "version": "1.0.1",
   "description": "MFW 广告管理扩展包",
   "exports": {
     "./backend": {
@@ -42,6 +42,7 @@
       ]
     }
   },
+  "private": true,
   "scripts": {
     "build:shared": "pnpm --filter @internal/ad-shared build",
     "build:backend": "pnpm --filter moyan-mfw-base run build:shared && pnpm --filter moyan-mfw-base run build:backend && pnpm --filter @internal/ad-backend build",
@@ -52,10 +53,7 @@
     "typecheck:shared": "pnpm --filter @internal/ad-shared typecheck",
     "typecheck:backend": "pnpm --filter @internal/ad-backend typecheck",
     "typecheck:frontend": "pnpm --filter @internal/ad-frontend typecheck",
-    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
-    "release:patch": "npm version patch && pnpm build && npm publish",
-    "release:minor": "npm version minor && pnpm build && npm publish",
-    "release:major": "npm version major && pnpm build && npm publish"
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
   },
   "license": "MIT",
   "keywords": [
