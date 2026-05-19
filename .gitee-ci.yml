@@ -73,5 +73,3 @@ stages:
           - cd ../extensions/extension-ad && npm publish --access public
           - cd ../../cli && npm publish --access public
           - echo "✅ 所有包发布完成！"
-        dependsOn:
-          - build_packages
