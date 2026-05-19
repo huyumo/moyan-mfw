@@ -89,12 +89,8 @@ function main() {
   });
   
   // 3. 提交更改（如果有）
-  const filesToUpdate = [
-    'package.json',
-    ...PACKAGES.map((pkg) => `${pkg}/package.json`),
-  ];
-  gitAdd(filesToUpdate);
-  
+  execSync('git add -A', { stdio: 'inherit' });
+
   if (hasUpdates || hasChanges()) {
     console.log('\n3️⃣  提交版本更新...');
     execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'inherit' });
