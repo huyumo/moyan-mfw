@@ -41,6 +41,10 @@ function gitTag(tag: string): void {
   execSync(`git tag ${tag}`, { stdio: 'inherit' });
 }
 
+function gitPush(): void {
+  execSync('git push origin main --tags', { stdio: 'inherit' });
+}
+
 function main() {
   const releaseType = process.argv[2];
   
@@ -75,11 +79,14 @@ function main() {
   // 4. 创建标签
   console.log('\n4️⃣  创建 Git 标签...');
   gitTag(`v${newVersion}`);
-  
+
+  // 5. 推送
+  console.log('\n5️⃣  推送到远程...');
+  gitPush();
+
   console.log(`\n✅ 发布完成！`);
   console.log(`   新版本：v${newVersion}`);
-  console.log(`   下一步：git push origin main --tags`);
-  console.log(`\n   推送 tag 后 Gitee CI 将自动构建并发布到 npm`);
+  console.log(`\n   TagPipeline 将自动构建并发布到 npm`);
 }
 
 main();
