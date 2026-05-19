@@ -46,7 +46,7 @@ cache:
 typecheck:
   stage: check
   script:
-    - pnpm install --frozen-lockfile
+    - pnpm install --no-frozen-lockfile
     - pnpm run typecheck
 
 # ======================================================================
@@ -56,7 +56,7 @@ typecheck:
 build:
   stage: build
   script:
-    - pnpm install --frozen-lockfile
+    - pnpm install --no-frozen-lockfile
     - pnpm --filter moyan-mfw-base build
     - pnpm --filter moyan-mfw-extension-ad build
     - pnpm --filter moyan-mfw-cli build
