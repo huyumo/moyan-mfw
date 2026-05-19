@@ -7,8 +7,6 @@ triggers:
     branches:
       include:
         - .*
-      exclude:
-        - master
 stages:
   - name: check_and_build
     displayName: 类型检查 + 构建
