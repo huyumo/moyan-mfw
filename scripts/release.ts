@@ -79,7 +79,7 @@ function main() {
   console.log(`\n✅ 发布完成！`);
   console.log(`   新版本：v${newVersion}`);
   console.log(`   下一步：git push origin main --tags`);
-  console.log(`\n   推送后 Gitee CI 将自动构建，需手动确认发布到 npm`);
+  console.log(`\n   推送 tag 后 Gitee CI 将自动构建并发布到 npm`);
 }
 
 main();
