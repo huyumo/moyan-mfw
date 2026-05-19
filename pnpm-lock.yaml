@@ -45,9 +45,6 @@ catalogs:
     '@types/multer':
       specifier: ^2.1.0
       version: 2.1.0
-    '@types/node':
-      specifier: ^22.19.15
-      version: 22.19.15
     '@vitejs/plugin-vue':
       specifier: ^5.2.4
       version: 5.2.4
@@ -75,9 +72,6 @@ catalogs:
     element-plus:
       specifier: ^2.13.5
       version: 2.13.5
-    eslint:
-      specifier: ^9.38.0
-      version: 9.39.4
     md-editor-v3:
       specifier: ^6.4.2
       version: 6.4.2
@@ -117,9 +111,6 @@ catalogs:
     tsconfig-paths:
       specifier: ^4.2.0
       version: 4.2.0
-    tsx:
-      specifier: ^4.21.0
-      version: 4.21.0
     typeorm:
       specifier: ^0.3.28
       version: 0.3.28
@@ -153,13 +144,13 @@ importers:
         specifier: ^1.58.2
         version: 1.58.2
       '@types/node':
-        specifier: 'catalog:'
+        specifier: ^22.19.15
         version: 22.19.15
       cypress:
         specifier: ^15.12.0
         version: 15.12.0
       eslint:
-        specifier: 'catalog:'
+        specifier: ^9.38.0
         version: 9.39.4
       eslint-config-prettier:
         specifier: ^10.1.8
@@ -180,16 +171,16 @@ importers:
         specifier: ^4.0.5
         version: 4.0.5(@types/node@22.19.15)
       ts-node:
-        specifier: 'catalog:'
+        specifier: ^10.9.2
         version: 10.9.2(@types/node@22.19.15)(typescript@5.9.3)
       tsconfig-paths:
-        specifier: 'catalog:'
+        specifier: ^4.2.0
         version: 4.2.0
       tsx:
-        specifier: 'catalog:'
+        specifier: ^4.21.0
         version: 4.21.0
       typescript:
-        specifier: 'catalog:'
+        specifier: ^5.7.3
         version: 5.9.3
       typescript-eslint:
         specifier: ^8.46.2
