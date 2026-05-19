@@ -17,14 +17,21 @@
 # 发布前准备：
 #   在 Gitee 项目设置 → CI/CD → 变量 中添加：
 #   - NPM_TOKEN = npm_xxxxxxxxxxxx（npm access token）
+#
+# 注意：Gitee Go node 插件强制使用 Node.js 14，需要临时降低 engines 要求
 # ============================================================
 
-# 使用官方 Node.js 20 镜像（避免 Gitee node 插件干扰）
+# 使用官方 Node.js 20 镜像
 image: node:20-alpine
 
 variables:
   PNPM_HOME: /root/.local/share/pnpm
   NODE_OPTIONS: --max-old-space-size=4096
+
+# 禁用 Gitee node 插件的自动 npm install
+plugin:
+  node:
+    enabled: false
 
 before_script:
   - npm install -g pnpm@latest
