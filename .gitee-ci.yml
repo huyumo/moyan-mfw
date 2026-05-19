@@ -27,12 +27,9 @@ stages:
         commands:
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
-          - pnpm --filter @internal/base-shared build
-          - pnpm --filter @internal/base-backend build
-          - pnpm --filter @internal/base-frontend build
-          - pnpm --filter @internal/ad-shared build
-          - pnpm --filter @internal/ad-backend build
-          - pnpm --filter @internal/ad-frontend build
+          - pnpm --filter moyan-mfw-base build
+          - pnpm --filter moyan-mfw-business-dict build
+          - pnpm --filter moyan-mfw-extension-ad build
           - pnpm run typecheck
   - name: build
     displayName: 构建
