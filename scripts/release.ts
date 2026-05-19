@@ -18,31 +18,47 @@ function getCurrentVersion(): string {
   return rootPackage.version;
 }
 
-function updatePackageVersion(packagePath: string, version: string): void {
+function updatePackageVersion(packagePath: string, version: string): boolean {
   const packageJsonPath = join(packagePath, 'package.json');
   const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
   
   const oldVersion = packageJson.version;
-  packageJson.version = version;
+  if (oldVersion === version) {
+    console.log(`  ${packageJson.name}: 已是 ${version}，无需更新`);
+    return false;
+  }
   
+  packageJson.version = version;
   writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
   console.log(`✓ ${packageJson.name}: ${oldVersion} → ${version}`);
+  return true;
+}
+
+function hasStagedChanges(): boolean {
+  const result = execSync('git diff --cached --quiet', { encoding: 'utf-8' }).trim();
+  return result !== '';
+}
+
+function hasChanges(): boolean {
+  try {
+    execSync('git diff --quiet', { stdio: 'pipe' });
+    return false;
+  } catch {
+    return true;
+  }
 }
 
 function gitAdd(files: string[]): void {
   execSync(`git add ${files.join(' ')}`, { stdio: 'inherit' });
 }
 
-function gitCommit(message: string): void {
-  execSync(`git commit -m "${message}"`, { stdio: 'inherit' });
-}
-
-function gitTag(tag: string): void {
-  execSync(`git tag ${tag}`, { stdio: 'inherit' });
-}
-
-function gitPush(): void {
-  execSync('git push origin main --tags', { stdio: 'inherit' });
+function tagExists(tag: string): boolean {
+  try {
+    execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function main() {
@@ -65,27 +81,43 @@ function main() {
   
   // 2. 同步所有包的版本
   console.log('\n2️⃣  同步所有包的版本...');
-  PACKAGES.forEach((pkg) => updatePackageVersion(pkg, newVersion));
+  let hasUpdates = false;
+  PACKAGES.forEach((pkg) => {
+    if (updatePackageVersion(pkg, newVersion)) {
+      hasUpdates = true;
+    }
+  });
   
-  // 3. 提交更改
-  console.log('\n3️  提交版本更新...');
+  // 3. 提交更改（如果有）
   const filesToUpdate = [
     'package.json',
     ...PACKAGES.map((pkg) => `${pkg}/package.json`),
   ];
   gitAdd(filesToUpdate);
-  gitCommit(`chore: release v${newVersion}`);
+  
+  if (hasUpdates || hasChanges()) {
+    console.log('\n3️⃣  提交版本更新...');
+    execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'inherit' });
+  } else {
+    console.log('\n3️⃣  版本号已同步，无需提交');
+  }
   
   // 4. 创建标签
-  console.log('\n4️⃣  创建 Git 标签...');
-  gitTag(`v${newVersion}`);
+  const tagName = `v${newVersion}`;
+  console.log(`\n4️⃣  创建 Git 标签 ${tagName}...`);
+  if (tagExists(tagName)) {
+    console.log(`  标签 ${tagName} 已存在，删除重建...`);
+    execSync(`git tag -d ${tagName}`, { stdio: 'inherit' });
+    execSync(`git push origin :refs/tags/${tagName}`, { stdio: 'inherit' });
+  }
+  execSync(`git tag ${tagName}`, { stdio: 'inherit' });
 
   // 5. 推送
   console.log('\n5️⃣  推送到远程...');
-  gitPush();
+  execSync('git push origin main --tags', { stdio: 'inherit' });
 
   console.log(`\n✅ 发布完成！`);
-  console.log(`   新版本：v${newVersion}`);
+  console.log(`   新版本：${tagName}`);
   console.log(`\n   TagPipeline 将自动构建并发布到 npm`);
 }
 
