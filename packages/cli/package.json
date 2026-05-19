@@ -19,7 +19,6 @@
     "README.md",
     "LICENSE"
   ],
-  "private": true,
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "copy-templates": "node --input-type=module -e \"import fs from 'node:fs'; fs.cpSync('src/templates','dist/templates',{recursive:true})\"",

@@ -44,7 +44,7 @@
       ]
     }
   },
-  "private": true,
+  },
   "scripts": {
     "build:shared": "pnpm --filter @internal/base-shared build",
     "build:backend": "pnpm --filter @internal/base-backend build",
