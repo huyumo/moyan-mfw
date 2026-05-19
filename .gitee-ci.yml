@@ -8,10 +8,15 @@
 #   推送到 main   → typecheck + build（验证）
 #   v* 标签       → typecheck + build → publish（手动确认发布）
 #
+# 发布流程：
+#   1. 本地执行：pnpm release:patch （或 minor/major）
+#   2. 自动推送标签到 Gitee
+#   3. Gitee CI 自动构建并发布 3 个包到 npm
+#   4. 在 Gitee CI/CD 页面手动确认 publish 阶段
+#
 # 发布前准备：
-#   1. 本地执行：npm version patch && git push --tags
-#   2. 在 Gitee 项目设置 → CI/CD → 变量 中添加：
-#      NPM_TOKEN = npm_xxxxxxxxxxxx（npm access token）
+#   在 Gitee 项目设置 → CI/CD → 变量 中添加：
+#   - NPM_TOKEN = npm_xxxxxxxxxxxx（npm access token）
 # ============================================================
 
 image: node:20
@@ -76,13 +81,23 @@ publish:
   only:
     - tags
   script:
+    - echo ">>> 从根 package.json 读取版本号..."
+    - VERSION=$(node -p "require('./package.json').version")
+    - echo ">>> 当前版本：v${VERSION}"
+    - echo ""
+    - echo ">>> 配置 npm 认证..."
     - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
-    - echo ">>> 发布 moyan-mfw-base..."
+    - echo ""
+    - echo ">>> 发布 moyan-mfw-base@${VERSION}..."
     - cd packages/base && npm publish --access public
-    - echo ">>> 发布 moyan-mfw-extension-ad..."
+    - echo ""
+    - echo ">>> 发布 moyan-mfw-extension-ad@${VERSION}..."
     - cd ../extensions/extension-ad && npm publish --access public
-    - echo ">>> 发布 moyan-mfw-cli..."
+    - echo ""
+    - echo ">>> 发布 moyan-mfw-cli@${VERSION}..."
     - cd ../../cli && npm publish --access public
+    - echo ""
+    - echo "✅ 所有包发布完成！"
   when: manual
   dependencies:
     - build
