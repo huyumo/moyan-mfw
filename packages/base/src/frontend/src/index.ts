@@ -3,6 +3,8 @@
  * 统一导出创建管理后台应用的相关函数、配置和类型定义。
  */
 
+import './plugins';
+
 export * from './create-base-admin-app';
 export * from './create-extension-frontend-app';
 export * from './router';

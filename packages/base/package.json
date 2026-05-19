@@ -1,39 +1,39 @@
 {
   "name": "moyan-mfw-base",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "墨焱MFW核心框架",
   "main": "./src/shared/dist/index.js",
   "types": "./src/shared/dist/index.d.ts",
   "exports": {
     "./backend": {
+      "types": "./src/backend/dist/index.d.ts",
       "import": "./src/backend/dist/index.js",
-      "require": "./src/backend/dist/index.js",
-      "types": "./src/backend/dist/index.d.ts"
+      "require": "./src/backend/dist/index.js"
     },
     "./backend/*": {
+      "types": "./src/backend/dist/*.d.ts",
       "import": "./src/backend/dist/*.js",
-      "require": "./src/backend/dist/*",
-      "types": "./src/backend/dist/*.d.ts"
+      "require": "./src/backend/dist/*"
     },
     "./frontend": {
+      "types": "./src/frontend/dist/index.d.ts",
       "import": "./src/frontend/dist/index.mjs",
-      "require": "./src/frontend/dist/index.js",
-      "types": "./src/frontend/dist/index.d.ts"
+      "require": "./src/frontend/dist/index.js"
     },
     "./frontend/*": {
+      "types": "./src/frontend/dist/*.d.ts",
       "import": "./src/frontend/dist/*",
-      "require": "./src/frontend/dist/*",
-      "types": "./src/frontend/dist/*.d.ts"
+      "require": "./src/frontend/dist/*"
     },
     "./shared": {
+      "types": "./src/shared/dist/index.d.ts",
       "import": "./src/shared/dist/index.js",
-      "require": "./src/shared/dist/index.js",
-      "types": "./src/shared/dist/index.d.ts"
+      "require": "./src/shared/dist/index.js"
     },
     "./shared/*": {
+      "types": "./src/shared/dist/*.d.ts",
       "import": "./src/shared/dist/*",
-      "require": "./src/shared/dist/*",
-      "types": "./src/shared/dist/*.d.ts"
+      "require": "./src/shared/dist/*"
     }
   },
   "typesVersions": {
