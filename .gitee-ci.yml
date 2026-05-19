@@ -1,6 +1,6 @@
 version: '1.0'
 name: moyan-mfw-ci
-displayName: moyan-mfw CI/CD
+displayName: moyan-mfw-ci
 triggers:
   trigger: auto
   push:
