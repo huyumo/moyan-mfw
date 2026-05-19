@@ -1,5 +1,5 @@
 version: '1.0'
-name: tag-pipeline
+name: tag-pipeline-v2
 displayName: TagPipeline
 triggers:
   trigger: auto

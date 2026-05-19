@@ -1,5 +1,5 @@
 version: '1.0'
-name: branch-pipeline
+name: branch-pipeline-v2
 displayName: BranchPipeline
 triggers:
   trigger: auto

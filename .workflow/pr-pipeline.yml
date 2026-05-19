@@ -1,5 +1,5 @@
 version: '1.0'
-name: pr-pipeline
+name: pr-pipeline-v2
 displayName: PRPipeline
 triggers:
   pr:
