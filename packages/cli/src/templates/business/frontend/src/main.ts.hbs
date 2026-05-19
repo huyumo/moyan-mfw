@@ -1,14 +1,10 @@
-import { createBaseAdminApp, registerPermissionValues } from 'moyan-mfw-base/frontend'
+import { createBaseAdminApp } from 'moyan-mfw-base/frontend'
 import { businessRoutes } from './router'
-import { adRoutes } from 'moyan-mfw-extension-ad/frontend'
-import { AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/shared'
 import './permissions'
-
-registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES])
 
 const admin = createBaseAdminApp({
   title: '{{displayName}}',
-  routes: [...businessRoutes, ...adRoutes],
+  routes: [...businessRoutes],
   layout: {
     layoutMode: 'dual',
     showTabs: true,
