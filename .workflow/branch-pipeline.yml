@@ -27,7 +27,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
-          - pnpm install --frozen-lockfile
+          - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm run typecheck
   - name: build
     displayName: 构建
@@ -40,7 +40,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
-          - pnpm install --frozen-lockfile
+          - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build
           - pnpm --filter moyan-mfw-extension-ad build
           - pnpm --filter moyan-mfw-cli build
@@ -66,7 +66,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
-          - pnpm install --frozen-lockfile
+          - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - VERSION=$(node -p "require('./package.json').version")
           - echo ">>> 当前版本：v${VERSION}"
           - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
