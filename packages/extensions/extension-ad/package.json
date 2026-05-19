@@ -42,7 +42,6 @@
       ]
     }
   },
-  },
   "scripts": {
     "build:shared": "pnpm --filter @internal/ad-shared build",
     "build:backend": "pnpm --filter moyan-mfw-base run build:shared && pnpm --filter moyan-mfw-base run build:backend && pnpm --filter @internal/ad-backend build",
