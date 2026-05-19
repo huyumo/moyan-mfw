@@ -1,10 +1,16 @@
 version: '1.0'
 name: pr-pipeline
 displayName: PRPipeline
+triggers:
+  pr:
+    branches:
+      include:
+        - master
 stages:
-  - stage:
-    name: check
+  - name: check
     displayName: 类型检查
+    strategy: naturally
+    trigger: auto
     steps:
       - step: build@nodejs
         name: typecheck
@@ -17,33 +23,3 @@ stages:
           - pnpm --filter moyan-mfw-business-dict build
           - pnpm --filter moyan-mfw-extension-ad build
           - pnpm run typecheck
-  - stage:
-    name: build
-    displayName: 构建
-    steps:
-      - step: build@nodejs
-        name: build_packages
-        displayName: 构建可发布包
-        nodeVersion: 22.3.0
-        commands:
-          - npm install -g pnpm@10.14.0
-          - pnpm install --frozen-lockfile --config.node-linker=hoisted
-          - pnpm --filter moyan-mfw-base build
-          - pnpm --filter moyan-mfw-extension-ad build
-          - pnpm --filter moyan-mfw-cli build
-        artifacts:
-          - name: BUILD_ARTIFACT
-            path:
-              - ./packages/base/src/backend/dist
-              - ./packages/base/src/frontend/dist
-              - ./packages/base/src/shared/dist
-              - ./packages/extensions/extension-ad/src/backend/dist
-              - ./packages/extensions/extension-ad/src/frontend/dist
-              - ./packages/extensions/extension-ad/src/shared/dist
-              - ./packages/cli/dist
-              - ./packages/cli/dist/templates
-triggers:
-  pr:
-    branches:
-      include:
-        - master
