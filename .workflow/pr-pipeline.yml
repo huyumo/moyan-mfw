@@ -12,7 +12,6 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - npm install -g pnpm@10.14.0
-          - pnpm config set engine-strict false
           - pnpm install --no-frozen-lockfile
           - pnpm run typecheck
   - stage:
