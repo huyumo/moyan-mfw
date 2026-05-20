@@ -22,3 +22,6 @@ uploads/
 _test-output/
 
 temp/
+
+# E2E 验证临时目录
+.e2e-verify/
