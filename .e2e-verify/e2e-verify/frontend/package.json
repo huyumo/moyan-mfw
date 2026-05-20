@@ -1,0 +1,36 @@
+{
+  "name": "e2e-verify-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.ts",
+    "build": "vue-tsc --noEmit -p tsconfig.json && vite build --config vite.config.ts",
+    "typecheck:vue": "vue-tsc --noEmit -p tsconfig.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "catalog:",
+    "@vueuse/core": "catalog:",
+    "axios": "catalog:",
+    "e2e-verify-shared": "workspace:*",
+    "element-plus": "catalog:",
+    "md-editor-v3": "catalog:",
+    "moyan-mfw-base": "file:E:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/.e2e-verify/packs/moyan-mfw-base-1.1.7.tgz",
+    "moyan-mfw-extension-ad": "file:E:/Moyan/moyan/moyan-mfw-workspace/workspace04/moyan-mfw/.e2e-verify/packs/moyan-mfw-extension-ad-1.1.7.tgz",
+    "pinia": "catalog:",
+    "quill": "catalog:",
+    "vue": "catalog:",
+    "vue-advanced-cropper": "catalog:",
+    "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "sass": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}
