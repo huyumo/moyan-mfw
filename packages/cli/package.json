@@ -4,7 +4,7 @@
   "description": "MFW framework CLI — extension scaffolding, validation, and publishing tools",
   "type": "module",
   "bin": {
-    "mfw": "./bin/mfw.js"
+    "mfw": "bin/mfw.js"
   },
   "exports": {
     ".": {
