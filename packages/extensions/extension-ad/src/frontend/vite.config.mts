@@ -1,11 +1,26 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { resolve } from 'path';
 
+function fixVueDefaultImport(): Plugin {
+  return {
+    name: 'fix-vue-default-import',
+    generateBundle(_, bundle) {
+      const chunk = bundle['index.mjs'];
+      if (chunk && chunk.type === 'chunk') {
+        chunk.code = chunk.code.replace(
+          /import\s+qr,\s*\{([^}]+)\}\s*from\s*["']vue["']/g,
+          'import { $1 } from "vue"',
+        );
+      }
+    },
+  };
+}
+
 export default defineConfig({
   root: '.',
-  plugins: [vue(), vueJsx()],
+  plugins: [vue(), vueJsx(), fixVueDefaultImport()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -24,9 +39,6 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'moyan-mfw-base/frontend', 'moyan-mfw-base/shared'],
-      output: {
-        exports: 'named',
-      },
     },
   },
 });

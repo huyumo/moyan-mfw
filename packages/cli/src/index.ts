@@ -3,13 +3,14 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import { createCommand } from './commands/create.js'
 import { createBusinessCommand } from './commands/create-business.js'
+import { getCliVersion } from './utils/template.js'
 
 const program = new Command()
 
 program
   .name('mfw')
   .description('Moyan MFW Framework CLI')
-  .version('0.1.0')
+  .version(getCliVersion())
 
 const createCmd = new Command('create').description('Create a new extension or resource')
 createCmd.addCommand(createCommand)

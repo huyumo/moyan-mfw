@@ -3,7 +3,7 @@ import inquirer from 'inquirer'
 import chalk from 'chalk'
 import * as path from 'node:path'
 import { exists, ensureDir, writeFile } from '../utils/fs.js'
-import { renderTemplateToDir, getTemplateDir } from '../utils/template.js'
+import { renderTemplateToDir, getTemplateDir, getCliVersion } from '../utils/template.js'
 
 interface CreateBusinessOptions {
   dir?: string
@@ -94,6 +94,7 @@ export const createBusinessCommand = new Command('business')
       frontendPort: Number(answers.frontendPort),
       className,
       version: '0.1.0',
+      baseVersion: getCliVersion(),
       year: new Date().getFullYear(),
     }
 

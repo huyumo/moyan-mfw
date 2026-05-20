@@ -51,21 +51,15 @@
 import { useLayoutStore } from 'moyan-mfw-base/frontend/store/layout-store';
 import { useColorMode } from 'moyan-mfw-base/frontend/composables';
 import {
-  Bell,
-  Document,
   Setting,
-  Search,
   Moon,
   Sunny,
   FullScreen,
   ScaleToOriginal,
-  Switch,
 } from '@element-plus/icons-vue';
-import { useRouter } from 'vue-router';
 import { ref, onMounted, onUnmounted } from 'vue';
 
 const layoutStore = useLayoutStore();
-const router = useRouter();
 const { isDark, toggleDark } = useColorMode();
 
 /**
@@ -81,13 +75,6 @@ const openLayoutSettings = () => {
   layoutStore.toggleSettingsPanel(true);
 };
 
-/**
- * 导航到指定路径
- * @param path - 目标路径
- */
-const navigateTo = (path: string) => {
-  router.push(path);
-};
 
 /**
  * 切换主题
@@ -109,11 +96,7 @@ const toggleFullscreen = async () => {
   }
 };
 
-/**
- * 切换语言
- */
-const toggleLanguage = () => {
-};
+
 
 /**
  * 打开搜索

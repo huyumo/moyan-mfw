@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import * as path from 'node:path'
 import * as fs from 'node:fs/promises'
 import { exists, ensureDir, writeFile } from '../utils/fs.js'
-import { renderTemplateToDir, getTemplateDir } from '../utils/template.js'
+import { renderTemplateToDir, getTemplateDir, getCliVersion } from '../utils/template.js'
 
 interface CreateOptions {
   template?: string
@@ -88,6 +88,7 @@ export const createCommand = new Command('extension')
       hasFrontend: answers.hasFrontend,
       hasShared: answers.hasShared,
       version: '0.1.0',
+      baseVersion: getCliVersion(),
       year: new Date().getFullYear(),
     }
 

@@ -245,15 +245,6 @@ async function seedPermissions(dataSource: DataSource): Promise<void> {
       routePath: '/sys/audit-log',
       iconName: 'Document',
     },
-    // 文件上传（页面）
-    {
-      permName: '文件上传',
-      permCode: 'pc_root:sys:upload',
-      nodeType: NodeType.PAGE,
-      routePath: '/sys/upload',
-      iconName: 'Upload',
-      permissionValue: buildPerValue(['添加', '删除']),
-    },
   ];
 
   for (const permData of pcPermissions) {

@@ -9,6 +9,17 @@ interface TemplateVars {
   [key: string]: unknown
 }
 
+const _currentDir = path.dirname(fileURLToPath(import.meta.url))
+
+export function getCliVersion(): string {
+  const pkgPathProd = path.resolve(_currentDir, '../package.json')
+  const pkgPathDev = path.resolve(_currentDir, '../../package.json')
+  const pkgPath = fsSync.existsSync(pkgPathProd) ? pkgPathProd : pkgPathDev
+  const raw = fsSync.readFileSync(pkgPath, 'utf-8')
+  const pkg = JSON.parse(raw)
+  return pkg.version as string
+}
+
 Handlebars.registerHelper('pascalCase', (str: string) =>
   str.replace(/(^\w|-\w)/g, (c) => c.slice(-1).toUpperCase()),
 )
@@ -25,9 +36,8 @@ Handlebars.registerHelper('pascalCaseUpper', (str: string) => {
 Handlebars.registerHelper('snakeCase', (str: string) => str.replace(/-/g, '_'))
 
 export function getTemplateDir(type: 'extension' | 'business'): string {
-  const currentDir = path.dirname(fileURLToPath(import.meta.url))
-  const distTemplate = path.resolve(currentDir, `templates/${type}`)
-  const srcTemplate = path.resolve(currentDir, `../templates/${type}`)
+  const distTemplate = path.resolve(_currentDir, `templates/${type}`)
+  const srcTemplate = path.resolve(_currentDir, `../templates/${type}`)
   if (fsSync.existsSync(distTemplate)) return distTemplate
   if (fsSync.existsSync(srcTemplate)) return srcTemplate
   return distTemplate
