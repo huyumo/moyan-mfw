@@ -7,7 +7,8 @@
     "dev": "vite --config vite.config.ts",
     "build": "vue-tsc --noEmit -p tsconfig.json && vite build --config vite.config.ts",
     "typecheck:vue": "vue-tsc --noEmit -p tsconfig.json",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "verify-dist": "vite build --config vite.verify-dist.config.ts"
   },
   "dependencies": {
     "vue": "catalog:",

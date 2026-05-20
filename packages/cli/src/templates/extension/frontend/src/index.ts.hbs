@@ -1,13 +1,10 @@
 /**
  * @fileoverview {{displayName}}扩展包前端入口
+ * @description 从模块配置树构建路由，不依赖 import.meta.glob 扫描
  */
-import { buildExtensionRoutes } from 'moyan-mfw-base/frontend'
+import { buildRoutesFromModuleTree } from 'moyan-mfw-base/frontend'
+import {{pascalCase name}}ModuleConfig from './views/index'
 
-const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-})
-
-export const {{pascalCase name}}Routes = buildExtensionRoutes(allConfigs, '{{name}}', {
+export const {{pascalCase name}}Routes = buildRoutesFromModuleTree({{pascalCase name}}ModuleConfig, '{{name}}', {
   namespaceName: '{{displayName}}',
 })

@@ -1,0 +1,15 @@
+/**
+ * @fileoverview {{displayName}}模块配置
+ * @description 树形菜单分组，children 承载子页面配置。新增页面时在此处添加 import。
+ */
+import { defineModuleConfig } from 'moyan-mfw-base/frontend'
+import type { PageConfig } from 'moyan-mfw-base/frontend'
+
+const config = defineModuleConfig({
+  type: 'module',
+  name: '{{displayName}}',
+  icon: 'Menu',
+  order: 50,
+})
+
+export default { ...config, children: [] as PageConfig<string>[] }

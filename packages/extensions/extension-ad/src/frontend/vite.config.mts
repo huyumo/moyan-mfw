@@ -1,22 +1,8 @@
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import { resolve } from 'path';
-
-function fixVueDefaultImport(): Plugin {
-  return {
-    name: 'fix-vue-default-import',
-    generateBundle(_, bundle) {
-      const chunk = bundle['index.mjs'];
-      if (chunk && chunk.type === 'chunk') {
-        chunk.code = chunk.code.replace(
-          /import\s+qr,\s*\{([^}]+)\}\s*from\s*["']vue["']/g,
-          'import { $1 } from "vue"',
-        );
-      }
-    },
-  };
-}
+import { fixVueDefaultImport } from 'moyan-mfw-base/frontend/vite-helpers';
 
 export default defineConfig({
   root: '.',
@@ -26,6 +12,7 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
       'moyan-mfw-base/frontend/styles': resolve(__dirname, '../../../../base/src/frontend/src/styles'),
       'moyan-mfw-base/frontend': resolve(__dirname, '../../../../base/src/frontend/src/index.ts'),
+      'moyan-mfw-base/frontend/vite-helpers': resolve(__dirname, '../../../../base/src/frontend/src/vite-helpers.ts'),
       'moyan-mfw-base/shared': resolve(__dirname, '../../../../base/src/shared/src/index.ts'),
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../shared/src/index.ts'),
     },

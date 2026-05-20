@@ -11,12 +11,27 @@ export default defineConfig({
       '@': resolve(__dirname, 'src'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+      },
+    },
+  },
   build: {
     outDir: 'dist',
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'vite-helpers': resolve(__dirname, 'src/vite-helpers.ts'),
+      },
       formats: ['es', 'cjs'],
-      fileName: (format) => format === 'es' ? 'index.mjs' : 'index.js',
+      fileName(format, entryName) {
+        if (entryName === 'index') {
+          return format === 'es' ? 'index.mjs' : 'index.js';
+        }
+        return format === 'es' ? 'vite-helpers.mjs' : 'vite-helpers.js';
+      },
     },
     rollupOptions: {
       external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'pinia', '@vueuse/core', 'axios', 'md-editor-v3', 'quill', 'vue-advanced-cropper', 'moyan-mfw-base/shared'],

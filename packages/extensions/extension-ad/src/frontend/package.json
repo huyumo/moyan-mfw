@@ -8,7 +8,8 @@
     "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
     "dev": "vite --config vite.config.mts",
     "typecheck": "vue-tsc --noEmit -p tsconfig.json",
-    "build:api": "tsx api.build.cjs"
+    "build:api": "tsx api.build.cjs",
+    "verify-dist": "node ../../scripts/verify-dist.mjs"
   },
   "dependencies": {
     "@element-plus/icons-vue": "catalog:",

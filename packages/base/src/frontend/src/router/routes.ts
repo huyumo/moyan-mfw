@@ -256,6 +256,108 @@ export function buildRoutesFromConfigs(
 }
 
 /**
+ * 从模块配置树构建扩展包路由（替代 import.meta.glob 扫描方案）。
+ *
+ * 模块配置通过 `children` 字段直接引用子页面配置，构成显式依赖树，
+ * 避免运行时文件扫描，享受完整的 TypeScript 类型检查和 tree-shaking。
+ *
+ * @param moduleConfig - 模块配置（含 children 子页面列表）
+ * @param moduleName   - 扩展模块名（如 'ad'），自动拼接为 `/ext/${moduleName}` 前缀
+ * @param options.namespaceName - 命名空间显示名称（如 '广告管理'），
+ *   存在时生成 `ext` 命名空间重定向路由，否则生成 `ext/{moduleName}` 模块重定向路由
+ *
+ * @example
+ * ```typescript
+ * // src/views/index.ts
+ * import placementPage from './placement/index'
+ * const config = defineModuleConfig({ type: 'module', name: '广告管理', icon: 'Notification', order: 60 })
+ * export default { ...config, children: [placementPage] }
+ *
+ * // src/index.ts
+ * import { buildRoutesFromModuleTree } from 'moyan-mfw-base/frontend'
+ * import adModuleConfig from './views/index'
+ * export const adRoutes = buildRoutesFromModuleTree(adModuleConfig, 'ad', { namespaceName: '广告管理' })
+ * ```
+ */
+export function buildRoutesFromModuleTree(
+  moduleConfig: ModuleConfig & { children?: unknown[] },
+  moduleName: string,
+  options?: {
+    namespaceName?: string;
+  }
+): RouteRecordRaw[] {
+  const prefixPath = `ext/${moduleName}`;
+  const children = moduleConfig.children ?? [];
+
+  const pageRoutes: RouteRecordRaw[] = [];
+
+  for (const child of children) {
+    if (!isPageConfig(child)) continue;
+
+    pageRoutes.push({
+      path: `${prefixPath}/${child.path}`,
+      name: `Route_ext_${moduleName}_${child.path.replace(/\//g, '_')}`,
+      component: child.page as RouteRecordRaw['component'],
+      meta: {
+        title: child.name,
+        menuLabel: child.name,
+        menuIcon: child.icon,
+        menuOrder: child.order ?? 50,
+        requiresAuth: child.auth ?? true,
+        hidden: child.hidden,
+        permissions: child.permissions,
+        permissionValue: child.permissionValue?.toString(),
+        permCode: child.permCode,
+        moduleInfo: {
+          modulePath: undefined,
+          moduleName: moduleConfig.name,
+          moduleIcon: moduleConfig.icon,
+          moduleOrder: moduleConfig.order ?? 50,
+        },
+      },
+    } as unknown as RouteRecordRaw);
+  }
+
+  if (!options?.namespaceName) {
+    if (pageRoutes.length > 0) {
+      const firstChildPath = pageRoutes[0].path?.toString().replace(`${prefixPath}/`, '');
+
+      pageRoutes.unshift({
+        path: prefixPath,
+        name: `Module_ext_${moduleName}`,
+        redirect: `/${prefixPath}/${firstChildPath}`,
+        meta: {
+          title: moduleConfig.name,
+          menuLabel: moduleConfig.name,
+          menuIcon: moduleConfig.icon,
+          menuOrder: moduleConfig.order ?? 50,
+          menu: true,
+        },
+      } as RouteRecordRaw);
+    }
+  }
+
+  if (options?.namespaceName) {
+    const firstChildPath = pageRoutes[0]?.path?.toString().replace(`${prefixPath}/`, '');
+
+    pageRoutes.push({
+      path: 'ext',
+      name: 'Namespace_ext',
+      redirect: `/${prefixPath}/${firstChildPath}`,
+      meta: {
+        title: options.namespaceName,
+        menuLabel: options.namespaceName,
+        menuIcon: moduleConfig.icon,
+        menuOrder: moduleConfig.order ?? 50,
+        menu: true,
+      },
+    } as RouteRecordRaw);
+  }
+
+  return pageRoutes;
+}
+
+/**
  * 基包内部使用：扫描基包自己的 views 目录构建路由。
  * minSegments 设为 1 以允许单层路由（如 dashboard）被创建。
  */
