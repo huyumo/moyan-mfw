@@ -17,4 +17,13 @@ export { createBusinessPageConfigFn, initPermissionCache, getPermissionValueCach
 
 export * from './components';
 export * from './utils/image';
-export * from './composables'
+export * from './composables';
+export { useLayoutStore } from './store/layout-store';
+export { useAuthStore } from './store/auth-store';
+export { useAppLoadingStore } from './store/app-loading-store';
+export * from './hooks';
+export * from './directives';
+export * from './themes';
+export * from './constants/storage-keys';
+export { uploadConfig, getUploader, uploadImage } from './config/upload-config';
+export type { UploadConfig } from './config/upload-config';

@@ -48,8 +48,7 @@
 -->
 
 <script setup lang="ts">
-import { useLayoutStore } from 'moyan-mfw-base/frontend/store/layout-store';
-import { useColorMode } from 'moyan-mfw-base/frontend/composables';
+import { useLayoutStore, useColorMode } from 'moyan-mfw-base/frontend';
 import {
   Setting,
   Moon,

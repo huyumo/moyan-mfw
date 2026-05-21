@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-base",
-  "version": "1.1.8",
+  "version": "1.1.9",
   "description": "墨焱MFW核心框架",
   "main": "./src/shared/dist/index.js",
   "types": "./src/shared/dist/index.d.ts",
@@ -18,7 +18,8 @@
     "./frontend": {
       "types": "./src/frontend/dist/index.d.ts",
       "import": "./src/frontend/dist/index.mjs",
-      "require": "./src/frontend/dist/index.js"
+      "require": "./src/frontend/dist/index.js",
+      "style": "./src/frontend/dist/style.css"
     },
     "./frontend/*": {
       "types": "./src/frontend/dist/*.d.ts",
