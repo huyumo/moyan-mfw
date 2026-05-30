@@ -12,6 +12,8 @@ import { RouteNodeDto, PermissionTreeNodeDto } from './dto';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PermissionType, NodeType } from './entities/permission.entity';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
+import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
+import { CacheTTL } from '../../../cache/constants/cache.constants';
 
 /**
  * 权限服务
@@ -241,6 +243,7 @@ export class PermissionService {
    * 查询所有权限（树形结构）
    * @returns 树形权限列表
    */
+  @Cacheable({ key: 'sys:permission:tree:all', ttl: CacheTTL.LONG })
   async findAllTree(): Promise<Permission[]> {
     return this.permissionRepository.find({
       order: {
@@ -256,6 +259,7 @@ export class PermissionService {
    * @param updatePermissionDto - 更新权限请求参数
    * @returns 更新后的权限
    */
+  @CacheEvict({ keys: ['sys:permission:*'] })
   async update(id: string, updatePermissionDto: UpdatePermissionDto): Promise<Permission> {
     // 查找权限
     const permission = await this.permissionRepository.findOne({
@@ -381,6 +385,7 @@ export class PermissionService {
    * @param routes - 路由列表（树形结构）
    * @returns 最新权限树
    */
+  @CacheEvict({ keys: ['sys:permission:*'] })
   async syncPermissions(routes: RouteNodeDto[]): Promise<PermissionTreeNodeDto[]> {
     // 确保 PC 根节点存在
     await this.ensurePcRoot();
