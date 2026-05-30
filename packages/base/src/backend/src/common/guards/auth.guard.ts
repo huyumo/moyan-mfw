@@ -8,11 +8,15 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  Optional,
+  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { REDIS_ONLY_SERVICE } from '../../cache/cache.module';
+import { IRedisOnlyService } from '../../cache/interfaces/cache-service.interface';
 
 /**
  * 用户信息接口
@@ -22,6 +26,7 @@ export interface JwtPayload {
   sub: string; // 用户 ID
   username: string;
   roleIds?: string[];
+  jti?: string;
 }
 
 /**
@@ -43,6 +48,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
+    @Optional() @Inject(REDIS_ONLY_SERVICE) private readonly redis?: IRedisOnlyService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -63,17 +69,24 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('未授权，请先登录');
     }
 
+    let payload: JwtPayload;
     try {
-      const payload: JwtPayload = await this.jwtService.verifyAsync(token);
-
-      // 将用户信息注入到请求中
-      request['user'] = {
-        id: payload.sub,
-        username: payload.username,
-        roleIds: payload.roleIds,
-      };
-    } catch (error) {
+      payload = await this.jwtService.verifyAsync(token);
+    } catch {
       throw new UnauthorizedException('Token 无效或已过期');
+    }
+
+    request['user'] = {
+      id: payload.sub,
+      username: payload.username,
+      roleIds: payload.roleIds,
+    };
+
+    if (this.redis && payload.jti) {
+      const blacklisted = await this.redis.isBlacklisted(payload.jti);
+      if (blacklisted) {
+        throw new UnauthorizedException('Token 已失效，请重新登录');
+      }
     }
 
     return true;
