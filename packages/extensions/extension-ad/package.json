@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-extension-ad",
-  "version": "1.1.9",
+  "version": "1.1.10-beta.0",
   "description": "MFW 广告管理扩展包",
   "exports": {
     "./backend": {

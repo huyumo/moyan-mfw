@@ -55,11 +55,12 @@ function tagExists(tag: string): boolean {
 function main() {
   const releaseType = process.argv[2];
   
-  if (!releaseType || !['patch', 'minor', 'major'].includes(releaseType)) {
+  if (!releaseType || !['patch', 'minor', 'major', 'prerelease'].includes(releaseType)) {
     console.error('Usage: pnpm release:<type>');
-    console.error('  patch  - 1.0.0 → 1.0.1 (bug fixes)');
-    console.error('  minor  - 1.0.0 → 1.1.0 (new features)');
-    console.error('  major  - 1.0.0 → 2.0.0 (breaking changes)');
+    console.error('  patch      - 1.0.0 → 1.0.1 (bug fixes)');
+    console.error('  minor      - 1.0.0 → 1.1.0 (new features)');
+    console.error('  major      - 1.0.0 → 2.0.0 (breaking changes)');
+    console.error('  prerelease - 1.0.0 → 1.0.1-beta.0 (beta release)');
     process.exit(1);
   }
   
@@ -75,7 +76,11 @@ function main() {
 
     // 1. 更新根版本号
     console.log('1️⃣  更新根 package.json 版本...');
-    execSync(`npm version ${releaseType} --no-git-tag-version`, { stdio: 'inherit' });
+    if (releaseType === 'prerelease') {
+      execSync('npm version prerelease --preid=beta --no-git-tag-version', { stdio: 'inherit' });
+    } else {
+      execSync(`npm version ${releaseType} --no-git-tag-version`, { stdio: 'inherit' });
+    }
     const newVersion = getCurrentVersion();
     
     // 2. 同步所有包的版本
