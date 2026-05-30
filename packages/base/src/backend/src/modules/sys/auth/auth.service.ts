@@ -33,6 +33,10 @@ import { executeRawSql } from '../../../common/utils/sql.util';
 import { PermissionTreeNodeDto } from '../permission';
 import { flatToTree } from '@/common/utils/tree.util';
 import { AppType, CustomMenuItem } from '../app-type/entities/app-type.entity';
+import { Optional, Inject } from '@nestjs/common';
+import { randomUUID } from 'crypto';
+import { REDIS_ONLY_SERVICE } from '../../../cache/cache.module';
+import { IRedisOnlyService } from '../../../cache/interfaces/cache-service.interface';
 
 /**
  * 认证服务
@@ -58,6 +62,7 @@ export class AuthService {
     private appTypePermissionRepository: Repository<AppTypePermissionEntity>,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @Optional() @Inject(REDIS_ONLY_SERVICE) private readonly redis?: IRedisOnlyService,
   ) { }
 
   private getJwtConfig() {
@@ -104,17 +109,16 @@ export class AuthService {
     });
 
     // 生成 Token
+    const jwtConfig = this.getJwtConfig();
     const payload = {
       sub: user.id,
       username: user.username,
       roleIds: userRoles.map((ur) => ur.roleId),
+      jti: randomUUID(),
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
-
-    const jwtConfig = this.getJwtConfig();
-    const refreshExpiresIn = jwtConfig.refreshExpiresIn;
-    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
+    const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: jwtConfig.refreshExpiresIn });
 
     return {
       accessToken,
@@ -216,9 +220,21 @@ export class AuthService {
    * @description 清理 Token（可在 Redis 中将 Token 加入黑名单）
    * @param token - 当前 Token
    */
-  async logout(_token: string): Promise<void> {
-    // TODO-TASK-2026-04-07-001: 将 Token 加入 Redis 黑名单
-    // await this.redisService.setex(`token_blacklist:${token}`, expiresIn, '1');
+  async logout(token: string): Promise<void> {
+    if (!this.redis) return;
+
+    try {
+      const decoded = await this.jwtService.verifyAsync(token, { ignoreExpiration: true });
+      if (decoded?.jti) {
+        const now = Math.floor(Date.now() / 1000);
+        const remaining = Math.max(0, (decoded.exp || 0) - now);
+        if (remaining > 0) {
+          await this.redis.addToBlacklist(decoded.jti, remaining);
+        }
+      }
+    } catch {
+      // Token 无效时静默处理
+    }
   }
 
   /**
