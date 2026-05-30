@@ -6,6 +6,9 @@ import { resolve } from 'path';
 export default defineConfig({
   root: '.',
   plugins: [vue(), vueJsx()],
+  optimizeDeps: {
+    exclude: ['@element-plus/icons-vue'],
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
