@@ -1,7 +1,8 @@
 import { definePageConfig } from '../../../router/routes';
+import PcPermissionList from './Index.vue';
 
 export default definePageConfig({
-  page: () => import('./Index.vue'),
+  page: PcPermissionList,
   path: 'permission-pc',
   name: 'PC 权限管理',
   icon: 'Monitor',

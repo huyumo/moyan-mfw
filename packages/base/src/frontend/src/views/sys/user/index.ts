@@ -1,7 +1,8 @@
 import { definePageConfig } from '../../../router/routes';
+import UserList from './Index.vue';
 
 export default definePageConfig({
-  page: () => import('./Index.vue'),
+  page: UserList,
   path: 'user',
   name: '用户管理',
   icon: 'User',

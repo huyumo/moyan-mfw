@@ -1,7 +1,8 @@
 import { definePageConfig } from '../../../router/routes';
+import AuditLogList from './Index.vue';
 
 export default definePageConfig({
-  page: () => import('./Index.vue'),
+  page: AuditLogList,
   path: 'audit-log',
   name: '审计日志',
   icon: 'Document',

@@ -1,7 +1,8 @@
 import { definePageConfig } from '../../../router/routes';
+import AppList from './Index.vue';
 
 export default definePageConfig({
-  page: () => import('./Index.vue'),
+  page: AppList,
   path: 'app',
   name: '应用管理',
   icon: 'Application',

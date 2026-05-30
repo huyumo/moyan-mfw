@@ -1,7 +1,8 @@
 import { definePageConfig } from '../../router/routes';
+import RouteGroup from './Index.vue';
 
 export default definePageConfig({
-  page: () => import('./Index.vue'),
+  page: RouteGroup,
   path: 'route-group',
   name: '路由组',
   icon: 'Folder',
