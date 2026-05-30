@@ -93,17 +93,18 @@ function main() {
     });
     
     // 3. 提交更改（如果有）
+    const tagPrefix = releaseType === 'prerelease' ? 'beta-v' : 'v';
     execSync('git add -A', { stdio: 'inherit' });
 
     if (hasUpdates || hasChanges()) {
       console.log('\n3️⃣  提交版本更新...');
-      execSync(`git commit -m "chore: release v${newVersion}"`, { stdio: 'inherit' });
+      execSync(`git commit -m "chore: release ${tagPrefix}${newVersion}"`, { stdio: 'inherit' });
     } else {
       console.log('\n3️⃣  版本号已同步，无需提交');
     }
     
     // 4. 创建标签
-    tagName = `v${newVersion}`;
+    tagName = `${tagPrefix}${newVersion}`;
     console.log(`\n4️⃣  创建 Git 标签 ${tagName}...`);
     if (tagExists(tagName)) {
       console.log(`  标签 ${tagName} 已存在，删除重建...`);
