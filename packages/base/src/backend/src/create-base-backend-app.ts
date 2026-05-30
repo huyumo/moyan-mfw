@@ -30,6 +30,8 @@ import { PermissionGuard } from './common/guards/permission.guard';
 import { RolePermission } from './modules/sys/role/entities/role-permission.entity';
 import { UserRole } from './modules/sys/role/entities/user-role.entity';
 import { PermissionValueSyncService } from './modules/sys/permission/permission-value-sync.service';
+import { CacheModule } from './cache/cache.module';
+import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
 
 config({ path: '.env' });
 
@@ -159,6 +161,7 @@ async function createDynamicAppModule(
 
   @Module({
     imports: [
+      CacheModule.forRoot(),
       ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],
@@ -207,6 +210,10 @@ async function createDynamicAppModule(
     ],
     providers: [
       DatabaseHealthService,
+      {
+        provide: 'APP_INTERCEPTOR',
+        useClass: CacheInterceptor,
+      },
       {
         provide: 'APP_GUARD',
         useFactory: (jwtService: JwtService, reflector: Reflector) => {

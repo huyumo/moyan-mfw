@@ -9,11 +9,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { APP_GUARD, Reflector } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR, Reflector } from '@nestjs/core';
 import { DataSource } from 'typeorm';
 
 // 配置
 import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
+
+// 缓存
+import { CacheModule } from './cache/cache.module';
+import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
 
 // 实体 - 直接导入确保打包后可用
 import { User } from './modules/sys/user/entities/user.entity';
@@ -145,6 +149,9 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
  */
 @Module({
   imports: [
+    // 缓存模块
+    CacheModule.forRoot(),
+
     // 配置模块
     ConfigModule.forRoot({
       isGlobal: true,
@@ -179,6 +186,10 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
   ],
   providers: [
     DatabaseHealthService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
+    },
     {
       provide: APP_GUARD,
       useFactory: (jwtService: JwtService, reflector: Reflector) => {
