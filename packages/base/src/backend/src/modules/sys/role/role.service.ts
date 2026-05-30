@@ -19,6 +19,7 @@ import { PermissionTreeNodeDto } from '../permission';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
 import { App } from '../app/entities/app.entity';
+import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
 
 /**
  * 角色服务
@@ -39,6 +40,7 @@ export class RoleService {
    * @param createRoleDto - 创建角色请求参数
    * @returns 创建的角色
    */
+  @CacheEvict({ keys: 'sys:role:*' })
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
     const { roleCode } = createRoleDto;
 
@@ -61,6 +63,7 @@ export class RoleService {
    * @param id - 角色 ID
    * @returns 角色信息
    */
+  @Cacheable({ key: 'sys:role:{#id}' })
   async findById(id: string): Promise<Role> {
     const role = await this.roleRepository.findOne({
       where: { id },
@@ -127,6 +130,7 @@ export class RoleService {
    * @param updateRoleDto - 更新角色请求参数
    * @returns 更新后的角色
    */
+  @CacheEvict({ keys: 'sys:role:{#id}' })
   async update(id: string, updateRoleDto: UpdateRoleDto): Promise<Role> {
     // 查找角色
     const role = await this.roleRepository.findOne({
@@ -146,6 +150,7 @@ export class RoleService {
    * 删除角色
    * @param id - 角色 ID
    */
+  @CacheEvict({ keys: 'sys:role:{#id}' })
   async delete(id: string): Promise<void> {
     const role = await this.roleRepository.findOne({
       where: { id },
@@ -190,6 +195,7 @@ export class RoleService {
    * @param roleId - 角色 ID
    * @param permissions - 权限列表
    */
+  @CacheEvict({ keys: ['sys:role:{#roleId}', 'sys:role:permissions:{#roleId}'] })
   async assignPermissions(
     roleId: string,
     assignPermissionsDto: AssignPermissionsDto,
@@ -220,6 +226,7 @@ export class RoleService {
    * @param roleId - 角色 ID
    * @returns 角色权限列表
    */
+  @Cacheable({ key: 'sys:role:permissions:{#roleId}' })
   async getRolePermissions(roleId: string): Promise<RolePermission[]> {
     return this.rolePermissionRepository.find({
       where: { roleId },
