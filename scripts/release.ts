@@ -113,9 +113,9 @@ function main() {
     execSync(`git tag ${tagName}`, { stdio: 'inherit' });
     tagCreated = true;
 
-    // 5. 推送
+    // 5. 推送当前分支 + 标签
     console.log('\n5️⃣  推送到远程...');
-    execSync('git push origin main --tags', { stdio: 'inherit' });
+    execSync('git push origin HEAD --tags', { stdio: 'inherit' });
 
     console.log(`\n✅ 发布完成！`);
     console.log(`   新版本：${tagName}`);
