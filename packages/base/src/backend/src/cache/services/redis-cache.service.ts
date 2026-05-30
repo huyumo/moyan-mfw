@@ -4,7 +4,6 @@
  */
 
 import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { createClient, RedisClientType } from 'redis';
 import { ICacheService, IRedisOnlyService } from '../interfaces/cache-service.interface';
 import { CacheTTL } from '../constants/cache.constants';
@@ -15,33 +14,59 @@ export class RedisCacheService
 {
   private readonly logger = new Logger(RedisCacheService.name);
   private client: RedisClientType;
+  private connected = false;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor() {}
 
   async onModuleInit() {
-    const host = this.configService.get<string>('host');
-    const port = this.configService.get<number>('port');
-    const password = this.configService.get<string>('password');
-    const db = this.configService.get<number>('db');
+    const host = process.env.REDIS_HOST || 'localhost';
+    const port = parseInt(process.env.REDIS_PORT || '6379', 10);
+    const password = process.env.REDIS_PASSWORD || '';
+    const db = parseInt(process.env.REDIS_DB || '0', 10);
 
     this.client = createClient({
-      socket: { host, port },
+      socket: {
+        host,
+        port,
+        connectTimeout: 5000,
+        reconnectStrategy: (retries) => {
+          if (retries > 10) return new Error('重连次数超限');
+          return Math.min(retries * 500, 5000);
+        },
+      },
       password: password || undefined,
       database: db,
     });
 
+    this.client.on('ready', () => {
+      this.connected = true;
+      this.logger.log(`Redis 已连接 ${host}:${port}`);
+    });
+    this.client.on('end', () => {
+      this.connected = false;
+    });
     this.client.on('error', (err) => this.logger.error('Redis 连接错误', err));
-    this.client.on('connect', () => this.logger.log(`Redis 已连接 ${host}:${port}`));
 
-    await this.client.connect();
+    setImmediate(() => {
+      this.client.connect().catch(() => {
+        this.logger.warn(`Redis 不可用 (${host}:${port})，缓存降级为内存模式`);
+      });
+    });
   }
 
   async onModuleDestroy() {
-    await this.client?.quit();
+    if (this.connected) await this.client?.quit();
+  }
+
+  private requireClient(): RedisClientType {
+    if (!this.connected) {
+      throw new Error('Redis 未连接，当前为内存缓存模式，此操作不可用');
+    }
+    return this.client;
   }
 
   async get<T>(key: string): Promise<T | null> {
-    const raw = await this.client.get(key);
+    const raw = await this.requireClient().get(key);
     if (raw === null) return null;
     try {
       return JSON.parse(raw) as T;
@@ -52,17 +77,17 @@ export class RedisCacheService
 
   async set(key: string, value: unknown, ttl = CacheTTL.DEFAULT): Promise<void> {
     const raw = typeof value === 'string' ? value : JSON.stringify(value);
-    await this.client.setEx(key, ttl, raw);
+    await this.requireClient().setEx(key, ttl, raw);
   }
 
   async del(...keys: string[]): Promise<number> {
     if (keys.length === 0) return 0;
-    return await this.client.del(keys);
+    return await this.requireClient().del(keys);
   }
 
   async delByPattern(pattern: string): Promise<number> {
     let deleted = 0;
-    for await (const key of this.client.scanIterator({ MATCH: pattern, COUNT: 100 })) {
+    for await (const key of this.requireClient().scanIterator({ MATCH: pattern, COUNT: 100 })) {
       await this.client.del(key);
       deleted++;
     }
@@ -71,7 +96,7 @@ export class RedisCacheService
   }
 
   async exists(key: string): Promise<boolean> {
-    return (await this.client.exists(key)) === 1;
+    return (await this.requireClient().exists(key)) === 1;
   }
 
   async getOrSet<T>(
@@ -89,7 +114,7 @@ export class RedisCacheService
 
   async tryLock(resource: string, ttlSeconds = 30): Promise<string | null> {
     const token = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    const result = await this.client.set(`lock:${resource}`, token, {
+    const result = await this.requireClient().set(`lock:${resource}`, token, {
       NX: true,
       EX: ttlSeconds,
     });
@@ -104,7 +129,7 @@ export class RedisCacheService
         return 0
       end
     `;
-    const result = await this.client.eval(script, {
+    const result = await this.requireClient().eval(script, {
       keys: [`lock:${resource}`],
       arguments: [token],
     });
@@ -112,10 +137,11 @@ export class RedisCacheService
   }
 
   async rateLimit(key: string, max: number, windowSeconds: number) {
-    const count = await this.client.incr(`rate:${key}`);
-    if (count === 1) await this.client.expire(`rate:${key}`, windowSeconds);
+    const c = this.requireClient();
+    const count = await c.incr(`rate:${key}`);
+    if (count === 1) await c.expire(`rate:${key}`, windowSeconds);
 
-    const ttl = await this.client.ttl(`rate:${key}`);
+    const ttl = await c.ttl(`rate:${key}`);
     return {
       allowed: count <= max,
       remaining: Math.max(0, max - count),
@@ -124,14 +150,14 @@ export class RedisCacheService
   }
 
   async addToBlacklist(jti: string, expiresIn: number): Promise<void> {
-    await this.client.setEx(`token:blacklist:${jti}`, expiresIn, '1');
+    await this.requireClient().setEx(`token:blacklist:${jti}`, expiresIn, '1');
   }
 
   async isBlacklisted(jti: string): Promise<boolean> {
-    return (await this.client.exists(`token:blacklist:${jti}`)) === 1;
+    return (await this.requireClient().exists(`token:blacklist:${jti}`)) === 1;
   }
 
   getClient(): RedisClientType {
-    return this.client;
+    return this.requireClient();
   }
 }

@@ -13,6 +13,7 @@ import { CreateUserDto, AdminCreateUserDto, UpdateUserDto, QueryUserDto } from '
 import { hashPassword } from '../../../common/utils/encrypt';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
+import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
 
 /**
  * 用户服务
@@ -33,6 +34,7 @@ export class UserService {
    * @param createUserDto - 创建用户请求参数
    * @returns 创建的用户
    */
+  @CacheEvict({ keys: ['sys:user:*'] })
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { username, password, ...rest } = createUserDto;
 
@@ -103,6 +105,7 @@ export class UserService {
    * @param id - 用户 ID
    * @returns 用户信息
    */
+  @Cacheable({ key: 'sys:user:{#id}' })
   async findById(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -129,6 +132,7 @@ export class UserService {
    * @param username - 用户名
    * @returns 用户信息
    */
+  @Cacheable({ key: 'sys:user:username:{#username}' })
   async findByUsername(username: string): Promise<User | null> {
     return this.userRepository.findOne({
       where: { username },
@@ -186,6 +190,7 @@ export class UserService {
    * 删除用户
    * @param id - 用户 ID
    */
+  @CacheEvict({ keys: ['sys:user:{#id}', 'sys:user:username:*'] })
   async delete(id: string): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -209,6 +214,7 @@ export class UserService {
    * @param status - 新状态
    * @returns 更新后的用户
    */
+  @CacheEvict({ keys: 'sys:user:{#id}' })
   async updateStatus(id: string, status: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
@@ -227,6 +233,7 @@ export class UserService {
    * @param id - 用户 ID
    * @param newPassword - 新密码
    */
+  @CacheEvict({ keys: 'sys:user:{#id}' })
   async resetPassword(id: string, newPassword: string): Promise<void> {
     const user = await this.userRepository.findOne({
       where: { id },

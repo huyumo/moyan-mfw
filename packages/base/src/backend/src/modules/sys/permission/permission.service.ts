@@ -31,6 +31,7 @@ export class PermissionService {
    * @param createPermissionDto - 创建权限请求参数
    * @returns 创建的权限
    */
+  @CacheEvict({ keys: ['sys:permission:*'] })
   async create(createPermissionDto: CreatePermissionDto): Promise<Permission> {
     const { permCode, nodeType, parentId, permissionType } = createPermissionDto;
 
@@ -97,6 +98,7 @@ export class PermissionService {
    * @param id - 权限 ID
    * @returns 权限信息
    */
+  @Cacheable({ key: 'sys:permission:{#id}' })
   async findById(id: string): Promise<Permission> {
     const permission = await this.permissionRepository.findOne({
       where: { id },
@@ -141,6 +143,7 @@ export class PermissionService {
    * @param permissionType - 权限类型筛选（可选）
    * @returns 树形权限列表
    */
+  @Cacheable({ key: 'sys:permission:tree:withChildren:{#permissionType}', ttl: CacheTTL.LONG })
   async findAllTreeWithChildren(permissionType?: string): Promise<PermissionTreeNodeDto[]> {
     const queryBuilder = this.permissionRepository.createQueryBuilder('permission');
 
@@ -290,6 +293,7 @@ export class PermissionService {
    * 删除权限（级联删除子节点）
    * @param id - 权限 ID
    */
+  @CacheEvict({ keys: ['sys:permission:*'] })
   async delete(id: string): Promise<void> {
     const permission = await this.permissionRepository.findOne({
       where: { id },
@@ -349,6 +353,7 @@ export class PermissionService {
    * @param permissions - 权限列表
    * @returns 创建的权限列表
    */
+  @CacheEvict({ keys: ['sys:permission:*'] })
   async batchCreate(permissions: CreatePermissionDto[]): Promise<Permission[]> {
     // 验证必填字段
     for (const perm of permissions) {

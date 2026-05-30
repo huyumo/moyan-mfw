@@ -30,7 +30,6 @@ import { CheckAvailabilityResponseDto } from './dto/req/check-availability.dto';
 import { BusinessException } from '../../../common/exceptions/business.exception';
 import { hashPassword } from '../../../common/utils/encrypt';
 import { executeRawSql } from '../../../common/utils/sql.util';
-import { PermissionTreeNodeDto } from '../permission';
 import { flatToTree } from '@/common/utils/tree.util';
 import { AppType, CustomMenuItem } from '../app-type/entities/app-type.entity';
 import { Optional, Inject } from '@nestjs/common';
