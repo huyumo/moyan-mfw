@@ -17,6 +17,7 @@ import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
 
 // 缓存
 import { CacheModule } from './cache/cache.module';
+import type { CacheDriver } from './cache/cache.module';
 import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
 
 // 实体 - 直接导入确保打包后可用
@@ -150,7 +151,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
 @Module({
   imports: [
     // 缓存模块
-    CacheModule.forRoot(),
+    CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'auto' }),
 
     // 配置模块
     ConfigModule.forRoot({

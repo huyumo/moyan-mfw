@@ -31,6 +31,7 @@ import { RolePermission } from './modules/sys/role/entities/role-permission.enti
 import { UserRole } from './modules/sys/role/entities/user-role.entity';
 import { PermissionValueSyncService } from './modules/sys/permission/permission-value-sync.service';
 import { CacheModule } from './cache/cache.module';
+import type { CacheDriver } from './cache/cache.module';
 import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
 
 config({ path: '.env' });
@@ -161,7 +162,7 @@ async function createDynamicAppModule(
 
   @Module({
     imports: [
-      CacheModule.forRoot(),
+      CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'auto' }),
       ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],
