@@ -171,6 +171,7 @@ export class UserService {
    * @param updateUserDto - 更新用户请求参数
    * @returns 更新后的用户
    */
+  @CacheEvict({ keys: ['sys:user:{#id}', 'sys:user:username:*'] })
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     return this.dataSource.transaction(async (manager) => {
       const user = await manager.findOne(User, { where: { id } });

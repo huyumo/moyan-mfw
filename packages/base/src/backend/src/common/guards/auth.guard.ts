@@ -83,8 +83,13 @@ export class AuthGuard implements CanActivate {
     };
 
     if (this.redis && payload.jti) {
-      const blacklisted = await this.redis.isBlacklisted(payload.jti);
-      if (blacklisted) {
+      try {
+        const blacklisted = await this.redis.isBlacklisted(payload.jti);
+        if (blacklisted) {
+          throw new UnauthorizedException('Token 已失效，请重新登录');
+        }
+      } catch (error) {
+        if (error instanceof UnauthorizedException) throw error;
         throw new UnauthorizedException('Token 已失效，请重新登录');
       }
     }

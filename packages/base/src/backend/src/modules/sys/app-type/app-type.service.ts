@@ -197,7 +197,7 @@ export class AppTypeService {
    * @param status - 新状态
    * @returns 更新后的应用类型
    */
-  @CacheEvict({ keys: 'sys:appType:{#id}' })
+  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList'] })
   async updateStatus(id: string, status: number): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({
       where: { id },

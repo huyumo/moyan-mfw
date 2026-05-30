@@ -138,10 +138,10 @@ export class RedisCacheService
 
   async rateLimit(key: string, max: number, windowSeconds: number) {
     const c = this.requireClient();
-    const count = await c.incr(`rate:${key}`);
-    if (count === 1) await c.expire(`rate:${key}`, windowSeconds);
+    const fullKey = `rate:${key}`;
+    const [count] = (await c.multi().incr(fullKey).expire(fullKey, windowSeconds, 'NX').exec()) as [number];
 
-    const ttl = await c.ttl(`rate:${key}`);
+    const ttl = await c.ttl(fullKey);
     return {
       allowed: count <= max,
       remaining: Math.max(0, max - count),

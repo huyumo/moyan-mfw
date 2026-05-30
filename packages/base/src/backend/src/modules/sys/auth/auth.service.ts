@@ -158,19 +158,25 @@ export class AuthService {
         sub: user.id,
         username: user.username,
         roleIds: userRoles.map((ur) => ur.roleId),
-        iat: Date.now() / 1000,
+        jti: randomUUID(),
       };
 
       const jwtConfig = this.getJwtConfig();
-      const accessExpiresIn = jwtConfig.expiresIn;
       const accessToken = await this.jwtService.signAsync(newPayload, {
-        expiresIn: accessExpiresIn,
+        expiresIn: jwtConfig.expiresIn,
       });
 
-      const refreshExpiresIn = jwtConfig.refreshExpiresIn;
       const newRefreshToken = await this.jwtService.signAsync(newPayload, {
-        expiresIn: refreshExpiresIn,
+        expiresIn: jwtConfig.refreshExpiresIn,
       });
+
+      if (this.redis && payload?.jti) {
+        const now = Math.floor(Date.now() / 1000);
+        const remaining = Math.max(0, (payload.exp || 0) - now);
+        if (remaining > 0) {
+          await this.redis.addToBlacklist(payload.jti, remaining);
+        }
+      }
 
       return {
         accessToken,
@@ -398,6 +404,7 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       roleIds: [],
+      jti: randomUUID(),
     };
 
     const accessToken = await this.jwtService.signAsync(payload);
