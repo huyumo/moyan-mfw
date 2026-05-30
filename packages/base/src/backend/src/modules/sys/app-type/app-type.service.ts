@@ -21,6 +21,8 @@ import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
 import { PermissionTreeNodeDto } from '../permission';
 import { CustomMenuItem } from './entities/app-type.entity';
+import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
+import { CacheTTL } from '../../../cache/constants/cache.constants';
 
 /**
  * 应用类型服务
@@ -42,6 +44,7 @@ export class AppTypeService {
    * @param createAppTypeDto - 创建应用类型请求参数
    * @returns 创建的应用类型
    */
+  @CacheEvict({ keys: ['sys:appType:allList'] })
   async create(createAppTypeDto: CreateAppTypeDto): Promise<AppType> {
     const { typeCode } = createAppTypeDto;
 
@@ -64,6 +67,7 @@ export class AppTypeService {
    * @param id - 应用类型 ID
    * @returns 应用类型信息
    */
+  @Cacheable({ key: 'sys:appType:{#id}' })
   async findById(id: string): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({
       where: { id },
@@ -105,6 +109,7 @@ export class AppTypeService {
    * 查询所有应用类型
    * @returns 应用类型列表
    */
+  @Cacheable({ key: 'sys:appType:allList', ttl: CacheTTL.MEDIUM })
   async findAllList(): Promise<any[]> {
     const appTypes = await this.appTypeRepository.find({
       order: {
@@ -141,6 +146,7 @@ export class AppTypeService {
    * @param updateAppTypeDto - 更新应用类型请求参数
    * @returns 更新后的应用类型
    */
+  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList'] })
   async update(id: string, updateAppTypeDto: UpdateAppTypeDto): Promise<AppType> {
     // 查找应用类型
     const appType = await this.appTypeRepository.findOne({
@@ -171,6 +177,7 @@ export class AppTypeService {
    * 删除应用类型
    * @param id - 应用类型 ID
    */
+  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList'] })
   async delete(id: string): Promise<void> {
     const appType = await this.appTypeRepository.findOne({
       where: { id },
@@ -190,6 +197,7 @@ export class AppTypeService {
    * @param status - 新状态
    * @returns 更新后的应用类型
    */
+  @CacheEvict({ keys: 'sys:appType:{#id}' })
   async updateStatus(id: string, status: number): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({
       where: { id },
@@ -208,6 +216,7 @@ export class AppTypeService {
    * @param appTypeId - 应用类型 ID
    * @returns 权限池配置
    */
+  @Cacheable({ key: 'sys:appType:permissionPool:{#appTypeId}', ttl: CacheTTL.LONG })
   async getPermissionPool(appTypeId: string): Promise<PermissionPoolResponseDto> {
     const appType = await this.appTypeRepository.findOne({
       where: { id: appTypeId },
@@ -266,6 +275,7 @@ export class AppTypeService {
    * @param updateDto - 更新权限池请求
    * @returns 更新结果
    */
+  @CacheEvict({ keys: 'sys:appType:permissionPool:{#appTypeId}' })
   async updatePermissionPool(
     appTypeId: string,
     updateDto: UpdatePermissionPoolDto,
@@ -353,6 +363,7 @@ export class AppTypeService {
   /**
    * 获取自定义菜单
    */
+  @Cacheable({ key: 'sys:appType:customMenu:{#appTypeId}', ttl: CacheTTL.LONG })
   async getCustomMenu(appTypeId: string): Promise<CustomMenuItem[] | null> {
     const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
     if (!appType) throw new NotFoundError('应用类型');
@@ -362,6 +373,7 @@ export class AppTypeService {
   /**
    * 保存自定义菜单
    */
+  @CacheEvict({ keys: 'sys:appType:customMenu:{#appTypeId}' })
   async saveCustomMenu(appTypeId: string, data: CustomMenuItem[]): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
     if (!appType) throw new NotFoundError('应用类型');
@@ -386,6 +398,7 @@ export class AppTypeService {
   /**
    * 清空自定义菜单
    */
+  @CacheEvict({ keys: 'sys:appType:customMenu:{#appTypeId}' })
   async clearCustomMenu(appTypeId: string): Promise<AppType> {
     const appType = await this.appTypeRepository.findOne({ where: { id: appTypeId } });
     if (!appType) throw new NotFoundError('应用类型');
