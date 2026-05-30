@@ -1,8 +1,7 @@
-import { definePageConfig } from 'moyan-mfw-base/frontend'
-import PlacementList from './Index.vue'
+import { definePageConfig } from 'moyan-mfw-base/frontend';
 
 export default definePageConfig({
-  page: PlacementList,
+  page: () => import('./Index.vue'),
   path: 'placement',
   name: '广告位管理',
   icon: 'CollectionTag',

@@ -1,8 +1,7 @@
 import { definePageConfig } from '../../../router/routes';
-import RoleList from './Index.vue';
 
 export default definePageConfig({
-  page: RoleList,
+  page: () => import('./Index.vue'),
   path: 'role',
   name: '角色管理',
   icon: 'UserFilled',
