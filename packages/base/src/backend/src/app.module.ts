@@ -151,7 +151,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
 @Module({
   imports: [
     // 缓存模块
-    CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'auto' }),
+    CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'none' }),
 
     // 配置模块
     ConfigModule.forRoot({

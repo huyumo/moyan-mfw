@@ -162,7 +162,7 @@ async function createDynamicAppModule(
 
   @Module({
     imports: [
-      CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'auto' }),
+      CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'none' }),
       ConfigModule.forRoot({
         isGlobal: true,
         envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],

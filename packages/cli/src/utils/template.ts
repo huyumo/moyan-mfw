@@ -3,7 +3,7 @@ import * as fs from 'node:fs/promises'
 import * as fsSync from 'node:fs'
 import * as path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { writeFile } from './fs.js'
+import { writeFile, ensureDir } from './fs.js'
 
 interface TemplateVars {
   [key: string]: unknown
@@ -105,13 +105,18 @@ export async function renderTemplateToDir(
   const files = await getAllFiles(templateDir)
   for (const file of files) {
     const relative = path.relative(templateDir, file)
-    if (!relative.endsWith('.hbs')) continue
-    const outputNameRaw = relative.replace(/\.hbs$/, '').replace(/\\/g, '/')
-    const outputName = Handlebars.compile(outputNameRaw)(vars)
-    const outputPath = path.join(outputDir, outputName)
-    const raw = await renderTemplate(file, vars)
-    const content = await formatContent(raw, outputPath)
-    await writeFile(outputPath, content)
+    if (relative.endsWith('.hbs')) {
+      const outputNameRaw = relative.replace(/\.hbs$/, '').replace(/\\/g, '/')
+      const outputName = Handlebars.compile(outputNameRaw)(vars)
+      const outputPath = path.join(outputDir, outputName)
+      const raw = await renderTemplate(file, vars)
+      const content = await formatContent(raw, outputPath)
+      await writeFile(outputPath, content)
+    } else {
+      const outputPath = path.join(outputDir, relative)
+      await ensureDir(path.dirname(outputPath))
+      await fs.copyFile(file, outputPath)
+    }
   }
 }
 

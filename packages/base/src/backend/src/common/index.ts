@@ -95,3 +95,15 @@ export {
   type ExtensionPermissionName,
   type BasePermissionName,
 } from './constants/permissions';
+
+// === 缓存工具 ===
+export {
+  Cacheable,
+  CacheEvict,
+  CacheMethodKey,
+  type CacheableOptions,
+  type CacheEvictOptions,
+} from '../cache/decorators/cache.decorator';
+export type { ICacheService, IRedisOnlyService } from '../cache/interfaces/cache-service.interface';
+export { CACHE_SERVICE, REDIS_ONLY_SERVICE, type CacheDriver, type CacheModuleOptions } from '../cache/cache.module';
+export { CacheTTL, RateLimit } from '../cache/constants/cache.constants';
