@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   Optional,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
@@ -45,6 +46,8 @@ export interface JwtPayload {
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name);
+
   constructor(
     private jwtService: JwtService,
     private reflector: Reflector,
@@ -90,7 +93,7 @@ export class AuthGuard implements CanActivate {
         }
       } catch (error) {
         if (error instanceof UnauthorizedException) throw error;
-        throw new UnauthorizedException('Token 已失效，请重新登录');
+        this.logger.warn('Redis 黑名单检查失败，降级放行', error instanceof Error ? error.message : error);
       }
     }
 

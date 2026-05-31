@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview 广告内容控制器
  * @description 处理广告内容相关 HTTP 请求
  */
@@ -6,17 +6,16 @@
 import {
   Controller, Get, Post, Put, Delete,
   Body, Param, Query, ParseUUIDPipe,
-  UseGuards, HttpCode, HttpStatus,
+  HttpCode, HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { AuthGuard, RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
+import { RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdService } from '../service/ad.service'
 import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto, AdResponseDto } from '../dto'
 
 @ApiTags('ad-content', '广告内容相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @Controller('ad-contents')
 export class AdController {
   constructor(private service: AdService) {}

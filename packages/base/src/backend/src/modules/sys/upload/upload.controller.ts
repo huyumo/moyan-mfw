@@ -7,7 +7,6 @@ import {
   Controller,
   Post,
   Query,
-  UseGuards,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
@@ -23,14 +22,12 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadFileService, UploadResult } from './upload.service';
-import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog } from '../../../common/decorators/audit-log.decorator';
 import { SkipPermission } from '../../../common/decorators/skip-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 
 @ApiTags('upload', '文件上传相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @SkipPermission()
 @Controller('upload-files')
 export class UploadFileController {

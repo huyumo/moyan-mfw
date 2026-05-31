@@ -18,6 +18,8 @@ import { databaseConfig, appConfig, redisConfig, userConfig } from './config';
 // 缓存
 import { CacheModule } from './cache/cache.module';
 import type { CacheDriver } from './cache/cache.module';
+import { REDIS_ONLY_SERVICE } from './cache/cache.module';
+import { IRedisOnlyService } from './cache/interfaces/cache-service.interface';
 import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
 
 // 实体 - 直接导入确保打包后可用
@@ -193,10 +195,10 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
     },
     {
       provide: APP_GUARD,
-      useFactory: (jwtService: JwtService, reflector: Reflector) => {
-        return new AuthGuard(jwtService, reflector);
+      useFactory: (jwtService: JwtService, reflector: Reflector, redis: IRedisOnlyService) => {
+        return new AuthGuard(jwtService, reflector, redis);
       },
-      inject: [JwtService, Reflector],
+      inject: [JwtService, Reflector, REDIS_ONLY_SERVICE],
     },
     {
       provide: APP_GUARD,

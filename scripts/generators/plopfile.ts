@@ -102,7 +102,7 @@ export default function (plop: NodePlopAPI) {
             '',
             `### Controller 规范`,
             `  - @ApiTags('${moduleName}', '${moduleDesc}')`,
-            `  - @ApiBearerAuth('Authorization') + @UseGuards(AuthGuard)`,
+            `  - @ApiBearerAuth('Authorization')（无需 @UseGuards，全局 APP_GUARD 已覆盖）`,
             `  - CUD 方法必须加 @AuditLog + @RequirePermission`,
             `  - 只生成业务实际需要的接口（不需要的不要生成）`,
             `  - 使用 ApiResponseUtil.success() 包装响应`,

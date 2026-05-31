@@ -10,7 +10,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -24,7 +23,6 @@ import {
 } from '@nestjs/swagger';
 import { AuditLogService } from './audit-log.service';
 import { QueryAuditLogDto, AuditLogResponseDto } from './dto';
-import { AuthGuard } from '../../../common/guards/auth.guard';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../common';
@@ -35,7 +33,6 @@ import { ApiPaginatedResponse } from '../../../common';
  */
 @ApiTags('audit-log', '审计日志相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @Controller('audit-logs')
 export class AuditLogController {
   constructor(private auditLogService: AuditLogService) {}

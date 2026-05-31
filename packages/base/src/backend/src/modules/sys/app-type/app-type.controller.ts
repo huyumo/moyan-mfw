@@ -13,7 +13,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -33,7 +32,6 @@ import {
   PermissionPoolResponseDto,
   UpdatePermissionPoolResponseDto,
 } from './dto/res/permission-pool-response.dto';
-import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
@@ -49,7 +47,6 @@ import { SaveCustomMenuDto } from './dto/req/save-custom-menu.dto';
 @ApiTags('app-type', '应用类型相关接口')
 @ApiBearerAuth('Authorization')
 @ApiExtraModels(PermissionTreeNodeDto)
-@UseGuards(AuthGuard)
 @Controller('app-types')
 export class AppTypeController {
   constructor(private appTypeService: AppTypeService) {}

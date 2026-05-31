@@ -13,7 +13,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -27,7 +26,6 @@ import {
 } from '@nestjs/swagger';
 import { RoleService } from './role.service';
 import { CreateRoleDto, UpdateRoleDto, AssignPermissionsDto, QueryRoleDto, RoleResponseDto, RolePermissionResponseDto } from './dto';
-import { AuthGuard } from '../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
@@ -39,7 +37,6 @@ import { ApiPaginatedResponse } from '../../../common';
  */
 @ApiTags('role', '角色相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @Controller('roles')
 export class RoleController {
   constructor(private roleService: RoleService) {}

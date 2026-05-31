@@ -13,7 +13,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -27,7 +26,6 @@ import {
 } from '@nestjs/swagger';
 import { AppService } from '../service/app.service';
 import { CreateAppDto, UpdateAppDto, QueryAppDto, AppDetailResponseDto } from '../dto';
-import { AuthGuard } from '../../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../../common/types/api.types';
@@ -39,7 +37,6 @@ import { ApiPaginatedResponse } from '../../../../common';
  */
 @ApiTags('app', '应用实例相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @Controller('apps')
 export class AppController {
   constructor(private appService: AppService) {}

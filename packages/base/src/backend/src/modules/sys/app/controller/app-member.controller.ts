@@ -13,7 +13,6 @@ import {
   Param,
   Query,
   ParseUUIDPipe,
-  UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -27,7 +26,6 @@ import {
 } from '@nestjs/swagger';
 import { AppMemberService } from '../service/app-member.service';
 import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
-import { AuthGuard } from '../../../../common/guards/auth.guard';
 import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../../common/types/api.types';
@@ -40,7 +38,6 @@ import { AvailableAvailableRoleDto, MemberResponseDto } from '../dto/res/member-
  */
 @ApiTags('member', '应用成员相关接口')
 @ApiBearerAuth('Authorization')
-@UseGuards(AuthGuard)
 @Controller('apps/:appId/members')
 export class AppMemberController {
   constructor(private appMemberService: AppMemberService) {}
