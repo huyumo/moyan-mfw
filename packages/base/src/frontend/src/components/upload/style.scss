@@ -123,9 +123,9 @@
 
 .image-cropper-container {
   height: 400px;
-  padding: 16px;
   background: #f5f5f5;
   border-radius: 4px;
+  overflow: hidden;
 
   .image-cropper {
     height: 100%;

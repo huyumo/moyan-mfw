@@ -26,6 +26,7 @@
     "rxjs": "catalog:",
     "dotenv": "catalog:",
     "bcryptjs": "catalog:",
+    "ali-oss": "^6.21.0",
     "multer": "catalog:",
     "mysql2": "catalog:",
     "redis": "catalog:"

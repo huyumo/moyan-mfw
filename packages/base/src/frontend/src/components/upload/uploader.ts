@@ -3,7 +3,7 @@
  * @description 提供上传器的基础实现
  */
 
-import type { IUploader, UploadRequestOptions, UploadResult } from './types';
+import type { IUploader, UploadRequestOptions, UploadResult, OssAuthorization } from './types';
 import { TOKEN_KEY } from '../../constants/storage-keys';
 
 const getAuthToken = (): string => {
@@ -118,99 +118,89 @@ export class FormUploader extends BaseUploader {
   }
 }
 
-export class OssUploader extends BaseUploader {
-  private getUploadToken: () => Promise<string>;
-  private ossEndpoint: string;
-  private ossBucket: string;
-  private dir?: string;
+const OSS_SDK_URL = 'https://gosspublic.alicdn.com/aliyun-oss-sdk-6.18.1.min.js';
 
-  constructor(
-    getUploadToken: () => Promise<string>,
-    ossEndpoint: string,
-    ossBucket: string,
-    dir?: string
-  ) {
+let ossSdkReady = false;
+let ossSdkLoadPromise: Promise<void> | null = null;
+
+function loadOssSdk(): Promise<void> {
+  if (ossSdkReady) return Promise.resolve();
+  if (ossSdkLoadPromise) return ossSdkLoadPromise;
+
+  ossSdkLoadPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = OSS_SDK_URL;
+    script.onload = () => {
+      ossSdkReady = true;
+      resolve();
+    };
+    script.onerror = () => {
+      ossSdkLoadPromise = null;
+      reject(new Error('OSS SDK 加载失败'));
+    };
+    document.head.appendChild(script);
+  });
+
+  return ossSdkLoadPromise;
+}
+
+export class OssUploader extends BaseUploader {
+  private getAuthorization: () => Promise<OssAuthorization>;
+
+  constructor(getAuthorization: () => Promise<OssAuthorization>) {
     super();
-    this.getUploadToken = getUploadToken;
-    this.ossEndpoint = ossEndpoint;
-    this.ossBucket = ossBucket;
-    this.dir = dir || '';
+    this.getAuthorization = getAuthorization;
   }
 
   async upload(options: UploadRequestOptions): Promise<UploadResult> {
-    const { file, filename, onProgress, onSuccess, onError } = options;
+    const { file, onProgress, onSuccess, onError } = options;
 
     try {
-      const token = await this.getUploadToken();
+      const auth = await this.getAuthorization();
+
+      await loadOssSdk();
+
+      const OSS = (window as any).OSS;
+      if (!OSS) {
+        throw new Error('OSS SDK 未初始化');
+      }
+
+      const client = new OSS({
+        region: auth.endpoint.replace(/\.aliyuncs\.com$/, ''),
+        accessKeyId: auth.accessKeyId,
+        accessKeySecret: auth.accessKeySecret,
+        stsToken: auth.securityToken,
+        bucket: auth.bucket,
+      });
 
       const timestamp = Date.now();
       const randomStr = Math.random().toString(36).substr(2, 8);
-      const ext = file.name.split('.').pop();
-      const key = `${this.dir}${this.dir && !this.dir.endsWith('/') ? '/' : ''}${timestamp}_${randomStr}.${ext}`;
+      const ext = file.name.split('.').pop() || 'bin';
+      const key = `uploads/${timestamp}_${randomStr}.${ext}`;
 
-      const formData = new FormData();
-      formData.append('key', key);
-      formData.append('OSSAccessKeyId', this.getOssAccessKeyId(token));
-      formData.append('policy', this.getPolicy(token));
-      formData.append('Signature', this.getSignature(token));
-      formData.append(filename || 'file', file);
-
-      const uploadUrl = `https://${this.ossBucket}.${this.ossEndpoint}`;
-
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable && onProgress) {
-            const percentage = Math.round((e.loaded * 100) / e.total);
-            onProgress(percentage);
+      const result = await client.put(key, file, {
+        progress: (p: number) => {
+          if (onProgress) {
+            onProgress(Math.round(p * 100));
           }
-        });
-
-        xhr.onload = () => {
-          if (xhr.status === 200 || xhr.status === 204) {
-            const url = `https://${this.ossBucket}.${this.ossEndpoint}/${key}`;
-            const result: UploadResult = {
-              url,
-              originalName: file.name,
-              fileName: key,
-              fileSize: file.size,
-              mimeType: file.type,
-            };
-            onSuccess?.(result);
-            resolve(result);
-          } else {
-            const error = new Error(`OSS 上传失败：${xhr.statusText}`);
-            onError?.(error);
-            reject(error);
-          }
-        };
-
-        xhr.onerror = () => {
-          const error = new Error('OSS 网络错误');
-          onError?.(error);
-          reject(error);
-        };
-
-        xhr.open('POST', uploadUrl, true);
-        xhr.send(formData);
+        },
       });
+
+      const url = result.url || `https://${auth.bucket}.${auth.endpoint}/${key}`;
+      const uploadResult: UploadResult = {
+        url,
+        originalName: file.name,
+        fileName: key,
+        fileSize: file.size,
+        mimeType: file.type,
+      };
+
+      onSuccess?.(uploadResult);
+      return uploadResult;
     } catch (error) {
-      const err = error instanceof Error ? error : new Error('获取上传凭证失败');
+      const err = error instanceof Error ? error : new Error('OSS 上传失败');
       onError?.(err);
       throw err;
     }
-  }
-
-  private getOssAccessKeyId(token: string): string {
-    return token;
-  }
-
-  private getPolicy(token: string): string {
-    return token;
-  }
-
-  private getSignature(token: string): string {
-    return token;
   }
 }

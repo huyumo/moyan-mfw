@@ -4,5 +4,6 @@
  */
 
 export * from './upload.service';
+export * from './oss.service';
 export * from './upload.controller';
 export * from './upload.module';

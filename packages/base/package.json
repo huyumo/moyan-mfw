@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-base",
-  "version": "1.1.10-beta.2",
+  "version": "1.1.10-beta.3",
   "description": "墨焱MFW核心框架",
   "main": "./src/shared/dist/index.js",
   "types": "./src/shared/dist/index.d.ts",
@@ -50,8 +50,6 @@
     "build:backend": "pnpm --filter @internal/base-backend build",
     "build:frontend": "pnpm --filter @internal/base-frontend build",
     "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",
-    "dev:backend": "pnpm --filter @internal/base-backend dev",
-    "dev:frontend": "pnpm --filter @internal/base-frontend dev",
     "typecheck:shared": "pnpm --filter @internal/base-shared typecheck",
     "typecheck:backend": "pnpm --filter @internal/base-backend typecheck",
     "typecheck:frontend": "pnpm --filter @internal/base-frontend typecheck",

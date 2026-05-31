@@ -5,6 +5,7 @@
 
 import {
   Controller,
+  Get,
   Post,
   Query,
   UseInterceptors,
@@ -22,6 +23,8 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadFileService, UploadResult } from './upload.service';
+import { OssService } from './oss.service';
+import { OssAuthorizationDto } from './dto/res/oss-authorization.dto';
 import { AuditLog } from '../../../common/decorators/audit-log.decorator';
 import { SkipPermission } from '../../../common/decorators/skip-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
@@ -31,7 +34,18 @@ import { ApiResponseUtil } from '../../../common/types/api.types';
 @SkipPermission()
 @Controller('upload-files')
 export class UploadFileController {
-  constructor(private uploadFileService: UploadFileService) {}
+  constructor(
+    private uploadFileService: UploadFileService,
+    private ossService: OssService,
+  ) {}
+
+  @Get('oss-authorization')
+  @ApiOperation({ summary: '获取 OSS 上传授权', description: '获取阿里云 OSS STS 临时凭证，用于前端直传' })
+  @ApiResponse({ status: 200, description: '获取成功', type: OssAuthorizationDto })
+  async getOssAuthorization() {
+    const result = await this.ossService.getAuthorization();
+    return ApiResponseUtil.success(result, '获取 OSS 授权成功');
+  }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)

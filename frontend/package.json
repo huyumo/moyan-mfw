@@ -11,23 +11,25 @@
     "verify-dist": "vite build --config vite.verify-dist.config.ts"
   },
   "dependencies": {
-    "vue": "catalog:",
-    "vue-router": "catalog:",
-    "element-plus": "catalog:",
     "@element-plus/icons-vue": "catalog:",
-    "pinia": "catalog:",
     "@vueuse/core": "catalog:",
     "axios": "catalog:",
+    "element-plus": "catalog:",
     "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-business-dict": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
-    "moyan-mfw-business-dict": "workspace:*"
+    "pinia": "catalog:",
+    "vue": "catalog:",
+    "vue-advanced-cropper": "catalog:",
+    "vue-cropper": "^1.1.4",
+    "vue-router": "catalog:"
   },
   "devDependencies": {
-    "vite": "catalog:",
     "@vitejs/plugin-vue": "catalog:",
     "@vitejs/plugin-vue-jsx": "catalog:",
-    "vue-tsc": "catalog:",
     "sass": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
   }
 }

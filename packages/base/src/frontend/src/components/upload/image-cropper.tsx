@@ -1,8 +1,7 @@
 import { defineComponent, ref, computed, Teleport } from 'vue';
 import { ElDialog, ElButton } from 'element-plus';
-import { Cropper } from 'vue-advanced-cropper';
-import 'vue-advanced-cropper/dist/style.css';
-import type { ImageCropperProps } from './types';
+import { VueCropper } from 'vue-cropper';
+import 'vue-cropper/dist/index.css';
 
 export default defineComponent({
   name: 'ImageCropper',
@@ -15,7 +14,7 @@ export default defineComponent({
   },
   emits: ['confirm', 'cancel', 'update:visible'],
   setup(props, { emit }) {
-    const cropperRef = ref<InstanceType<typeof Cropper> | null>(null);
+    const cropperRef = ref<any>(null);
 
     const imageSrc = computed(() => {
       if (typeof props.image === 'string') return props.image;
@@ -25,16 +24,26 @@ export default defineComponent({
       return '';
     });
 
+    const fixedRatio = computed(() => {
+      if (props.ratio === 1) return [1, 1] as [number, number];
+      if (props.ratio > 1) return [props.ratio, 1] as [number, number];
+      return [1, 1 / props.ratio] as [number, number];
+    });
+
+    const cropBoxSize = computed(() => {
+      const base = 320;
+      if (props.ratio >= 1) {
+        return { width: base, height: Math.round(base / props.ratio) };
+      }
+      return { width: Math.round(base * props.ratio), height: base };
+    });
+
     const handleConfirm = () => {
-      const result = cropperRef.value?.getResult();
-      const canvas = result?.canvas;
-      if (canvas) {
-        canvas.toBlob((blob: Blob | null) => {
-          if (blob) {
-            emit('confirm', blob);
-            emit('update:visible', false);
-          }
-        }, 'image/jpeg', 0.9);
+      if (cropperRef.value) {
+        cropperRef.value.getCropBlob((blob: Blob) => {
+          emit('confirm', blob);
+          emit('update:visible', false);
+        });
       }
     };
 
@@ -48,7 +57,7 @@ export default defineComponent({
         <ElDialog
           modelValue={props.visible}
           title="裁剪图片"
-          width="500px"
+          width="600px"
           onClose={handleCancel}
           destroyOnClose
           zIndex={3000}
@@ -62,13 +71,20 @@ export default defineComponent({
           }}
         >
           <div class="image-cropper-container">
-            <Cropper
+            <VueCropper
               ref={cropperRef}
-              src={imageSrc.value}
-              stencilProps={{
-                aspectRatio: props.ratio,
-              }}
-              class="image-cropper"
+              img={imageSrc.value}
+              fixed={true}
+              fixedNumber={fixedRatio.value}
+              autoCrop={true}
+              autoCropWidth={cropBoxSize.value.width}
+              autoCropHeight={cropBoxSize.value.height}
+              centerBox={true}
+              canScale={true}
+              canMove={true}
+              mode="contain"
+              outputType="jpeg"
+              full={false}
             />
           </div>
         </ElDialog>

@@ -23,7 +23,8 @@
     "moyan-api": "catalog:",
     "md-editor-v3": "catalog:",
     "quill": "catalog:",
-    "vue-advanced-cropper": "catalog:"
+    "vue-advanced-cropper": "catalog:",
+    "vue-cropper": "catalog:"
   },
   "devDependencies": {
     "vite": "catalog:",

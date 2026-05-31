@@ -41,7 +41,8 @@ import type {
   ResourceValue,
   ResourceType 
 } from './types';
-import { FormUploader } from './uploader';
+import { FormUploader, OssUploader } from './uploader';
+import { TOKEN_KEY } from '../../constants/storage-keys';
 
 function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
   return new Promise((resolve, reject) => {
@@ -304,6 +305,27 @@ export default defineComponent({
     const handleHttpRequest = async (options: UploadRequestOptions) => {
       if (props.httpRequest) {
         return props.httpRequest(options);
+      }
+
+      if (props.uploadType === 'oss') {
+        const uploader = new OssUploader(async () => {
+          const token = localStorage.getItem(TOKEN_KEY) || '';
+          const resp = await fetch(`${props.uploadUrl}/oss-authorization`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const json = await resp.json();
+          if (!resp.ok || !json.data) {
+            throw new Error(json.message || '获取 OSS 授权失败');
+          }
+          return json.data;
+        });
+        return uploader.upload({
+          file: options.file,
+          filename: options.filename,
+          onProgress: options.onProgress as any,
+          onSuccess: options.onSuccess as any,
+          onError: options.onError as any,
+        });
       }
 
       const uploader = new FormUploader(props.uploadUrl, props.businessType);

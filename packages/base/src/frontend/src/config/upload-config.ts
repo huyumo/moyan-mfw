@@ -1,5 +1,6 @@
 import { FormUploader, OssUploader } from '../components/upload/uploader';
-import type { UploadResult } from '../components/upload/types';
+import type { UploadResult, OssAuthorization } from '../components/upload/types';
+import { TOKEN_KEY } from '../constants/storage-keys';
 
 export type UploadType = 'Form' | 'Oss';
 
@@ -29,12 +30,17 @@ export const getUploader = (uploadType?: UploadType, businessType?: string) => {
     case 'Form':
       return new FormUploader(uploadConfig.formUrl, businessType);
     case 'Oss':
-      return new OssUploader(
-        () => Promise.resolve(''),
-        uploadConfig.oss.endpoint,
-        uploadConfig.oss.bucket,
-        uploadConfig.oss.dir
-      );
+      return new OssUploader(async () => {
+        const token = localStorage.getItem(TOKEN_KEY) || '';
+        const resp = await fetch(`${uploadConfig.formUrl}/oss-authorization`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const json = await resp.json();
+        if (!resp.ok || !json.data) {
+          throw new Error(json.message || '获取 OSS 授权失败');
+        }
+        return json.data as OssAuthorization;
+      });
     default:
       return new FormUploader(uploadConfig.formUrl, businessType);
   }

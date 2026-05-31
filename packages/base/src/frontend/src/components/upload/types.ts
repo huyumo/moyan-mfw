@@ -110,6 +110,18 @@ export interface MfwUploadInstance {
 /** 上传方式类型（从环境变量配置） */
 export type UploadMethodType = 'Form' | 'Oss';
 
+/** OSS STS 授权响应 */
+export interface OssAuthorization {
+  accessKeyId: string;
+  accessKeySecret: string;
+  securityToken: string;
+  stsToken: string;
+  expiration: string;
+  bucket: string;
+  endpoint: string;
+  timeout: number;
+}
+
 /** 裁剪选项 */
 export interface CropOptions {
   enabled?: boolean;

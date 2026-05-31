@@ -7,6 +7,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { UploadFileService } from './upload.service';
+import { OssService } from './oss.service';
 import { UploadFileController } from './upload.controller';
 
 @Module({
@@ -18,8 +19,8 @@ import { UploadFileController } from './upload.controller';
       },
     }),
   ],
-  providers: [UploadFileService],
+  providers: [UploadFileService, OssService],
   controllers: [UploadFileController],
-  exports: [UploadFileService],
+  exports: [UploadFileService, OssService],
 })
 export class UploadFileModule {}
