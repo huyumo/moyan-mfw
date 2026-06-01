@@ -19,6 +19,9 @@ packages/*/test-results/
 **/.env
 **/agent-memory/
 
+.env
+.env.local
+
 uploads/
 
 _test-output/
