@@ -13,6 +13,11 @@ stages:
     strategy: naturally
     trigger: auto
     steps:
+      - step: bash
+        name: secret_scan
+        displayName: 敏感信息检测
+        commands:
+          - bash scripts/check-secrets.sh --ci-push
       - step: build@nodejs
         name: typecheck_and_build
         displayName: TypeScript 类型检查与构建

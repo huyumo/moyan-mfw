@@ -17,6 +17,8 @@ packages/*/test-results/
 **/.env.test
 **/.env.local
 **/.env
+# backend/env (without dot) previously contained real OSS credentials
+/backend/env
 **/agent-memory/
 
 .env
