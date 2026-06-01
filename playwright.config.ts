@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config as dotenvConfig } from 'dotenv';
+import * as path from 'path';
+
+dotenvConfig({ path: path.join(__dirname, 'backend', '.env.test') });
 
 export default defineConfig({
   testDir: './e2e',
@@ -33,25 +37,25 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 60000,
       env: {
-        NODE_ENV: 'test',
-        PORT: '3000',
-        GLOBAL_PREFIX: '/api',
-        DB_HOST: 'localhost',
-        DB_PORT: '3306',
-        DB_USERNAME: 'root',
-        DB_PASSWORD: 'root',
-        DB_NAME: 'test_moyan_mfw',
-        DB_POOL_SIZE: '10',
-        REDIS_HOST: 'localhost',
-        REDIS_PORT: '6379',
-        REDIS_PASSWORD: '',
-        REDIS_DB: '1',
-        JWT_SECRET: 'test_jwt_secret_key_for_integration_testing_only',
-        JWT_EXPIRES_IN: '7200',
-        JWT_REFRESH_EXPIRES_IN: '604800',
-        CORS_ORIGIN: '*',
-        ADMIN_DEFAULT_PASSWORD_TYPE: 'fixed',
-        ADMIN_DEFAULT_PASSWORD: '123456',
+        NODE_ENV: process.env.NODE_ENV || 'test',
+        PORT: process.env.PORT || '3000',
+        GLOBAL_PREFIX: process.env.GLOBAL_PREFIX || '/api',
+        DB_HOST: process.env.DB_HOST || 'localhost',
+        DB_PORT: process.env.DB_PORT || '3306',
+        DB_USERNAME: process.env.DB_USERNAME || 'root',
+        DB_PASSWORD: process.env.DB_PASSWORD || '',
+        DB_NAME: process.env.DB_NAME || 'test_moyan_mfw',
+        DB_POOL_SIZE: process.env.DB_POOL_SIZE || '10',
+        REDIS_HOST: process.env.REDIS_HOST || 'localhost',
+        REDIS_PORT: process.env.REDIS_PORT || '6379',
+        REDIS_PASSWORD: process.env.REDIS_PASSWORD || '',
+        REDIS_DB: process.env.REDIS_DB || '1',
+        JWT_SECRET: process.env.JWT_SECRET || '',
+        JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7200',
+        JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || '604800',
+        CORS_ORIGIN: process.env.CORS_ORIGIN || '*',
+        ADMIN_DEFAULT_PASSWORD_TYPE: process.env.ADMIN_DEFAULT_PASSWORD_TYPE || 'fixed',
+        ADMIN_DEFAULT_PASSWORD: process.env.ADMIN_DEFAULT_PASSWORD || '',
       },
     },
     {
