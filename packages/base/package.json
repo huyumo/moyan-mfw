@@ -71,6 +71,9 @@
     "README.md",
     "LICENSE"
   ],
+  "peerDependencies": {
+    "moyan-api": "^2.1.19"
+  },
   "engines": {
     "node": ">=20.0.0"
   }

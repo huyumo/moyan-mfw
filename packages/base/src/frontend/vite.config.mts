@@ -34,7 +34,7 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'pinia', '@vueuse/core', 'axios', 'md-editor-v3', 'quill', 'vue-advanced-cropper', 'moyan-mfw-base/shared'],
+      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'pinia', '@vueuse/core', 'axios', 'moyan-api', 'md-editor-v3', 'quill', 'vue-advanced-cropper', 'moyan-mfw-base/shared'],
       output: {
         exports: 'named',
         globals: {
