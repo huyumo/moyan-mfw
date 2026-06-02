@@ -1,0 +1,43 @@
+version: '1.0'
+name: beta-tag-pipeline-v3
+displayName: BetaTagPipeline-v3
+triggers:
+  trigger: auto
+  push:
+    branches:
+      include:
+        - beta
+    tags:
+      prefix:
+        - beta-v
+variables:
+  global:
+    - NPM_TOKEN
+stages:
+  - name: release
+    displayName: 构建并发布 Beta 版
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@nodejs
+        name: build_and_publish
+        displayName: build_and_publish
+        nodeVersion: 22.3.0
+        commands:
+          - set -e
+          - npm install -g pnpm@10.14.0
+          - pnpm install --frozen-lockfile --config.node-linker=hoisted
+          - pnpm --filter moyan-mfw-base build
+          - pnpm --filter moyan-mfw-business-dict build
+          - pnpm --filter moyan-mfw-extension-ad build
+          - pnpm --filter moyan-mfw-cli build
+          - pnpm run typecheck
+          - VERSION=$(node -p "require('./package.json').version")
+          - echo ">>> 发布 Beta 版本：v${VERSION}"
+          - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          - cd packages/base && npm publish --access public --tag beta 2>&1 || echo "  ⚠ base already published, skipping"
+          - cd ../extensions/extension-ad && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-ad already published, skipping"
+          - cd ../../cli && npm publish --access public --tag beta 2>&1 || echo "  ⚠ cli already published, skipping"
+          - echo "✅ v${VERSION} Beta 包发布完成！"
+        caches: []
+        strategy: {}
