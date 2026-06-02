@@ -4,6 +4,9 @@ displayName: BetaTagPipeline-v3
 triggers:
   trigger: auto
   push:
+    branches:
+      include:
+        - beta
     tags:
       prefix:
         - beta-v
@@ -18,7 +21,7 @@ stages:
     steps:
       - step: build@nodejs
         name: build_and_publish
-        displayName: 类型检查、构建与发布 (Beta)
+        displayName: build_and_publish
         nodeVersion: 22.3.0
         commands:
           - set -e
@@ -36,3 +39,5 @@ stages:
           - cd ../extensions/extension-ad && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-ad already published, skipping"
           - cd ../../cli && npm publish --access public --tag beta 2>&1 || echo "  ⚠ cli already published, skipping"
           - echo "✅ v${VERSION} Beta 包发布完成！"
+        caches: []
+        strategy: {}
