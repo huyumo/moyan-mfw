@@ -22,6 +22,7 @@ stages:
         displayName: TypeScript 类型检查
         nodeVersion: 22.3.0
         commands:
+          - set -e
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build

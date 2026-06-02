@@ -4,9 +4,12 @@ displayName: BetaTagPipeline-V2
 triggers:
   trigger: auto
   push:
+    branches:
+      exclude:
+        - .*
     tags:
-      prefix:
-        - beta-v
+      include:
+        - beta-v.*
 variables:
   global:
     - NPM_TOKEN
@@ -21,6 +24,7 @@ stages:
         displayName: 类型检查、构建与发布 (Beta)
         nodeVersion: 22.3.0
         commands:
+          - set -e
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build

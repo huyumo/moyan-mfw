@@ -17,12 +17,14 @@ stages:
         name: secret_scan
         displayName: 敏感信息检测
         commands:
+          - set -e
           - bash scripts/check-secrets.sh --ci-push
       - step: build@nodejs
         name: typecheck_and_build
         displayName: TypeScript 类型检查与构建
         nodeVersion: 22.3.0
         commands:
+          - set -e
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build
