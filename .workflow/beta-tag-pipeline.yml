@@ -1,15 +1,12 @@
 version: '1.0'
-name: beta-tag-pipeline-v2
-displayName: BetaTagPipeline-V2
+name: beta-tag-pipeline-v3
+displayName: BetaTagPipeline-v3
 triggers:
   trigger: auto
   push:
-    branches:
-      exclude:
-        - .*
     tags:
-      include:
-        - beta-v.*
+      prefix:
+        - beta-v
 variables:
   global:
     - NPM_TOKEN
