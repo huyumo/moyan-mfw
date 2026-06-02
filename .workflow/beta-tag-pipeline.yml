@@ -1,6 +1,6 @@
 version: '1.0'
-name: beta-tag-pipeline
-displayName: BetaTagPipeline
+name: beta-tag-pipeline-v2
+displayName: BetaTagPipeline-V2
 triggers:
   trigger: auto
   push:
