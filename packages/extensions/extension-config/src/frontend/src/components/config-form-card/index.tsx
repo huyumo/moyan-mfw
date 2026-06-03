@@ -15,7 +15,7 @@ import type {
   MfwConfigFormCardExpose,
   ConfigFormItemConfig,
 } from './types';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from '@shared';
 
 export default defineComponent({
   name: 'MfwConfigFormCard',

@@ -5,7 +5,7 @@
     "moduleResolution": "node",
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
-    "rootDir": "./src",
+    "rootDirs": ["./src", "../shared/src"],
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
@@ -14,7 +14,9 @@
     "experimentalDecorators": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/*": ["../shared/src/*"],
+      "@shared": ["../shared/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts"],

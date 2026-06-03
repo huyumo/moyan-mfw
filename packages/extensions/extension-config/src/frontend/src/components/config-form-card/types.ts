@@ -3,7 +3,7 @@
  */
 
 import type { FormItemConfig, FormGroupConfig } from 'moyan-mfw-base/frontend';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from '@shared';
 
 /** 配置表单项配置 */
 export interface ConfigFormItemConfig extends FormItemConfig {
