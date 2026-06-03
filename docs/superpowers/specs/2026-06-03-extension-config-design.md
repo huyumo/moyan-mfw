@@ -146,6 +146,8 @@ export enum ConfigType {
 | PUT    | `/batch`                   | 批量更新配置         | 配置编辑权限  |
 | DELETE | `/:id`                     | 删除配置             | 配置删除权限  |
 
+> 管理接口的请求体中包含 `appId` 字段，由前端传入。
+
 **公开接口** `@Controller('ext/config/pub')`（`@Public()` 装饰器）
 
 | 方法   | 路径                | 说明                          |
@@ -200,6 +202,8 @@ export interface ConfigFormItemConfig extends FormItemConfig {
 }
 
 export interface ConfigFormCardProps {
+  /** 应用 ID（null=全局，非null=租户配置） */
+  appId: number | null;
   /** 配置分组标识 */
   groupKey: string;
   /** 表单项配置 */
@@ -272,7 +276,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <ConfigFormCard ref="formRef" group-key="mail" :items="items" />
+  <ConfigFormCard ref="formRef" :app-id="appId" group-key="mail" :items="items" />
   <el-button @click="handleSubmit">保存</el-button>
 </template>
 ```
@@ -305,10 +309,10 @@ CREATE TABLE `mfw_config` (
 
 ## 7. 注意事项与边界
 
-1. **appId 获取**：从 `@User() user: UserDto` 中获取当前用户的 `appId`；如果无 appId 则传 `null` 使用全局配置
+1. **appId 由前端传入**：前端通过 props 传入 `appId`（`null`=全局，具体值=租户），后端不自动推断。管理员可管理全局配置和应用配置，应用管理员仅管理自身配置，权限由业务层控制
 2. **Upsert 逻辑**：批量更新使用 `save` 方法（存在则更新，不存在则插入），基于唯一索引 `uk_app_group_config` 判断
 3. **公开接口安全**：`@Public()` 装饰器绕过 JWT 认证，但仅返回 `configType = 0` 的数据
-4. **缓存一致性**：写入/删除后立即 `@CacheEvict`，确保读取到最新数据
+4. **缓存一致性**：写入/删除后立即 `@CacheEvict`，确保读取到最新数据。`appId` 为 `null` 时使用 `config:null:{groupKey}` 作为缓存 key，确保全局配置与应用配置缓存隔离
 5. **反模式规避**：
    - 不使用 `emit('confirm')`，使用 `defineExpose({ onConfirm })`
    - 分页使用 `PaginationX + WhereBuilder`（如果后续需要列表查询）
