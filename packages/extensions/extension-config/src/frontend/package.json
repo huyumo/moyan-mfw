@@ -1,0 +1,33 @@
+{
+  "name": "@internal/config-frontend",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "catalog:",
+    "@internal/base-shared": "workspace:*",
+    "@internal/config-shared": "workspace:*",
+    "@vueuse/core": "catalog:",
+    "axios": "catalog:",
+    "element-plus": "catalog:",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-config": "workspace:*",
+    "pinia": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "sass": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}
