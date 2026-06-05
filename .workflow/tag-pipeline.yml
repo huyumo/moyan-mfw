@@ -27,6 +27,7 @@ stages:
           - pnpm --filter moyan-mfw-base build
           - pnpm --filter moyan-mfw-business-dict build
           - pnpm --filter moyan-mfw-extension-ad build
+          - pnpm --filter moyan-mfw-extension-config build
           - pnpm --filter moyan-mfw-cli build
           - pnpm run typecheck
           - VERSION=$(node -p "require('./package.json').version")
@@ -34,5 +35,6 @@ stages:
           - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
           - cd packages/base && npm publish --access public
           - cd ../extensions/extension-ad && npm publish --access public
+          - cd ../extension-config && npm publish --access public
           - cd ../../cli && npm publish --access public
           - echo "✅ v${VERSION} 所有包发布完成！"

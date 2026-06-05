@@ -11,6 +11,7 @@ const PACKAGES = [
   'packages/base',
   'packages/cli',
   'packages/extensions/extension-ad',
+  'packages/extensions/extension-config',
 ];
 
 function getCurrentVersion(): string {
