@@ -18,6 +18,12 @@ import type {
 } from './types';
 import { ConfigType } from '@shared';
 
+/** 从 localStorage 读取 JWT Token */
+function getAuthHeaders(): Record<string, string> {
+  const token = localStorage.getItem('mfw:admin:token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 /** configType 对应的 CSS 类名 */
 const CONFIG_TYPE_CLASS: Record<ConfigType, string> = {
   [ConfigType.PUBLIC]: 'is-config-public',
@@ -122,7 +128,7 @@ export default defineComponent({
       // 调用批量更新 API
       const response = await fetch('/api/ext/config/batch', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           groupKey: props.groupKey,
           appId: props.appId,
