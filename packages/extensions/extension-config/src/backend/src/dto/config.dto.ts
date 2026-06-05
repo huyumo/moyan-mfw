@@ -31,6 +31,11 @@ export class BatchUpdateItemDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional({ description: '配置类型（不传则保持原有）', enum: ConfigType })
+  @IsOptional()
+  @IsEnum(ConfigType)
+  configType?: ConfigType;
 }
 
 export class CreateConfigDto {

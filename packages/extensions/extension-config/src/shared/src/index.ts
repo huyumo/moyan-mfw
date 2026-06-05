@@ -2,5 +2,5 @@
  * @fileoverview 配置管理共享模块入口
  */
 
-export * from './constants';
-export * from './permission-values';
+export { ConfigType } from './constants';
+export { CONFIG_PERMISSION_VALUES } from './permission-values';

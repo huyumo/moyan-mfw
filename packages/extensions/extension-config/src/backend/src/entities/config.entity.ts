@@ -15,7 +15,7 @@ export class Config extends Base {
   id: number;
 
   @Column({ type: 'bigint', nullable: true, comment: '应用 ID，NULL 表示全局配置' })
-  appId: number | null;
+  appId?: number;
 
   @Column({ name: 'group_key', length: 64, comment: '配置分组标识' })
   groupKey: string;
@@ -24,7 +24,7 @@ export class Config extends Base {
   configKey: string;
 
   @Column({ name: 'config_value', type: 'json', comment: '配置值 {data: any}' })
-  configValue: { data: any };
+  configValue: Record<string, any>;
 
   @Column({
     name: 'config_type',
@@ -34,6 +34,6 @@ export class Config extends Base {
   })
   configType: ConfigType;
 
-  @Column({ length: 256, nullable: true, comment: '配置描述' })
-  description: string | null;
+  @Column({ length: 256, nullable: true, comment: '配置描述', type: 'varchar' })
+  description?: string;
 }

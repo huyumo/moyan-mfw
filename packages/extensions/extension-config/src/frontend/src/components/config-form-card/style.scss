@@ -1,0 +1,18 @@
+/**
+ * @fileoverview MfwConfigFormCard 样式
+ * @description 通过 configType 用颜色区分配置项的公开/私有属性
+ */
+
+// 公开配置：绿色系 label
+.is-config-public {
+  .el-form-item__label {
+    color: var(--el-color-success, #67c23a) !important;
+  }
+}
+
+// 私有配置：橙色系 label
+.is-config-private {
+  .el-form-item__label {
+    color: var(--el-color-warning, #e6a23c) !important;
+  }
+}

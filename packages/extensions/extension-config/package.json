@@ -15,23 +15,23 @@
     },
     "./frontend": {
       "types": "./src/frontend/dist/index.d.ts",
-      "import": "./src/frontend/dist/index.mjs",
+      "import": "./src/frontend/src/index.ts",
       "require": "./src/frontend/dist/index.mjs",
-      "style": "./src/frontend/dist/style.css"
+      "style": "./src/frontend/src/index.ts"
     },
     "./frontend/*": {
       "types": "./src/frontend/dist/*.d.ts",
-      "import": "./src/frontend/dist/*",
+      "import": "./src/frontend/src/*",
       "require": "./src/frontend/dist/*"
     },
     "./shared": {
       "types": "./src/shared/dist/index.d.ts",
-      "import": "./src/shared/dist/index.js",
+      "import": "./src/shared/src/index.ts",
       "require": "./src/shared/dist/index.js"
     },
     "./shared/*": {
       "types": "./src/shared/dist/*.d.ts",
-      "import": "./src/shared/dist/*",
+      "import": "./src/shared/src/*",
       "require": "./src/shared/dist/*"
     }
   },

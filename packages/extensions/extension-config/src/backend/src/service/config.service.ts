@@ -38,10 +38,7 @@ export class ConfigService {
   @CacheEvict({ keys: 'config:{appId}:{groupKey}' })
   async batchUpdate(appId: number | null, groupKey: string, dto: BatchUpdateConfigDto): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
-      const where: FindOptionsWhere<Config> = { groupKey };
-      if (appId !== null) {
-        where.appId = appId;
-      }
+      const where: FindOptionsWhere<Config> = appId !== null ? { groupKey, appId } : { groupKey };
       const existingConfigs = await manager.find(Config, {
         where,
         select: ['id', 'configKey', 'configType'],
@@ -57,11 +54,11 @@ export class ConfigService {
           });
         } else {
           await manager.insert(Config, {
-            appId,
+            appId: appId ?? undefined,
             groupKey,
             configKey: item.configKey,
             configValue: item.configValue,
-            configType: ConfigType.PUBLIC,
+            configType: item.configType ?? ConfigType.PUBLIC,
             description: item.description ?? undefined,
           });
         }
@@ -84,7 +81,7 @@ export class ConfigService {
 
   @CacheEvict({ keys: 'config:{appId}:{groupKey}' })
   async create(appId: number | null, groupKey: string, dto: CreateConfigDto): Promise<Config> {
-    const entity = this.repo.create({ ...dto, appId, groupKey });
+    const entity = this.repo.create({ ...dto, appId: appId ?? undefined, groupKey });
     return this.repo.save(entity);
   }
 }

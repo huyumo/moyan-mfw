@@ -1,0 +1,31 @@
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+import vueJsx from '@vitejs/plugin-vue-jsx';
+import { resolve } from 'path';
+import { fixVueDefaultImport } from 'moyan-mfw-base/frontend/vite-helpers';
+
+export default defineConfig({
+  root: '.',
+  plugins: [vue(), vueJsx(), fixVueDefaultImport()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+      '@shared': resolve(__dirname, '../shared/src/index.ts'),
+      'moyan-mfw-base/frontend/styles': resolve(__dirname, '../../../../base/src/frontend/src/styles'),
+      'moyan-mfw-base/frontend': resolve(__dirname, '../../../../base/src/frontend/src/index.ts'),
+      'moyan-mfw-base/frontend/vite-helpers': resolve(__dirname, '../../../../base/src/frontend/src/vite-helpers.ts'),
+      'moyan-mfw-base/shared': resolve(__dirname, '../../../../base/src/shared/src/index.ts'),
+    },
+  },
+  build: {
+    outDir: 'dist',
+    lib: {
+      entry: resolve(__dirname, 'src/index.ts'),
+      formats: ['es'],
+      fileName: () => 'index.mjs',
+    },
+    rollupOptions: {
+      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'moyan-mfw-base/frontend', 'moyan-mfw-base/shared'],
+    },
+  },
+});

@@ -1,13 +1,14 @@
 /**
  * @fileoverview MfwConfigFormCard 配置表单卡片组件
- * @description 基于 MfwFormCard 二次封装，支持按 configType 分 Tab 显示
+ * @description 基于 MfwFormCard 二次封装，每个字段通过 configType 用颜色区分公开/私有
  */
+
+import './style.scss';
 
 import {
   defineComponent, ref, computed, onMounted, h, type PropType, type Ref,
 } from 'vue';
-import type { TabPaneName } from 'element-plus';
-import { ElTabs, ElTabPane, ElMessage, ElSkeleton } from 'element-plus';
+import { ElMessage, ElSkeleton } from 'element-plus';
 import { MfwFormCard } from 'moyan-mfw-base/frontend';
 import type { MfwFormCardInstance } from 'moyan-mfw-base/frontend';
 import type {
@@ -16,6 +17,12 @@ import type {
   ConfigFormItemConfig,
 } from './types';
 import { ConfigType } from '@shared';
+
+/** configType 对应的 CSS 类名 */
+const CONFIG_TYPE_CLASS: Record<ConfigType, string> = {
+  [ConfigType.PUBLIC]: 'is-config-public',
+  [ConfigType.PRIVATE]: 'is-config-private',
+};
 
 export default defineComponent({
   name: 'MfwConfigFormCard',
@@ -36,33 +43,32 @@ export default defineComponent({
     formGroup: {
       type: Object as PropType<MfwConfigFormCardProps['formGroup']>,
     },
-    privateTabTitle: {
-      type: String as PropType<MfwConfigFormCardProps['privateTabTitle']>,
-      default: '敏感配置',
-    },
-    publicTabTitle: {
-      type: String as PropType<MfwConfigFormCardProps['publicTabTitle']>,
-      default: '公开配置',
-    },
   },
 
   setup(props, { expose }) {
     const loading = ref(true);
-    const activeTab = ref('public');
-    const publicFormRef = ref<MfwFormCardInstance>();
-    const privateFormRef = ref<MfwFormCardInstance>();
-    const publicFormData: Ref<Record<string, any>> = ref({});
-    const privateFormData: Ref<Record<string, any>> = ref({});
+    const formRef = ref<MfwFormCardInstance>();
+    const formData: Ref<Record<string, any>> = ref({});
 
-    // 按 configType 分类
-    const publicItems = computed(() =>
-      props.items.filter((i) => i.configType === ConfigType.PUBLIC)
-    );
-    const privateItems = computed(() =>
-      props.items.filter((i) => i.configType === ConfigType.PRIVATE)
-    );
-    const hasBothTypes = computed(
-      () => publicItems.value.length > 0 && privateItems.value.length > 0
+    /**
+     * 为每个 item 根据 configType 注入颜色标识（通过 itemProps.class）
+     */
+    const itemsWithStyle = computed(() =>
+      props.items.map((item) => {
+        const styled = { ...item };
+        // 未配置 component 时默认用 el-input
+        if (!styled.component) {
+          styled.component = 'el-input';
+        }
+        if (item.configType !== undefined) {
+          const typeClass = CONFIG_TYPE_CLASS[item.configType];
+          styled.itemProps = {
+            ...styled.itemProps,
+            class: [styled.itemProps?.class, typeClass].filter(Boolean).join(' '),
+          };
+        }
+        return styled;
+      })
     );
 
     /**
@@ -82,15 +88,12 @@ export default defineComponent({
         const configs = result.data || [];
 
         // 填充表单数据
-        publicFormData.value = {};
-        privateFormData.value = {};
+        formData.value = {};
         for (const config of configs) {
-          const value = config.configValue?.data ?? '';
-          if (config.configType === ConfigType.PUBLIC) {
-            publicFormData.value[config.configKey] = value;
-          } else {
-            privateFormData.value[config.configKey] = value;
-          }
+          // configValue.data 可能是 {value: xxx} 对象或原始值
+          const raw = config.configValue?.data;
+          formData.value[config.configKey] =
+            raw && typeof raw === 'object' ? raw.value ?? '' : (raw ?? '');
         }
       } catch (error) {
         ElMessage.error('加载配置失败');
@@ -103,31 +106,18 @@ export default defineComponent({
      * 确认提交
      */
     const onConfirm = async () => {
-      // 先验证所有可见的表单
-      const formsToValidate: unknown[] = [];
-      if (publicItems.value.length > 0) {
-        if (publicFormRef.value) formsToValidate.push(publicFormRef.value);
-      }
-      if (privateItems.value.length > 0) {
-        if (privateFormRef.value) formsToValidate.push(privateFormRef.value);
+      // 验证表单
+      if (formRef.value) {
+        await (formRef.value as any).validate();
       }
 
-      for (const form of formsToValidate) {
-        await (form as any).validate();
-      }
-
-      // 构建提交数据
-      const items: Array<{ configKey: string; configValue: { data: any }; description?: string }> = [];
-      for (const item of props.items) {
-        const formData = item.configType === ConfigType.PUBLIC
-          ? publicFormData.value
-          : privateFormData.value;
-        items.push({
-          configKey: item.key,
-          configValue: { data: formData[item.key] ?? '' },
-          description: (item as ConfigFormItemConfig).description,
-        });
-      }
+      // 构建提交数据（data 必须是对象以匹配 @IsObject() 校验）
+      const items = props.items.map((item) => ({
+        configKey: item.key,
+        configValue: { data: { value: formData.value[item.key] ?? '' } },
+        description: (item as ConfigFormItemConfig).description,
+        configType: (item as ConfigFormItemConfig).configType,
+      }));
 
       // 调用批量更新 API
       const response = await fetch('/api/ext/config/batch', {
@@ -166,39 +156,13 @@ export default defineComponent({
         return h(ElSkeleton, { animated: true });
       }
 
-      const renderForm = (
-        formRefKey: 'publicFormRef' | 'privateFormRef',
-        template: ConfigFormItemConfig[],
-        formData: Record<string, any>
-      ) => {
-        return h(MfwFormCard, {
-          ref: formRefKey === 'publicFormRef' ? publicFormRef : privateFormRef,
-          formData,
-          template,
-          formGroup: props.formGroup,
-        });
-      };
-
-      // 同时包含公共和私有配置时，分 Tab 显示
-      if (hasBothTypes.value) {
-        return h(ElTabs, { modelValue: activeTab.value, 'onUpdate:modelValue': (v: TabPaneName) => { activeTab.value = String(v); } }, () => [
-          h(ElTabPane, { label: props.publicTabTitle, name: 'public' }, () =>
-            renderForm('publicFormRef', publicItems.value, publicFormData.value)
-          ),
-          h(ElTabPane, { label: props.privateTabTitle, name: 'private' }, () =>
-            renderForm('privateFormRef', privateItems.value, privateFormData.value)
-          ),
-        ]);
-      }
-
-      // 仅一种类型时，直接渲染
-      if (publicItems.value.length > 0) {
-        return renderForm('publicFormRef', publicItems.value, publicFormData.value);
-      }
-      if (privateItems.value.length > 0) {
-        return renderForm('privateFormRef', privateItems.value, privateFormData.value);
-      }
-      return null;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return h(MfwFormCard, {
+        ref: formRef,
+        formData: formData.value,
+        template: itemsWithStyle.value,
+        formGroup: props.formGroup,
+      } as any);
     };
   },
 });
