@@ -258,16 +258,16 @@ export function getPermissionOptions(parentPermissionValue?: string | number): A
   if (parentPermissionValue) {
     const parentValue = BigInt(parentPermissionValue)
     NOW_PERMISSION_VALUES = PERMISSION_VALUES.filter((name) => {
-      const index = PERMISSION_VALUES.indexOf(name)
-      const childValue = 1n << BigInt(index)
-      return (parentValue & childValue) !== 0n
+      const bitValue = permissionValueCache.get(name)
+      if (bitValue === undefined) return false
+      return (parentValue & bitValue) !== 0n
     })
   }
   const config = getPermissionConfig()
   return NOW_PERMISSION_VALUES.map((name) => ({
     name,
     label: config.labels?.[name] || name,
-    value: Number(1n << BigInt(NOW_PERMISSION_VALUES.indexOf(name))),
+    value: Number(permissionValueCache.get(name) || 0n),
     icon: config.icons?.[name],
   }))
 }
