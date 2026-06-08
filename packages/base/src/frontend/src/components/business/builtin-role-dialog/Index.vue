@@ -73,7 +73,7 @@ const handleAddRole = () => {
     title: '新增内置角色',
     type: 'dialog',
     component: RoleForm,
-    data: { appTypeId: props.appTypeId, isBuiltin: 1 },
+    data: { appTypeId: props.appTypeId, isBuiltin: 0 },
     popupProps: {
       size: '500px',
     },

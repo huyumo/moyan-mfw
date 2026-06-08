@@ -103,15 +103,14 @@ export class RoleService {
     return await pager
       .where('main', whereBuilder)
       .unshiftSql({
-        tag: 'appType',
-        sql: `SELECT @appTypeId := appTypeId FROM sys_apps WHERE id = '${appId}'`,
+        tag: 'appTypeId',
+        sql: `SELECT @appTypeId := appTypeId FROM sys_apps WHERE id = '${appId}' LIMIT 1`,
         isGetOne: true,
       })
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
         return `
           SELECT ${select} FROM sys_roles role
-          LEFT JOIN sys_apps sa ON sa.appTypeId = role.appTypeId
           WHERE role.appTypeId = IFNULL(@appTypeId,'${appTypeId}')
           ${whereClause.replace('WHERE', 'AND')}
           ${orderBy}
