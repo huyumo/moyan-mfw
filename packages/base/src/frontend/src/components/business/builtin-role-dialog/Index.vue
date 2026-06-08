@@ -12,7 +12,6 @@
 
     <div class="builtin-role-header">
       <span class="builtin-role-title">{{ typeName }} - 内置角色</span>
-      <!-- <el-button type="primary" size="small" v-if="isAdd" data-testid="builtin-role-add-btn" @click="handleAddRole">新增角色</el-button> -->
     </div>
 
     <div v-loading="loading" class="builtin-role-grid">
@@ -66,27 +65,6 @@ const loadRoles = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const handleAddRole = () => {
-  MfwPopup.open({
-    title: '新增内置角色',
-    type: 'dialog',
-    component: RoleForm,
-    data: { appTypeId: props.appTypeId, isBuiltin: 0 },
-    popupProps: {
-      size: '500px',
-    },
-    footer: {
-      cancelText: '取消',
-      confirmText: '确定',
-    },
-    on: {
-      confirm: () => {
-        loadRoles();
-      },
-    },
-  });
 };
 
 onMounted(() => {
