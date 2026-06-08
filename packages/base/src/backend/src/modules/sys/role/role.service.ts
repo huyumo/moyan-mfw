@@ -88,30 +88,29 @@ export class RoleService {
       throw new BadRequestException('无效的 appId 格式');
     }
 
-    let isBuiltin: number | undefined;
-    if (appId) appTypeId = undefined
-    if (appTypeId) isBuiltin = 1
+    if (!appId && !appTypeId) {
+      throw new BadRequestException('缺少 appId 或 appTypeId 参数');
+    }
 
     const whereBuilder = new WhereBuilder();
     whereBuilder
       .like('role.roleCode', roleCode)
       .like('role.roleName', roleName)
       .eq('role.roleStatus', roleStatus)
-      .eq('role.isBuiltin', isBuiltin);
 
     const pager = new PaginationX(this.entityManager.connection, query);
     return await pager
       .where('main', whereBuilder)
-      .unshiftSql({
-        tag: 'appTypeId',
-        sql: `SELECT @appTypeId := appTypeId FROM sys_apps WHERE id = '${appId}' LIMIT 1`,
-        isGetOne: true,
-      })
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
+        // 有 appId：查询 appId 对应 appType 的角色 + 该 appTypeId 的所有角色
+        // 无 appId：查询指定 appTypeId 的角色
+        const appTypeIdCondition = appId
+          ? `(role.appTypeId IN (SELECT appTypeId FROM sys_apps WHERE id = '${appId}') OR role.appTypeId = '${appTypeId}')`
+          : `role.appTypeId = '${appTypeId}'`;
         return `
           SELECT ${select} FROM sys_roles role
-          WHERE role.appTypeId = IFNULL(@appTypeId,'${appTypeId}')
+          WHERE role.deleteAt IS NULL AND ${appTypeIdCondition}
           ${whereClause.replace('WHERE', 'AND')}
           ${orderBy}
           ${limit}
