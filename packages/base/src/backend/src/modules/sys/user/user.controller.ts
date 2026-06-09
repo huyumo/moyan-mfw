@@ -103,8 +103,6 @@ export class UserController {
     description: '查询成功',
     type: UserResponseDto,
   })
-  @RequirePermission({ permCode: 'pc_root:sys:user' })
-  @RequirePermission({ permCode: 'pc_root:sys:member' })
   async findOneByKeyword(
     @Query('keyword') keyword: string,
     @Query('searchBy') searchBy: 'username' | 'phone' | 'both' = 'both',
@@ -126,7 +124,6 @@ export class UserController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: '用户不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:user' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.userService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
