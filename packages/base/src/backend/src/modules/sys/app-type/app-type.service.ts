@@ -146,7 +146,7 @@ export class AppTypeService {
    * @param updateAppTypeDto - 更新应用类型请求参数
    * @returns 更新后的应用类型
    */
-  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList'] })
+  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList', 'app:info:*'] })
   async update(id: string, updateAppTypeDto: UpdateAppTypeDto): Promise<AppType> {
     // 查找应用类型
     const appType = await this.appTypeRepository.findOne({
@@ -177,7 +177,7 @@ export class AppTypeService {
    * 删除应用类型
    * @param id - 应用类型 ID
    */
-  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList'] })
+  @CacheEvict({ keys: ['sys:appType:{#id}', 'sys:appType:allList', 'app:info:*'] })
   async delete(id: string): Promise<void> {
     const appType = await this.appTypeRepository.findOne({
       where: { id },

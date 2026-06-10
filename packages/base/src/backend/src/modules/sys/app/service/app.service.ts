@@ -11,6 +11,7 @@ import { App } from '../entities/app.entity';
 import { CreateAppDto, UpdateAppDto, QueryAppDto } from '../dto';
 import { NotFoundError } from '../../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../../common';
+import { CacheEvict } from '../../../../cache/decorators/cache.decorator';
 
 /**
  * 应用服务
@@ -29,6 +30,7 @@ export class AppService {
    * @param createAppDto - 创建应用实例请求参数
    * @returns 创建的应用实例
    */
+  @CacheEvict({ keys: 'app:info:*' })
   async create(createAppDto: CreateAppDto): Promise<App> {
     const { appCode } = createAppDto;
 
@@ -119,6 +121,7 @@ export class AppService {
    * @param updateAppDto - 更新应用实例请求参数
    * @returns 更新后的应用实例
    */
+  @CacheEvict({ keys: 'app:info:{#id}' })
   async update(id: string, updateAppDto: UpdateAppDto): Promise<App> {
     // 查找应用实例
     const app = await this.appRepository.findOne({
@@ -149,6 +152,7 @@ export class AppService {
    * 删除应用实例
    * @param id - 应用实例 ID
    */
+  @CacheEvict({ keys: 'app:info:{#id}' })
   async delete(id: string): Promise<void> {
     const app = await this.appRepository.findOne({
       where: { id },
@@ -173,6 +177,7 @@ export class AppService {
    * @param ownerId - 新负责人 ID
    * @returns 更新后的应用实例
    */
+  @CacheEvict({ keys: 'app:info:{#id}' })
   async changeOwner(id: string, ownerId: string): Promise<App> {
     const app = await this.appRepository.findOne({
       where: { id },
@@ -249,6 +254,7 @@ export class AppService {
    * @param status - 新状态
    * @returns 更新后的应用实例
    */
+  @CacheEvict({ keys: 'app:info:{#id}' })
   async updateStatus(id: string, status: number): Promise<App> {
     const app = await this.appRepository.findOne({
       where: { id },
