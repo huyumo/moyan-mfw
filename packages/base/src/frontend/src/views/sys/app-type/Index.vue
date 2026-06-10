@@ -8,7 +8,7 @@
   <MfwPageWrapper>
     <div class="app-type-content-wrapper">
       <MfwCardListPage ref="cardListPage" :show-search="false" :show-pagination="false" :load-data="loadData"
-        render-mode="card" empty-text="暂无应用类型" :card-grid="{ minWidth: 320 }">
+        render-mode="card" empty-text="暂无应用类型" :card-grid="{ minWidth: 400 }">
         <template #card-item="{ item }">
           <AppTypeCard :data="item" @edit="handleEdit" @permission="handleConfigPermissionPool"
             @role="handleConfigBuiltinRoles" @customMenu="handleCustomMenu" />

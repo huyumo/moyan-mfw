@@ -72,12 +72,14 @@ const currentIcon = computed(() => {
   width: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 
   &__header {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 16px;
+    min-width: 0;
   }
 
   &__icon {
@@ -154,19 +156,29 @@ const currentIcon = computed(() => {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
     padding-top: 16px;
     border-top: 1px solid var(--el-border-color-lighter);
+    min-width: 0;
   }
 
   &__meta {
     font-size: 12px;
     color: var(--el-text-color-secondary);
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   &__actions {
     display: flex;
-    gap: 8px;
+    gap: 6px;
+    min-width: 0;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  &__actions .el-button {
+    flex-shrink: 0;
   }
 }
 </style>
