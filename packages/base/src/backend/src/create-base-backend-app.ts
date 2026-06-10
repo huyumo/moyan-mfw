@@ -22,7 +22,7 @@ import {
 import { validateAppTypes, getBuiltinAppTypes } from './utils/app-type-validator';
 import { setupSwaggerGroups } from './utils/swagger-setup';
 import { HooksExecutor, createAppContext } from './utils/hooks-executor';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, registerPermissionValues, AppInterceptor } from './common';
+import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, registerPermissionValues, AppInfoInterceptor } from './common';
 import { databaseConfig, appConfig, redisConfig, userConfig, jwtConfig, ossConfig } from './config';
 import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from './app.module';
 import { AuthGuard } from './common/guards/auth.guard';
@@ -94,12 +94,12 @@ export async function createBaseBackendApp(
 
   const dataSource = app.get(DataSource);
 
-  // 注册 AppInterceptor（需要在 DataSource 之后）
+  // 注册 AppInfoInterceptor（需要在 DataSource 之后）
   app.useGlobalInterceptors(
     new LoggingInterceptor(),
     new TransformInterceptor(),
   );
-  // AppInterceptor 需要 DI 注入 CACHE_SERVICE，改为在 DynamicAppModule 中注册
+  // AppInfoInterceptor 需要 DI 注入 CACHE_SERVICE，改为在 DynamicAppModule 中注册
 
   const hooksExecutor = new HooksExecutor(options.hooks || {});
   hooksExecutor.initContext(app, dataSource);
@@ -227,7 +227,7 @@ async function createDynamicAppModule(
       },
       {
         provide: APP_INTERCEPTOR,
-        useClass: AppInterceptor,
+        useClass: AppInfoInterceptor,
       },
       {
         provide: APP_GUARD,

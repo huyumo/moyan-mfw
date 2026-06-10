@@ -5,9 +5,9 @@
 
 /**
  * 应用信息 DTO
- * @description 通过 @App 装饰器注入到控制器方法参数的应用信息
+ * @description 通过 @AppInfo 装饰器注入到控制器方法参数的应用信息
  */
-export class AppDto {
+export class AppInfoDto {
   /**
    * 应用实例 ID
    */

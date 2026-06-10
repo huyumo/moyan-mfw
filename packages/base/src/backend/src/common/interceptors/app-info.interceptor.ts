@@ -7,7 +7,7 @@ import { Inject, Injectable, NestInterceptor, ExecutionContext, CallHandler } fr
 import { Observable } from 'rxjs';
 import { DataSource } from 'typeorm';
 import { resolveAppId } from '../decorators/app-id.decorator';
-import { AppDto } from '../types/app.dto';
+import { AppInfoDto } from '../types/app-info.dto';
 import { CACHE_SERVICE } from '../../cache/cache.module';
 import { ICacheService } from '../../cache/interfaces/cache-service.interface';
 import { CacheTTL } from '../../cache/constants/cache.constants';
@@ -25,13 +25,13 @@ const APP_CACHE_KEY = 'app:info:';
  * providers: [
  *   {
  *     provide: APP_INTERCEPTOR,
- *     useClass: AppInterceptor,
+ *     useClass: AppInfoInterceptor,
  *   },
  * ],
  * ```
  */
 @Injectable()
-export class AppInterceptor implements NestInterceptor {
+export class AppInfoInterceptor implements NestInterceptor {
   constructor(
     private dataSource: DataSource,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
@@ -56,10 +56,10 @@ export class AppInterceptor implements NestInterceptor {
    * @param id - 应用实例 ID
    * @returns 应用信息 DTO 或 null
    */
-  private async findAppById(id: string): Promise<AppDto | null> {
+  private async findAppById(id: string): Promise<AppInfoDto | null> {
     const cacheKey = `${APP_CACHE_KEY}${id}`;
 
-    return this.cache.getOrSet<AppDto>(cacheKey, async () => {
+    return this.cache.getOrSet<AppInfoDto>(cacheKey, async () => {
       const result = await this.dataSource.query(
         `SELECT 
           a.id,
@@ -80,7 +80,7 @@ export class AppInterceptor implements NestInterceptor {
         return null;
       }
 
-      return result[0] as AppDto;
+      return result[0] as AppInfoDto;
     }, CacheTTL.MEDIUM);
   }
 }

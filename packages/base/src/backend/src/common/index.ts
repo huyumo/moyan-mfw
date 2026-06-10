@@ -23,7 +23,7 @@ export { PermissionGuard } from './guards/permission.guard';
 export { LoggingInterceptor } from './interceptors/logging.interceptor';
 export { TransformInterceptor } from './interceptors/transform.interceptor';
 export { AuditInterceptor } from './interceptors/audit.interceptor';
-export { AppInterceptor } from './interceptors/app.interceptor';
+export { AppInfoInterceptor } from './interceptors/app-info.interceptor';
 
 // Decorators
 export { Public, IS_PUBLIC_KEY } from './decorators/public.decorator';
@@ -42,7 +42,7 @@ export {
 export { ApiPaginatedResponse } from './decorators/api-paginated-response.decorator';
 export { User } from './decorators/user.decorator';
 export { AppId } from './decorators/app-id.decorator';
-export { App } from './decorators/app.decorator';
+export { AppInfo } from './decorators/app-info.decorator';
 export { SkipPermission, SKIP_PERMISSION_KEY } from './decorators/skip-permission.decorator';
 
 // Utils
@@ -78,7 +78,7 @@ export {
   ResourceType,
 } from './types/resource.types';
 export { UserDto } from './types/user.dto';
-export { AppDto } from './types/app.dto';
+export { AppInfoDto } from './types/app-info.dto';
 
 // Constants
 export {
