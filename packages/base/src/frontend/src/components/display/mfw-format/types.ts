@@ -57,6 +57,8 @@ export interface ImageFormatProps extends BaseFormatProps {
   preview?: boolean;
   /** fit 模式 */
   fit?: 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+  /** 是否为圆角 */
+  round?: boolean;
 }
 
 /** 图片格式化 Emits */

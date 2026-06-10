@@ -21,6 +21,12 @@ const getImageDimensions = (file: File): Promise<{ width: number; height: number
   });
 };
 
+interface UploadTask {
+  file: File;
+  resolve: (result: any) => void;
+  reject: (err: any) => void;
+}
+
 export default defineComponent({
   name: 'MfwImageGallery',
   props: {
@@ -32,10 +38,13 @@ export default defineComponent({
     disabled: { type: Boolean, default: false },
     draggable: { type: Boolean, default: true },
     businessType: { type: String, default: undefined },
+    multiple: { type: Boolean, default: true },
   },
   emits: ['update:modelValue', 'change', 'success', 'error', 'remove'],
   setup(props, { emit }) {
     const uploading = ref(false);
+    const uploadRef = ref<InstanceType<typeof ElUpload> | null>(null);
+    const uploadQueue = ref<UploadTask[]>([]);
 
     const fileList = computed(() => {
       return (props.modelValue || []).map((item: ImageResource, index) => ({
@@ -45,8 +54,44 @@ export default defineComponent({
       }));
     });
 
+    const processQueue = async () => {
+      if (uploadQueue.value.length === 0) {
+        uploading.value = false;
+        return;
+      }
+
+      const task = uploadQueue.value.shift()!;
+      uploading.value = true;
+      try {
+        const result = await uploadImage(task.file, {
+          uploadType: props.uploadType,
+          businessType: props.businessType,
+        });
+
+        const dimensions = await getImageDimensions(task.file);
+        const imageResource: ImageResource = {
+          src: result.url,
+          width: dimensions.width,
+          height: dimensions.height,
+        };
+
+        const newValue = [...(props.modelValue || []), imageResource];
+        emit('update:modelValue', newValue);
+        emit('change', newValue);
+        emit('success', result);
+
+        task.resolve(result);
+        processQueue();
+      } catch (error: any) {
+        ElMessage.error('上传失败');
+        emit('error', error);
+        task.reject(error);
+        processQueue();
+      }
+    };
+
     const beforeUpload = (file: File): boolean => {
-      if (fileList.value.length >= props.limit) {
+      if (fileList.value.length + uploadQueue.value.length >= props.limit) {
         ElMessage.error(`最多上传 ${props.limit} 张图片`);
         return false;
       }
@@ -65,39 +110,26 @@ export default defineComponent({
       return true;
     };
 
-    const handleHttpRequest = async (options: UploadRequestOptions) => {
-      uploading.value = true;
-      try {
-        const result = await uploadImage(options.file, {
-          uploadType: props.uploadType,
-          businessType: props.businessType,
-        });
-        
-        const dimensions = await getImageDimensions(options.file);
-        const imageResource: ImageResource = {
-          src: result.url,
-          width: dimensions.width,
-          height: dimensions.height,
-        };
-        
-        const newValue = [...(props.modelValue || []), imageResource];
-        emit('update:modelValue', newValue);
-        emit('change', newValue);
-        emit('success', result);
-        
-        return result;
-      } catch (error) {
-        ElMessage.error('上传失败');
-        emit('error', error);
-        throw error;
-      } finally {
-        uploading.value = false;
-      }
+    const handleHttpRequest = (options: UploadRequestOptions) => {
+      return new Promise((resolve, reject) => {
+        uploadQueue.value.push({ file: options.file, resolve, reject });
+        if (uploadQueue.value.length === 1 && !uploading.value) {
+          processQueue();
+        }
+      });
+    };
+
+    const handleError = (error: any, file: any) => {
+      uploadRef.value?.handleRemove(file);
     };
 
     const handleRemove = (file: { uid: number }) => {
       const index = file.uid;
-      const newValue = (props.modelValue || []).filter((_, i) => i !== index);
+      const value = props.modelValue || [];
+      if (index < 0 || index >= value.length) {
+        return;
+      }
+      const newValue = value.filter((_, i) => i !== index);
       emit('update:modelValue', newValue);
       emit('change', newValue);
       emit('remove', file);
@@ -108,12 +140,15 @@ export default defineComponent({
     return () => (
       <div class="mfw-image-gallery">
         <ElUpload
+          ref={uploadRef}
           action="#"
           fileList={fileList.value}
           listType="picture-card"
           limit={props.limit}
+          multiple={props.multiple}
           beforeUpload={beforeUpload}
           httpRequest={handleHttpRequest}
+          onError={handleError}
           onRemove={handleRemove}
           disabled={props.disabled || uploading.value}
           accept={props.accept}

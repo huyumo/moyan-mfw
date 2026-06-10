@@ -42,6 +42,10 @@ export default defineComponent({
       type: String as PropType<ImageFormatProps['fit']>,
       default: 'cover'
     },
+    round: {
+      type: Boolean as PropType<ImageFormatProps['round']>,
+      default: false
+    },
     emptyText: {
       type: String as PropType<ImageFormatProps['emptyText']>,
       default: '--'
@@ -81,6 +85,14 @@ export default defineComponent({
       emit('click', url);
     };
 
+    const widthStyle = computed(() => props.width != null ? `${props.width}px` : undefined);
+    const heightStyle = computed(() => props.height != null ? `${props.height}px` : undefined);
+    const imageStyle = computed(() => ({
+      width: widthStyle.value,
+      height: heightStyle.value,
+      borderRadius: props.round ? '50%' : undefined,
+    }));
+
     return () => {
       if (!imageList.value || imageList.value.length === 0) {
         return h('span', { class: 'mfw-image-format' }, emptyText.value);
@@ -89,10 +101,9 @@ export default defineComponent({
       if (imageList.value.length === 1) {
         return h(ElImage, {
           src: urlList.value[0],
-          width: props.width,
-          height: props.height,
           fit: props.fit,
           preview: props.preview,
+          style: imageStyle.value,
           class: ['mfw-image-format', props.className],
           onClick: () => handleClick(urlList.value[0])
         }, {
@@ -103,10 +114,9 @@ export default defineComponent({
       return h('div', { class: 'mfw-image-format-multi' }, [
         h(ElImage, {
           src: urlList.value[0],
-          width: props.width,
-          height: props.height,
           fit: props.fit,
           preview: props.preview,
+          style: imageStyle.value,
           class: props.className
         }),
         h('div', { class: 'mfw-image-format-count' }, `+${imageList.value.length - 1}`)
