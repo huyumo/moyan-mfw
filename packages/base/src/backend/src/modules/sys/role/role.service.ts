@@ -117,7 +117,6 @@ export class RoleService {
         `;
       })
       .select('role.*')
-      .printSql()
       .defaultOrderBy('role.sortOrder ASC, role.createdAt DESC')
       .getData();
   }
