@@ -1,34 +1,38 @@
 <template>
-  <el-tree :data="refData" show-checkbox node-key="id" :default-checked-keys="checkedKeys" :default-expanded-keys="expandedKeys" @check="handleCheck">
+  <el-tree
+    :data="refData"
+    show-checkbox
+    node-key="id"
+    :default-checked-keys="checkedKeys"
+    :default-expanded-keys="expandedKeys"
+    @check="handleCheck"
+  >
     <template #default="{ data }">
       <div class="custom-tree-node">
         <div class="custom-tree-node_left">
           <div class="perm-name">{{ data.permName }}</div>
         </div>
-        <div class="custom-tree-node_right">
-          <el-button
-            link
-            type="primary"
-            size="mini"
-            v-if="data.checked && (data.nodeType === 'PAGE' || data.nodeType === 'TAG')"
-            :icon="Key"
-            data-testid="tree-select-perm-btn"
-            @click.stop="handlePermissionValue(data)"
+        <div v-if="data.checked && (data.nodeType === 'PAGE' || data.nodeType === 'TAG')" class="custom-tree-node_right" @click.stop>
+          <el-checkbox
+            v-for="action in getPermissionOptions(data.parentPermissionValue)"
+            :key="action.value"
+            :model-value="!!(getPermissionValue(data) & action.value)"
+            @update:model-value="(val: boolean) => handlePermissionValueChange(data, action.value, val)"
+            class="inline-permission-checkbox"
           >
-          </el-button>
+            <span>{{ action.label }}</span>
+          </el-checkbox>
         </div>
       </div>
     </template>
   </el-tree>
 </template>
 <script setup lang="ts">
-import { computed, PropType } from 'vue';
+import { ref, watch, nextTick } from 'vue';
+import { PropType } from 'vue';
 import { CheckedInfo, ElTree, TreeKey } from 'element-plus';
 import type { PermissionTreeNodeDto } from '../../../apis/sys/schemas';
-import { Key } from '@element-plus/icons-vue';
-import { ref, watch, nextTick } from 'vue';
-import { MfwPopup } from '../../feedback';
-import { MfwPermissionValuePanel } from '../permission-value-panel';
+import { getPermissionOptions } from '../../../utils/permissions';
 
 defineOptions({ name: 'MfwPermissionTree' });
 const emit = defineEmits(['update:modelValue']);
@@ -57,7 +61,6 @@ watch(
 /**
  * 递归构建选中节点的ID列表
  * @param node 节点数据
- * @param checkedKeys 已选中的节点ID列表
  * @returns 选中的节点ID列表
  */
 const buildCheckedKeys = (node: PermissionTreeNodeDto[]) => {
@@ -66,25 +69,24 @@ const buildCheckedKeys = (node: PermissionTreeNodeDto[]) => {
     if (item.children) {
       checkedKeys.push(...buildCheckedKeys(item.children));
     } else if (item.checked) {
-      console.log(item);
       checkedKeys.push(item.id);
     }
   });
   return checkedKeys;
 };
 
-const handleCheckedKeys = (checkedKeys: TreeKey[],tree:PermissionTreeNodeDto[]) => {
+const handleCheckedKeys = (checkedKeys: TreeKey[], tree: PermissionTreeNodeDto[]) => {
   tree.forEach((item) => {
     if (item.children) {
-      handleCheckedKeys(checkedKeys,item.children)
+      handleCheckedKeys(checkedKeys, item.children);
     }
     item.checked = checkedKeys.includes(item.id);
   });
 };
 
-const handleCheck = (_: PermissionTreeNodeDto, e:CheckedInfo) => {
-  const { checkedKeys,  halfCheckedKeys } = e;
-  handleCheckedKeys([...checkedKeys,...halfCheckedKeys],refData.value);
+const handleCheck = (_: PermissionTreeNodeDto, e: CheckedInfo) => {
+  const { checkedKeys: newCheckedKeys, halfCheckedKeys } = e;
+  handleCheckedKeys([...newCheckedKeys, ...halfCheckedKeys], refData.value);
   nextTick(() => {
     emit('update:modelValue', refData.value);
   });
@@ -93,7 +95,6 @@ const handleCheck = (_: PermissionTreeNodeDto, e:CheckedInfo) => {
 /** 初始化选中节点的ID列表 */
 const initCheckedKeys = () => {
   const checkedKeys: TreeKey[] = buildCheckedKeys(refData.value);
-  console.log(checkedKeys);
   return checkedKeys;
 };
 
@@ -103,31 +104,28 @@ const initExpandedKeys = () => {
 };
 
 /**
- * 处理权限值配置
- * @description 点击操作权限按钮时，打开权限值配置弹窗
+ * 获取节点的权限值
  * @param data 节点数据
  */
-const handlePermissionValue = (data: PermissionTreeNodeDto) => {
-  MfwPopup.open({
-    title: `配置操作权限 - ${data.permName}`,
-    type: 'dialog',
-    component: MfwPermissionValuePanel,
-    data: {
-      permissiondData: {
-        nodeId: data.id,
-        nodeName: data.permName,
-        nodeCode: data.permCode,
-        permissionValue: data.permissionValue,
-        parentPermissionValue: data.parentPermissionValue,
-      },
-    },
-    on:{
-      confirm: (ref) => {
-        console.log('confirm',ref.newValue);
-        data.permissionValue = ref.newValue;
-      }
-    }
-  });
+const getPermissionValue = (data: PermissionTreeNodeDto): number => {
+  return typeof data.permissionValue === 'string' ? parseInt(data.permissionValue, 10) : (data.permissionValue || 0);
+};
+
+/**
+ * 处理权限值变化
+ * @param data 节点数据
+ * @param actionValue 操作权限值
+ * @param checked 是否选中
+ */
+const handlePermissionValueChange = (data: PermissionTreeNodeDto, actionValue: number, checked: boolean) => {
+  let currentValue = getPermissionValue(data);
+  if (checked) {
+    currentValue = currentValue | actionValue;
+  } else {
+    currentValue = currentValue & ~actionValue;
+  }
+  data.permissionValue = String(currentValue);
+  emit('update:modelValue', refData.value);
 };
 </script>
 
@@ -142,11 +140,23 @@ const handlePermissionValue = (data: PermissionTreeNodeDto) => {
   flex: 1;
   display: flex;
   align-items: center;
+  .perm-name {
+    padding-left: 8px;
+  }
 }
 .custom-tree-node_right {
-  margin-right: 10px;
-  .el-button {
-    height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .inline-permission-checkbox {
+    margin-right: 0;
+    --el-checkbox-height: 20px;
+    --el-checkbox-font-size: 12px;
+
+    :deep(.el-checkbox__label) {
+      font-size: 12px;
+    }
   }
 }
 </style>

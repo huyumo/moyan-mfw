@@ -227,7 +227,9 @@ export function buildRoutesFromConfigs(
       ? routes.some(r => {
           const meta = (r.meta ?? {}) as Record<string, unknown>;
           const info = meta.moduleInfo as { modulePath: string } | undefined;
-          return info?.modulePath === modulePath;
+          if (!info) return false;
+          // 支持嵌套模块：匹配直接子路由或更深层的后代路由
+          return info.modulePath === modulePath || info.modulePath.startsWith(`${modulePath}/`);
         })
       : routes.length > 0;
 
@@ -236,7 +238,8 @@ export function buildRoutesFromConfigs(
         ? routes.find(r => {
             const meta = (r.meta ?? {}) as Record<string, unknown>;
             const info = meta.moduleInfo as { modulePath: string } | undefined;
-            return info?.modulePath === modulePath;
+            if (!info) return false;
+            return info.modulePath === modulePath || info.modulePath.startsWith(`${modulePath}/`);
           })
         : routes.find(r => {
             const meta = (r.meta ?? {}) as Record<string, unknown>;
