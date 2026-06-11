@@ -515,7 +515,7 @@ export class PermissionService {
    * @param allRoutePaths - 所有路由路径集合（用于判断 nodeType）
    */
   private async syncRouteNode(route: RouteNodeDto, allRoutePaths: Set<string>): Promise<void> {
-    const permCode = this.generatePermCode(route.path);
+    const permCode = route.permCode || this.generatePermCode(route.path);
     const pathSegments = route.path.split('/').filter(Boolean);
     const depth = pathSegments.length;
 
@@ -549,7 +549,7 @@ export class PermissionService {
       ? BigInt(route.permissionValue)
       : 0n;
 
-    // 检查是否已存在
+    // 检查是否已存在（优先按 permCode 查找，因为 permCode 可能已手动指定）
     const existing = await this.permissionRepository.findOne({
       where: { permCode },
     });

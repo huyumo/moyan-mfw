@@ -58,7 +58,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '用户名已存在' })
   @AuditLog({ module: AuditModule.USER, event: 'CREATE_USER', description: '创建用户' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['添加'] })
   async create(@Body() createUserDto: CreateUserDto) {
     const result = await this.userService.create(createUserDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -75,7 +75,7 @@ export class UserController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '用户名已存在' })
   @AuditLog({ module: AuditModule.USER, event: 'ADMIN_CREATE_USER', description: '管理员创建用户' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['添加'] })
   async adminCreate(@Body() dto: AdminCreateUserDto) {
     const result = await this.userService.adminCreate(dto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -87,7 +87,7 @@ export class UserController {
   @Get()
   @ApiOperation({ summary: '查询用户列表', description: '分页查询用户列表' })
   @ApiPaginatedResponse(UserResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:user' })
+  @RequirePermission({ permCode: '*:sys:user' })
   async findAll(@Query() query: QueryUserDto) {
     const result = await this.userService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -143,7 +143,7 @@ export class UserController {
   })
   @ApiResponse({ status: 404, description: '用户不存在' })
   @AuditLog({ module: AuditModule.USER, event: 'UPDATE_USER', description: '更新用户' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -162,7 +162,7 @@ export class UserController {
   @ApiResponse({ status: 204, description: '删除成功' })
   @ApiResponse({ status: 404, description: '用户不存在' })
   @AuditLog({ module: AuditModule.USER, event: 'DELETE_USER', description: '删除用户' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['删除'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.userService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -176,7 +176,7 @@ export class UserController {
   @ApiOperation({ summary: '更新用户状态', description: '启用或禁用指定用户' })
   @ApiResponse({ status: 200, description: '更新成功', type: UserResponseDto })
   @AuditLog({ module: AuditModule.USER, event: 'UPDATE_USER_STATUS', description: '更新用户状态' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: StatusDto,
@@ -202,7 +202,7 @@ export class UserController {
   @ApiResponse({ status: 200, description: '重置成功' })
   @ApiResponse({ status: 400, description: '密码格式错误' })
   @AuditLog({ module: AuditModule.USER, event: 'RESET_USER_PASSWORD', description: '重置用户密码' })
-  @RequirePermission({ permCode: 'pc_root:sys:user', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:user', permissionValue: ['编辑'] })
   async resetPassword(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: ResetPasswordDto,

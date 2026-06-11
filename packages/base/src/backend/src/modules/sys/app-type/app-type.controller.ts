@@ -65,7 +65,7 @@ export class AppTypeController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 409, description: '类型编码已存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'CREATE_APP_TYPE', description: '创建应用类型' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['添加'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['添加'] })
   async create(@Body() createAppTypeDto: CreateAppTypeDto) {
     const result = await this.appTypeService.create(createAppTypeDto);
     return ApiResponseUtil.success(result, '创建成功');
@@ -77,7 +77,7 @@ export class AppTypeController {
   @Get()
   @ApiOperation({ summary: '查询应用类型列表', description: '分页查询应用类型列表' })
   @ApiPaginatedResponse(AppTypeResponseDto)
-  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  @RequirePermission({ permCode: '*:sys:app-type' })
   async findAll(@Query() query: QueryAppTypeDto) {
     const result = await this.appTypeService.findAll(query);
     return ApiResponseUtil.success(result, '查询成功');
@@ -93,7 +93,7 @@ export class AppTypeController {
     description: '查询成功',
     type: [AppTypeResponseDto],
   })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  @RequirePermission({ permCode: '*:sys:app-type' })
   async findAllList() {
     const result = await this.appTypeService.findAllList();
     return ApiResponseUtil.success(result, '查询成功');
@@ -111,7 +111,7 @@ export class AppTypeController {
     type: AppTypeResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  @RequirePermission({ permCode: '*:sys:app-type' })
   async findById(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appTypeService.findById(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -129,7 +129,7 @@ export class AppTypeController {
     type: PermissionPoolResponseDto,
   })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  @RequirePermission({ permCode: '*:sys:app-type' })
   async getPermissionPool(@Param('appTypeId', ParseUUIDPipe) appTypeId: string) {
     const result = await this.appTypeService.getPermissionPool(appTypeId);
     return ApiResponseUtil.success(result, '查询成功');
@@ -149,7 +149,7 @@ export class AppTypeController {
   @ApiResponse({ status: 400, description: '请求参数错误' })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_PERMISSION_POOL', description: '更新权限池配置' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['编辑'] })
   async updatePermissionPool(
     @Param('appTypeId', ParseUUIDPipe) appTypeId: string,
     @Body() updateDto: UpdatePermissionPoolDto,
@@ -172,7 +172,7 @@ export class AppTypeController {
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @ApiResponse({ status: 409, description: '类型编码已存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_APP_TYPE', description: '更新应用类型' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['编辑'] })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAppTypeDto: UpdateAppTypeDto,
@@ -191,7 +191,7 @@ export class AppTypeController {
   @ApiResponse({ status: 204, description: '删除成功' })
   @ApiResponse({ status: 404, description: '应用类型不存在' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'DELETE_APP_TYPE', description: '删除应用类型' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['删除'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['删除'] })
   async delete(@Param('id', ParseUUIDPipe) id: string) {
     await this.appTypeService.delete(id);
     return ApiResponseUtil.success(null, '删除成功');
@@ -210,7 +210,7 @@ export class AppTypeController {
     type: AppTypeResponseDto,
   })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_APP_TYPE_STATUS', description: '更新应用类型状态' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() body: StatusDto,
@@ -225,7 +225,7 @@ export class AppTypeController {
   @Get(':id/custom-menu')
   @ApiOperation({ summary: '获取自定义菜单', description: '获取应用类型的自定义菜单配置' })
   @ApiParam({ name: 'id', description: '应用类型 ID' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type' })
+  @RequirePermission({ permCode: '*:sys:app-type' })
   async getCustomMenu(@Param('id', ParseUUIDPipe) id: string) {
     const result = await this.appTypeService.getCustomMenu(id);
     return ApiResponseUtil.success(result, '查询成功');
@@ -238,7 +238,7 @@ export class AppTypeController {
   @ApiOperation({ summary: '保存自定义菜单', description: '保存应用类型的自定义菜单配置' })
   @ApiParam({ name: 'id', description: '应用类型 ID' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'UPDATE_CUSTOM_MENU', description: '更新自定义菜单' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['编辑'] })
   async saveCustomMenu(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: SaveCustomMenuDto,
@@ -254,7 +254,7 @@ export class AppTypeController {
   @ApiOperation({ summary: '清空自定义菜单', description: '清空应用类型的自定义菜单配置' })
   @ApiParam({ name: 'id', description: '应用类型 ID' })
   @AuditLog({ module: AuditModule.APP_TYPE, event: 'CLEAR_CUSTOM_MENU', description: '清空自定义菜单' })
-  @RequirePermission({ permCode: 'pc_root:sys:app-type', permissionValue: ['编辑'] })
+  @RequirePermission({ permCode: '*:sys:app-type', permissionValue: ['编辑'] })
   async clearCustomMenu(@Param('id', ParseUUIDPipe) id: string) {
     await this.appTypeService.clearCustomMenu(id);
     return ApiResponseUtil.success(null, '清空成功');

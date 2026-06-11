@@ -284,6 +284,7 @@ export type UpdatePermissionDto = {
 export type RouteNodeDto = {
   path: string // 路由路径
   name: string // 路由名称
+  permCode?: string // 权限编码
   permissionValue?: string // 权限值（位运算）
   children?: Array<RouteNodeDto> // 子路由
 }
@@ -463,4 +464,15 @@ export type InitResponseDto = {
   appId: string // 应用实例 ID
   adminUserId: string // 管理员用户 ID
   message: string // 初始化消息
+}
+
+export type OssAuthorizationDto = {
+  accessKeyId: string // 临时 AccessKeyId
+  accessKeySecret: string // 临时 AccessKeySecret
+  securityToken: string // 安全令牌
+  stsToken: string // STS Token（同 securityToken）
+  expiration: string // 凭证过期时间（ISO 8601）
+  bucket: string // OSS Bucket 名称
+  endpoint: string // OSS Endpoint
+  timeout: number // 上传超时时间（秒）
 }

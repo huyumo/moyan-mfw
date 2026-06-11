@@ -134,13 +134,8 @@ export class PermissionGuard implements CanActivate {
     for (const options of permissionsArray) {
       const { permCode, permissionValue } = this.normalizeOptions(options);
 
-      console.log('[PermissionGuard] 检查权限:', { permCode, permissionValue: permissionValue.toString() });
-      console.log('[PermissionGuard] 用户权限映射:', Object.fromEntries([...userPermissionMap].map(([k, v]) => [k, v.toString()])));
-
-      if (permCode.endsWith('*')) {
-        const result = this.matchWildcard(permCode, permissionValue, userPermissionMap);
-        console.log('[PermissionGuard] 通配符匹配结果:', result);
-        if (result) {
+      if (permCode.endsWith('*') || permCode.startsWith('*:')) {
+        if (this.matchWildcard(permCode, permissionValue, userPermissionMap)) {
           return true;
         }
         continue;

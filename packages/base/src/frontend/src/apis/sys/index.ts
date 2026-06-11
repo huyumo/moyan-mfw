@@ -57,6 +57,7 @@ import type {
   InitStatusResponseDto,
   InitRequestDto,
   InitResponseDto,
+  OssAuthorizationDto,
   ObjectId,
   int,
   char,
@@ -1162,6 +1163,18 @@ export class ApiInstallInitialize extends ApiCall<
   readonly path = '/api/install/init'
   readonly method: MoMethod = 'POST'
   readonly auth = false
+}
+
+/**
+ * upload|文件上传相关接口->获取 OSS 上传授权
+ */
+export class ApiUploadFileGetOssAuthorization extends ApiCall<
+  {},
+  OssAuthorizationDto
+> {
+  readonly path = '/api/upload-files/oss-authorization'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
 }
 
 /**

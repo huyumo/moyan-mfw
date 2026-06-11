@@ -31,6 +31,14 @@ export class RouteNodeDto {
   name: string;
 
   /**
+   * 手动指定的权限编码（可选，未提供时从 path 自动生成）
+   */
+  @ApiProperty({ description: '权限编码', required: false, example: 'pc_root:ext:config:test' })
+  @IsOptional()
+  @IsString()
+  permCode?: string;
+
+  /**
    * 权限值（位运算字符串，如 "6"）
    */
   @ApiProperty({ description: '权限值（位运算）', required: false, example: '6' })
