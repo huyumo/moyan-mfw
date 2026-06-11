@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-base",
-  "version": "1.1.10-beta.15",
+  "version": "1.1.10-beta.16",
   "description": "墨焱MFW核心框架",
   "main": "./src/shared/dist/index.js",
   "types": "./src/shared/dist/index.d.ts",
