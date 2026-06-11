@@ -395,16 +395,19 @@ export class PermissionService {
     // 确保 PC 根节点存在
     await this.ensurePcRoot();
 
-    // 清理旧的同步数据（isAutoSync=1 的 PC 权限）
-    await this.clearAutoSyncPermissions();
-
     // 扁平化路由并按深度排序
     const flatRoutes = this.flattenRoutes(routes);
+
+    // 构建新路由的 permCode 集合
+    const newPermCodes = new Set(flatRoutes.map(r => this.generatePermCode(r.path)));
+
+    // 清理不再存在的权限（只删除新路由中没有的权限）
+    await this.clearObsoleteAutoSyncPermissions(newPermCodes);
 
     // 构建路径集合，用于判断 nodeType（基于路由数据，而非数据库）
     const allRoutePaths = new Set(flatRoutes.map(r => r.path));
 
-    // 同步每个路由节点
+    // 同步每个路由节点（已存在则更新，不存在则新增）
     for (const route of flatRoutes) {
       await this.syncRouteNode(route, allRoutePaths);
     }
@@ -414,44 +417,39 @@ export class PermissionService {
   }
 
   /**
-   * 清理旧的自动同步数据
-   * 删除所有 isAutoSync=1 的 PC 权限（保留 pc_root 和 isAutoSync=0 的权限）
+   * 清理不再存在的自动同步权限
+   * 只删除新路由数据中不存在的权限，保留仍存在的权限及其角色关联
+   * @param newPermCodes - 新路由数据中的所有 permCode 集合
    */
-  private async clearAutoSyncPermissions(): Promise<void> {
-    // 使用事务删除，避免外键约束问题
+  private async clearObsoleteAutoSyncPermissions(newPermCodes: Set<string>): Promise<void> {
     await this.dataSource.transaction(async (manager) => {
-      // 1. 获取所有 isAutoSync=1 的 PC 权限 ID（排除 pc_root）
-      const pcPerms = await manager.find(Permission, {
+      // 1. 获取所有 isAutoSync=1 的 PC 权限
+      const autoSyncPerms = await manager.find(Permission, {
         where: {
           permissionType: PermissionType.PC,
-          isAutoSync: 1, // 只清理自动同步的权限
+          isAutoSync: 1,
         },
         select: ['id', 'permCode'],
       });
 
-      const idsToDelete = pcPerms
-        .filter(p => p.permCode !== 'pc_root')
-        .map(p => p.id);
+      // 2. 找出需要删除的权限（不在新路由中的）
+      const permsToDelete = autoSyncPerms.filter(p => !newPermCodes.has(p.permCode));
 
-      if (idsToDelete.length === 0) return;
+      if (permsToDelete.length === 0) return;
 
-      // 2. 删除 sys_role_permissions 关联（只删除 isAutoSync=1 的权限关联）
-      // 使用 FIND_IN_SET 避免 IN 语法对数组参数的限制
-      await manager.query(
-        `DELETE FROM sys_role_permissions WHERE FIND_IN_SET(permissionId, ?)`,
-        [idsToDelete.join(',')]
-      );
+      // 3. 按深度从深到浅排序，避免外键问题
+      const sortedPerms = [...permsToDelete].sort((a, b) => {
+        const depthA = a.permCode.split(':').length;
+        const depthB = b.permCode.split(':').length;
+        return depthB - depthA;
+      });
 
-      // 3. 删除权限（按深度从深到浅）
-      const sortedPerms = pcPerms
-        .filter(p => p.permCode !== 'pc_root')
-        .sort((a, b) => {
-          const depthA = a.permCode.split(':').length;
-          const depthB = b.permCode.split(':').length;
-          return depthB - depthA;
-        });
-
+      // 4. 逐个删除：先清理角色关联，再删除权限
       for (const perm of sortedPerms) {
+        await manager.query(
+          `DELETE FROM sys_role_permissions WHERE permissionId = ?`,
+          [perm.id]
+        );
         await manager.delete(Permission, perm.id);
       }
     });

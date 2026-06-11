@@ -166,13 +166,25 @@ export function buildRoutesFromConfigs(
   for (const [relativePath, config] of pageConfigs.entries()) {
     const segments = relativePath.split('/').filter(Boolean);
 
-    // 查找所属模块：页面路径的第一段即为模块路径（如 'sys/user' 的模块是 'sys'）
-    const modulePath = segments.length > 1 ? segments[0] : '';
-    const moduleConfig = modulePath ? moduleMap.get(modulePath) : undefined;
+    // 查找所属模块：从最深路径开始匹配，找到页面路径能匹配的最深模块
+    // 例如：test/test01/demo01 → 先尝试 test/test01，再尝试 test
+    let modulePath = '';
+    let moduleConfig: ModuleConfig | undefined;
+    for (let i = segments.length - 1; i >= 0; i--) {
+      const candidatePath = segments.slice(0, i).join('/');
+      if (candidatePath && moduleMap.has(candidatePath)) {
+        modulePath = candidatePath;
+        moduleConfig = moduleMap.get(candidatePath);
+        break;
+      }
+    }
 
-    // 路由路径：有模块前缀时保留（如 'sys/user'），无模块时直接使用页面路径（如 'dashboard'）
+    // 路由路径：relativePath 的所有目录段 + 页面路径
+    // sys/user/index.ts → relativePath='sys/user', path='user' → routePath='sys/user'
+    // test/test01/demo01/index.ts → relativePath='test/test01/demo01', path='overview' → routePath='test/test01/demo01/overview'
     const pagePath = config.path || segments[segments.length - 1] || '';
-    const routePath = modulePath ? `${modulePath}/${pagePath}` : pagePath;
+    const dirPath = segments.slice(0, -1).join('/');
+    const routePath = dirPath ? `${dirPath}/${pagePath}` : pagePath;
     const fullPath = prefixPath ? `${prefixPath}/${routePath}` : routePath;
     const fullName = `Route_${prefixName ? prefixName + '_' : ''}${segments.join('_')}`;
 
