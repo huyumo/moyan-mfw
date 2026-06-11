@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview moyan-api 适配器配置
  * @description 配置 ApiCall 的请求适配器和事件处理
  */
@@ -328,7 +328,7 @@ ApiCall.emitter.on(ApiEvents.HintFail, (apiCall: ApiCall<any, any>) => {
 });
 
 /**
- * 未授权事件 - 跳转登录页
+ * 未授权事件 - 跳转登录
  */
 ApiCall.emitter.on(ApiEvents.Unauthorized, () => {
   localStorage.removeItem(TOKEN_KEY);
@@ -342,3 +342,22 @@ ApiCall.emitter.on(ApiEvents.Unauthorized, () => {
     window.location.href = '/login';
   }
 });
+
+// ============== 独立工具函数（供外部包使用） ==============
+
+/** 获取访问令牌 */
+export function getAccessToken(): string {
+  return localStorage.getItem(TOKEN_KEY) || '';
+}
+
+/** 获取当前选中的应用 ID */
+export function getCurrentAppId(): string {
+  try {
+    const saved = localStorage.getItem(CURRENT_APP_KEY);
+    if (saved) {
+      const app = JSON.parse(saved);
+      return app?.appId || '';
+    }
+  } catch { /* 忽略解析错误 */ }
+  return '';
+}

@@ -9,7 +9,7 @@ import {
   defineComponent, ref, computed, onMounted, h, type PropType, type Ref,
 } from 'vue';
 import { ElMessage, ElSkeleton } from 'element-plus';
-import { MfwFormCard } from 'moyan-mfw-base/frontend';
+import { MfwFormCard, getAccessToken, getCurrentAppId } from 'moyan-mfw-base/frontend';
 import type { MfwFormCardInstance } from 'moyan-mfw-base/frontend';
 import type {
   MfwConfigFormCardProps,
@@ -18,10 +18,18 @@ import type {
 } from './types';
 import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
-/** 从 localStorage 读取 JWT Token */
+/** 从 base frontend 获取认证头 */
 function getAuthHeaders(): Record<string, string> {
-  const token = localStorage.getItem('mfw:admin:token');
-  return token ? { Authorization: `Bearer ${token}` } : {};
+  const token = getAccessToken();
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const appId = getCurrentAppId();
+  if (appId) {
+    headers['X-App-Id'] = appId;
+  }
+  return headers;
 }
 
 /** configType 对应的 CSS 类名 */
@@ -83,9 +91,10 @@ export default defineComponent({
     const loadConfig = async () => {
       loading.value = true;
       try {
-        const appIdParam = props.appId !== null ? String(props.appId) : 'null';
+        const appIdParam = props.appId !== null ? String(props.appId) : '';
         const response = await fetch(
-          `/api/ext/config/group/${props.groupKey}?appId=${appIdParam}`
+          `/api/ext/config/group/${props.groupKey}${appIdParam ? `?appId=${appIdParam}` : ''}`,
+          { headers: getAuthHeaders() }
         );
         if (!response.ok) {
           throw new Error('Failed to load config');

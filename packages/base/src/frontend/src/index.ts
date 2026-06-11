@@ -27,3 +27,4 @@ export * from './themes';
 export * from './constants/storage-keys';
 export { uploadConfig, getUploader, uploadImage } from './config/upload-config';
 export type { UploadConfig } from './config/upload-config';
+export { getAccessToken, getCurrentAppId } from './plugins/api';
