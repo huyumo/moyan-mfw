@@ -398,8 +398,8 @@ export class PermissionService {
     // 扁平化路由并按深度排序
     const flatRoutes = this.flattenRoutes(routes);
 
-    // 构建新路由的 permCode 集合
-    const newPermCodes = new Set(flatRoutes.map(r => this.generatePermCode(r.path)));
+    // 构建新路由的 permCode 集合（优先使用自定义 permCode，否则使用自动生成的）
+    const newPermCodes = new Set(flatRoutes.map(r => r.permCode || this.generatePermCode(r.path)));
 
     // 清理不再存在的权限（只删除新路由中没有的权限）
     await this.clearObsoleteAutoSyncPermissions(newPermCodes);
@@ -407,9 +407,16 @@ export class PermissionService {
     // 构建路径集合，用于判断 nodeType（基于路由数据，而非数据库）
     const allRoutePaths = new Set(flatRoutes.map(r => r.path));
 
+    // 构建路径到 permCode 的映射（用于父节点查找）
+    const pathToPermCode = new Map<string, string>();
+    for (const route of flatRoutes) {
+      const permCode = route.permCode || this.generatePermCode(route.path);
+      pathToPermCode.set(route.path, permCode);
+    }
+
     // 同步每个路由节点（已存在则更新，不存在则新增）
     for (const route of flatRoutes) {
-      await this.syncRouteNode(route, allRoutePaths);
+      await this.syncRouteNode(route, allRoutePaths, pathToPermCode);
     }
 
     // 返回最新权限树
@@ -513,8 +520,9 @@ export class PermissionService {
    * 同步单个路由节点
    * @param route - 路由节点
    * @param allRoutePaths - 所有路由路径集合（用于判断 nodeType）
+   * @param pathToPermCode - 路径到 permCode 的映射（用于父节点查找）
    */
-  private async syncRouteNode(route: RouteNodeDto, allRoutePaths: Set<string>): Promise<void> {
+  private async syncRouteNode(route: RouteNodeDto, allRoutePaths: Set<string>, pathToPermCode: Map<string, string>): Promise<void> {
     const permCode = route.permCode || this.generatePermCode(route.path);
     const pathSegments = route.path.split('/').filter(Boolean);
     const depth = pathSegments.length;
@@ -528,9 +536,9 @@ export class PermissionService {
       });
       parentId = pcRoot?.id || null;
     } else {
-      // 查找父节点
+      // 查找父节点（优先使用路径映射中的 permCode，支持自定义 permCode）
       const parentPath = '/' + pathSegments.slice(0, -1).join('/');
-      const parentCode = this.generatePermCode(parentPath);
+      const parentCode = pathToPermCode.get(parentPath) || this.generatePermCode(parentPath);
       const parent = await this.permissionRepository.findOne({
         where: { permCode: parentCode },
       });

@@ -7,6 +7,6 @@ export default defineBusinessPageConfig({
   icon: 'Setting',
   auth: true,
   order: 99,
-  permCode:'pc_root:ext:config:test',
+  permCode:'custom:ext:config:test',
   permissions: ['编辑'],
 });
