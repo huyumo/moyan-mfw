@@ -13,6 +13,7 @@
     "@internal/base-shared": "workspace:*",
     "@internal/config-shared": "workspace:*",
     "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-config": "workspace:*",
     "@nestjs/common": "catalog:",
     "@nestjs/core": "catalog:",
     "@nestjs/typeorm": "catalog:",

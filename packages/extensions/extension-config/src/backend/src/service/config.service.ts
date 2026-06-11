@@ -10,7 +10,7 @@ import type { DataSource, Repository, FindOptionsWhere } from 'typeorm';
 import { Cacheable, CacheEvict } from 'moyan-mfw-base/backend';
 import { Config } from '../entities/config.entity';
 import { BatchUpdateConfigDto, CreateConfigDto } from '../dto';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 @Injectable()
 export class ConfigService {

@@ -5,7 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 import { Base } from 'moyan-mfw-base/backend';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 @Entity('mfw_config')
 @Index('idx_app_group', ['appId', 'groupKey'])

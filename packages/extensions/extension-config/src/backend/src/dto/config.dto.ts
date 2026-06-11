@@ -8,7 +8,7 @@ import {
   ValidateNested, IsNotEmpty,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 export class ConfigValueDto {
   @ApiProperty({ description: '配置数据' })

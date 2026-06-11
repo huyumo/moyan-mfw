@@ -16,7 +16,7 @@ import type {
   MfwConfigFormCardExpose,
   ConfigFormItemConfig,
 } from './types';
-import { ConfigType } from '@shared';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 /** 从 localStorage 读取 JWT Token */
 function getAuthHeaders(): Record<string, string> {

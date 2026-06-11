@@ -1,12 +1,12 @@
 <template>
   <section class="mfw-monitor-overview">
-    <h2>演示01-运行概览</h2>
-    <p>演示01-运维监控概览页面</p>
+    <h2>运行概览</h2>
+    <p>运维监控概览页面</p>
   </section>
 </template>
 
 <script setup lang="ts">
-// 演示01-运行概览页面逻辑
+// 运行概览页面逻辑
 </script>
 
 <style scoped lang="scss">

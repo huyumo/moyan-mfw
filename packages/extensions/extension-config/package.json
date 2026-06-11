@@ -15,23 +15,23 @@
     },
     "./frontend": {
       "types": "./src/frontend/dist/index.d.ts",
-      "import": "./src/frontend/src/index.ts",
+      "import": "./src/frontend/dist/index.mjs",
       "require": "./src/frontend/dist/index.mjs",
-      "style": "./src/frontend/src/index.ts"
+      "style": "./src/frontend/dist/style.css"
     },
     "./frontend/*": {
       "types": "./src/frontend/dist/*.d.ts",
-      "import": "./src/frontend/src/*",
+      "import": "./src/frontend/dist/*",
       "require": "./src/frontend/dist/*"
     },
     "./shared": {
       "types": "./src/shared/dist/index.d.ts",
-      "import": "./src/shared/src/index.ts",
+      "import": "./src/shared/dist/index.js",
       "require": "./src/shared/dist/index.js"
     },
     "./shared/*": {
       "types": "./src/shared/dist/*.d.ts",
-      "import": "./src/shared/src/*",
+      "import": "./src/shared/dist/*",
       "require": "./src/shared/dist/*"
     }
   },
@@ -71,6 +71,18 @@
     "README.md",
     "LICENSE"
   ],
+  "peerDependencies": {
+    "@nestjs/common": ">=9.0.0",
+    "@nestjs/core": ">=9.0.0",
+    "@nestjs/typeorm": ">=9.0.0",
+    "@nestjs/swagger": ">=6.0.0",
+    "typeorm": ">=0.3.0",
+    "vue": ">=3.3.0",
+    "vue-router": ">=4.0.0",
+    "element-plus": ">=2.0.0",
+    "moyan-mfw-base": ">=1.0.0"
+  },
+  "dependencies": {},
   "engines": {
     "node": ">=20.0.0"
   }

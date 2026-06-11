@@ -3,7 +3,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ConfigType } from '@internal/config-shared';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 export class ConfigResponseDto {
   @ApiProperty({ description: '配置 ID' })

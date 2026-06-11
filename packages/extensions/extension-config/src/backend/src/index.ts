@@ -8,4 +8,4 @@ export * from './dto';
 export * from './entities/config.entity';
 
 // 导出权限定义，供业务层收集
-export { CONFIG_PERMISSION_VALUES } from '@internal/config-shared';
+export { CONFIG_PERMISSION_VALUES } from 'moyan-mfw-extension-config/shared';
