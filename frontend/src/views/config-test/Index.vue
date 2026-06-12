@@ -71,6 +71,7 @@ const formGroup: ConfigFormGroupConfig = {
       ],
     },
   ],
+  activeName: 'service_order',
 };
 
 const handleSave = async () => {
