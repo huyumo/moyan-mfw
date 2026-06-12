@@ -6,7 +6,9 @@ import type { FormItemConfig as BaseFormItemConfig } from 'moyan-mfw-base/fronte
 import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 /** 配置表单项配置 */
-export interface ConfigFormItemConfig extends BaseFormItemConfig {
+export interface ConfigFormItemConfig extends Omit<BaseFormItemConfig, 'component'> {
+  /** 组件（可选，默认 el-input） */
+  component?: string | any;
   /** 配置类型 */
   configType?: ConfigType;
   /** 配置描述 */
