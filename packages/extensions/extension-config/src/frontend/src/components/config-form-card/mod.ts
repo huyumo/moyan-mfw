@@ -3,4 +3,9 @@
  */
 
 export { default as MfwConfigFormCard } from './index';
-export type * from './types';
+export type {
+  ConfigFormItemConfig,
+  ConfigFormGroupConfig,
+  MfwConfigFormCardProps,
+  MfwConfigFormCardExpose,
+} from './types';
