@@ -1,6 +1,6 @@
 /**
  * @fileoverview MfwConfigFormCard 配置表单卡片组件
- * @description 基于 MfwFormCard 二次封装，每个字段通过 configType 用颜色区分公开/私有
+ * @description 基于 MfwFormCard 二次封装，支持按 configType 分 Tab 显示，支持分组
  */
 
 import './style.scss';
@@ -38,6 +38,35 @@ const CONFIG_TYPE_CLASS: Record<ConfigType, string> = {
   [ConfigType.PRIVATE]: 'is-config-private',
 };
 
+/**
+ * 为 item 注入 configType 样式
+ */
+function applyConfigTypeStyle(item: ConfigFormItemConfig): ConfigFormItemConfig {
+  const styled = { ...item };
+  // 未配置 component 时默认用 el-input
+  if (!styled.component) {
+    styled.component = 'el-input';
+  }
+  if (item.configType !== undefined) {
+    const typeClass = CONFIG_TYPE_CLASS[item.configType];
+    styled.itemProps = {
+      ...styled.itemProps,
+      class: [styled.itemProps?.class, typeClass].filter(Boolean).join(' '),
+    };
+  }
+  return styled;
+}
+
+/**
+ * 从 formGroup 中提取所有 item
+ */
+function extractItemsFromFormGroup(formGroup: MfwConfigFormCardProps['formGroup']): ConfigFormItemConfig[] {
+  if (!formGroup?.groups) {
+    return [];
+  }
+  return formGroup.groups.flatMap(group => group.template || []);
+}
+
 export default defineComponent({
   name: 'MfwConfigFormCard',
 
@@ -57,6 +86,13 @@ export default defineComponent({
     formGroup: {
       type: Object as PropType<MfwConfigFormCardProps['formGroup']>,
     },
+    formProps: {
+      type: Object as PropType<MfwConfigFormCardProps['formProps']>,
+    },
+    disabled: {
+      type: Boolean as PropType<MfwConfigFormCardProps['disabled']>,
+      default: false,
+    },
   },
 
   setup(props, { expose }) {
@@ -65,25 +101,37 @@ export default defineComponent({
     const formData: Ref<Record<string, any>> = ref({});
 
     /**
-     * 为每个 item 根据 configType 注入颜色标识（通过 itemProps.class）
+     * 获取所有 item（优先使用 formGroup 中的，否则使用 items）
      */
-    const itemsWithStyle = computed(() =>
-      props.items.map((item) => {
-        const styled = { ...item };
-        // 未配置 component 时默认用 el-input
-        if (!styled.component) {
-          styled.component = 'el-input';
-        }
-        if (item.configType !== undefined) {
-          const typeClass = CONFIG_TYPE_CLASS[item.configType];
-          styled.itemProps = {
-            ...styled.itemProps,
-            class: [styled.itemProps?.class, typeClass].filter(Boolean).join(' '),
-          };
-        }
-        return styled;
-      })
+    const allItems = computed<ConfigFormItemConfig[]>(() => {
+      if (props.formGroup?.groups?.length) {
+        return extractItemsFromFormGroup(props.formGroup);
+      }
+      return props.items || [];
+    });
+
+    /**
+     * 为所有 item 根据 configType 注入颜色标识
+     */
+    const allItemsWithStyle = computed(() =>
+      allItems.value.map(applyConfigTypeStyle)
     );
+
+    /**
+     * 为 formGroup 中的 template 注入 configType 样式
+     */
+    const formGroupWithStyle = computed(() => {
+      if (!props.formGroup) {
+        return undefined;
+      }
+      return {
+        ...props.formGroup,
+        groups: props.formGroup.groups?.map(group => ({
+          ...group,
+          template: group.template?.map(applyConfigTypeStyle),
+        })),
+      };
+    });
 
     /**
      * 加载配置数据
@@ -126,12 +174,12 @@ export default defineComponent({
         await (formRef.value as any).validate();
       }
 
-      // 构建提交数据（data 必须是对象以匹配 @IsObject() 校验）
-      const items = props.items.map((item) => ({
+      // 构建提交数据（使用 allItems 包含所有配置项）
+      const items = allItems.value.map((item) => ({
         configKey: item.key,
         configValue: { data: { value: formData.value[item.key] ?? '' } },
-        description: (item as ConfigFormItemConfig).description,
-        configType: (item as ConfigFormItemConfig).configType,
+        description: item.description,
+        configType: item.configType,
       }));
 
       // 调用批量更新 API
@@ -171,12 +219,17 @@ export default defineComponent({
         return h(ElSkeleton, { animated: true });
       }
 
+      // 使用 formGroup 时，template 为空（由 formGroup.groups[].template 渲染）
+      const useFormGroup = props.formGroup?.groups?.length;
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return h(MfwFormCard, {
         ref: formRef,
         formData: formData.value,
-        template: itemsWithStyle.value,
-        formGroup: props.formGroup,
+        template: useFormGroup ? [] : allItemsWithStyle.value,
+        formGroup: useFormGroup ? formGroupWithStyle.value : undefined,
+        formProps: props.formProps,
+        disabled: props.disabled,
       } as any);
     };
   },

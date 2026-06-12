@@ -2,51 +2,31 @@
  * @fileoverview MfwConfigFormCard 类型定义
  */
 
-import type { FormGroupConfig } from 'moyan-mfw-base/frontend';
+import type { FormItemConfig as BaseFormItemConfig } from 'moyan-mfw-base/frontend';
 import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
 /** 配置表单项配置 */
-export interface ConfigFormItemConfig {
-  /** 字段名 */
-  key: string;
-  /** 字段标签 */
-  label?: string;
-  /** 字段类型 */
-  type?: string;
-  /** 默认值 */
-  value?: any;
-  /** 占位符 */
-  placeholder?: string;
-  /** 组件（可选，默认 el-input） */
-  component?: string | any;
-  /** 组件属性 */
-  elProps?: Record<string, any>;
-  /** 表单项属性 */
-  itemProps?: Record<string, any>;
-  /** 验证规则 */
-  rules?: any;
-  /** 是否显示 */
-  show?: boolean | ((formData: any) => boolean);
-  /** 是否禁用 */
-  disabled?: boolean | ((formData: any) => boolean);
-  /** 跨度 */
-  span?: number;
-  /** 变化回调 */
-  change?: (scope: { value: any; key: string; formData: any }) => void;
-  /** 后置文本 */
-  afterText?: string;
-  /** 帮助文本 */
-  helper?: string | ((formData: any) => string);
-  /** 帮助类型 */
-  helperType?: string;
-  /** ref 名称 */
-  ref?: string;
-  /** 测试标识 */
-  testId?: string;
+export interface ConfigFormItemConfig extends BaseFormItemConfig {
   /** 配置类型 */
   configType?: ConfigType;
   /** 配置描述 */
   description?: string;
+}
+
+/** 配置分组配置 */
+export interface ConfigFormGroupConfig {
+  /** 分组类型 */
+  type?: 'el-collapse' | 'el-tabs';
+  /** 分组列表 */
+  groups?: Array<{
+    key: string;
+    title: string;
+    template?: ConfigFormItemConfig[];
+  }>;
+  /** 激活的名称（collapse） */
+  activeNames?: any;
+  /** 激活的名称（tabs） */
+  activeName?: any;
 }
 
 /** Props 接口 */
@@ -55,10 +35,14 @@ export interface MfwConfigFormCardProps {
   appId: number | null;
   /** 配置分组标识 */
   groupKey: string;
-  /** 表单项配置 */
-  items: ConfigFormItemConfig[];
-  /** 分组 UI 配置（直接使用 MfwFormCard 的 FormGroupConfig） */
-  formGroup?: FormGroupConfig;
+  /** 表单项配置（与 formGroup 二选一，优先使用 formGroup） */
+  items?: ConfigFormItemConfig[];
+  /** 分组 UI 配置 */
+  formGroup?: ConfigFormGroupConfig;
+  /** 表单属性 */
+  formProps?: Record<string, any>;
+  /** 是否禁用 */
+  disabled?: boolean;
 }
 
 /** 暴露实例接口 */
