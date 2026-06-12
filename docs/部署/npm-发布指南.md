@@ -7,8 +7,9 @@
 | `moyan-mfw-base` | `packages/base/` | https://www.npmjs.com/package/moyan-mfw-base |
 | `moyan-mfw-cli` | `packages/cli/` | https://www.npmjs.com/package/moyan-mfw-cli |
 | `moyan-mfw-extension-ad` | `packages/extensions/extension-ad/` | https://www.npmjs.com/package/moyan-mfw-extension-ad |
+| `moyan-mfw-extension-config` | `packages/extensions/extension-config/` | https://www.npmjs.com/package/moyan-mfw-extension-config |
 
-> `moyan-mfw-frontend`、`moyan-mfw-backend`、`moyan-mfw-business-dict` 是 `private: true` 的应用层包，不发布到 npm。
+> `moyan-mfw-frontend`（`frontend/`）为 `private: true` 的应用层包，不发布到 npm。
 
 ## 发布流程
 
@@ -22,7 +23,7 @@ pnpm release:major    # 1.1.9 → 2.0.0（破坏性变更）
 ```
 
 执行后自动完成：
-1. 更新根 + 3 个子包的版本号
+1. 更新根 + 4 个子包的版本号
 2. `git commit` 提交版本变更
 3. `git tag v{version}` 创建标签
 4. `git push origin main --tags` 推送
@@ -43,7 +44,7 @@ pnpm release:prerelease   # 1.1.9 → 1.1.10-beta.0
 ```
 TagPipeline 触发条件：推送 v* 标签
   │
-  ├─ 构建: moyan-mfw-base → moyan-mfw-business-dict → extension-ad → cli
+  ├─ 构建: moyan-mfw-base → extension-ad → extension-config → cli
   ├─ 类型检查: pnpm run typecheck
   └─ 发布:
        ├─ 版本含 '-' → --tag beta

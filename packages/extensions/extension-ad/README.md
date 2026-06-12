@@ -44,7 +44,7 @@ import { createBaseAdminApp } from 'moyan-mfw-base/frontend';
 import { adRoutes } from 'moyan-mfw-extension-ad/frontend';
 
 const app = createBaseAdminApp({
-  modules: [{ routes: adRoutes }],
+  routes: adRoutes,
 });
 ```
 

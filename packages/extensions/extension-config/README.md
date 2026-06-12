@@ -31,10 +31,28 @@ export class AppModule {}
 ### 前端
 
 ```typescript
-import { MfwConfigFormCard, configRoutes } from 'moyan-mfw-extension-config/frontend';
+import { MfwConfigFormCard } from 'moyan-mfw-extension-config/frontend';
+import type { ConfigFormItemConfig, ConfigFormGroupConfig } from 'moyan-mfw-extension-config/frontend';
+import { ConfigType } from 'moyan-mfw-extension-config/shared';
 
-// 组件使用
-// <MfwConfigFormCard ref="formRef" groupKey="your-group" :items="items" :app-id="appId" />
+// 基础用法
+const items: ConfigFormItemConfig[] = [
+  { key: 'siteName', label: '站点名称', type: 'input', configType: ConfigType.PUBLIC },
+];
+
+// 分组用法
+const formGroup: ConfigFormGroupConfig = {
+  type: 'el-tabs',
+  groups: [
+    {
+      key: 'basic',
+      title: '基础配置',
+      template: [
+        { key: 'siteName', label: '站点名称', type: 'input', configType: ConfigType.PUBLIC },
+      ],
+    },
+  ],
+};
 ```
 
 ### 共享

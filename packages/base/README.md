@@ -26,11 +26,11 @@ pnpm add moyan-mfw-base
 import { createBaseBackendApp } from 'moyan-mfw-base/backend';
 
 const app = await createBaseBackendApp({
-  modules: [],          // 业务模块
-  providers: [],        // 自定义 Provider
-  permissions: {},      // 权限编码
-  appTypesConfig: {},   // 应用类型配置
-  swagger: { title: 'My API', version: '1.0' },
+  modules: [],            // 业务模块
+  providers: [],          // 自定义 Provider
+  permissions: [],        // 权限编码
+  appTypes: [],           // 应用类型配置
+  swagger: [{ name: 'my-api', title: 'My API' }],
 });
 
 await app.listen(3000);
@@ -42,10 +42,10 @@ await app.listen(3000);
 import { createBaseAdminApp } from 'moyan-mfw-base/frontend';
 
 const app = createBaseAdminApp({
-  pageConfigs: {},      // 页面路由配置
-  permissions: {},      // 前端权限编码
-  theme: 'default',     // 主题包
-  modules: [],          // 业务模块
+  routes: [],                  // 页面路由配置
+  layout: {                    // 布局配置
+    themePackage: 'default',   // 主题包
+  },
 });
 
 app.mount('#app');
@@ -81,10 +81,11 @@ const items = toItems(Gender); // [{ label: '男', value: 1 }, { label: '女', v
 
 ## 文档
 
-- [后端 API 参考](../../docs/api-reference/backend/README.md)
-- [前端 API 参考](../../docs/api-reference/frontend/README.md)
-- [共享层 API 参考](../../docs/api-reference/shared/README.md)
-- [开发规范](../../docs/development-standards/README.md)
+> npm 发布版本中不包含文档文件，请访问 [Gitee 仓库](https://gitee.com/ymoo/moyan-mfwp) 查看完整文档：
+> - [后端 API 参考](https://gitee.com/ymoo/moyan-mfwp/tree/beta/docs/api-reference/backend/README.md)
+> - [前端 API 参考](https://gitee.com/ymoo/moyan-mfwp/tree/beta/docs/api-reference/frontend/README.md)
+> - [共享层 API 参考](https://gitee.com/ymoo/moyan-mfwp/tree/beta/docs/api-reference/shared/README.md)
+> - [开发规范](https://gitee.com/ymoo/moyan-mfwp/tree/beta/docs/development-standards/README.md)
 
 ## License
 
