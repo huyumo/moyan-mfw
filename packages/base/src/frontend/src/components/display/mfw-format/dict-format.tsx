@@ -9,7 +9,7 @@
  * ```
  */
 
-import { defineComponent, h, toRef, computed, type PropType } from 'vue';
+import { defineComponent, h, toRef, computed, type PropType, type VNode } from 'vue';
 import { ElTag } from 'element-plus';
 import type { DictFormatProps, DictItem } from './types';
 
