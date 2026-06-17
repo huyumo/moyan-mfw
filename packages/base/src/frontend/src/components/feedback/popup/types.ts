@@ -40,8 +40,21 @@ export interface PopupListeners {
 
 /** 弹窗内容组件 Props */
 export interface PopupComponentProps<T = any> {
-  /** 弹窗数据 */
+  /** @deprecated 请使用 elProps 代替，将在未来版本移除 */
   data?: T;
+  /**
+   * 传递给内容组件的属性（推荐使用）
+   * @example
+   * // 传递属性
+   * MfwPopup.open({
+   *   component: MyComponent,
+   *   elProps: { name: 'test', id: 1 }
+   * })
+   *
+   * // 接收属性（目标组件中）
+   * const props = defineProps<{ name: string; id: number }>()
+   */
+  elProps?: Record<string, any>;
   /** 弹窗实例 */
   popupRef?: PopupInstance;
   /** 关闭弹窗 */
@@ -74,8 +87,21 @@ export interface OpenPopupOptions<T = any> {
   type?: PopupType;
   /** 弹窗内容组件 */
   component: Component | DefineComponent;
-  /** 传递给内容组件的数据 */
+  /** @deprecated 请使用 elProps 代替，将在未来版本移除 */
   data?: T;
+  /**
+   * 传递给内容组件的属性（推荐使用）
+   * @example
+   * // 传递属性
+   * MfwPopup.open({
+   *   component: MyComponent,
+   *   elProps: { name: 'test', id: 1 }
+   * })
+   *
+   * // 接收属性（目标组件中）
+   * const props = defineProps<{ name: string; id: number }>()
+   */
+  elProps?: Record<string, any>;
   /** 传递给内容组件的 provide */
   provides?: Record<string, any>;
   /** Dialog/Drawer 配置 */
@@ -112,8 +138,10 @@ export interface PopupItem {
   type: PopupType;
   /** 弹窗内容组件 */
   component: Component | DefineComponent;
-  /** 传递给内容组件的数据 */
+  /** @deprecated 请使用 elProps 代替，将在未来版本移除 */
   data?: any;
+  /** 传递给内容组件的属性（推荐使用） */
+  elProps?: Record<string, any>;
   /** 传递给内容组件的 provide */
   provides?: Record<string, any>;
   /** Dialog/Drawer 配置 */

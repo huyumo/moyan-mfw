@@ -133,7 +133,7 @@ MfwPopup.open({
 // 编辑（传入行数据）
 MfwPopup.open({
   title: '编辑', type: 'dialog', component: XxxForm,
-  data: { ...row },
+  elProps: { ...row },
   popupProps: { width: 550 },
   on: { confirm: listPage.value?.refresh },
 })
@@ -141,7 +141,7 @@ MfwPopup.open({
 // 查看详情（drawer）
 MfwPopup.open({
   title: '详情', type: 'drawer', position: 'rtl',
-  component: XxxDetail, data: { ...row },
+  component: XxxDetail, elProps: { ...row },
   popupProps: { size: 500 },
 })
 ```

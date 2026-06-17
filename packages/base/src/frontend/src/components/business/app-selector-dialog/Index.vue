@@ -13,7 +13,7 @@
  *   title: '选择应用',
  *   type: 'dialog',
  *   component: AppSelectorDialog,
- *   data: { forceSelect: true },
+ *   elProps: { forceSelect: true },
  *   popupProps: { width: '600px' },
  *   footer: false,
  *   on: {

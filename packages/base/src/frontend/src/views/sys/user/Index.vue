@@ -159,7 +159,7 @@ const handleEdit = (row: UserResponseDto) => {
     title: '编辑用户',
     type: 'dialog',
     component: UserForm,
-    data: { ...row },
+    elProps: { ...row },
     popupProps: { width: 500 },
     on: { confirm: listPage.value?.refresh },
   });

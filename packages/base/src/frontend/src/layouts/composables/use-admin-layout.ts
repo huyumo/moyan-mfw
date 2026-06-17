@@ -50,7 +50,6 @@ export function useAdminLayout(): any {
   const isMobile = computed(() => windowWidth.value < 768);
   const layoutModeOptions: Array<{ label: string; value: LayoutMode }> = [
     { label: '侧边栏', value: 'sidebar' },
-    { label: '顶部菜单', value: 'top' },
     { label: '双栏菜单', value: 'dual' },
   ];
   const themeOptions = computed(() => getAvailableThemes());

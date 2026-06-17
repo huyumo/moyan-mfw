@@ -228,7 +228,7 @@ const handleOwner = (row: AppDetailResponseDto) => {
     title: `变更拥有者 - ${row.appName}`,
     type: 'dialog',
     component: OwnerChanger,
-    data: {
+    elProps: {
       appId: row.id,
       appName: row.appName,
       currentOwnerId: owner.id || row.ownerId,

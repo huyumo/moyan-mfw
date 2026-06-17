@@ -42,6 +42,15 @@ export interface FormItemConfig {
   ref?: string;
   /** 测试标识 */
   testId?: string;
+  /**
+   * 事件监听（如 focus、blur 等）
+   * @example
+   * on: {
+   *   focus: (e) => console.log('focused'),
+   *   blur: (e) => console.log('blurred'),
+   * }
+   */
+  on?: Record<string, (...args: any[]) => void>;
 }
 
 /** 分组配置 */

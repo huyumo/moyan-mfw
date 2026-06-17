@@ -77,7 +77,7 @@ const handleConfigBuiltinRoles = (row: AppTypeResponseDto) => {
     title: '配置内置角色',
     type: 'dialog',
     component: BuiltinRoleDialog,
-    data: { appTypeId: row.id, typeName: row.typeName },
+    elProps: { appTypeId: row.id, typeName: row.typeName },
     popupProps: { width: '600px' },
   });
 };

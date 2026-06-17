@@ -36,7 +36,7 @@ export default defineComponent({
     },
     preview: {
       type: Boolean as PropType<ImageFormatProps['preview']>,
-      default: false
+      default: true
     },
     fit: {
       type: String as PropType<ImageFormatProps['fit']>,
@@ -102,7 +102,7 @@ export default defineComponent({
         return h(ElImage, {
           src: urlList.value[0],
           fit: props.fit,
-          preview: props.preview,
+          previewSrcList: props.preview ? urlList.value : undefined,
           style: imageStyle.value,
           class: ['mfw-image-format', props.className],
           onClick: () => handleClick(urlList.value[0])
@@ -111,16 +111,18 @@ export default defineComponent({
         });
       }
 
-      return h('div', { class: 'mfw-image-format-multi' }, [
+      return h('div', { class: 'mfw-image-format-multi' }, imageList.value.map((_, index) =>
         h(ElImage, {
-          src: urlList.value[0],
+          key: index,
+          src: urlList.value[index],
           fit: props.fit,
-          preview: props.preview,
+          previewSrcList: props.preview ? urlList.value : undefined,
+          initialIndex: index,
           style: imageStyle.value,
-          class: props.className
-        }),
-        h('div', { class: 'mfw-image-format-count' }, `+${imageList.value.length - 1}`)
-      ]);
+          class: ['mfw-image-format-item', props.className],
+          onClick: () => handleClick(urlList.value[index])
+        })
+      ));
     };
   }
 });

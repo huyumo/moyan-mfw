@@ -110,7 +110,7 @@ function handleEditProfile() {
     title: '编辑资料',
     type: 'dialog',
     component: UserForm,
-    data: { ...userInfo.value },
+    elProps: { ...userInfo.value },
     popupProps: { width: 500 },
     on: {
       confirm: () => {

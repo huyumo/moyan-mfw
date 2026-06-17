@@ -532,7 +532,7 @@ const handleCustomMenu = (row: AppTypeResponseDto) => {
     type: 'drawer',
     position: 'rtl',
     component: CustomMenuEditor,
-    data: { appTypeId: row.id },
+    elProps: { appTypeId: row.id },
     popupProps: { size: '90%' },
   });
 };

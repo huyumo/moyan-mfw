@@ -80,8 +80,8 @@ export interface DictItem {
 
 /** 字典格式化 Props */
 export interface DictFormatProps extends BaseFormatProps {
-  /** 字典值 */
-  value?: string | number | null;
+  /** 字典值（支持单个值或数组） */
+  value?: string | number | (string | number)[] | null;
   /** 字典数据 */
   dict?: DictItem[];
   /** 是否显示为标签 */
@@ -90,7 +90,7 @@ export interface DictFormatProps extends BaseFormatProps {
 
 /** 字典格式化 Emits */
 export interface DictFormatEmits {
-  (e: 'click', item: DictItem | null): void;
+  (e: 'click', item: DictItem | DictItem[] | null): void;
 }
 
 // ========== 标签格式化 ==========

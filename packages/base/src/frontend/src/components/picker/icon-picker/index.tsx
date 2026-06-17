@@ -107,7 +107,7 @@ export default defineComponent({
         title: '选择图标',
         type: 'dialog',
         component: markRaw(IconPickerPanel),
-        data: {
+        elProps: {
           modelValue: internalValue.value,
           icons: props.icons,
           iconSize: props.iconSize,

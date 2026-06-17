@@ -122,10 +122,10 @@ import type { CustomMenuItemDto } from '../../../apis/sys/schemas';
 defineOptions({ name: 'CustomMenuEditor' });
 
 const props = defineProps<{
-  data: { appTypeId: string };
+  elProps: { appTypeId: string };
 }>();
 
-const appTypeId = computed(() => props.data?.appTypeId);
+const appTypeId = computed(() => props.elProps?.appTypeId);
 
 // ====== 状态 ======
 const loading = ref(false);

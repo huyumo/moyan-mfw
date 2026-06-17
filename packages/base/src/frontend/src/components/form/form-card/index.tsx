@@ -349,8 +349,18 @@ export default defineComponent({
             ref: typeof item.ref === 'string' ? item.ref : undefined
           };
 
+          // 将 on 对象中的事件转换为 Vue JSX 事件属性（如 focus → onFocus）
+          const eventListeners: Record<string, any> = {};
+          if (item.on) {
+            for (const [event, handler] of Object.entries(item.on)) {
+              const eventName = `on${event.charAt(0).toUpperCase()}${event.slice(1)}`;
+              eventListeners[eventName] = handler;
+            }
+          }
+
           return h(component, {
             ...propsData,
+            ...eventListeners,
             ...(item.testId ? { 'data-testid': item.testId } : {}),
             ref: (el: any) => {
               componentRefs.set(item.key, el);

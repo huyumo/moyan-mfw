@@ -109,7 +109,7 @@ const handleEdit = (row: any) => {
     title: '编辑广告位',
     type: 'dialog',
     component: MfwAdPlacementForm,
-    data: { ...row },
+    elProps: { ...row },
     popupProps: { width: 550 },
     on: { confirm: cardListPage.value?.refresh },
   })

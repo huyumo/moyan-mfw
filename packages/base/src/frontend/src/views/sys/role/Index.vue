@@ -83,7 +83,7 @@ const handleAdd = () => {
     title: '新建角色',
     type: 'dialog',
     component: RoleForm,
-    data: { appId: appId.value },
+    elProps: { appId: appId.value },
     popupProps: { width: 500 },
     on: { confirm: cardListPage.value?.refresh },
   });

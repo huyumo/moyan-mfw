@@ -1,10 +1,11 @@
 /**
  * @fileoverview 字典格式化组件
- * @description 根据字典值显示对应的标签文本
+ * @description 根据字典值显示对应的标签文本，支持单个值或数组
  * @example
  * ```vue
  * <MfwDictFormat value="1" :dict="[{ value: 1, label: '启用' }]" />
  * <MfwDictFormat value="1" :dict="dictData" as-tag />
+ * <MfwDictFormat :value="[1, 2]" :dict="dictData" as-tag />
  * ```
  */
 
@@ -16,9 +17,9 @@ export default defineComponent({
   name: 'MfwDictFormat',
 
   props: {
-    /** 字典值 */
+    /** 字典值（支持单个值或数组） */
     value: {
-      type: [String, Number] as PropType<DictFormatProps['value']>,
+      type: [String, Number, Array] as PropType<DictFormatProps['value']>,
       default: null
     },
     /** 字典数据 */
@@ -44,7 +45,7 @@ export default defineComponent({
   },
 
   emits: {
-    click: (item: DictItem | null) => true
+    click: (item: DictItem | DictItem[] | null) => true
   },
 
   setup(props, { emit, slots }) {
@@ -52,32 +53,98 @@ export default defineComponent({
     const dict = toRef(props, 'dict');
     const emptyText = toRef(props, 'emptyText');
 
-    /** 查找匹配的字典项 */
-    const matchedItem = computed<DictItem | null>(() => {
-      if (value.value === null || value.value === undefined) {
-        return null;
+    /** 是否为数组模式 */
+    const isArray = computed(() => Array.isArray(value.value));
+
+    /** 查找匹配的字典项列表 */
+    const matchedItems = computed<DictItem[]>(() => {
+      const v = value.value;
+      if (v === null || v === undefined) {
+        return [];
       }
-      return dict.value.find(item => item.value === value.value) || null;
+      const values = Array.isArray(v) ? v : [v];
+      return values
+        .map(val => dict.value.find(item => item.value === val))
+        .filter((item): item is DictItem => item !== undefined);
+    });
+
+    /** 单个匹配项（兼容非数组模式） */
+    const matchedItem = computed<DictItem | null>(() => {
+      return matchedItems.value[0] ?? null;
     });
 
     /** 显示文本 */
     const displayText = computed(() => {
-      if (!matchedItem.value) {
+      if (matchedItems.value.length === 0) {
         return emptyText.value;
       }
-      return matchedItem.value.label;
+      return matchedItems.value.map(item => item.label).join('、');
     });
 
-    /** 标签类型 */
+    /** 标签类型（非数组模式） */
     const tagType = computed(() => {
       return matchedItem.value?.type || 'primary';
     });
 
-    const handleClick = () => {
-      emit('click', matchedItem.value);
+    const handleClick = (item?: DictItem) => {
+      if (isArray.value) {
+        emit('click', item ?? null);
+      } else {
+        emit('click', matchedItem.value);
+      }
+    };
+
+    const handleContainerClick = () => {
+      if (isArray.value) {
+        emit('click', matchedItems.value.length > 0 ? matchedItems.value : null);
+      }
+    };
+
+    /** 渲染单个字典项 */
+    const renderItem = (item: DictItem, index: number) => {
+      if (props.asTag) {
+        return h(ElTag, {
+          key: index,
+          type: item.type || 'primary',
+          class: ['mfw-dict-format', props.className],
+          onClick: () => handleClick(item)
+        }, {
+          default: () => item.label
+        });
+      }
+
+      return h('span', {
+        key: index,
+        class: ['mfw-dict-format', props.className],
+        onClick: () => handleClick(item)
+      }, item.label);
     };
 
     return () => {
+      // 数组模式
+      if (isArray.value) {
+        if (matchedItems.value.length === 0) {
+          return h('span', {
+            class: 'mfw-dict-format',
+            onClick: handleContainerClick
+          }, emptyText.value);
+        }
+
+        const children: any[] = [];
+        matchedItems.value.forEach((item, index) => {
+          if (index > 0 && !props.asTag) {
+            children.push(h('span', { key: `sep-${index}`, class: 'mfw-dict-format-separator' }, '、'));
+          }
+          children.push(renderItem(item, index));
+        });
+
+        return h('span', {
+          class: 'mfw-dict-format-group',
+          onClick: handleContainerClick
+        }, children);
+      }
+
+      // 非数组模式（原有逻辑）
       if (!matchedItem.value) {
         return h('span', {
           class: 'mfw-dict-format',
@@ -89,7 +156,7 @@ export default defineComponent({
         return h(ElTag, {
           type: tagType.value,
           class: ['mfw-dict-format', props.className],
-          onClick: handleClick
+          onClick: () => handleClick()
         }, {
           default: () => slots.default?.() ?? displayText.value
         });
@@ -97,7 +164,7 @@ export default defineComponent({
 
       return h('span', {
         class: ['mfw-dict-format', props.className],
-        onClick: handleClick
+        onClick: () => handleClick()
       }, {
         default: () => slots.default?.() ?? displayText.value
       });

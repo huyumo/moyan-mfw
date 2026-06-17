@@ -141,7 +141,7 @@ const handleAdd = () => {
     title: '添加成员',
     type: 'dialog',
     component: AddMemberForm,
-    data: { appId: appId.value },
+    elProps: { appId: appId.value },
     popupProps: { width: 500 },
     on: { confirm: listPage.value?.refresh },
   });
@@ -153,7 +153,7 @@ const handleEditRoles = (row: MemberResponseDto) => {
     title: '分配角色',
     type: 'dialog',
     component: RoleAssignForm,
-    data: { appId: appId.value, member: row },
+    elProps: { appId: appId.value, member: row },
     popupProps: { width: 500 },
     on: { confirm: listPage.value?.refresh },
   });

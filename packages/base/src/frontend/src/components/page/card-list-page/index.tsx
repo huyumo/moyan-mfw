@@ -11,6 +11,7 @@ import {
   computed,
   watch,
   onMounted,
+  h,
   type PropType,
   type VNode
 } from 'vue';
@@ -193,63 +194,70 @@ export default defineComponent({
       '--card-gap': `${props.cardGrid?.gap || 16}px`
     }));
 
-    return () => (
-      <div class="mfw-card-list-page" style={cardGridStyle.value}>
-        {props.showSearch && props.searchTemplate.length > 0 && (
-          <MfwSearchPanel
-            ref={searchPanelRef}
-            searchTemplate={props.searchTemplate}
-            searchTrigger={resolvedSearchTrigger.value}
-            loading={loading.value}
-            onSearch={handleSearch}
-            onReset={handleReset}
-            v-slots={{
-              'search-actions': slots['search-actions']
-            }}
-          />
-        )}
+    return () => {
+      // 搜索面板
+      const searchPanel = props.showSearch && props.searchTemplate.length > 0
+        ? h(MfwSearchPanel, {
+            ref: searchPanelRef,
+            searchTemplate: props.searchTemplate,
+            searchTrigger: resolvedSearchTrigger.value,
+            loading: loading.value,
+            onSearch: handleSearch,
+            onReset: handleReset
+          }, {
+            'search-actions': slots['search-actions']
+          })
+        : null;
 
-        {props.renderMode === 'table' ? (
-          <MfwTableList
-            ref={tableRef}
-            data={tableData.value || []}
-            loading={loading.value}
-            elProps={{ emptyText: props.emptyText }}
-            v-slots={{
-              default: slots.empty
-            }}
-          />
-        ) : (
-          <div class="mfw-card-list-page__cards">
-            {tableData.value.length > 0 ? (
-              tableData.value.map((item, index) => (
-                <div key={index} class="mfw-card-list-page__card">
-                  {slots['card-item']?.({ item, index }) ||
-                    (props.cardRender?.(item, index))}
-                </div>
-              ))
-            ) : (
-              <ElEmpty description={props.emptyText} />
-            )}
-          </div>
-        )}
+      // 内容区域
+      let contentArea;
+      if (props.renderMode === 'table') {
+        contentArea = h(MfwTableList, {
+          ref: tableRef,
+          data: tableData.value || [],
+          loading: loading.value,
+          elProps: { emptyText: props.emptyText }
+        }, {
+          default: slots.empty
+        });
+      } else {
+        const cards = tableData.value.length > 0
+          ? tableData.value.map((item, index) =>
+              h('div', { key: index, class: 'mfw-card-list-page__card' }, [
+                slots['card-item']?.({ item, index }) || props.cardRender?.(item, index)
+              ])
+            )
+          : [h(ElEmpty, { description: props.emptyText })];
+        contentArea = h('div', { class: 'mfw-card-list-page__cards' }, cards);
+      }
 
-        {props.showPagination && pagination.value.total > 0 && (
-          <div class="mfw-card-list-page__pagination">
-            <ElPagination
-              currentPage={pagination.value.currentPage}
-              pageSize={pagination.value.pageSize}
-              pageSizes={pagination.value.pageSizeOptions}
-              total={pagination.value.total}
-              layout= 'sizes, total, prev, pager, next'
-              onCurrent-change={handlePageChange}
-              onSize-change={handleSizeChange}
-            />
-          </div>
-        )}
+      // 分页
+      const paginationNode = props.showPagination
+        ? h('div', { class: 'mfw-card-list-page__pagination' }, [
+            h(ElPagination, {
+              currentPage: pagination.value.currentPage,
+              'onUpdate:currentPage': (val: number) => { pagination.value.currentPage = val; },
+              pageSize: pagination.value.pageSize,
+              'onUpdate:pageSize': (val: number) => { pagination.value.pageSize = val; },
+              pageSizes: props.pageSizeOptions,
+              background: true,
+              total: pagination.value.total,
+              layout: 'sizes, total, prev, pager, next',
+              onSizeChange: handleSizeChange,
+              onCurrentChange: handlePageChange
+            })
+          ])
+        : null;
 
-        {slots.default?.()}
-      </div>
-    );
+      return h('div', {
+        class: 'mfw-card-list-page',
+        style: cardGridStyle.value
+      }, [
+        searchPanel,
+        contentArea,
+        paginationNode,
+        slots.default?.()
+      ]);
+    };
   }
 });

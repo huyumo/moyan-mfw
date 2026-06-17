@@ -127,7 +127,7 @@ export default defineComponent({
         component: CreatePanel,
         type: 'dialog',
         popupProps: { width: '500px' },
-        data: {
+        elProps: {
           context: user,
           theme: props.theme,
           onCreate: resolveCreateFn.value,

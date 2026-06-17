@@ -59,7 +59,7 @@ const handlePermission = () => {
     title: `权限 - ${props.data.roleName}`,
     type: 'dialog',
     component: RolePermissionPanel,
-    data: {
+    elProps: {
       roleId: props.data.id,
       appTypeId: props.data.appTypeId,
     },
@@ -84,7 +84,7 @@ const handleEdit = () => {
     title: '编辑角色',
     type: 'dialog',
     component: RoleForm,
-    data: {
+    elProps: {
       id: props.data.id,
       role: props.data,
       appTypeId: props.data.appTypeId,

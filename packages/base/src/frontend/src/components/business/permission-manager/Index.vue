@@ -352,7 +352,7 @@ const handleConfigPermissionValue = (data: PermissionTreeNodeDto) => {
     title: `配置操作权限 - ${data.permName}`,
     type: 'dialog',
     component: MfwPermissionValuePanel,
-    data: {
+    elProps: {
       isRoot:true,
       permissiondData: {
         nodeId: data.id,
@@ -386,7 +386,7 @@ const openNodeForm = (options: {
     title: options.title,
     type: 'dialog',
     component: PermissionNodeForm,
-    data: {
+    elProps: {
       isEdit: options.isEdit,
       permissionType: props.permissionType,
       parentId: options.parentId,

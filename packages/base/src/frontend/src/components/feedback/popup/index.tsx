@@ -55,7 +55,21 @@ export interface OpenPopupOptions<T = any> {
   title?: string;
   type?: PopupType;
   component: Component;
+  /** @deprecated 请使用 elProps 代替，将在未来版本移除 */
   data?: T;
+  /**
+   * 传递给内容组件的属性（推荐使用）
+   * @example
+   * // 传递属性
+   * MfwPopup.open({
+   *   component: MyComponent,
+   *   elProps: { name: 'test', id: 1 }
+   * })
+   *
+   * // 接收属性（目标组件中）
+   * const props = defineProps<{ name: string; id: number }>()
+   */
+  elProps?: Record<string, any>;
   provides?: Record<string, any>;
   popupProps?: Partial<DialogProps | DrawerProps>;
   footer?: PopupFooter | boolean;
@@ -70,7 +84,21 @@ export interface PopupItem {
   title: string;
   type: PopupType;
   component: Component;
+  /** @deprecated 请使用 elProps 代替，将在未来版本移除 */
   data?: any;
+  /**
+   * 传递给内容组件的属性（推荐使用）
+   * @example
+   * // 传递属性
+   * MfwPopup.open({
+   *   component: MyComponent,
+   *   elProps: { name: 'test', id: 1 }
+   * })
+   *
+   * // 接收属性（目标组件中）
+   * const props = defineProps<{ name: string; id: number }>()
+   */
+  elProps?: Record<string, any>;
   provides?: Record<string, any>;
   popupProps: Partial<DialogProps | DrawerProps>;
   footer?: PopupFooter | boolean;
@@ -108,6 +136,7 @@ export class MfwPopupClass {
       uuid: options.uuid || generateUUID(),
       component: options.component,
       data: options.data,
+      elProps: options.elProps,
       provides: options.provides,
       position: options.position,
       cache: options.cache || false
@@ -119,6 +148,7 @@ export class MfwPopupClass {
       type: mergedOptions.type!,
       component: mergedOptions.component,
       data: mergedOptions.data,
+      elProps: mergedOptions.elProps,
       provides: mergedOptions.provides,
       popupProps: mergedOptions.popupProps as Partial<DialogProps | DrawerProps>,
       footer: mergedOptions.footer as PopupFooter | boolean,
@@ -211,15 +241,20 @@ const MfwPopupDialog = defineComponent({
 
     return () => {
       const slots: any = {
-        default: h(item.value.component, {...item.value.data, ref: componentRef ,popupRef: {
-          uuid: item.value.uuid,
-          open: () => { visible.value = true; },
-          close: handleClose,
-          confirm: handleConfirm,
-          update: (options: Partial<OpenPopupOptions>) => {
-            Object.assign(item.value, options);
-          }
-        } as PopupInstance})
+        default: h(item.value.component, {
+          ...item.value.data,
+          ...item.value.elProps,
+          ref: componentRef,
+          popupRef: {
+            uuid: item.value.uuid,
+            open: () => { visible.value = true; },
+            close: handleClose,
+            confirm: handleConfirm,
+            update: (options: Partial<OpenPopupOptions>) => {
+              Object.assign(item.value, options);
+            }
+          } as PopupInstance
+        })
       };
 
 
@@ -311,7 +346,8 @@ const MfwPopupDrawer = defineComponent({
         default: () => (
           <item.value.component
             ref={componentRef}
-            data={item.value.data}
+            {...(item.value.data || {})}
+            {...(item.value.elProps || {})}
             popupRef={{
               uuid: item.value.uuid,
               open: () => { visible.value = true; },

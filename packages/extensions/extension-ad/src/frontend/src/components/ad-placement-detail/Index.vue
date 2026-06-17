@@ -108,7 +108,7 @@ const handleAddAd = () => {
     title: '新建广告',
     type: 'dialog',
     component: MfwAdForm,
-    data: { 
+    elProps: {
       placementId: placementIdRef.value,
       placementWidth: placementInfoRef.value.width,
       placementHeight: placementInfoRef.value.height,
@@ -123,7 +123,7 @@ const handleEditAd = (row: AdResponseDto) => {
     title: '编辑广告',
     type: 'dialog',
     component: MfwAdForm,
-    data: { 
+    elProps: {
       ...row,
       placementWidth: placementInfoRef.value.width,
       placementHeight: placementInfoRef.value.height,
