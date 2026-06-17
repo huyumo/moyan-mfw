@@ -16,6 +16,8 @@ import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeN
 import type { SideMenuItem } from '../types/layout-types';
 import { getImageSrc } from '../utils/image';
 import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
+import { initPermissionCache, getPermissionValueCache } from '../utils/permissions';
+import { ApiPermissionValuesGetPermissionValues } from '../apis/sys';
 
 export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY };
 
@@ -429,7 +431,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     try {
-      // 2. 获取用户信息
+      // 2. 检查并初始化权限值缓存（首次登录时可能为空）
+      if (getPermissionValueCache().size === 0) {
+        try {
+          const result = await new ApiPermissionValuesGetPermissionValues({});
+          const values = (result as Array<{ name: string; bitValue: string }>).map((item) => ({
+            name: item.name,
+            bitValue: item.bitValue,
+          }));
+          initPermissionCache(values);
+        } catch (error) {
+          console.warn('[AuthStore] 初始化权限值缓存失败:', error);
+        }
+      }
+
+      // 3. 获取用户信息
       await fetchUserInfo();
 
       // 3. 获取用户应用列表
