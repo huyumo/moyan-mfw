@@ -197,7 +197,7 @@ export default defineComponent({
 
         const result = await props.loadData(params);
         tableState.value.data = result.list || [];
-        pagination.value.total = result.total || 0;
+        pagination.value.total = Number(result.total) || 0;
       } catch (error) {
         console.error('加载数据失败:', error);
         tableState.value.data = [];
