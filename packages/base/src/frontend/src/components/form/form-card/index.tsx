@@ -136,7 +136,21 @@ export default defineComponent({
       });
     };
 
+    /**
+     * 初始化分组模板中的表单项（注入 rules 等）
+     */
+    const initGroupTemplates = () => {
+      if (!props.formGroup?.groups) return;
+      for (const group of props.formGroup.groups) {
+        if (!group.template) continue;
+        for (const item of group.template) {
+          initTemplateItem(item);
+        }
+      }
+    };
+
     initTemplate();
+    initGroupTemplates();
 
     // 刷新组件
     // const refreshComponent = () => {
@@ -159,6 +173,11 @@ export default defineComponent({
         initTemplateItem(newItem);
         return newItem;
       });
+    }, { deep: true });
+
+    // 监听 formGroup 变化，重新初始化分组模板
+    watch(() => props.formGroup, () => {
+      initGroupTemplates();
     }, { deep: true });
 
     // 监听 formData 变化，刷新组件

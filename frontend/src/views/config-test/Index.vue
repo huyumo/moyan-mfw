@@ -34,6 +34,7 @@ const formGroup: ConfigFormGroupConfig = {
           label: '客服电话',
           type: 'input',
           configType: ConfigType.PUBLIC,
+          rules: [{ required: true, message: '请输入客服电话' }],
           elProps: { placeholder: '请输入客服电话' },
         },
       ],
