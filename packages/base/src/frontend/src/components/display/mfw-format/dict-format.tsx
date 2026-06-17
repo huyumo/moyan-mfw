@@ -130,7 +130,7 @@ export default defineComponent({
           }, emptyText.value);
         }
 
-        const children: any[] = [];
+        const children: (VNode | string)[] = [];
         matchedItems.value.forEach((item, index) => {
           if (index > 0 && !props.asTag) {
             children.push(h('span', { key: `sep-${index}`, class: 'mfw-dict-format-separator' }, '、'));
