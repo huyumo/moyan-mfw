@@ -18,6 +18,8 @@ export default defineConfig({
       'moyan-mfw-extension-ad/shared': resolve(__dirname, '../packages/extensions/extension-ad/src/shared/src/index.ts'),
       'moyan-mfw-extension-config/frontend': resolve(__dirname, '../packages/extensions/extension-config/src/frontend/src'),
       'moyan-mfw-extension-config/shared': resolve(__dirname, '../packages/extensions/extension-config/src/shared/src/index.ts'),
+      'moyan-mfw-extension-document/frontend': resolve(__dirname, '../packages/extensions/extension-document/src/frontend/src'),
+      'moyan-mfw-extension-document/shared': resolve(__dirname, '../packages/extensions/extension-document/src/shared/src/index.ts'),
       '@shared': resolve(__dirname, '../packages/extensions/extension-config/src/shared/src/index.ts'),
       '@internal/config-shared': resolve(__dirname, '../packages/extensions/extension-config/src/shared/src/index.ts'),
     },

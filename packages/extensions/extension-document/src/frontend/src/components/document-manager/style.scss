@@ -1,0 +1,65 @@
+.mfw-document-manager {
+  &__form {
+    .el-form-item__content {
+      line-height: 1.5;
+    }
+
+    .mfw-document-form__editor {
+      width: 100%;
+    }
+  }
+
+  &__detail {
+    &-title {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    &-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--el-border-color-lighter);
+      color: var(--el-text-color-secondary);
+      font-size: 13px;
+    }
+
+    &-content {
+      margin-bottom: 16px;
+      line-height: 1.8;
+
+      :deep(p) {
+        margin: 0 0 8px;
+      }
+
+      img {
+        max-width: 100%;
+      }
+    }
+
+    &-images {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+
+      img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 4px;
+      }
+    }
+
+    &-video {
+      margin-bottom: 16px;
+
+      video {
+        max-width: 100%;
+      }
+    }
+  }
+}

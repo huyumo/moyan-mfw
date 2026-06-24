@@ -1,29 +1,25 @@
 {
-  "name": "moyan-mfw-frontend",
-  "version": "1.0.0",
+  "name": "@internal/document-frontend",
   "private": true,
   "type": "module",
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "scripts": {
-    "dev": "vite --config vite.config.ts",
-    "build": "vue-tsc --noEmit -p tsconfig.json && vite build --config vite.config.ts",
-    "typecheck:vue": "vue-tsc --noEmit -p tsconfig.json",
-    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
-    "verify-dist": "vite build --config vite.verify-dist.config.ts"
+    "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@element-plus/icons-vue": "catalog:",
+    "@internal/base-shared": "workspace:*",
+    "@internal/document-shared": "workspace:*",
     "@vueuse/core": "catalog:",
     "axios": "catalog:",
     "element-plus": "catalog:",
     "moyan-mfw-base": "workspace:*",
-    "moyan-mfw-business-dict": "workspace:*",
-    "moyan-mfw-extension-ad": "workspace:*",
-    "moyan-mfw-extension-config": "workspace:*",
     "moyan-mfw-extension-document": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",
-    "vue-advanced-cropper": "catalog:",
-    "vue-cropper": "^1.1.4",
     "vue-router": "catalog:"
   },
   "devDependencies": {

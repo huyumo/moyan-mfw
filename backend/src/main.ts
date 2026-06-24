@@ -7,6 +7,7 @@ import { appTypesConfig } from './app-types.config';
 import { AppModule } from './app.modules';
 import { SupplierModule } from './modules/supplier/supplier.module';
 import { AdModule, AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/backend';
+import { DocumentModule, DOCUMENT_PERMISSION_VALUES } from 'moyan-mfw-extension-document/backend';
 import './permissions';
 import 'moyan-mfw-business-dict';
 
@@ -23,6 +24,12 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     description: '广告位类型、广告位、广告内容管理 API',
     include: [AdModule],
   },
+  {
+    name: 'document-extension',
+    title: '文档管理API文档',
+    description: '通用文档管理（含 EAV 扩展字段）API',
+    include: [DocumentModule],
+  },
 ];
 
 async function bootstrap() {
@@ -32,7 +39,7 @@ async function bootstrap() {
     syncAppTypes: true,
     modules: [AppModule],
     swagger: swaggerGroups,
-    permissionValues: [...AD_EXTENSION_PERMISSION_VALUES],
+    permissionValues: [...AD_EXTENSION_PERMISSION_VALUES, ...DOCUMENT_PERMISSION_VALUES],
     hooks: {
       onAppInit: async (ctx) => {
         console.log('[Backend] 应用初始化完成');

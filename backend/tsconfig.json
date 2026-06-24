@@ -23,6 +23,10 @@
       "moyan-mfw-extension-config/backend/*": ["../packages/extensions/extension-config/src/backend/dist/*"],
       "moyan-mfw-extension-config/shared": ["../packages/extensions/extension-config/src/shared/dist"],
       "moyan-mfw-extension-config/shared/*": ["../packages/extensions/extension-config/src/shared/dist/*"],
+      "moyan-mfw-extension-document/backend": ["../packages/extensions/extension-document/src/backend/dist"],
+      "moyan-mfw-extension-document/backend/*": ["../packages/extensions/extension-document/src/backend/dist/*"],
+      "moyan-mfw-extension-document/shared": ["../packages/extensions/extension-document/src/shared/dist"],
+      "moyan-mfw-extension-document/shared/*": ["../packages/extensions/extension-document/src/shared/dist/*"],
       "moyan-mfw-business-dict": ["../business-dict/dist/esm"],
       "moyan-mfw-business-dict/*": ["../business-dict/dist/esm/*"]
     }

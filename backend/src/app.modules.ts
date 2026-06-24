@@ -2,8 +2,9 @@ import { Module } from "@nestjs/common";
 import { SupplierModule } from "./modules/supplier/supplier.module";
 import AdModule from "moyan-mfw-extension-ad/backend";
 import { ConfigModule } from "moyan-mfw-extension-config/backend";
+import { DocumentModule } from "moyan-mfw-extension-document/backend";
 
 @Module({
-  imports: [SupplierModule, AdModule, ConfigModule],
+  imports: [SupplierModule, AdModule, ConfigModule, DocumentModule],
 })
 export class AppModule {}

@@ -16,7 +16,10 @@
       "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/src/*"],
       "moyan-mfw-extension-ad/frontend/*": ["../packages/extensions/extension-ad/src/frontend/src/*"],
       "moyan-mfw-extension-config/frontend/*": ["../packages/extensions/extension-config/src/frontend/src/*"],
-      "moyan-mfw-extension-config/shared": ["../packages/extensions/extension-config/src/shared/src/index.ts"]
+      "moyan-mfw-extension-config/shared": ["../packages/extensions/extension-config/src/shared/src/index.ts"],
+      "moyan-mfw-extension-document/frontend": ["../packages/extensions/extension-document/src/frontend/src/index.ts"],
+      "moyan-mfw-extension-document/frontend/*": ["../packages/extensions/extension-document/src/frontend/src/*"],
+      "moyan-mfw-extension-document/shared": ["../packages/extensions/extension-document/src/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],

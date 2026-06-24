@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prebuild": "pnpm --filter @internal/base-shared build && pnpm --filter @internal/base-backend build && pnpm --filter @internal/ad-shared build && pnpm --filter @internal/ad-backend build && pnpm --filter @internal/config-shared build && pnpm --filter @internal/config-backend build && pnpm --filter moyan-mfw-business-dict build",
+    "prebuild": "pnpm --filter @internal/base-shared build && pnpm --filter @internal/base-backend build && pnpm --filter @internal/ad-shared build && pnpm --filter @internal/ad-backend build && pnpm --filter @internal/config-shared build && pnpm --filter @internal/config-backend build && pnpm --filter @internal/document-shared build && pnpm --filter @internal/document-backend build && pnpm --filter moyan-mfw-business-dict build",
     "dev": "pnpm run prebuild && nest start --watch",
     "build": "nest build",
     "typecheck:backend": "tsc --noEmit -p tsconfig.json",
@@ -27,6 +27,7 @@
     "moyan-mfw-base": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-extension-config": "workspace:*",
+    "moyan-mfw-extension-document": "workspace:*",
     "moyan-mfw-business-dict": "workspace:*"
   },
   "devDependencies": {

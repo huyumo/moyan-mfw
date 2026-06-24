@@ -15,10 +15,6 @@
         display: none;
       }
     }
-
-    .mfw-admin-menu .el-menu-item .el-tag {
-      display: none;
-    }
   }
 }
 
@@ -311,38 +307,6 @@
     margin-left: auto;
     flex-shrink: 0;
     transition: opacity 0.22s ease, width 0.22s ease, margin-left 0.22s ease;
-  }
-}
-
-/* 侧边栏折叠时菜单项居中 */
-.mfw-admin-shell.is-compact .mfw-admin-menu {
-  .el-menu-item,
-  .el-sub-menu__title {
-    justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-
-    > span:not(.el-icon):not(.el-tag) {
-      max-width: 0;
-      opacity: 0;
-      margin-left: 0;
-    }
-
-    .el-icon {
-      margin-right: 0 !important;
-    }
-  }
-
-  .el-sub-menu {
-    &.is-active > .el-sub-menu__title {
-      background-color: var(--el-menu-hover-bg-color);
-    }
-  }
-
-  .el-tag {
-    opacity: 0;
-    width: 0;
-    margin-left: 0;
   }
 }
 
