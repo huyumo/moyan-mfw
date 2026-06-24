@@ -29,10 +29,7 @@ export const defaultNavigationConfig: AdminNavigationConfig = {
   brandName: '墨研管理后台',
   brandTagline: '前端基础框架',
   homePath: '/dashboard',
-  topNav: [
-    { key: 'guide', label: '接入指导', href: 'https://www.vben.pro/#/analytics' },
-    { key: 'docs', label: '布局示例', to: '/dashboard' },
-  ],
+  topNav: [],
   sideMenu: [
     { key: 'dashboard', label: '首页', to: '/dashboard', icon: 'DataBoard', order: 1 },
     {

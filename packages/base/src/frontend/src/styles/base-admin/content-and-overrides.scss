@@ -14,11 +14,16 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+
+  .el-tabs{
+    --el-tabs-header-height: 34px;
+  }
 }
 
 .mfw-admin-tabs {
   flex: 1;
   min-width: 0;
+
 
   .el-tabs__header {
     margin: 0;

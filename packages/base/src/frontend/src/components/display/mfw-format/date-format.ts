@@ -8,7 +8,7 @@
  * ```
  */
 
-import { defineComponent, toRef, computed, type PropType } from 'vue';
+import { defineComponent, toRef, computed, h, type PropType } from 'vue';
 import type { DateFormatProps } from './types';
 
 /**
@@ -28,13 +28,13 @@ function formatDate(date: Date, fmt: string): string {
   };
 
   const week: Record<string, string> = {
-    '0': '\u65e5',
-    '1': '\u4e00',
-    '2': '\u4e8c',
-    '3': '\u4e09',
-    '4': '\u56db',
-    '5': '\u4e94',
-    '6': '\u516d'
+    '0': '日',
+    '1': '一',
+    '2': '二',
+    '3': '三',
+    '4': '四',
+    '5': '五',
+    '6': '六'
   };
 
   // 处理年份
@@ -52,9 +52,9 @@ function formatDate(date: Date, fmt: string): string {
     const day = date.getDay().toString();
     let eraText: string;
     if (fullMatch.length > 2) {
-      eraText = `\u661f${week[day]}`;
+      eraText = `星期${week[day]}`;
     } else if (fullMatch.length > 1) {
-      eraText = `\u5468${week[day]}`;
+      eraText = `周${week[day]}`;
     } else {
       eraText = week[day];
     }
@@ -148,10 +148,13 @@ export default defineComponent({
       emit('click');
     };
 
-    return () => (
-      <span class="mfw-date-format" onClick={handleClick}>
-        {slots.default?.() ?? formattedText.value}
-      </span>
+    return () => h(
+      'span',
+      {
+        class: 'mfw-date-format',
+        onClick: handleClick
+      },
+      slots.default?.() ?? formattedText.value
     );
   }
 });

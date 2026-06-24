@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview MfwFormat 格式化组件统一导出
  * @description 提供日期、图片、字典、标签等数据格式化展示组件
  *

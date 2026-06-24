@@ -1,15 +1,6 @@
 <template>
-  <MfwDocumentManager
-    doc-key="demo-article"
-    :form-fields="fields"
-    :ext-fields="extFields"
-    :columns="columns"
-    :search-fields="searchFields"
-    show-add
-    show-edit
-    show-delete
-    show-view
-  />
+  <MfwDocumentManager doc-key="demo-article" :form-fields="fields" :ext-fields="extFields" :columns="columns"
+    :search-fields="searchFields" show-add show-edit show-delete show-view />
 </template>
 
 <script setup lang="ts">
@@ -40,31 +31,36 @@ const fields: DocumentFieldConfig[] = [
     rules: [{ required: true, message: '请输入正文', trigger: 'blur' }],
   },
   {
-    key: 'status',
-    label: '状态',
-    component: 'el-select',
-    elProps: {
-      options: [
-        { label: '草稿', value: DocumentStatus.DRAFT },
-        { label: '已发布', value: DocumentStatus.PUBLISHED },
-        { label: '已下线', value: DocumentStatus.OFFLINE },
-      ],
-    },
+    key: 'onlyKey',
+    label: '调用Key',
+    component: 'el-input',
   },
+  // {
+  //   key: 'status',
+  //   label: '状态',
+  //   component: 'el-select',
+  //   elProps: {
+  //     options: [
+  //       { label: '草稿', value: DocumentStatus.DRAFT },
+  //       { label: '已发布', value: DocumentStatus.PUBLISHED },
+  //       { label: '已下线', value: DocumentStatus.OFFLINE },
+  //     ],
+  //   },
+  // },
 ];
 
 /** EAV 扩展字段：演示 string / number / boolean / json 四种类型 */
 const extFields: DocumentExtFieldConfig[] = [
   { extKey: 'author', label: '作者', valueType: ExtValueType.STRING },
-  { extKey: 'readMinutes', label: '阅读时长', valueType: ExtValueType.NUMBER },
-  { extKey: 'featured', label: '是否精选', valueType: ExtValueType.BOOLEAN },
-  {
-    extKey: 'extra',
-    label: '附加信息(JSON)',
-    valueType: ExtValueType.JSON,
-    component: 'el-input',
-    elProps: { type: 'textarea', rows: 3 },
-  },
+  // { extKey: 'readMinutes', label: '阅读时长', valueType: ExtValueType.NUMBER },
+  // { extKey: 'featured', label: '是否精选', valueType: ExtValueType.BOOLEAN },
+  // {
+  //   extKey: 'extra',
+  //   label: '附加信息(JSON)',
+  //   valueType: ExtValueType.JSON,
+  //   component: 'el-input',
+  //   elProps: { type: 'textarea', rows: 3 },
+  // },
 ];
 
 /** 表格列：大多数场景只展示标题/状态/时间 */

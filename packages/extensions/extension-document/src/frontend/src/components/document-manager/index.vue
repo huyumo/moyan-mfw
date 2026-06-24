@@ -37,7 +37,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox, ElTag } from 'element-plus';
 import { Plus, View, Edit, Delete } from '@element-plus/icons-vue';
 import {
   MfwPageWrapper,
@@ -133,9 +133,9 @@ const realColumns = computed<TableColumnConfig[]>(() => {
       width: 100,
       render: ({ row }) =>
         h(
-          'span',
-          { class: `el-tag el-tag--small el-tag--${STATUS_TAG[row.status] || 'info'}` },
-          STATUS_TEXT[row.status] ?? String(row.status ?? ''),
+          ElTag,
+          { size: 'small', type: STATUS_TAG[row.status] || 'info' },
+          () => STATUS_TEXT[row.status] ?? String(row.status ?? ''),
         ),
     },
     { prop: 'docGroup', label: '分组', width: 120 },

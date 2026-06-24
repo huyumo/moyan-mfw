@@ -5,7 +5,7 @@
 -->
 <template>
   <div class="mfw-admin-tabs-wrap">
-    <el-tabs v-model="activeTabPath" type="card" class="mfw-admin-tabs" data-testid="tabs-panel" @tab-remove="emit('tab-remove', $event)">
+    <el-tabs v-model="activeTabPath" type="card"  closable class="mfw-admin-tabs" data-testid="tabs-panel" @tab-remove="emit('tab-remove', $event)">
       <el-tab-pane v-for="tab in visitedTabs" :key="tab.key" :name="tab.fullPath" :closable="tab.closable">
         <template #label>
           <span class="mfw-admin-tab-label">{{ tab.title }}</span>
