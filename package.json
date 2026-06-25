@@ -41,7 +41,8 @@
     "publish:cli": "cd packages/cli && npm publish --access public",
     "publish:ad": "cd packages/extensions/extension-ad && npm publish --access public",
     "publish:config": "cd packages/extensions/extension-config && npm publish --access public",
-    "publish:all": "pnpm run publish:base && pnpm run publish:cli && pnpm run publish:ad && pnpm run publish:config"
+    "publish:document": "cd packages/extensions/extension-document && npm publish --access public",
+    "publish:all": "pnpm run publish:base && pnpm run publish:cli && pnpm run publish:ad && pnpm run publish:config && pnpm run publish:document"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

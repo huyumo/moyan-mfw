@@ -1,7 +1,8 @@
 {
   "name": "moyan-mfw-extension-document",
-  "version": "1.1.10-beta.26",
+  "version": "1.1.10-beta.27",
   "description": "MFW 通用文档管理扩展包",
+  "readme": "# moyan-mfw-extension-document\n\nMFW 通用文档管理扩展包，提供前后端统一的文档管理能力。",
   "exports": {
     "./backend": {
       "types": "./src/backend/dist/index.d.ts",
@@ -16,8 +17,7 @@
     "./frontend": {
       "types": "./src/frontend/dist/index.d.ts",
       "import": "./src/frontend/dist/index.mjs",
-      "require": "./src/frontend/dist/index.mjs",
-      "style": "./src/frontend/dist/style.css"
+      "require": "./src/frontend/dist/index.mjs"
     },
     "./frontend/*": {
       "types": "./src/frontend/dist/*.d.ts",
@@ -53,7 +53,9 @@
     "typecheck:shared": "pnpm --filter @internal/document-shared typecheck",
     "typecheck:backend": "pnpm --filter @internal/document-backend typecheck",
     "typecheck:frontend": "pnpm --filter @internal/document-frontend typecheck",
-    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "verify": "pnpm run verify:dist"
   },
   "license": "MIT",
   "keywords": [
@@ -64,18 +66,21 @@
     "文档管理"
   ],
   "files": [
-    "src/backend/dist",
-    "src/frontend/dist",
-    "src/shared/dist",
-    "database/migrations",
-    "README.md",
-    "LICENSE"
+    "./src/backend/dist",
+    "./src/frontend/dist",
+    "./src/shared/dist",
+    "./database/migrations",
+    "./README.md",
+    "./LICENSE"
   ],
   "peerDependencies": {
+    "@element-plus/icons-vue": ">=2.0.0",
     "@nestjs/common": ">=9.0.0",
     "@nestjs/core": ">=9.0.0",
     "@nestjs/typeorm": ">=9.0.0",
     "@nestjs/swagger": ">=6.0.0",
+    "class-transformer": ">=0.5.0",
+    "class-validator": ">=0.14.0",
     "typeorm": ">=0.3.0",
     "vue": ">=3.3.0",
     "vue-router": ">=4.0.0",
