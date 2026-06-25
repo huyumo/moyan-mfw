@@ -26,6 +26,8 @@ export interface MfwCardListPageProps {
   searchTrigger?: 'change' | 'submit';
   /** 是否显示筛选面板 */
   showSearch?: boolean;
+  /** 搜索标签宽度 */
+  searchLabelWidth?: string;
   /** 是否显示分页 */
   showPagination?: boolean;
   /** 每页条数 */

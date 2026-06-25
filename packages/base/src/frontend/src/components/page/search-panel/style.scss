@@ -10,6 +10,8 @@
   --search-panel-radius: var(--mfw-radius-md, 8px);
   --search-panel-item-width: 260px;
   --search-panel-gap: 10px;
+  --search-panel-collapsed-height: 36px;
+  --search-panel-collapsed-top-safe-gap: 0px;
   --search-panel-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
 
   position: relative;
@@ -26,17 +28,45 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04);
   }
 
+  &__form-wrapper {
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+
+  // 折叠状态：限制高度只显示一行（不改变内部布局）
+  &--collapsed &__form-wrapper {
+    max-height: var(--search-panel-collapsed-height);
+    padding-top: var(--search-panel-collapsed-top-safe-gap);
+    margin-top: calc(var(--search-panel-collapsed-top-safe-gap) * -1);
+    box-sizing: border-box;
+  }
+
   &__form {
-    display: flex;
+    display: flex !important;
     flex-wrap: wrap;
     align-items: flex-start;
     gap: var(--search-panel-gap);
 
+    .search-panel__item {
+      width: var(--search-panel-item-width);
+      flex: 0 0 auto;
+      display: flex;
+
+      .el-form-item {
+        flex: 1;
+        min-width: 0;
+      }
+    }
+
     .el-form-item {
       margin-bottom: 0;
       margin-right: 0;
-      width: var(--search-panel-item-width);
-      flex-shrink: 0;
+      width: 100%;
+
+      .el-form-item__content {
+        flex: 1;
+        min-width: 0;
+      }
     }
 
     .el-input,

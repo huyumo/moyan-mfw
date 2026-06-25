@@ -2,5 +2,5 @@
  * @fileoverview MfwCardListPage 导出模块
  */
 
-export { default as MfwCardListPage } from './index.vue';
+export { default as MfwBaseListPage } from './index.vue';
 export * from './types';

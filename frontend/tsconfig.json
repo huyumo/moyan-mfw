@@ -13,7 +13,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@shared": ["../packages/extensions/extension-config/src/shared/src/index.ts"],
+      "moyan-mfw-base/frontend": ["../packages/base/src/frontend/src/index.ts"],
       "moyan-mfw-base/frontend/*": ["../packages/base/src/frontend/src/*"],
+      "moyan-mfw-base/shared": ["../packages/base/src/shared/src/index.ts"],
       "moyan-mfw-extension-ad/frontend/*": ["../packages/extensions/extension-ad/src/frontend/src/*"],
       "moyan-mfw-extension-config/frontend/*": ["../packages/extensions/extension-config/src/frontend/src/*"],
       "moyan-mfw-extension-config/shared": ["../packages/extensions/extension-config/src/shared/src/index.ts"],

@@ -12,9 +12,13 @@ import {
   reactive,
   watch,
   inject,
+  onMounted,
+  onBeforeUnmount,
+  nextTick,
   type PropType,
   type Ref,
-  type ComputedRef
+  type ComputedRef,
+  h
 } from 'vue';
 import {
   ElForm,
@@ -53,11 +57,6 @@ export default defineComponent({
       type: String as PropType<'change' | 'submit'>,
       default: 'submit'
     },
-    /** 最大可见项数（一行显示的项数） */
-    maxVisibleItems: {
-      type: Number,
-      default: 3
-    },
     /** 是否显示筛选面板 */
     showSearch: {
       type: Boolean,
@@ -68,15 +67,10 @@ export default defineComponent({
       type: Boolean,
       default: false
     },
-    /** 每项占用的栅格数 */
-    itemSpan: {
-      type: Number,
-      default: 6
-    },
     /** 标签宽度 */
     labelWidth: {
       type: String,
-      default: '80px'
+      default: 'auto'
     }
   },
 
@@ -135,23 +129,84 @@ export default defineComponent({
       { immediate: true, deep: true }
     );
 
-    // 是否显示展开/收起按钮
-    const showExpandButton = computed(() => {
-      return props.searchTemplate.length > props.maxVisibleItems;
-    });
+    // 是否显示展开/收起按钮（当内容超过一行时显示）
+    const formContainerRef = ref<HTMLElement>();
+    const contentOverflows = ref(false);
+    const collapsedHeight = ref(36);
+    const COLLAPSED_HEIGHT_FALLBACK = 36;
+    const COLLAPSED_HEIGHT_SAFE_GAP = 2;
+    const COLLAPSED_HEIGHT_TOP_SAFE_GAP = 6;
 
-    // 可见表单项
-    const visibleItems = computed(() => {
-      if (expanded.value || !showExpandButton.value) {
-        return props.searchTemplate;
+    const getFirstRowHeight = (formEl: HTMLElement) => {
+      const items = Array.from(formEl.querySelectorAll('.search-panel__item')) as HTMLElement[];
+      if (items.length === 0) return 0;
+
+      const formTop = formEl.getBoundingClientRect().top;
+      const firstTop = items[0].getBoundingClientRect().top;
+      const firstRowItems = items.filter(item => Math.abs(item.getBoundingClientRect().top - firstTop) < 2);
+      const maxBottom = Math.max(...firstRowItems.map(item => item.getBoundingClientRect().bottom));
+      return Math.ceil(maxBottom - formTop);
+    };
+
+    const checkOverflow = () => {
+      if (!formContainerRef.value) return;
+      const formEl = formContainerRef.value.querySelector('.search-panel__form') as HTMLElement;
+      if (!formEl) {
+        contentOverflows.value = false;
+        return;
       }
-      return props.searchTemplate.slice(0, props.maxVisibleItems);
+      const firstRowHeight = getFirstRowHeight(formEl);
+      if (firstRowHeight <= 0) {
+        contentOverflows.value = false;
+        collapsedHeight.value = COLLAPSED_HEIGHT_FALLBACK;
+        return;
+      }
+      collapsedHeight.value = firstRowHeight + COLLAPSED_HEIGHT_TOP_SAFE_GAP + COLLAPSED_HEIGHT_SAFE_GAP;
+      // 如果 form 高度超过首行高度 + 上下安全余量，说明内容溢出（多行）
+      contentOverflows.value = formEl.scrollHeight > collapsedHeight.value;
+    };
+
+    // 多次延迟检测，确保 Element Plus 组件完全渲染
+    const scheduleOverflowCheck = () => {
+      [100, 300, 600].forEach((delay) => {
+        setTimeout(() => checkOverflow(), delay);
+      });
+    };
+
+    const showExpandButton = computed(() => {
+      return contentOverflows.value;
     });
 
     // 切换展开/收起
     const toggleExpand = () => {
       expanded.value = !expanded.value;
     };
+
+    // 监听容器尺寸变化，检测内容是否溢出
+    let resizeObserver: ResizeObserver | null = null;
+    onMounted(() => {
+      // 监听外层 .search-panel 而非 __form-wrapper（后者有 overflow:hidden）
+      const panelEl = formContainerRef.value?.closest('.search-panel') as HTMLElement;
+      if (!panelEl) return;
+      resizeObserver = new ResizeObserver(() => {
+        checkOverflow();
+      });
+      resizeObserver.observe(panelEl);
+      // 多次延迟检测，确保 Element Plus 组件完全渲染
+      scheduleOverflowCheck();
+    });
+    onBeforeUnmount(() => {
+      resizeObserver?.disconnect();
+    });
+
+    // 监听 expanded 变化，重新检测溢出
+    watch(expanded, () => {
+      nextTick(() => {
+        setTimeout(() => {
+          checkOverflow();
+        }, 100);
+      });
+    });
 
     // 过滤空值
     const filterEmptyValues = (data: Record<string, any>): Record<string, any> => {
@@ -241,31 +296,68 @@ export default defineComponent({
         'date-range': `请选择${label}`,
         'tree-select': `请选择${label}`,
         'radio-group': `请选择${label}`,
-        'checkbox-group': `请选择${label}`
+        'checkbox-group': `请选择${label}`,
+        'custom': `请输入${label}`
       };
       return placeholderMap[type] || `请输入${label}`;
     };
 
     // 渲染表单项
     const renderFormItem = (item: SearchTemplateItem) => {
-      const placeholder = item.placeholder || getDefaultPlaceholder(item.type, item.label);
+      const type = item.type || 'custom';
+      const placeholder = item.placeholder || getDefaultPlaceholder(type, item.label);
       const elProps = item.elProps || {};
 
-      // 公共属性
+      // 设置字段值
+      const setValue = (val: any) => {
+        formData[item.key] = val;
+        handleItemChange(item.key, val);
+      };
+
+      // 公共属性（用于内置组件）
       const commonProps = {
         clearable: true,
         ...elProps,
         modelValue: formData[item.key],
         'onUpdate:modelValue': (val: any) => {
-          formData[item.key] = val;
-          handleItemChange(item.key, val);
+          setValue(val);
         },
         ...(item.testId ? { 'data-testid': item.testId } : {})
       };
 
       // 根据类型渲染不同组件
       const renderComponent = () => {
-        switch (item.type) {
+        // 优先级 1：自定义渲染函数
+        if (item.render) {
+          return item.render({
+            value: formData[item.key],
+            setValue,
+            formData,
+            item
+          });
+        }
+
+        // 优先级 2：自定义插槽（slot 指定或默认 search-item-${key}）
+        const slotName = item.slot || `search-item-${item.key}`;
+        if (slots[slotName]) {
+          return slots[slotName]!({
+            value: formData[item.key],
+            setValue,
+            formData,
+            item
+          });
+        }
+
+        // 优先级 3：自定义组件（支持 v-model 协议）
+        if (item.component) {
+          return h(item.component, {
+            ...commonProps,
+            placeholder
+          });
+        }
+
+        // 优先级 4：内置组件
+        switch (type) {
           case 'input':
             return <ElInput {...commonProps} placeholder={placeholder} />;
 
@@ -361,14 +453,31 @@ export default defineComponent({
               </ElCheckboxGroup>
             );
 
+          case 'custom':
+            // type 为 custom 但未提供 render/slot/component 时给出提示
+            return <ElInput {...commonProps} placeholder={placeholder || `请配置 ${item.label} 的 render/slot/component`} />;
+
           default:
             return <ElInput {...commonProps} placeholder={placeholder} />;
         }
       };
 
+      // 是否展示 label（label 为空则不显示）
+      const showLabel = !!item.label;
+
+      // 单项组件宽度（通过 CSS 变量覆盖面板级 --search-panel-item-width）
+      const itemStyle = item.componentWidth !== undefined
+        ? { '--search-panel-item-width': typeof item.componentWidth === 'number' ? `${item.componentWidth}px` : item.componentWidth } as any
+        : undefined;
+
       return (
-        <div class="search-panel__item" key={item.key}>
-          <ElFormItem label={item.label} prop={item.key} required={item.required}>
+        <div class="search-panel__item" key={item.key} style={itemStyle}>
+          <ElFormItem
+            label={showLabel ? item.label : undefined}
+            prop={item.key}
+            required={item.required}
+            labelWidth={props.labelWidth}
+          >
             {renderComponent()}
           </ElFormItem>
         </div>
@@ -381,21 +490,23 @@ export default defineComponent({
       }
 
       return (
-        <div class="search-panel">
-          <ElForm
-            ref={formRef}
-            model={formData}
-            inline
-            class="search-panel__form"
-            labelWidth={props.labelWidth}
-          >
-            {visibleItems.value.map(renderFormItem)}
-          </ElForm>
-          {slots['search-extra'] && (
-            <div class="search-panel__extra">
-              {slots['search-extra']()}
-            </div>
-          )}
+        <div
+          class={['search-panel', !expanded.value && showExpandButton.value && 'search-panel--collapsed']}
+          style={{
+            '--search-panel-collapsed-height': `${collapsedHeight.value}px`,
+            '--search-panel-collapsed-top-safe-gap': `${COLLAPSED_HEIGHT_TOP_SAFE_GAP}px`
+          }}
+        >
+          <div ref={formContainerRef} class="search-panel__form-wrapper">
+            <ElForm
+              ref={formRef}
+              model={formData}
+              class="search-panel__form"
+            >
+              {props.searchTemplate.map(renderFormItem)}
+            </ElForm>
+          </div>
+          {slots['search-extra'] && slots['search-extra']()}
         </div>
       );
     };

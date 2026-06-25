@@ -2,11 +2,31 @@
  * @fileoverview MfwListPage 类型定义
  */
 
-import type { VNode } from 'vue';
+import type { VNode, Component } from 'vue';
 import type { TableColumnConfig, ActionColumnConfig } from '../../table/table-list/types';
 
 /** 搜索表单项类型 */
-export type SearchItemType = 'input' | 'select' | 'date-picker' | 'date-range' | 'tree-select' | 'radio-group' | 'checkbox-group';
+export type SearchItemType =
+  | 'input'
+  | 'select'
+  | 'date-picker'
+  | 'date-range'
+  | 'tree-select'
+  | 'radio-group'
+  | 'checkbox-group'
+  | 'custom';
+
+/** 自定义渲染函数参数 */
+export interface SearchItemRenderParams {
+  /** 当前字段值 */
+  value: any;
+  /** 设置字段值（等价于 v-model 的 update） */
+  setValue: (val: any) => void;
+  /** 完整表单数据 */
+  formData: Record<string, any>;
+  /** 字段配置 */
+  item: SearchTemplateItem;
+}
 
 /** 搜索表单项配置 */
 export interface SearchTemplateItem {
@@ -14,8 +34,8 @@ export interface SearchTemplateItem {
   key: string;
   /** 标签文本 */
   label: string;
-  /** 表单项类型 */
-  type: SearchItemType;
+  /** 表单项类型（提供 render/slot/component 时可省略） */
+  type?: SearchItemType;
   /** Element Plus 组件属性 */
   elProps?: Record<string, any>;
   /** 默认值 */
@@ -28,6 +48,16 @@ export interface SearchTemplateItem {
   immediate?: boolean;
   /** 测试标识 */
   testId?: string;
+  /** 单项标签宽度（覆盖面板级 labelWidth） */
+  labelWidth?: string | number;
+  /** 单项组件宽度（覆盖面板级 itemWidth，如日期范围选择器需要更宽） */
+  componentWidth?: string | number;
+  /** 自定义渲染函数（type 为 'custom' 或任意需要覆盖内置渲染时使用） */
+  render?: (params: SearchItemRenderParams) => VNode;
+  /** 自定义插槽名（若设置，优先使用对应插槽渲染；默认插槽名为 `search-item-${key}`） */
+  slot?: string;
+  /** 自定义组件（支持 v-model 协议的任意组件，如 ElInput、ElSelect 等） */
+  component?: Component;
 }
 
 /** 加载参数 */

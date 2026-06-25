@@ -3,6 +3,7 @@
  */
 
 export * from './page-wrapper/mod';
+export * from './base-list-page/mod';
 export * from './list-page/mod';
 export * from './search-panel/mod';
 export * from './card-list-page/mod';
