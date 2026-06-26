@@ -1,5 +1,5 @@
 {
-  "name": "moyan-mfw-business-dict",
+  "name": "moyan-mfw-shared",
   "version": "0.1.0",
   "private": true,
   "description": "Business-specific dictionary definitions for this moyan project",

@@ -5,7 +5,7 @@
     "moduleResolution": "node",
     "outDir": "./dist/cjs",
     "paths": {
-      "moyan-mfw-base/shared": ["../packages/base/dist/shared"]
+      "moyan-mfw-base/shared": ["../../packages/base/dist/shared"]
     }
   }
 }

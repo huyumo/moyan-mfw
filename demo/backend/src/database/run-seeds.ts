@@ -3,7 +3,7 @@
  */
 
 import 'reflect-metadata';
-import 'moyan-mfw-business-dict';
+import 'moyan-mfw-shared';
 import { config } from 'dotenv';
 import { DataSource } from 'typeorm';
 import { runSeeds } from 'moyan-mfw-base/backend';

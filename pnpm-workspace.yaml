@@ -9,12 +9,12 @@ packages:
   - packages/extensions/*
   - packages/base
   - packages/component-demo
-  - frontend
-  - backend
+  - demo/frontend
+  - demo/backend
   - examples
   - docs
   - .harness
-  - business-dict
+  - demo/shared
 
 catalog:
   '@element-plus/icons-vue': ^2.3.2

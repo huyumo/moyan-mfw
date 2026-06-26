@@ -1,0 +1,29 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "jsxImportSource": "vue",
+    "noEmit": true,
+    "declaration": false,
+    "types": ["vite/client", "node"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@shared": ["../../packages/extensions/extension-config/src/shared/src/index.ts"],
+      "moyan-mfw-base/frontend": ["../../packages/base/src/frontend/src/index.ts"],
+      "moyan-mfw-base/frontend/*": ["../../packages/base/src/frontend/src/*"],
+      "moyan-mfw-base/shared": ["../../packages/base/src/shared/src/index.ts"],
+      "moyan-mfw-extension-ad/frontend/*": ["../../packages/extensions/extension-ad/src/frontend/src/*"],
+      "moyan-mfw-extension-config/frontend/*": ["../../packages/extensions/extension-config/src/frontend/src/*"],
+      "moyan-mfw-extension-config/shared": ["../../packages/extensions/extension-config/src/shared/src/index.ts"],
+      "moyan-mfw-extension-document/frontend": ["../../packages/extensions/extension-document/src/frontend/src/index.ts"],
+      "moyan-mfw-extension-document/frontend/*": ["../../packages/extensions/extension-document/src/frontend/src/*"],
+      "moyan-mfw-extension-document/shared": ["../../packages/extensions/extension-document/src/shared/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],
+  "exclude": ["node_modules"]
+}

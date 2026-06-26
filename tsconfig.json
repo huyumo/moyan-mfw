@@ -20,9 +20,9 @@
     "dist",
     "scripts",
     "e2e",
-    "backend",
-    "frontend",
-    "business-dict",
+    "demo/backend",
+    "demo/frontend",
+    "demo/shared",
     "packages",
     "packages/*/tests",
     "packages/*/__tests__"

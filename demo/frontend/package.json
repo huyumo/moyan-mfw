@@ -16,7 +16,7 @@
     "axios": "catalog:",
     "element-plus": "catalog:",
     "moyan-mfw-base": "workspace:*",
-    "moyan-mfw-business-dict": "workspace:*",
+    "moyan-mfw-shared": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-extension-config": "workspace:*",
     "moyan-mfw-extension-document": "workspace:*",

@@ -3,6 +3,6 @@
  */
 
 import { createBusinessPageConfigFn } from 'moyan-mfw-base/frontend';
-import { BUSINESS_PERMISSION_VALUES } from 'moyan-mfw-business-dict';
+import { BUSINESS_PERMISSION_VALUES } from 'moyan-mfw-shared';
 
 export const defineBusinessPageConfig = createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES);

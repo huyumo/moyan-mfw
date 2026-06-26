@@ -9,7 +9,7 @@ import { SupplierModule } from './modules/supplier/supplier.module';
 import { AdModule, AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/backend';
 import { DocumentModule, DOCUMENT_PERMISSION_VALUES } from 'moyan-mfw-extension-document/backend';
 import './permissions';
-import 'moyan-mfw-business-dict';
+import 'moyan-mfw-shared';
 
 const swaggerGroups: SwaggerGroupConfig[] = [
   {
