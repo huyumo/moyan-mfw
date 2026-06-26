@@ -3,25 +3,9 @@
  */
 
 import type { VNode } from 'vue';
-import type { SearchTemplateItem } from '../list-page/types';
+import type { SearchTemplateItem, LoadParams, TableData } from '../list-page/types';
 
-/** 加载参数 */
-export interface LoadParams {
-  /** 当前页码 */
-  page: number;
-  /** 每页条数 */
-  pageSize: number;
-  /** 搜索参数 */
-  [key: string]: any;
-}
-
-/** 表格数据响应 */
-export interface TableData {
-  /** 数据列表 */
-  list: any[];
-  /** 总数 */
-  total: number;
-}
+export type { LoadParams, TableData };
 
 /** MfwBaseListPage Props 接口 */
 export interface MfwBaseListPageProps {
