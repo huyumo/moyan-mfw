@@ -48,7 +48,7 @@ const handleEdit = (row: AppTypeResponseDto) => {
     type: 'drawer',
     position: 'rtl',
     component: EditForm,
-    data: { ...row },
+    elProps: { ...row },
     popupProps: { size: 400 },
     on: { confirm: cardListPage.value?.refresh }
   });
@@ -63,7 +63,7 @@ const handleConfigPermissionPool = (row: AppTypeResponseDto) => {
     title: '配置权限池',
     type: 'dialog',
     component: PermissionPoolPanel,
-    data: { appTypeId: row.id },
+    elProps: { appTypeId: row.id },
     popupProps: { size: '800px' }
   });
 };
@@ -92,7 +92,7 @@ const handleCustomMenu = (row: AppTypeResponseDto) => {
     type: 'drawer',
     position: 'rtl',
     component: CustomMenuEditor,
-    data: { appTypeId: row.id },
+    elProps: { appTypeId: row.id },
     popupProps: { size: '90%' },
     on: { confirm: cardListPage.value?.refresh },
   });

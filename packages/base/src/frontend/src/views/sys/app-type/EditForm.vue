@@ -24,11 +24,7 @@ import type { AppTypeResponseDto } from '../../../apis/sys/schemas';
 import { StatusDict } from 'moyan-mfw-base/shared';
 
 /** Props */
-interface Props {
-  data?: AppTypeResponseDto;
-}
-
-const props = defineProps<Props>();
+const props = defineProps<AppTypeResponseDto>();
 
 /** 表单引用 */
 const formRef = ref<MfwFormCardInstance>();
@@ -82,7 +78,7 @@ const formTemplate: FormItemConfig[] = [
     component: 'el-switch',
     testId: 'app-type-status-switch',
     value: StatusDict.ENABLED,
-    disabled: () => Boolean(props.data?.typeCode === 'system' || props.data?.typeCode?.startsWith('sys')),
+    disabled: () => Boolean(props.typeCode === 'system' || props.typeCode?.startsWith('sys')),
     elProps: {
       activeValue: StatusDict.ENABLED,
       inactiveValue: StatusDict.DISABLED,
@@ -97,12 +93,12 @@ const rules = {};
 
 /** 初始化数据 */
 onMounted(() => {
-  if (props.data) {
-    form.typeName = props.data.typeName;
-    form.typeCode = props.data.typeCode;
-    form.icon = props.data.icon || '';
-    form.typeDesc = props.data.typeDesc || '';
-    form.typeStatus = props.data.typeStatus as 1 | 0;
+  if (props.id) {
+    form.typeName = props.typeName;
+    form.typeCode = props.typeCode;
+    form.icon = props.icon || '';
+    form.typeDesc = props.typeDesc || '';
+    form.typeStatus = props.typeStatus as 1 | 0;
   }
 });
 
@@ -111,7 +107,7 @@ const onConfirm = async () => {
   await formRef.value?.validate();
 
   await new ApiAppTypeUpdate({
-    params: { id: props.data!.id },
+    params: { id: props.id },
     body: {
       typeName: form.typeName,
       icon: form.icon,

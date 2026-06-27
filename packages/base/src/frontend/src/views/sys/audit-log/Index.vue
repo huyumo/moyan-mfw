@@ -131,7 +131,7 @@ const handleViewDetail = async (row: AuditLogResponseDto) => {
     title: '审计日志详情',
     type: 'drawer',
     component: AuditLogDetail,
-    data: detail,
+    elProps: detail,
     popupProps: { size: 800 },
   });
 };

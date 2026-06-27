@@ -177,7 +177,7 @@ const handleDetail = async (row: AppDetailResponseDto) => {
     title: '应用详情',
     type: 'drawer',
     component: AppDetail,
-    data: detail,
+    elProps: detail,
     footer: false,
     popupProps: { size: 500 },
   });
@@ -200,7 +200,7 @@ const handleEdit = (row: AppDetailResponseDto) => {
     title: '编辑应用',
     type: 'dialog',
     component: AppForm,
-    data: { ...row },
+    elProps: { ...row },
     popupProps: { width: 550 },
     on: { confirm: listPage.value?.refresh },
   });

@@ -8,7 +8,7 @@
   <MfwCardPanel
     :header="headerConfig"
     :items="infoItems"
-    :data="data"
+    :data="cardData"
     bordered
   >
     <template #appType="{ value }">
@@ -28,11 +28,7 @@ import type { AppDetailResponseDto } from '../../../apis/sys/schemas';
 import { Folder, User, Calendar, Document, Sort } from '@element-plus/icons-vue';
 import { toItems, getLabel, StatusDict } from 'moyan-mfw-base/shared';
 
-interface Props {
-  data?: AppDetailResponseDto;
-}
-
-const props = defineProps<Props>();
+const props = defineProps<AppDetailResponseDto>();
 defineOptions({ name: 'AppDetail' });
 
 const formatAppType = (value: any): string => {
@@ -41,14 +37,17 @@ const formatAppType = (value: any): string => {
   return value?.typeName || value?.name || '--';
 };
 
+/** 传递给 MfwCardPanel 的数据对象 */
+const cardData = computed(() => ({ ...props } as Record<string, any>));
+
 const headerConfig = computed<CardPanelHeader>(() => ({
-  image: props.data?.logo,
-  title: props.data?.appName || '--',
-  subtitle: props.data?.appCode,
-  status: props.data?.appStatus !== undefined ? {
-    value: props.data.appStatus,
-    type: (toItems(StatusDict).find(i => i.value === props.data!.appStatus)?.type || 'primary') as 'success' | 'warning' | 'danger' | 'info',
-    text: getLabel(StatusDict, props.data.appStatus),
+  image: props.logo,
+  title: props.appName || '--',
+  subtitle: props.appCode,
+  status: props.appStatus !== undefined ? {
+    value: props.appStatus,
+    type: (toItems(StatusDict).find(i => i.value === props.appStatus)?.type || 'primary') as 'success' | 'warning' | 'danger' | 'info',
+    text: getLabel(StatusDict, props.appStatus),
   } : undefined,
 }));
 
