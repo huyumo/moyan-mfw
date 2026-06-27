@@ -13,6 +13,7 @@ import { AppModule as SysAppModule } from './app/app.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
 import { InstallModule } from './install/install.module';
 import { UploadFileModule } from './upload/upload.module';
+import { RouteSyncModule } from './route-sync/route-sync.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { UploadFileModule } from './upload/upload.module';
     AuditLogModule,
     InstallModule,
     UploadFileModule,
+    RouteSyncModule,
   ],
 })
 export class SysModule {}

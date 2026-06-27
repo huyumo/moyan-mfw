@@ -2,41 +2,67 @@
  * @fileoverview 基础后端应用创建入口
  */
 
-import { config } from 'dotenv';
-import { NestFactory, Reflector, APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
-import { ConfigService, ConfigModule } from '@nestjs/config';
-import { ValidationPipe, Type } from '@nestjs/common';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { DataSource } from 'typeorm';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { Request, Response, NextFunction } from 'express';
-import * as path from 'path';
+import { config } from "dotenv";
+import {
+  NestFactory,
+  Reflector,
+  APP_INTERCEPTOR,
+  APP_GUARD,
+} from "@nestjs/core";
+import { ConfigService, ConfigModule } from "@nestjs/config";
+import { ValidationPipe, Type } from "@nestjs/common";
+import { JwtModule, JwtService } from "@nestjs/jwt";
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { DataSource } from "typeorm";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { Request, Response, NextFunction } from "express";
+import * as path from "path";
 
 import {
   CreateBaseBackendAppOptions,
   BaseBackendAppInstance,
   DatabaseConfig,
   JwtConfig,
-} from './types/app-config.types';
-import { validateAppTypes, getBuiltinAppTypes } from './utils/app-type-validator';
-import { setupSwaggerGroups } from './utils/swagger-setup';
-import { HooksExecutor, createAppContext } from './utils/hooks-executor';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor, registerPermissionValues, AppInfoInterceptor } from './common';
-import { databaseConfig, appConfig, redisConfig, userConfig, jwtConfig, ossConfig } from './config';
-import { AppModule, DatabaseHealthService, createTypeOrmOptions, entities } from './app.module';
-import { AuthGuard } from './common/guards/auth.guard';
-import { PermissionGuard } from './common/guards/permission.guard';
-import { RolePermission } from './modules/sys/role/entities/role-permission.entity';
-import { UserRole } from './modules/sys/role/entities/user-role.entity';
-import { PermissionValueSyncService } from './modules/sys/permission/permission-value-sync.service';
-import { CacheModule } from './cache/cache.module';
-import type { CacheDriver } from './cache/cache.module';
-import { REDIS_ONLY_SERVICE } from './cache/cache.module';
-import { IRedisOnlyService } from './cache/interfaces/cache-service.interface';
-import { CacheInterceptor } from './cache/interceptors/cache.interceptor';
+} from "./types/app-config.types";
+import {
+  validateAppTypes,
+  getBuiltinAppTypes,
+} from "./utils/app-type-validator";
+import { setupSwaggerGroups } from "./utils/swagger-setup";
+import { HooksExecutor, createAppContext } from "./utils/hooks-executor";
+import {
+  AllExceptionsFilter,
+  LoggingInterceptor,
+  TransformInterceptor,
+  registerPermissionValues,
+  AppInfoInterceptor,
+} from "./common";
+import {
+  databaseConfig,
+  appConfig,
+  redisConfig,
+  userConfig,
+  jwtConfig,
+  ossConfig,
+} from "./config";
+import {
+  AppModule,
+  DatabaseHealthService,
+  createTypeOrmOptions,
+  entities,
+} from "./app.module";
+import { AuthGuard } from "./common/guards/auth.guard";
+import { PermissionGuard } from "./common/guards/permission.guard";
+import { RolePermission } from "./modules/sys/role/entities/role-permission.entity";
+import { UserRole } from "./modules/sys/role/entities/user-role.entity";
+import { PermissionValueSyncService } from "./modules/sys/permission/permission-value-sync.service";
+import { CacheModule } from "./cache/cache.module";
+import type { CacheDriver } from "./cache/cache.module";
+import { REDIS_ONLY_SERVICE } from "./cache/cache.module";
+import { IRedisOnlyService } from "./cache/interfaces/cache-service.interface";
+import { CacheInterceptor } from "./cache/interceptors/cache.interceptor";
 
-config({ path: '.env' });
+config({ path: ".env" });
 
 /**
  * 创建后端应用实例
@@ -54,7 +80,8 @@ export async function createBaseBackendApp(
 
   const DynamicAppModule = await createDynamicAppModule(options, allAppTypes);
 
-  const app = await NestFactory.create<NestExpressApplication>(DynamicAppModule);
+  const app =
+    await NestFactory.create<NestExpressApplication>(DynamicAppModule);
 
   setupBigIntSerialization(app);
 
@@ -62,7 +89,7 @@ export async function createBaseBackendApp(
 
   setupStaticFiles(app, configService);
 
-  const globalPrefix = configService.get<string>('globalPrefix', '/api');
+  const globalPrefix = configService.get<string>("globalPrefix", "/api");
   app.setGlobalPrefix(globalPrefix);
 
   app.useGlobalFilters(new AllExceptionsFilter());
@@ -88,8 +115,8 @@ export async function createBaseBackendApp(
   setupSwaggerGroups(
     app,
     options.swagger || [],
-    options.name || configService.get<string>('appName', 'Moyan MFW Backend'),
-    '1.0.0',
+    options.name || configService.get<string>("appName", "Moyan MFW Backend"),
+    "1.0.0",
   );
 
   const dataSource = app.get(DataSource);
@@ -110,8 +137,10 @@ export async function createBaseBackendApp(
     const syncService = app.get(PermissionValueSyncService);
     await syncService.sync(dataSource);
   } catch (error: any) {
-    if (error.message?.includes('ER_NO_SUCH_TABLE')) {
-      process.stdout.write('⏳ sys_permission_values 表未创建，跳过权限值同步\n');
+    if (error.message?.includes("ER_NO_SUCH_TABLE")) {
+      process.stdout.write(
+        "⏳ sys_permission_values 表未创建，跳过权限值同步\n",
+      );
     } else {
       process.stdout.write(`⚠️ 权限值同步失败: ${error.message}\n`);
     }
@@ -123,20 +152,67 @@ export async function createBaseBackendApp(
   if (options.syncAppTypes && allAppTypes.length > 0) {
     try {
       const appTypeRepo = dataSource.getRepository(
-        (await import('./modules/sys/app-type/entities/app-type.entity')).AppType,
+        (await import("./modules/sys/app-type/entities/app-type.entity"))
+          .AppType,
       );
       const isInitialized = (await appTypeRepo.count()) > 0;
       if (isInitialized) {
-        const { syncAppTypesConfig } = await import('./modules/sys/app-type/app-type-sync');
+        const { syncAppTypesConfig } =
+          await import("./modules/sys/app-type/app-type-sync");
         await syncAppTypesConfig(dataSource, allAppTypes);
       } else {
-        process.stdout.write('⏳ 系统未初始化，跳过业务应用类型同步\n');
+        process.stdout.write("⏳ 系统未初始化，跳过业务应用类型同步\n");
       }
     } catch (error: any) {
-      if (error.message?.includes('ER_NO_SUCH_TABLE')) {
-        process.stdout.write('⏳ 数据库表未创建，跳过业务应用类型同步\n');
+      if (error.message?.includes("ER_NO_SUCH_TABLE")) {
+        process.stdout.write("⏳ 数据库表未创建，跳过业务应用类型同步\n");
       } else {
         throw error;
+      }
+    }
+  }
+
+  // 路由数据自动同步（在应用类型同步之后执行，仅已初始化的系统且配置启用时才执行）
+  if (options.routeSync?.enabled && options.routeSync.menuTrees?.length > 0) {
+    console.log(
+      `\n🔄 [RouteSync] 开始菜单树同步检查...（${options.routeSync.menuTrees.length} 个 AppType）`,
+    );
+    try {
+      const appTypeRepo = dataSource.getRepository(
+        (await import("./modules/sys/app-type/entities/app-type.entity"))
+          .AppType,
+      );
+      const isInitialized = (await appTypeRepo.count()) > 0;
+      if (!isInitialized) {
+        console.log("⏳ [RouteSync] 系统未初始化，跳过");
+      } else {
+        console.log("📡 [RouteSync] 正在获取 RouteSyncService...");
+        const { RouteSyncService } =
+          await import("./modules/sys/route-sync/route-sync.service");
+        const routeSyncService = app.get(RouteSyncService);
+        console.log("✅ [RouteSync] RouteSyncService 获取成功，开始同步...");
+        const result = await routeSyncService.syncMenuTrees(
+          options.routeSync.menuTrees,
+        );
+        if (result.skipped) {
+          console.log(
+            "✅ [RouteSync] 菜单树配置未变更，跳过路由数据同步",
+          );
+        } else {
+          console.log(
+            `✅ [RouteSync] 路由数据同步完成：${result.syncedAppTypes.length} 个应用类型，` +
+              `${result.permissionCount} 个权限变动，${result.poolCount} 个权限池记录，` +
+              `${result.rolePermCount} 个角色权限记录`,
+          );
+        }
+      }
+    } catch (error: any) {
+      if (error.message?.includes("ER_NO_SUCH_TABLE")) {
+        console.log("⏳ [RouteSync] 数据库表未创建，跳过");
+      } else {
+        console.error("❌ [RouteSync] 路由数据同步失败:");
+        console.error("  错误:", error.message);
+        console.error("  堆栈:", error.stack);
       }
     }
   }
@@ -161,39 +237,60 @@ async function createDynamicAppModule(
   options: CreateBaseBackendAppOptions,
   allAppTypes: any[],
 ): Promise<any> {
-  const { Module } = await import('@nestjs/common');
-  const { RouterModule } = await import('@nestjs/core');
-  const { SysModule } = await import('./modules/sys/sys.module');
-  const { HealthModule } = await import('./modules/health/health.module');
+  const { Module } = await import("@nestjs/common");
+  const { RouterModule } = await import("@nestjs/core");
+  const { SysModule } = await import("./modules/sys/sys.module");
+  const { HealthModule } = await import("./modules/health/health.module");
 
   const routerImports = options.moduleRoutes?.length
-    ? [RouterModule.register(options.moduleRoutes.map(r => ({ path: r.path, module: r.module })))]
+    ? [
+        RouterModule.register(
+          options.moduleRoutes.map((r) => ({ path: r.path, module: r.module })),
+        ),
+      ]
     : [];
 
   @Module({
     imports: [
-      CacheModule.forRoot({ driver: (process.env.CACHE_DRIVER as CacheDriver) || 'none' }),
+      CacheModule.forRoot({
+        driver: (process.env.CACHE_DRIVER as CacheDriver) || "none",
+      }),
       ConfigModule.forRoot({
         isGlobal: true,
-        envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env.local', '.env'],
-        load: [databaseConfig, appConfig, redisConfig, userConfig, jwtConfig, ossConfig],
+        envFilePath: [
+          `.env.${process.env.NODE_ENV || "development"}`,
+          ".env.local",
+          ".env",
+        ],
+        load: [
+          databaseConfig,
+          appConfig,
+          redisConfig,
+          userConfig,
+          jwtConfig,
+          ossConfig,
+        ],
         ignoreEnvFile: false,
       }),
       TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
         useFactory: (configService: ConfigService) => {
-          const dbConfig = options.database || configService.get<any>('databaseConfig') || {};
+          const dbConfig =
+            options.database || configService.get<any>("databaseConfig") || {};
           return {
-            type: 'mysql',
-            host: dbConfig.host || process.env.DB_HOST || 'localhost',
-            port: dbConfig.port || parseInt(process.env.DB_PORT || '3306', 10),
+            type: "mysql",
+            host: dbConfig.host || process.env.DB_HOST || "localhost",
+            port: dbConfig.port || parseInt(process.env.DB_PORT || "3306", 10),
             username: dbConfig.username || process.env.DB_USERNAME,
             password: dbConfig.password || process.env.DB_PASSWORD,
             database: dbConfig.database || process.env.DB_NAME,
-            charset: dbConfig.charset || 'utf8mb4',
-            timezone: dbConfig.timezone || '+08:00',
+            charset: dbConfig.charset || "utf8mb4",
+            timezone: dbConfig.timezone || "+08:00",
             poolSize: dbConfig.poolSize || 100,
-            synchronize: dbConfig.synchronize ?? (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test'),
+            synchronize:
+              dbConfig.synchronize ??
+              (process.env.NODE_ENV === "development" ||
+                process.env.NODE_ENV === "test"),
             logging: dbConfig.logging ?? false,
             entities: [...entities, ...(options.extraEntities || [])],
             autoLoadEntities: true,
@@ -209,7 +306,7 @@ async function createDynamicAppModule(
       }),
       JwtModule.register({
         global: true,
-        secret: options.jwt?.secret || process.env.JWT_SECRET || '',
+        secret: options.jwt?.secret || process.env.JWT_SECRET || "",
         signOptions: {
           expiresIn: options.jwt?.expiresIn || 7200,
         },
@@ -231,7 +328,11 @@ async function createDynamicAppModule(
       },
       {
         provide: APP_GUARD,
-        useFactory: (jwtService: JwtService, reflector: Reflector, redis: IRedisOnlyService) => {
+        useFactory: (
+          jwtService: JwtService,
+          reflector: Reflector,
+          redis: IRedisOnlyService,
+        ) => {
           return new AuthGuard(jwtService, reflector, redis);
         },
         inject: [JwtService, Reflector, REDIS_ONLY_SERVICE],
@@ -239,9 +340,14 @@ async function createDynamicAppModule(
       {
         provide: APP_GUARD,
         useFactory: (reflector: Reflector, dataSource: DataSource) => {
-          const rolePermissionRepository = dataSource.getRepository(RolePermission);
+          const rolePermissionRepository =
+            dataSource.getRepository(RolePermission);
           const userRoleRepository = dataSource.getRepository(UserRole);
-          return new PermissionGuard(reflector, rolePermissionRepository, userRoleRepository);
+          return new PermissionGuard(
+            reflector,
+            rolePermissionRepository,
+            userRoleRepository,
+          );
         },
         inject: [Reflector, DataSource],
       },
@@ -263,7 +369,7 @@ function setupBigIntSerialization(app: NestExpressApplication): void {
       return originalJson(
         JSON.parse(
           JSON.stringify(data, (_key, value) =>
-            typeof value === 'bigint' ? value.toString() : value,
+            typeof value === "bigint" ? value.toString() : value,
           ),
         ),
       );
@@ -275,10 +381,13 @@ function setupBigIntSerialization(app: NestExpressApplication): void {
 /**
  * 配置静态文件服务
  */
-function setupStaticFiles(app: NestExpressApplication, configService: ConfigService): void {
-  const uploadDir = configService.get<string>('UPLOAD_DIR', 'uploads');
+function setupStaticFiles(
+  app: NestExpressApplication,
+  configService: ConfigService,
+): void {
+  const uploadDir = configService.get<string>("UPLOAD_DIR", "uploads");
   const absoluteUploadDir = path.resolve(uploadDir);
-  app.useStaticAssets(absoluteUploadDir, { prefix: '/uploads/' });
+  app.useStaticAssets(absoluteUploadDir, { prefix: "/uploads/" });
 }
 
 /**
@@ -289,7 +398,7 @@ function setupCors(
   options: CreateBaseBackendAppOptions,
   configService: ConfigService,
 ): void {
-  const corsConfig = options.cors ?? configService.get('cors');
+  const corsConfig = options.cors ?? configService.get("cors");
   if (corsConfig !== false) {
     app.enableCors(corsConfig === true ? undefined : corsConfig);
   }
@@ -298,7 +407,11 @@ function setupCors(
 /**
  * 打印启动消息
  */
-function printStartupMessage(port: number, globalPrefix: string, configService: ConfigService): void {
+function printStartupMessage(
+  port: number,
+  globalPrefix: string,
+  configService: ConfigService,
+): void {
   console.log(`
   ╔═══════════════════════════════════════════════════════════╗
   ║                                                           ║
@@ -306,7 +419,7 @@ function printStartupMessage(port: number, globalPrefix: string, configService: 
   ║                                                           ║
   ║   ➜  Local:    http://localhost:${port}${globalPrefix}           ║
   ║   ➜  Swagger:  http://localhost:${port}/api-docs/sys            ║
-  ║   ➜  Environment: ${configService.get<string>('env', 'development')}                    ║
+  ║   ➜  Environment: ${configService.get<string>("env", "development")}                    ║
   ║                                                           ║
   ╚═══════════════════════════════════════════════════════════╝
   `);
@@ -318,10 +431,11 @@ export type {
   BaseBackendAppInstance,
   AppTypeConfig,
   RoleConfig,
+  RouteSyncConfig,
   HookConfig,
   AppContext,
   DatabaseConfig,
   RedisConfig,
   JwtConfig,
   SwaggerGroupConfig,
-} from './types/app-config.types';
+} from "./types/app-config.types";

@@ -2,47 +2,64 @@
  * @fileoverview 业务后端应用入口文件
  */
 
-import { createBaseBackendApp, SwaggerGroupConfig } from 'moyan-mfw-base/backend';
-import { appTypesConfig } from './app-types.config';
-import { AppModule } from './app.modules';
-import { SupplierModule } from './modules/supplier/supplier.module';
-import { AdModule, AD_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ad/backend';
-import { DocumentModule, DOCUMENT_PERMISSION_VALUES } from 'moyan-mfw-extension-document/backend';
-import './permissions';
-import 'moyan-mfw-shared';
+import {
+  createBaseBackendApp,
+  SwaggerGroupConfig,
+} from "moyan-mfw-base/backend";
+import { appTypesConfig } from "./app-types.config";
+import { AppModule } from "./app.modules";
+import { SupplierModule } from "./modules/supplier/supplier.module";
+import {
+  AdModule,
+  AD_EXTENSION_PERMISSION_VALUES,
+} from "moyan-mfw-extension-ad/backend";
+import {
+  DocumentModule,
+  DOCUMENT_PERMISSION_VALUES,
+} from "moyan-mfw-extension-document/backend";
+import { menuTrees } from "moyan-mfw-shared";
+import "./permissions";
+import "moyan-mfw-shared";
 
 const swaggerGroups: SwaggerGroupConfig[] = [
   {
-    name: 'supplier',
-    title: '供应商API文档',
-    description: '供应商管理相关 API',
+    name: "supplier",
+    title: "供应商API文档",
+    description: "供应商管理相关 API",
     include: [SupplierModule],
   },
   {
-    name: 'ad-extension',
-    title: '广告管理API文档',
-    description: '广告位类型、广告位、广告内容管理 API',
+    name: "ad-extension",
+    title: "广告管理API文档",
+    description: "广告位类型、广告位、广告内容管理 API",
     include: [AdModule],
   },
   {
-    name: 'document-extension',
-    title: '文档管理API文档',
-    description: '通用文档管理（含 EAV 扩展字段）API',
+    name: "document-extension",
+    title: "文档管理API文档",
+    description: "通用文档管理（含 EAV 扩展字段）API",
     include: [DocumentModule],
   },
 ];
 
 async function bootstrap() {
   const app = await createBaseBackendApp({
-    name: '墨焱业务后端',
+    name: "墨焱业务后端",
     appTypes: appTypesConfig,
     syncAppTypes: true,
+    routeSync: {
+      enabled: true,
+      menuTrees,
+    },
     modules: [AppModule],
     swagger: swaggerGroups,
-    permissionValues: [...AD_EXTENSION_PERMISSION_VALUES, ...DOCUMENT_PERMISSION_VALUES],
+    permissionValues: [
+      ...AD_EXTENSION_PERMISSION_VALUES,
+      ...DOCUMENT_PERMISSION_VALUES,
+    ],
     hooks: {
       onAppInit: async (ctx) => {
-        console.log('[Backend] 应用初始化完成');
+        console.log("[Backend] 应用初始化完成");
       },
     },
   });

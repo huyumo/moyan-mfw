@@ -1,9 +1,32 @@
-import type { RouteRecordRaw } from 'vue-router'
-import { buildRoutesFromConfigs } from 'moyan-mfw-base/frontend'
+/**
+ * @fileoverview 业务路由配置 - 手动组件映射方案。
+ *
+ * 使用 defineComponentMap 以嵌套结构定义组件映射，
+ * 结构自动与 menu-trees.ts 菜单树对齐，避免路径字符串拼写错误。
+ *
+ * 菜单树定义在 shared 包的 menu-trees.ts 中。
+ */
 
-const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, unknown>
+import { defineComponentMap } from 'moyan-mfw-base/frontend'
 
-export const businessRoutes: RouteRecordRaw[] = buildRoutesFromConfigs(allConfigs, { minSegments: 1 })
+/**
+ * 组件映射表
+ *
+ * 嵌套结构与 menu-trees.ts 菜单树层级对齐，自动展平为路径→组件的映射。
+ * 使用懒加载函数以支持 Vite 代码分割。
+ */
+export const componentMap = defineComponentMap({
+  // 首页
+  'dashboard': () => import('./views/dashboard/Index.vue'),
+
+  // 示例：业务页面
+  // business: {
+  //   orders: () => import('./views/business/orders/Index.vue'),
+  // },
+
+  // 示例：框架内置页面（按需从 moyan-mfw-base/frontend 引入）
+  // sys: {
+  //   user: () => import('moyan-mfw-base/frontend').then(m => m.SysUserPage),
+  //   role: () => import('moyan-mfw-base/frontend').then(m => m.SysRolePage),
+  // },
+})

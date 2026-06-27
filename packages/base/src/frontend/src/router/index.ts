@@ -2,10 +2,20 @@
  * @fileoverview 基础前端路由创建与鉴权守卫模块。
  */
 
-import { createRouter, createWebHistory, type RouteRecordRaw, type Router, type RouterHistory } from 'vue-router';
-import { buildBasePackageRoutes } from './routes';
-import { setupRouteGuard } from './guard';
-import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from '../constants/storage-keys';
+import {
+  createRouter,
+  createWebHistory,
+  type RouteRecordRaw,
+  type Router,
+  type RouterHistory,
+} from "vue-router";
+import {
+  buildRoutesFromMenuTrees,
+  type ComponentMap,
+} from "./routes";
+import { setupRouteGuard } from "./guard";
+import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from "../constants/storage-keys";
+import type { AppTypeMenuConfig } from "@internal/base-shared";
 
 /**
  * 路由创建参数。
@@ -15,10 +25,14 @@ export interface CreateBaseAdminRouterOptions {
   history?: RouterHistory;
   /** 路由基础路径 */
   base?: string;
-  /** 完整路由配置 */
+  /** 完整路由配置（扩展包路由等） */
   routes?: RouteRecordRaw[];
   /** 页面标题后缀 */
   title?: string;
+  /** 菜单树配置（必需） */
+  menuTrees: AppTypeMenuConfig[];
+  /** 路径 → 组件的映射表（必需，配合 menuTrees 使用） */
+  componentMap: ComponentMap;
 }
 
 /**
@@ -26,11 +40,11 @@ export interface CreateBaseAdminRouterOptions {
  * @returns 认证令牌字符串；不存在时返回空字符串。
  */
 function readAuthToken(): string {
-  if (typeof window === 'undefined') {
-    return '';
+  if (typeof window === "undefined") {
+    return "";
   }
 
-  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || '';
+  return window.localStorage.getItem(AUTH_TOKEN_STORAGE_KEY) || "";
 }
 
 /**
@@ -40,7 +54,7 @@ function readAuthToken(): string {
  * @returns 完整页面标题。
  */
 function resolvePageTitle(toTitle: unknown, title: string): string {
-  if (typeof toTitle === 'string' && toTitle.trim().length > 0) {
+  if (typeof toTitle === "string" && toTitle.trim().length > 0) {
     return `${toTitle} | ${title}`;
   }
   return title;
@@ -52,16 +66,19 @@ function resolvePageTitle(toTitle: unknown, title: string): string {
  * @param businessRoutes 业务路由
  * @returns 合并后的路由数组
  */
-function mergeRoutes(baseRoutes: RouteRecordRaw[], businessRoutes: RouteRecordRaw[]): RouteRecordRaw[] {
+function mergeRoutes(
+  baseRoutes: RouteRecordRaw[],
+  businessRoutes: RouteRecordRaw[],
+): RouteRecordRaw[] {
   const routeMap = new Map<string, RouteRecordRaw>();
 
   for (const route of baseRoutes) {
-    const key = route.path.replace(/^\//, '');
+    const key = route.path.replace(/^\//, "");
     routeMap.set(key, route);
   }
 
   for (const route of businessRoutes) {
-    const key = route.path.replace(/^\//, '');
+    const key = route.path.replace(/^\//, "");
     routeMap.set(key, route);
   }
 
@@ -73,8 +90,13 @@ function mergeRoutes(baseRoutes: RouteRecordRaw[], businessRoutes: RouteRecordRa
  * @param options 路由创建参数。
  * @returns 可直接挂载到应用的路由实例。
  */
-export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}): Router {
-  const basePackageRoutes = buildBasePackageRoutes();
+export function createBaseAdminRouter(
+  options: CreateBaseAdminRouterOptions,
+): Router {
+  const basePackageRoutes = buildRoutesFromMenuTrees(
+    options.menuTrees,
+    options.componentMap,
+  );
 
   const businessRoutes = options.routes || [];
 
@@ -82,66 +104,66 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
 
   const finalRoutes = [
     {
-      path: '/login',
-      name: 'AdminLogin',
-      component: () => import('../views/login/index.vue'),
+      path: "/login",
+      name: "AdminLogin",
+      component: () => import("../views/login/index.vue"),
       meta: {
-        title: '登录',
+        title: "登录",
         menu: false,
       },
     },
     {
-      path: '/install',
-      name: 'InstallWizard',
-      component: () => import('../views/install/InstallWizard.vue'),
+      path: "/install",
+      name: "InstallWizard",
+      component: () => import("../views/install/InstallWizard.vue"),
       meta: {
-        title: '系统初始化',
+        title: "系统初始化",
         menu: false,
         requiresAuth: false,
       },
     },
     {
-      path: '/',
-      component: () => import('../layouts/AdminLayout.vue'),
+      path: "/",
+      component: () => import("../layouts/AdminLayout.vue"),
       meta: {
         requiresAuth: true,
         menu: false,
       },
       children: [
         {
-          path: '',
-          name: 'RootRedirect',
-          redirect: '/dashboard',
+          path: "",
+          name: "RootRedirect",
+          redirect: "/dashboard",
           meta: { requiresAuth: true },
         },
         ...mergedChildren.map((route) => ({
           ...route,
-          path: route.path.replace(/^\//, ''),
+          path: route.path.replace(/^\//, ""),
         })),
       ],
     },
     {
-      path: '/403',
-      name: 'AdminForbidden',
-      component: () => import('../views/forbidden/index.vue'),
+      path: "/403",
+      name: "AdminForbidden",
+      component: () => import("../views/forbidden/index.vue"),
       meta: {
-        title: '权限不足',
+        title: "权限不足",
         requiresAuth: true,
         menu: false,
       },
     },
     {
-      path: '/404',
-      name: 'AdminNotFound',
-      component: () => import('../views/not-found/index.vue'),
+      path: "/404",
+      name: "AdminNotFound",
+      component: () => import("../views/not-found/index.vue"),
       meta: {
-        title: '页面不存在',
+        title: "页面不存在",
         menu: false,
       },
     },
     {
-      path: '/:pathMatch(.*)*',
-      redirect: '/404',
+      path: "/:pathMatch(.*)*",
+      redirect: "/404",
     },
   ];
 
@@ -156,5 +178,5 @@ export function createBaseAdminRouter(options: CreateBaseAdminRouterOptions = {}
   return router;
 }
 
-export * from './routes';
-export { setupRouteGuard, resetRouteGuard } from './guard';
+export * from "./routes";
+export { setupRouteGuard, resetRouteGuard } from "./guard";

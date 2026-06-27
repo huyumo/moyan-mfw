@@ -2,22 +2,26 @@
  * @fileoverview 基础前端后台应用创建入口。
  */
 
-import { createPinia, type Pinia } from 'pinia';
-import { createApp, type App, type ComponentPublicInstance } from 'vue';
-import type { Router } from 'vue-router';
+import { createPinia, type Pinia } from "pinia";
+import { createApp, type App, type ComponentPublicInstance } from "vue";
+import type { Router } from "vue-router";
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
   LoginExtensionComponents,
   LayoutStyleConfig,
-} from './types/layout-types';
-import BaseAdminRoot from './layouts/components/base/BaseAdminRoot.vue';
-import { createBaseAdminRouter, type CreateBaseAdminRouterOptions, buildBasePackageRoutes } from './router';
-import { createMenuTreeFromRoutes, dedupeMenuTree } from './router/menu-tree';
-import { useLayoutStore } from './store/layout-store';
-import { setupPlugins } from './plugins';
-import { initPermissionCache as initPermissionValueCache } from './utils/permissions';
-import { ApiPermissionValuesGetPermissionValues } from './apis/sys';
+} from "./types/layout-types";
+import BaseAdminRoot from "./layouts/components/base/BaseAdminRoot.vue";
+import {
+  createBaseAdminRouter,
+  type CreateBaseAdminRouterOptions,
+  buildRoutesFromMenuTrees,
+} from "./router";
+import { createMenuTreeFromRoutes, dedupeMenuTree } from "./router/menu-tree";
+import { useLayoutStore } from "./store/layout-store";
+import { setupPlugins } from "./plugins";
+import { initPermissionCache as initPermissionValueCache } from "./utils/permissions";
+import { ApiPermissionValuesGetPermissionValues } from "./apis/sys";
 
 /**
  * 管理后台启动选项。
@@ -53,15 +57,21 @@ export interface BaseAdminAppInstance {
   /** 挂载函数 */
   mount: (selector?: string | Element) => Promise<ComponentPublicInstance>;
   /** 从后端获取权限值标签映射表 */
-  fetchPermissionValues: () => Promise<Array<{ name: string; bitValue: string }>>;
+  fetchPermissionValues: () => Promise<
+    Array<{ name: string; bitValue: string }>
+  >;
   /** 初始化权限值运行时缓存 */
-  initPermissionCache: (values: Array<{ name: string; bitValue: string }>) => void;
+  initPermissionCache: (
+    values: Array<{ name: string; bitValue: string }>,
+  ) => void;
 }
 
 /**
  * 创建后台应用并完成路由、状态与导航初始化。
  */
-export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): BaseAdminAppInstance {
+export function createBaseAdminApp(
+  options: BaseAdminBootstrapOptions,
+): BaseAdminAppInstance {
   const app = createApp(BaseAdminRoot);
   const pinia = options.pinia ?? createPinia();
   const router = createBaseAdminRouter(options);
@@ -85,15 +95,23 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
   }
 
   // 合并基包路由和业务路由生成菜单树
-  const basePackageRoutes = buildBasePackageRoutes();
+  const basePackageRoutes = buildRoutesFromMenuTrees(
+    options.menuTrees,
+    options.componentMap,
+  );
   const allRoutes = [...basePackageRoutes, ...(options.routes || [])];
-  const businessMenuTree = createMenuTreeFromRoutes(allRoutes, { parentPath: '/' });
+  const businessMenuTree = createMenuTreeFromRoutes(allRoutes, {
+    parentPath: "/",
+  });
   const resolvedNavigation: Partial<AdminNavigationConfig> = {
     ...options.navigation,
   };
 
   if (!options.navigation?.sideMenu) {
-    resolvedNavigation.sideMenu = dedupeMenuTree([...layoutStore.navigation.sideMenu, ...businessMenuTree]);
+    resolvedNavigation.sideMenu = dedupeMenuTree([
+      ...layoutStore.navigation.sideMenu,
+      ...businessMenuTree,
+    ]);
   }
 
   if (
@@ -112,13 +130,15 @@ export function createBaseAdminApp(options: BaseAdminBootstrapOptions = {}): Bas
     app,
     router,
     pinia,
-    mount: async (selector: string | Element = '#app') => {
+    mount: async (selector: string | Element = "#app") => {
       await router.isReady();
       return app.mount(selector);
     },
     async fetchPermissionValues() {
       const result = await new ApiPermissionValuesGetPermissionValues({});
-      return (result as Array<{ name: string; bitPosition: number; bitValue: string }>).map((item) => ({
+      return (
+        result as Array<{ name: string; bitPosition: number; bitValue: string }>
+      ).map((item) => ({
         name: item.name,
         bitValue: item.bitValue,
       }));

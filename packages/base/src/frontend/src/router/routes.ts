@@ -1,462 +1,327 @@
 /**
- * @fileoverview 路由配置工具模块。
+ * @fileoverview 路由构建工具模块。
  *
- * 提供路由扫描和构建的工具函数，业务项目可结合自身 views 目录结构使用。
+ * 基于手动菜单树配置生成 Vue Router 路由，替代原有的 import.meta.glob 自动扫描方案。
  *
- * 路由页面加载规则：
- * 1. 页面组件必须存放在 src/views/ 目录下
- * 2. 每个页面是一个独立目录，目录内必须包含 index.ts 或 index.tsx 配置文件
- * 3. 配置文件必须导出：page 组件、path 路径、name 名称
- * 4. 如果找不到配置文件，则自动显示 404 页面
- *
- * 扁平路由架构：
- * - 所有页面路由直接作为 / 的子路由注册，不使用嵌套路由
- * - 模块配置（defineModuleConfig）仅作为菜单分组元数据，注入到页面路由的 meta.moduleInfo 中
- * - 模块路径前缀保留在路由 path 中（如 sys/user），保持 URL 语义清晰
- * - 模块自动生成纯重定向路由（如 /sys → /sys/user），不需要 EmptyLayout 中间层
- *
- * 配置文件示例 (index.ts):
- * ```typescript
- * import Dashboard from './dashboard.vue';
- * export default { page: Dashboard, path: 'dashboard', name: '看板', icon: 'DataBoard', auth: true };
- * ```
- *
- * 模块配置示例 (sys/index.ts):
- * ```typescript
- * export default { type: 'module', name: '系统管理', icon: 'Setting', order: 10 };
- * ```
+ * 核心设计：
+ * - MenuNode：纯数据菜单节点（前后端共享）
+ * - ComponentMap：路径 → Vue 组件映射（仅前端使用）
+ * - 有 children 的节点 = MENU 分组（生成重定向路由）
+ * - 无 children 的节点 = PAGE 页面（生成实际路由）
  */
 
-import type { RouteRecordRaw } from 'vue-router';
-import { registerPermissionValues, type PermissionName } from '../utils/permissions';
-export { registerPermissionValues, createBusinessPageConfigFn } from '../utils/permissions';
+import type { RouteRecordRaw } from "vue-router";
+import {
+  registerPermissionValues,
+  type PermissionName,
+} from "../utils/permissions";
+import type { AppTypeMenuConfig, MenuNode } from "@internal/base-shared";
+
+export {
+  registerPermissionValues,
+  createBusinessPageConfigFn,
+} from "../utils/permissions";
+
+// ==================== 类型定义 ====================
 
 /**
- * 模块配置接口（用于菜单分组，不生成嵌套路由）
+ * 组件映射表类型：路径 → Vue 组件（支持同步组件和懒加载函数）。
  */
-export interface ModuleConfig {
-  /** 类型：module 表示模块分组 */
-  type?: 'module';
-  /** 模块/菜单名称 */
-  name: string;
-  /** 菜单图标 */
-  icon?: string;
-  /** 菜单顺序 */
-  order?: number;
-}
+export type ComponentMap = Record<string, unknown | (() => Promise<unknown>)>;
 
 /**
- * 页面配置接口（支持泛型扩展权限类型）
- */
-export interface PageConfig<T extends string = PermissionName> {
-  /** 页面组件 */
-  page: unknown;
-  /** 路由路径（相对路径，如 'user' 或 'detail/:id'） */
-  path: string;
-  /** 页面/菜单名称 */
-  name: string;
-  /** 菜单图标 */
-  icon?: string;
-  /** 是否需要认证 */
-  auth?: boolean;
-  /** 菜单顺序 */
-  order?: number;
-  /** 菜单隐藏 */
-  hidden?: boolean;
-  /** 页面权限名称列表（definePageConfig 内部自动转为 permissionValue） */
-  permissions?: T[];
-  /** 权限值（由 definePageConfig 根据 permissions 自动计算，请勿手动设置） */
-  permissionValue?: bigint;
-  /** 权限编码（如 'ext:ad:placement'），定义后直接使用，否则由后端生成 */
-  permCode?: string;
-  /** 子页面配置 */
-  children?: PageConfig<T>[];
-}
-
-/**
- * 判断是否为模块配置
- */
-export function isModuleConfig(config: unknown): config is ModuleConfig {
-  return typeof config === 'object' && config !== null && (config as ModuleConfig).type === 'module';
-}
-
-/**
- * 判断是否为页面配置
- */
-export function isPageConfig(config: unknown): config is PageConfig<string> {
-  return typeof config === 'object' && config !== null && 'page' in config && 'path' in config && 'name' in config;
-}
-
-/**
- * 定义模块配置（提供类型推断和标准化）
- * 模块仅用于菜单分组，不生成 EmptyLayout 嵌套路由
- */
-export function defineModuleConfig(config: ModuleConfig): ModuleConfig {
-  return config;
-}
-
-/**
- * 定义页面配置（提供类型推断和标准化）
- * 内部自动将 permissions 名称列表转为 permissionValue 位运算值
- * @template T - 权限名称类型，默认为 PermissionName
- */
-export function definePageConfig<T extends string = PermissionName>(
-  config: PageConfig<T>
-): PageConfig<T> & { permissionValue?: bigint } {
-  return { ...config };
-}
-
-/**
- * 从扫描结果构建扁平路由配置。
+ * 从嵌套对象构建扁平化的组件映射表。
  *
- * 处理流程：
- * 1. 分离模块配置和页面配置
- * 2. 为每个页面生成扁平路由，将所属模块信息注入 meta.moduleInfo
- * 3. 为有子页面的模块生成纯重定向路由（如 /sys → /sys/user）
- *
- * @param allConfigs - import.meta.glob 扫描结果
- * @param options.skipPaths - 需要跳过的路径（如 '/not-found/', '/forbidden/'）
- * @param options.minSegments - 页面配置所需的最小路径段数（默认 2，跳过只有 1 层的路径）
- * @param options.routePrefix - 路由路径前缀（如 '/ext/ad'），用于扩展包区分路由命名空间
- */
-export function buildRoutesFromConfigs(
-  allConfigs: Record<string, unknown>,
-  options: {
-    skipPaths?: string[];
-    minSegments?: number;
-    routePrefix?: string;
-  } = {}
-): RouteRecordRaw[] {
-  const { skipPaths = ['/not-found/', '/forbidden/', '/login/', '/install/', '/route-group/'], minSegments = 2, routePrefix } = options;
-  const prefixPath = routePrefix ? routePrefix.replace(/^\/+|\/+$/g, '') : '';
-  const prefixName = prefixPath ? prefixPath.replace(/[^a-zA-Z0-9]+/g, '_') : '';
-
-  // 步骤 1：分离模块配置和页面配置
-  const moduleMap = new Map<string, ModuleConfig>();
-  const pageConfigs = new Map<string, PageConfig<string>>();
-
-  for (const [path, config] of Object.entries(allConfigs)) {
-    if (skipPaths.some(skipPath => path.includes(skipPath))) {
-      continue;
-    }
-
-    // 从绝对路径提取相对路径（如 '../views/sys/user/index.ts' → 'sys/user'）
-    const relativePath = path
-      .replace('../views/', '')
-      .replace('./views/', '')
-      .replace('/index.ts', '')
-      .replace('/index.tsx', '');
-
-    if (isModuleConfig(config)) {
-      // 模块配置存储在模块目录（如 sys/index.ts）
-      moduleMap.set(relativePath, config);
-    } else if (isPageConfig(config)) {
-      // 页面配置存储在页面目录（如 sys/user/index.ts）
-      // 跳过路径段数不足的配置（如只有 1 层的模块 index.ts）
-      const segments = relativePath.split('/');
-      if (segments.length >= minSegments) {
-        pageConfigs.set(relativePath, config);
-      }
-    }
-  }
-
-  // 步骤 2：生成扁平路由，注入模块信息到 meta.moduleInfo
-  const routes: RouteRecordRaw[] = [];
-
-  for (const [relativePath, config] of pageConfigs.entries()) {
-    const segments = relativePath.split('/').filter(Boolean);
-
-    // 查找所属模块：从最深路径开始匹配，找到页面路径能匹配的最深模块
-    // 例如：test/test01/demo01 → 先尝试 test/test01，再尝试 test
-    let modulePath = '';
-    let moduleConfig: ModuleConfig | undefined;
-    for (let i = segments.length - 1; i >= 0; i--) {
-      const candidatePath = segments.slice(0, i).join('/');
-      if (candidatePath && moduleMap.has(candidatePath)) {
-        modulePath = candidatePath;
-        moduleConfig = moduleMap.get(candidatePath);
-        break;
-      }
-    }
-
-    // 路由路径：relativePath 的所有目录段 + 页面路径
-    // sys/user/index.ts → relativePath='sys/user', path='user' → routePath='sys/user'
-    // test/test01/demo01/index.ts → relativePath='test/test01/demo01', path='overview' → routePath='test/test01/demo01/overview'
-    const pagePath = config.path || segments[segments.length - 1] || '';
-    const dirPath = segments.slice(0, -1).join('/');
-    const routePath = dirPath ? `${dirPath}/${pagePath}` : pagePath;
-    const fullPath = prefixPath ? `${prefixPath}/${routePath}` : routePath;
-    const fullName = `Route_${prefixName ? prefixName + '_' : ''}${segments.join('_')}`;
-
-    const route: RouteRecordRaw = {
-      path: fullPath,
-      name: fullName || 'Root',
-      component: config.page as RouteRecordRaw['component'],
-      meta: {
-        title: config.name,
-        menuLabel: config.name,
-        menuIcon: config.icon,
-        menuOrder: config.order ?? 50,
-        requiresAuth: config.auth ?? true,
-        hidden: config.hidden,
-        permissions: config.permissions,
-        permissionValue: config.permissionValue?.toString(),
-        permCode: config.permCode,
-        // 将模块信息注入 meta，供菜单构建时按模块分组
-        ...(moduleConfig
-          ? {
-              moduleInfo: {
-                modulePath,
-                moduleName: moduleConfig.name,
-                moduleIcon: moduleConfig.icon,
-                moduleOrder: moduleConfig.order ?? 50,
-              },
-            }
-          : {}),
-      },
-    } as RouteRecordRaw;
-
-    routes.push(route);
-  }
-
-  // 步骤 3：为有子页面的模块生成纯重定向路由
-  // 当用户访问模块路径（如 /sys）时，自动重定向到该模块下的第一个子路由
-  // 不需要 EmptyLayout，仅作 redirect 用途
-  for (const [modulePath, moduleConfig] of moduleMap.entries()) {
-    const hasChildRoutes = modulePath
-      ? routes.some(r => {
-          const meta = (r.meta ?? {}) as Record<string, unknown>;
-          const info = meta.moduleInfo as { modulePath: string } | undefined;
-          if (!info) return false;
-          // 支持嵌套模块：匹配直接子路由或更深层的后代路由
-          return info.modulePath === modulePath || info.modulePath.startsWith(`${modulePath}/`);
-        })
-      : routes.length > 0;
-
-    if (hasChildRoutes) {
-      const firstChildRoute = modulePath
-        ? routes.find(r => {
-            const meta = (r.meta ?? {}) as Record<string, unknown>;
-            const info = meta.moduleInfo as { modulePath: string } | undefined;
-            if (!info) return false;
-            return info.modulePath === modulePath || info.modulePath.startsWith(`${modulePath}/`);
-          })
-        : routes.find(r => {
-            const meta = (r.meta ?? {}) as Record<string, unknown>;
-            return meta?.title && meta?.menu !== false;
-          });
-
-      const moduleRedirectPath = prefixPath
-        ? (modulePath ? `${prefixPath}/${modulePath}` : prefixPath)
-        : modulePath;
-
-      routes.push({
-        path: moduleRedirectPath,
-        name: `Module_${prefixName ? prefixName + '_' : ''}${modulePath || 'root'}`,
-        redirect: firstChildRoute?.name
-          ? { name: firstChildRoute.name as string }
-          : `/${moduleRedirectPath}`,
-        meta: {
-          title: moduleConfig.name,
-          menuLabel: moduleConfig.name,
-          menuIcon: moduleConfig.icon,
-          menuOrder: moduleConfig.order ?? 50,
-          menu: true,
-        },
-      } as RouteRecordRaw);
-    }
-  }
-
-  return routes;
-}
-
-/**
- * 从模块配置树构建扩展包路由（替代 import.meta.glob 扫描方案）。
- *
- * 模块配置通过 `children` 字段直接引用子页面配置，构成显式依赖树，
- * 避免运行时文件扫描，享受完整的 TypeScript 类型检查和 tree-shaking。
- *
- * @param moduleConfig - 模块配置（含 children 子页面列表）
- * @param moduleName   - 扩展模块名（如 'ad'），自动拼接为 `/ext/${moduleName}` 前缀
- * @param options.namespaceName - 命名空间显示名称（如 '广告管理'），
- *   存在时生成 `ext` 命名空间重定向路由，否则生成 `ext/{moduleName}` 模块重定向路由
+ * 支持与菜单树结构一致的嵌套写法，自动拼接路径并扁平化，
+ * 避免手动拼接路径字符串导致的错误。
  *
  * @example
  * ```typescript
- * // src/views/index.ts
- * import placementPage from './placement/index'
- * const config = defineModuleConfig({ type: 'module', name: '广告管理', icon: 'Notification', order: 60 })
- * export default { ...config, children: [placementPage] }
- *
- * // src/index.ts
- * import { buildRoutesFromModuleTree } from 'moyan-mfw-base/frontend'
- * import adModuleConfig from './views/index'
- * export const adRoutes = buildRoutesFromModuleTree(adModuleConfig, 'ad', { namespaceName: '广告管理' })
+ * const componentMap = defineComponentMap({
+ *   dashboard: () => import('./views/dashboard/Index.vue'),
+ *   sys: {
+ *     'app-type': () => import('moyan-mfw-base/frontend').then(m => m.SysAppTypePage),
+ *     user: () => import('moyan-mfw-base/frontend').then(m => m.SysUserPage),
+ *   },
+ *   business: {
+ *     orders: () => import('./views/business/orders/Index.vue'),
+ *   },
+ * });
+ * // 等价于 { dashboard: ..., 'sys/app-type': ..., 'sys/user': ..., 'business/orders': ... }
  * ```
  */
-export function buildRoutesFromModuleTree(
-  moduleConfig: ModuleConfig & { children?: unknown[] },
-  moduleName: string,
-  options?: {
-    namespaceName?: string;
-  }
-): RouteRecordRaw[] {
-  const prefixPath = `ext/${moduleName}`;
-  const children = moduleConfig.children ?? [];
+export function defineComponentMap<
+  T extends Record<string, unknown>,
+>(nested: T): ComponentMap {
+  const result: ComponentMap = {};
 
+  function walk(obj: Record<string, unknown>, prefix: string): void {
+    for (const key of Object.keys(obj)) {
+      const value = obj[key];
+      const path = prefix ? `${prefix}/${key}` : key;
+
+      if (
+        typeof value === "function" ||
+        (typeof value === "object" &&
+          value !== null &&
+          "then" in (value as object))
+      ) {
+        // 叶子节点：组件或懒加载函数
+        result[path] = value;
+      } else if (typeof value === "object" && value !== null) {
+        // 分支节点：递归
+        walk(value as Record<string, unknown>, path);
+      }
+    }
+  }
+
+  walk(nested, "");
+  return result;
+}
+
+/**
+ * 扩展包路由构建参数。
+ */
+export interface ExtensionRouteOptions {
+  /** 扩展包名称，如 `'ad'`、`'config'` */
+  extensionName: string;
+  /** 扩展包在菜单中的显示名称 */
+  namespaceLabel: string;
+  /** 扩展包图标 */
+  namespaceIcon?: string;
+  /** 菜单排序 */
+  namespaceOrder?: number;
+}
+
+// ==================== 核心路由构建函数 ====================
+
+/**
+ * 从菜单树配置构建 Vue Router 路由。
+ *
+ * 这是新的推荐路由构建方式。
+ *
+ * 处理流程：
+ * 1. 递归遍历所有 AppType 的菜单树节点
+ * 2. 有 children 的节点 → 生成 MENU 重定向路由
+ * 3. 无 children 的节点 → 从 componentMap 查找组件 → 生成 PAGE 路由
+ * 4. 所有路由携带 moduleInfo（含 appTypeCode）供菜单按 AppType 分组
+ *
+ * @param menuTrees - 应用类型菜单树配置数组
+ * @param componentMap - 路径 → Vue 组件的映射表（key 为完整路径如 `'sys/user'`）
+ * @returns 扁平路由数组
+ */
+export function buildRoutesFromMenuTrees(
+  menuTrees: AppTypeMenuConfig[],
+  componentMap: ComponentMap = {},
+): RouteRecordRaw[] {
+  const routes: RouteRecordRaw[] = [];
+  const seenPaths = new Set<string>();
+
+  for (const appTypeConfig of menuTrees) {
+    processMenuNodes(
+      appTypeConfig.children,
+      "",
+      undefined,
+      undefined,
+      undefined,
+      appTypeConfig,
+      componentMap,
+      routes,
+      seenPaths,
+    );
+  }
+
+  return routes;
+}
+
+/**
+ * 从菜单树配置构建扩展包路由（带 `/ext/{name}/` 前缀）。
+ *
+ * 与旧的 `buildRoutesFromModuleTree` 对应，但使用新的 MenuNode + ComponentMap 模式。
+ * 生成的路由路径会自动添加 `/ext/{extensionName}/` 前缀。
+ *
+ * @param menuNodes - 扩展包的菜单节点树（纯数据）
+ * @param componentMap - 路径 → Vue 组件的映射表
+ * @param options - 扩展包配置
+ * @returns 扁平路由数组
+ */
+export function buildRoutesFromMenuTreeWithPrefix(
+  menuNodes: MenuNode[],
+  componentMap: ComponentMap,
+  options: ExtensionRouteOptions,
+): RouteRecordRaw[] {
+  const { extensionName, namespaceLabel, namespaceIcon, namespaceOrder } =
+    options;
+  const extPrefix = `ext/${extensionName}`;
+  const routes: RouteRecordRaw[] = [];
   const pageRoutes: RouteRecordRaw[] = [];
 
-  for (const child of children) {
-    if (!isPageConfig(child)) continue;
+  const fakeAppTypeConfig = {
+    appTypeCode: `_ext_${extensionName}`,
+    label: namespaceLabel,
+    icon: namespaceIcon,
+    order: namespaceOrder ?? 50,
+    children: menuNodes,
+  };
 
-    pageRoutes.push({
-      path: `${prefixPath}/${child.path}`,
-      name: `Route_ext_${moduleName}_${child.path.replace(/\//g, '_')}`,
-      component: child.page as RouteRecordRaw['component'],
-      meta: {
-        title: child.name,
-        menuLabel: child.name,
-        menuIcon: child.icon,
-        menuOrder: child.order ?? 50,
-        requiresAuth: child.auth ?? true,
-        hidden: child.hidden,
-        permissions: child.permissions,
-        permissionValue: child.permissionValue?.toString(),
-        permCode: child.permCode,
-        moduleInfo: {
-          modulePath: undefined,
-          moduleName: moduleConfig.name,
-          moduleIcon: moduleConfig.icon,
-          moduleOrder: moduleConfig.order ?? 50,
-        },
-      },
-    } as unknown as RouteRecordRaw);
-  }
+  processMenuNodes(
+    menuNodes,
+    extPrefix,
+    namespaceLabel,
+    namespaceIcon,
+    namespaceOrder ?? 50,
+    fakeAppTypeConfig,
+    componentMap,
+    pageRoutes,
+    new Set<string>(),
+  );
 
-  if (!options?.namespaceName) {
-    if (pageRoutes.length > 0) {
-      const firstChildPath = pageRoutes[0].path?.toString().replace(`${prefixPath}/`, '');
+  routes.push(...pageRoutes);
 
-      pageRoutes.unshift({
-        path: prefixPath,
-        name: `Module_ext_${moduleName}`,
-        redirect: `/${prefixPath}/${firstChildPath}`,
-        meta: {
-          title: moduleConfig.name,
-          menuLabel: moduleConfig.name,
-          menuIcon: moduleConfig.icon,
-          menuOrder: moduleConfig.order ?? 50,
-          menu: true,
-        },
-      } as RouteRecordRaw);
-    }
-  }
-
-  if (options?.namespaceName) {
-    const firstChildPath = pageRoutes[0]?.path?.toString().replace(`${prefixPath}/`, '');
-
-    pageRoutes.push({
-      path: 'ext',
-      name: 'Namespace_ext',
-      redirect: `/${prefixPath}/${firstChildPath}`,
-      meta: {
-        title: options.namespaceName,
-        menuLabel: options.namespaceName,
-        menuIcon: moduleConfig.icon,
-        menuOrder: moduleConfig.order ?? 50,
-        menu: true,
-      },
-    } as RouteRecordRaw);
-  }
-
-  return pageRoutes;
-}
-
-/**
- * 基包内部使用：扫描基包自己的 views 目录构建路由。
- * minSegments 设为 1 以允许单层路由（如 dashboard）被创建。
- */
-export function buildBasePackageRoutes(): RouteRecordRaw[] {
-  const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
-    eager: true,
-    import: 'default',
-  });
-  return buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
-}
-
-/**
- * 扩展包路由构建器：自动拼接 `ext/模块名/页面` 前缀。
- *
- * 生成的路径结构：
- *   无 namespaceName → 三层：ext/ad（模块重定向）→ ext/ad/placement（页面）
- *   有 namespaceName → 两层：ext（作为模块入口，title=namespaceName）→ ext/ad/placement（页面）
- *
- * @param allConfigs - `import.meta.glob('./views/.../index.{ts,tsx}')` 的扫描结果
- * @param moduleName  - 扩展模块名（如 'ad'），自动拼接为 `/ext/${moduleName}` 前缀
- * @param options.minSegments   - 页面最小路径段数（默认 1，允许单层路由）
- * @param options.skipPaths     - 需要跳过的路径
- * @param options.namespaceName - 命名空间显示名称（如 '广告管理'），存在时 ext 路由作为模块入口，不再生成 ext/moduleName 中间层
- */
-export function buildExtensionRoutes(
-  allConfigs: Record<string, unknown>,
-  moduleName: string,
-  options?: {
-    minSegments?: number;
-    skipPaths?: string[];
-    namespaceName?: string;
-  }
-): RouteRecordRaw[] {
-  const routes = buildRoutesFromConfigs(allConfigs, {
-    ...options,
-    minSegments: options?.minSegments ?? 1,
-    routePrefix: `/ext/${moduleName}`,
-  });
-
-  const prefixPath = `ext/${moduleName}`;
-
-  if (!options?.namespaceName) {
-    const moduleConfigEntry = Object.entries(allConfigs).find(([, config]) =>
-      isModuleConfig(config)
-    );
-    const moduleDisplayName =
-      (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.name || moduleName;
-
-    const moduleRedirectRoute: RouteRecordRaw = {
-      path: prefixPath,
-      name: `Module_ext_${moduleName}`,
-      redirect: `/${prefixPath}/${routes[0]?.path?.replace(`${prefixPath}/`, '')}`,
-      meta: {
-        title: moduleDisplayName,
-        menuLabel: moduleDisplayName,
-        menuIcon: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.icon,
-        menuOrder: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.order ?? 50,
-        menu: true,
-      },
-    } as RouteRecordRaw;
-
-    if (!routes.some(r => r.path === prefixPath)) {
-      routes.unshift(moduleRedirectRoute);
-    }
-  }
-
-  if (options?.namespaceName) {
-    const moduleConfigEntry = Object.entries(allConfigs).find(([, config]) =>
-      isModuleConfig(config)
-    );
+  // 生成命名空间重定向路由
+  if (pageRoutes.length > 0) {
+    const firstChild = menuNodes[0];
+    const firstChildPath = firstChild.children?.length
+      ? `${extPrefix}/${firstChild.path}/${firstChild.children[0].path}`
+      : `${extPrefix}/${firstChild.path}`;
 
     routes.push({
-      path: 'ext',
-      name: 'Namespace_ext',
-      redirect: `/${prefixPath}/${routes[0]?.path?.replace(`${prefixPath}/`, '')}`,
+      path: "ext",
+      name: `Namespace_${extensionName}`,
+      redirect: `/${firstChildPath}`,
       meta: {
-        title: options.namespaceName,
-        menuLabel: options.namespaceName,
-        menuIcon: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.icon,
-        menuOrder: (moduleConfigEntry?.[1] as ModuleConfig | undefined)?.order ?? 50,
+        title: namespaceLabel,
+        menuLabel: namespaceLabel,
+        menuIcon: namespaceIcon,
+        menuOrder: namespaceOrder ?? 50,
         menu: true,
+        moduleInfo: {
+          modulePath: "ext",
+          moduleName: namespaceLabel,
+          moduleIcon: namespaceIcon,
+          moduleOrder: namespaceOrder ?? 50,
+          appTypeCode: `_ext_${extensionName}`,
+        },
       },
     } as RouteRecordRaw);
   }
 
   return routes;
 }
+
+// ==================== 内部递归处理 ====================
+
+/**
+ * 递归处理菜单节点，生成路由。
+ */
+function processMenuNodes(
+  nodes: MenuNode[],
+  parentPath: string,
+  parentModuleName: string | undefined,
+  parentModuleIcon: string | undefined,
+  parentModuleOrder: number | undefined,
+  appTypeConfig: AppTypeMenuConfig,
+  componentMap: ComponentMap,
+  routes: RouteRecordRaw[],
+  seenPaths: Set<string>,
+): void {
+  for (const node of nodes) {
+    const fullPath = parentPath ? `${parentPath}/${node.path}` : node.path;
+    const hasChildren = node.children && node.children.length > 0;
+
+    if (hasChildren) {
+      // MENU 分组节点：生成重定向路由到第一个子页面
+      const firstChild = node.children![0];
+      const firstChildPath = `${fullPath}/${firstChild.path}`;
+
+      if (!seenPaths.has(fullPath)) {
+        seenPaths.add(fullPath);
+        routes.push({
+          path: fullPath,
+          name: `Menu_${fullPath.replace(/\//g, "_").replace(/:/g, "_")}`,
+          redirect: `/${firstChildPath}`,
+          meta: {
+            title: node.name,
+            menuLabel: node.name,
+            menuIcon: node.icon,
+            menuOrder: node.order ?? 50,
+            menu: true,
+            moduleInfo: {
+              modulePath: fullPath,
+              moduleName: node.name,
+              moduleIcon: node.icon,
+              moduleOrder: node.order ?? 50,
+              appTypeCode: appTypeConfig.appTypeCode,
+            },
+          },
+        } as RouteRecordRaw);
+      }
+
+      processMenuNodes(
+        node.children!,
+        fullPath,
+        node.name,
+        node.icon,
+        node.order ?? 50,
+        appTypeConfig,
+        componentMap,
+        routes,
+        seenPaths,
+      );
+    } else {
+      // PAGE 页面节点
+      const component = componentMap[fullPath];
+
+      if (!component) {
+        if (typeof console !== "undefined") {
+          console.warn(
+            `[MFW Router] 菜单节点 "${fullPath}" 在 componentMap 中未找到对应组件，跳过路由生成`,
+          );
+        }
+        continue;
+      }
+
+      if (seenPaths.has(fullPath)) {
+        continue;
+      }
+      seenPaths.add(fullPath);
+
+      const routeName = `Route_${fullPath.replace(/\//g, "_").replace(/:/g, "_")}`;
+
+      routes.push({
+        path: fullPath,
+        name: routeName,
+        component: component as RouteRecordRaw["component"],
+        meta: {
+          title: node.name,
+          menuLabel: node.name,
+          menuIcon: node.icon,
+          menuOrder: node.order ?? 50,
+          requiresAuth: node.auth ?? true,
+          hidden: node.hidden,
+          permissions: node.permissions,
+          permCode: node.permCode,
+          ...(parentModuleName
+            ? {
+                moduleInfo: {
+                  modulePath: parentPath,
+                  moduleName: parentModuleName,
+                  moduleIcon: parentModuleIcon,
+                  moduleOrder: parentModuleOrder ?? 50,
+                  appTypeCode: appTypeConfig.appTypeCode,
+                },
+              }
+            : {}),
+        },
+      } as RouteRecordRaw);
+    }
+  }
+}
+
+// ==================== 权限值注册导出 ====================
+
+export type { PermissionName } from "../utils/permissions";
+
+// ==================== 类型重导出 ====================
+
+export type { AppTypeMenuConfig, MenuNode } from "@internal/base-shared";

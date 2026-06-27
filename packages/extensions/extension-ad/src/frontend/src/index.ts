@@ -1,10 +1,26 @@
 /**
  * @fileoverview 广告扩展包前端入口
- * @description 从模块配置树手动构建路由，不使用 import.meta.glob 扫描
+ *
+ * 使用新的 MenuNode + ComponentMap + buildRoutesFromMenuTreeWithPrefix 模式。
+ * 向后兼容：仍导出 adRoutes 供现有业务层使用。
  */
-import { buildRoutesFromModuleTree } from 'moyan-mfw-base/frontend'
-import adModuleConfig from './views/index'
 
-export const adRoutes = buildRoutesFromModuleTree(adModuleConfig, 'ad', {
-  namespaceName: '广告管理',
-})
+import { buildRoutesFromMenuTreeWithPrefix } from "moyan-mfw-base/frontend";
+import { adMenuNodes, adComponentMap } from "./views/index";
+
+export { adMenuNodes, adComponentMap } from "./views/index";
+
+/**
+ * 广告扩展包路由（向后兼容导出）。
+ * 路由路径自动添加 `/ext/ad/` 前缀。
+ */
+export const adRoutes = buildRoutesFromMenuTreeWithPrefix(
+  adMenuNodes,
+  adComponentMap,
+  {
+    extensionName: "ad",
+    namespaceLabel: "广告管理",
+    namespaceIcon: "Notification",
+    namespaceOrder: 60,
+  },
+);

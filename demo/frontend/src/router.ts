@@ -1,25 +1,41 @@
-﻿/**
- * @fileoverview 业务路由配置 - 自动扫描模式。
- *
- * 框架使用 import.meta.glob 扫描 views 目录下的 index.{ts,tsx} 配置文件
- * 自动生成路由和菜单，无需手动配置路由表
- *
- * 模块配置（可选）：在模块目录定义 index.ts，例如：
- *   views/business/index.ts: export default { type: 'module', name: '业务中心', icon: 'Briefcase', order: 10 }
- */
-
-import type { RouteRecordRaw } from 'vue-router';
-import { buildRoutesFromConfigs } from 'moyan-mfw-base/frontend';
-
 /**
- * 扫描所有配置文件（包括模块配置和页面配置）
+ * @fileoverview 业务路由配置 - 手动组件映射方案。
+ *
+ * 使用 defineComponentMap 以嵌套结构定义组件映射，
+ * 结构自动与 menu-trees.ts 菜单树对齐，避免路径字符串拼写错误。
+ *
+ * 框架内置页面从 moyan-mfw-base/frontend 按需引入。
  */
-const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-}) as Record<string, unknown>;
 
-/**
- * 业务路由配置（默认导出）
- */
-export const businessRoutes: RouteRecordRaw[] = buildRoutesFromConfigs(allConfigs, { minSegments: 1 })
+import { defineComponentMap } from "moyan-mfw-base/frontend";
+
+export const componentMap = defineComponentMap({
+  // 首页
+  dashboard: () => import("./views/dashboard/Index.vue"),
+
+  // 系统管理页面（从框架 base 包引入）
+  sys: {
+    "app-type": () =>
+      import("moyan-mfw-base/frontend").then((m) => m.SysAppTypePage),
+    app: () => import("moyan-mfw-base/frontend").then((m) => m.SysAppPage),
+    user: () => import("moyan-mfw-base/frontend").then((m) => m.SysUserPage),
+    role: () => import("moyan-mfw-base/frontend").then((m) => m.SysRolePage),
+    member: () =>
+      import("moyan-mfw-base/frontend").then((m) => m.SysMemberPage),
+    permission: () =>
+      import("moyan-mfw-base/frontend").then((m) => m.SysPermissionPage),
+    "audit-log": () =>
+      import("moyan-mfw-base/frontend").then((m) => m.SysAuditLogPage),
+  },
+
+  // 业务页面
+  business: {
+    orders: () => import("./views/business/orders/Index.vue"),
+    reports: () => import("./views/business/reports/Index.vue"),
+  },
+
+  // 监控页面
+  monitor: {
+    overview: () => import("./views/monitor/overview/Index.vue"),
+  },
+});

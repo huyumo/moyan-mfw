@@ -10,9 +10,8 @@
  * - 模块分组和顶级项均按 meta.menuOrder 排序
  */
 
-import type { RouteRecordRaw } from 'vue-router';
-import type { SideMenuItem } from '../types/layout-types';
-import { buildRoutesFromConfigs } from './routes';
+import type { RouteRecordRaw } from "vue-router";
+import type { SideMenuItem } from "../types/layout-types";
 
 /** 带 order 字段的内部菜单项，用于排序后剥离 */
 interface OrderedMenuItem extends SideMenuItem {
@@ -154,18 +153,4 @@ export function dedupeMenuTree(
   }
 
   return result;
-}
-
-/**
- * 读取路由配置并转换为菜单格式。
- * 用于安装向导预览等场景，直接从 views 目录扫描生成菜单。
- */
-export function readRoutes(): SideMenuItem[] {
-  const allConfigs = import.meta.glob('../views/**/index.{ts,tsx}', {
-    eager: true,
-    import: 'default',
-  });
-
-  const routes = buildRoutesFromConfigs(allConfigs, { minSegments: 1 });
-  return createMenuTreeFromRoutes(routes, { parentPath: '' });
 }

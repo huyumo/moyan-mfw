@@ -22,6 +22,8 @@ export function createExtensionFrontendApp(options: CreateExtensionFrontendAppOp
 
   return createBaseAdminApp({
     title: options.name,
+    menuTrees: [],          // 扩展包无 AppType 菜单树
+    componentMap: {},       // 扩展包路由由 routes 传入
     routes: options.routes,
     layout: {
       layoutMode: 'dual',
