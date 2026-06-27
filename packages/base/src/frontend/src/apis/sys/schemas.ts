@@ -281,18 +281,6 @@ export type UpdatePermissionDto = {
   permissionValue?: integer // 权限值（位运算）
 }
 
-export type RouteNodeDto = {
-  path: string // 路由路径
-  name: string // 路由名称
-  permCode?: string // 权限编码
-  permissionValue?: string // 权限值（位运算）
-  children?: Array<RouteNodeDto> // 子路由
-}
-
-export type SyncPermissionDto = {
-  routes: Array<RouteNodeDto> // 路由树结构
-}
-
 export type CreateAppTypeDto = {
   typeName: string // 类型名称
   typeCode: string // 类型编码

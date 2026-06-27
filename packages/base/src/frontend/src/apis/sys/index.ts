@@ -34,8 +34,6 @@ import type {
   CreatePermissionDto,
   PermissionResponseDto,
   UpdatePermissionDto,
-  RouteNodeDto,
-  SyncPermissionDto,
   CreateAppTypeDto,
   AppTypeResponseDto,
   PermissionTreesResponseDto,
@@ -599,20 +597,6 @@ export class ApiPermissionBatchCreate extends ApiCall<
   Array<PermissionResponseDto>
 > {
   readonly path = '/api/permissions/batch'
-  readonly method: MoMethod = 'POST'
-  readonly auth = true
-}
-
-/**
- * permission|权限相关接口->同步路由到权限表
- */
-export class ApiPermissionSyncPermissions extends ApiCall<
-  {
-    body: SyncPermissionDto
-  },
-  Array<PermissionTreeNodeDto>
-> {
-  readonly path = '/api/permissions/sync'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }

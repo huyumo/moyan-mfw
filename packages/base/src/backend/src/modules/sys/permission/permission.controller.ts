@@ -27,7 +27,7 @@ import {
 } from '@nestjs/swagger';
 import { PermissionService } from './permission.service';
 import { CreatePermissionDto, UpdatePermissionDto, QueryPermissionDto, PermissionResponseDto } from './dto';
-import { SyncPermissionDto, PermissionTreeNodeDto } from './dto';
+import { PermissionTreeNodeDto } from './dto';
 import { AuditLog, AuditModule } from '../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../common/types/api.types';
@@ -196,22 +196,4 @@ export class PermissionController {
     return ApiResponseUtil.success(result, '批量创建成功');
   }
 
-  /**
-   * 同步路由到权限表
-   */
-  @Post('sync')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '同步路由到权限表', description: '将前端路由同步到权限定义表（全局权限），返回最新权限树' })
-  @ApiResponse({
-    status: 200,
-    description: '同步成功',
-    type: [PermissionTreeNodeDto],
-  })
-  @ApiResponse({ status: 400, description: '请求参数错误' })
-  @AuditLog({ module: AuditModule.PERMISSION, event: 'SYNC_PERMISSIONS', description: '同步权限路由' })
-  @RequirePermission({ permCode: '*:sys:permission-pc', permissionValue: ['添加'] })
-  async syncPermissions(@Body() syncDto: SyncPermissionDto) {
-    const result = await this.permissionService.syncPermissions(syncDto.routes);
-    return ApiResponseUtil.success(result, '权限同步成功');
   }
-}
