@@ -60,7 +60,6 @@ const onConfirm = async () => {
     return;
   }
 
-  console.log('-------------',form,props);
   await new ApiAppChangeOwner({
     params: { id: props.appId },
     body: { ownerId: form.newOwnerId },
