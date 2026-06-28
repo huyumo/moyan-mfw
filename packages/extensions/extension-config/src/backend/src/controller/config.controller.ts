@@ -12,7 +12,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Public, RequirePermission } from 'moyan-mfw-base/backend';
 import { ApiResponseUtil } from '../api-response';
 import { ConfigService } from '../service/config.service';
-import { BatchUpdateConfigDto, ConfigResponseDto } from '../dto';
+import { BatchUpdateConfigDto, DeleteConfigDto, ConfigResponseDto } from '../dto';
 
 @ApiTags('ext-config', '配置管理相关接口')
 @Controller('')
@@ -49,12 +49,11 @@ export class ConfigController {
   @ApiOperation({ summary: '删除配置' })
   @ApiParam({ name: 'id', description: '配置 ID' })
   async delete(
-    @Query('appId') appId: string | undefined,
-    @Query('groupKey') groupKey: string,
+    @Body() dto: DeleteConfigDto,
     @Param('id') id: string,
   ) {
-    const appIdNum = appId !== undefined && appId !== 'null' ? Number(appId) : null;
-    await this.service.delete(appIdNum, groupKey, Number(id));
+    const appIdNum = dto.appId !== undefined && dto.appId !== null ? dto.appId : null;
+    await this.service.delete(appIdNum, dto.groupKey, Number(id));
     return ApiResponseUtil.success(null, '删除成功');
   }
 }

@@ -85,3 +85,15 @@ export class BatchUpdateConfigDto {
   @Type(() => BatchUpdateItemDto)
   items: BatchUpdateItemDto[];
 }
+
+export class DeleteConfigDto {
+  @ApiPropertyOptional({ description: '应用 ID，NULL 表示全局配置' })
+  @IsOptional()
+  @IsNumber()
+  appId: number | null;
+
+  @ApiProperty({ description: '配置分组标识' })
+  @IsNotEmpty({ message: '分组标识不能为空' })
+  @IsString()
+  groupKey: string;
+}

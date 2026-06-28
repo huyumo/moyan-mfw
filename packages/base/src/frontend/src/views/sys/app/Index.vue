@@ -224,6 +224,7 @@ const handleDelete = async (row: AppDetailResponseDto) => {
 /** 拥有者管理 */
 const handleOwner = (row: AppDetailResponseDto) => {
   const owner = (row.owner as any) || {};
+  console.log('-------------',row);
   MfwPopup.open({
     title: `变更拥有者 - ${row.appName}`,
     type: 'dialog',

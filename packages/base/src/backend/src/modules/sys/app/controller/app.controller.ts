@@ -22,14 +22,20 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { AppService } from '../service/app.service';
-import { CreateAppDto, UpdateAppDto, QueryAppDto, AppDetailResponseDto } from '../dto';
+import {
+  CreateAppDto,
+  UpdateAppDto,
+  QueryAppDto,
+  ChangeAppOwnerDto,
+  AppDetailResponseDto,
+} from '../dto';
 import { AuditLog, AuditModule } from '../../../../common/decorators/audit-log.decorator';
 import { RequirePermission } from '../../../../common/decorators/require-permission.decorator';
 import { ApiResponseUtil } from '../../../../common/types/api.types';
 import { ApiPaginatedResponse } from '../../../../common';
+import { StatusDto } from '../../../../common/types/status.dto';
 
 /**
  * 应用控制器
@@ -136,7 +142,6 @@ export class AppController {
   @Put(':id/owner')
   @ApiOperation({ summary: '变更负责人', description: '变更应用实例的负责人' })
   @ApiParam({ name: 'id', description: '应用实例 ID' })
-  @ApiQuery({ name: 'ownerId', description: '新负责人 ID' })
   @ApiResponse({
     status: 200,
     description: '变更成功',
@@ -146,9 +151,9 @@ export class AppController {
   @RequirePermission({ permCode: '*:sys:app', permissionValue: ['编辑'] })
   async changeOwner(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('ownerId') ownerId: string,
+    @Body() changeOwnerDto: ChangeAppOwnerDto,
   ) {
-    const result = await this.appService.changeOwner(id, ownerId);
+    const result = await this.appService.changeOwner(id, changeOwnerDto.ownerId);
     return ApiResponseUtil.success(result, '变更成功');
   }
 
@@ -158,7 +163,6 @@ export class AppController {
   @Put(':id/status')
   @ApiOperation({ summary: '更新应用实例状态', description: '启用或禁用指定应用实例' })
   @ApiParam({ name: 'id', description: '应用实例 ID' })
-  @ApiQuery({ name: 'status', description: '状态 (1:启用 0:禁用)', enum: [0, 1] })
   @ApiResponse({
     status: 200,
     description: '更新成功',
@@ -168,9 +172,9 @@ export class AppController {
   @RequirePermission({ permCode: '*:sys:app', permissionValue: ['编辑'] })
   async updateStatus(
     @Param('id', ParseUUIDPipe) id: string,
-    @Query('status') status: number,
+    @Body() statusDto: StatusDto,
   ) {
-    const result = await this.appService.updateStatus(id, status);
+    const result = await this.appService.updateStatus(id, statusDto.status);
     return ApiResponseUtil.success(result, '更新成功');
   }
 }

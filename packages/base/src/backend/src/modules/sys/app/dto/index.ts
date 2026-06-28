@@ -6,6 +6,7 @@
 export { CreateAppDto } from './req/create-app.dto';
 export { UpdateAppDto } from './req/update-app.dto';
 export { QueryAppDto } from './req/query-app.dto';
+export { ChangeAppOwnerDto } from './req/change-app-owner.dto';
 export { AppResponseDto, AppDetailResponseDto } from './res/app-response.dto';
 
 export { AddMemberDto } from './req/add-member.dto';

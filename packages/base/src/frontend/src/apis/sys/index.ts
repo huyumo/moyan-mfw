@@ -46,6 +46,7 @@ import type {
   CreateAppDto,
   AppDetailResponseDto,
   UpdateAppDto,
+  ChangeAppOwnerDto,
   AddMemberDto,
   MemberRoleInfoDto,
   MemberResponseDto,
@@ -908,11 +909,9 @@ export class ApiAppDelete extends ApiCall<
  */
 export class ApiAppChangeOwner extends ApiCall<
   {
+    body: ChangeAppOwnerDto
     params: {
       id: string //应用实例 ID
-    }
-    query: {
-      ownerId: string //新负责人 ID
     }
   },
   AppDetailResponseDto
@@ -927,11 +926,9 @@ export class ApiAppChangeOwner extends ApiCall<
  */
 export class ApiAppUpdateStatus extends ApiCall<
   {
+    body: StatusDto
     params: {
       id: string //应用实例 ID
-    }
-    query: {
-      status: number //状态 (1:启用 0:禁用)
     }
   },
   AppDetailResponseDto
@@ -1166,9 +1163,7 @@ export class ApiUploadFileGetOssAuthorization extends ApiCall<
  */
 export class ApiUploadFileUploadFile extends ApiCall<
   {
-    query: {
-      businessType: string
-    }
+    body: any
   },
   unknown
 > {
@@ -1182,9 +1177,7 @@ export class ApiUploadFileUploadFile extends ApiCall<
  */
 export class ApiUploadFileUploadFiles extends ApiCall<
   {
-    query: {
-      businessType: string
-    }
+    body: any
   },
   unknown
 > {

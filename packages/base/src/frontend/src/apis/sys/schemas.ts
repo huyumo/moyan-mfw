@@ -381,6 +381,10 @@ export type UpdateAppDto = {
   sortOrder?: number // 排序号
 }
 
+export type ChangeAppOwnerDto = {
+  ownerId: string // 新负责人 ID
+}
+
 export type AddMemberDto = {
   userId: string // 用户 ID
 }

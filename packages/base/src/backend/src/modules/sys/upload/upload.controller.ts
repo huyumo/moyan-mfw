@@ -7,7 +7,7 @@ import {
   Controller,
   Get,
   Post,
-  Query,
+  Body,
   UseInterceptors,
   UploadedFile,
   UploadedFiles,
@@ -20,6 +20,7 @@ import {
   ApiBearerAuth,
   ApiResponse,
   ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { UploadFileService, UploadResult } from './upload.service';
@@ -51,11 +52,20 @@ export class UploadFileController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '上传单个文件', description: '上传单个文件，返回可访问的 URL' })
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        businessType: { type: 'string', description: '业务类型' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '上传成功' })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Query('businessType') businessType?: string,
+    @Body('businessType') businessType?: string,
   ) {
     const result = await this.uploadFileService.upload(file, businessType);
     return ApiResponseUtil.success(result, '上传成功');
@@ -65,12 +75,21 @@ export class UploadFileController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: '批量上传文件', description: '批量上传多个文件（最多10个）' })
   @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        files: { type: 'array', items: { type: 'string', format: 'binary' } },
+        businessType: { type: 'string', description: '业务类型' },
+      },
+    },
+  })
   @ApiResponse({ status: 201, description: '上传成功' })
   @AuditLog({ module: 'UPLOAD', event: 'BATCH_UPLOAD_FILE', description: '批量上传文件' })
   @UseInterceptors(FilesInterceptor('files', 10))
   async uploadFiles(
     @UploadedFiles() files: Express.Multer.File[],
-    @Query('businessType') businessType?: string,
+    @Body('businessType') businessType?: string,
   ) {
     const results = await this.uploadFileService.uploadBatch(files, businessType);
     return ApiResponseUtil.success(results, '批量上传成功');
