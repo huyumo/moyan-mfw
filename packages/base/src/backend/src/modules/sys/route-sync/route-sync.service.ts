@@ -529,6 +529,15 @@ export class RouteSyncService {
 
   /**
    * 清除不在新配置中的自动同步权限。
+   *
+   * 删除策略：
+   * 1. 先批量删除关联表记录（sys_role_permissions、sys_app_type_permissions）
+   * 2. 解除子权限对父权限的外键引用（SET parentId = NULL）
+   * 3. 最后批量删除权限本身
+   *
+   * 此策略比深度排序更健壮，能处理：
+   * - 手动创建的子权限（isAutoSync=0）引用自动同步父权限
+   * - permCode 深度与实际树结构不一致的情况
    */
   private async clearObsoleteAutoSyncPermissions(
     newPermCodes: Set<string>,
@@ -552,31 +561,37 @@ export class RouteSyncService {
 
     if (permsToDelete.length === 0) return 0;
 
-    // 按深度从深到浅排序
-    const sortedPerms = [...permsToDelete].sort((a, b) => {
-      const depthA = a.permCode.split(":").length;
-      const depthB = b.permCode.split(":").length;
-      return depthB - depthA;
-    });
+    const idsToDelete = permsToDelete.map(
+      (p: { id: string; permCode: string }) => p.id,
+    );
+    const placeholders = idsToDelete.map(() => "?").join(", ");
 
-    // 逐个删除
-    for (const perm of sortedPerms) {
-      await manager.query(
-        `DELETE FROM sys_role_permissions WHERE permissionId = ?`,
-        [perm.id],
-      );
-      await manager.query(
-        `DELETE FROM sys_app_type_permissions WHERE permissionId = ?`,
-        [perm.id],
-      );
-      await permRepo.delete(perm.id);
-    }
+    // 1. 批量删除关联表记录
+    await manager.query(
+      `DELETE FROM sys_role_permissions WHERE permissionId IN (${placeholders})`,
+      idsToDelete,
+    );
+    await manager.query(
+      `DELETE FROM sys_app_type_permissions WHERE permissionId IN (${placeholders})`,
+      idsToDelete,
+    );
 
-    if (sortedPerms.length > 0) {
-      this.logger.log(`已清除 ${sortedPerms.length} 个过期的自动同步权限`);
-    }
+    // 2. 解除子权限对父权限的外键引用（parentId → NULL）
+    //    确保不存在其他权限引用待删除的权限作为父节点
+    await manager.query(
+      `UPDATE sys_permissions SET parentId = NULL WHERE parentId IN (${placeholders})`,
+      idsToDelete,
+    );
 
-    return sortedPerms.length;
+    // 3. 批量删除权限（此时已无外键约束冲突）
+    await manager.query(
+      `DELETE FROM sys_permissions WHERE id IN (${placeholders})`,
+      idsToDelete,
+    );
+
+    this.logger.log(`已清除 ${idsToDelete.length} 个过期的自动同步权限`);
+
+    return idsToDelete.length;
   }
 
   // ==================== 权限池同步 ====================
