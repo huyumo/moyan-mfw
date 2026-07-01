@@ -31,16 +31,15 @@ export const defaultNavigationConfig: AdminNavigationConfig = {
   homePath: '/dashboard',
   topNav: [],
   sideMenu: [
-    { key: 'dashboard', label: '首页', to: '/dashboard', icon: 'DataBoard', order: 1 },
+    { key: 'dashboard', label: '首页', to: '/dashboard', icon: 'DataBoard' },
     {
       key: 'exceptions',
       label: '异常页面',
       to: '/403',
       icon: 'WarningFilled',
-      order: 90,
       children: [
-        { key: 'forbidden', label: '权限不足', to: '/403', icon: 'Lock', order: 1 },
-        { key: 'missing', label: '页面不存在', to: '/404', icon: 'CircleCloseFilled', order: 2 },
+        { key: 'forbidden', label: '权限不足', to: '/403', icon: 'Lock' },
+        { key: 'missing', label: '页面不存在', to: '/404', icon: 'CircleCloseFilled' },
       ],
     },
   ],

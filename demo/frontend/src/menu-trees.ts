@@ -13,37 +13,38 @@
  */
 
 import type { FrontendAppTypeMenuConfig } from "moyan-mfw-base/frontend";
-import { AdPlacementList } from 'moyan-mfw-extension-ad/frontend'
+import { AdPlacementList ,} from 'moyan-mfw-extension-ad/frontend'
 import { SysAppTypePage, SysAppPage, SysUserPage, SysRolePage, SysMemberPage, SysPermissionPage, SysAuditLogPage } from 'moyan-mfw-base/frontend'
 import SysDashboardPage from '@/views/dashboard/Index.vue'
+import SupplierDashboardPage from '@/views/dashboard/Index.vue'
+import SupplierOrdersPage from '@/views/business/orders/Index.vue'
+import SupplierReportsPage from '@/views/business/reports/Index.vue'
+import SupplierOverviewPage from '@/views/monitor/overview/Index.vue'
 
 /**
  * 系统管理（system AppType）的菜单树
  */
 const systemMenuTree: FrontendAppTypeMenuConfig = {
   appTypeCode: "system",
+  roleCode:'super_admin',
   label: "系统管理",
   icon: "Setting",
-  order: 100,
   children: [
     {
       path: "dashboard",
       name: "首页",
       icon: "DataBoard",
-      order: 1,
       component: SysDashboardPage,
     },
     {
       path: "sys",
       name: "系统管理",
       icon: "Setting",
-      order: 100,
       children: [
         {
           path: "app-type",
           name: "应用类型管理",
           icon: "Grid",
-          order: 1,
           permissions: ["编辑"],
           component: SysAppTypePage,
         },
@@ -51,7 +52,6 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           path: "app",
           name: "应用管理",
           icon: "Application",
-          order: 2,
           permissions: ["添加", "编辑", "删除"],
           component: SysAppPage,
         },
@@ -59,7 +59,6 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           path: "user",
           name: "用户管理",
           icon: "User",
-          order: 3,
           permissions: ["添加", "编辑", "删除"],
           component: SysUserPage,
         },
@@ -67,7 +66,6 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           path: "role",
           name: "角色管理",
           icon: "UserFilled",
-          order: 4,
           permissions: ["添加", "编辑", "删除"],
           component: SysRolePage,
         },
@@ -75,7 +73,6 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           path: "member",
           name: "成员管理",
           icon: "Avatar",
-          order: 5,
           permissions: ["添加", "编辑", "删除"],
           component: SysMemberPage,
         },
@@ -83,15 +80,21 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           path: "permission",
           name: "权限管理",
           icon: "Lock",
-          order: 6,
           permissions: ["添加", "编辑", "删除"],
           component: SysPermissionPage,
+        },
+        {
+          path: "placement",
+          name: "广告位管理",
+          icon: "CollectionTag",
+          permCode:'xx:ext:ad:placement',
+          permissions: ["添加", "编辑", "删除"],
+          component: AdPlacementList
         },
         {
           path: "audit-log",
           name: "审计日志",
           icon: "Document",
-          order: 7,
           component: SysAuditLogPage,
         },
       ],
@@ -104,42 +107,33 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
  */
 const supplierMenuTree: FrontendAppTypeMenuConfig = {
   appTypeCode: "supplier",
+  roleCode:'supplier_admin',
   label: "供应商管理",
   icon: "Shop",
-  order: 10,
   children: [
     {
       path: "dashboard",
       name: "首页",
       icon: "DataBoard",
-      order: 1,
-      component: () => import("./views/dashboard/Index.vue"),
+      component: SupplierDashboardPage,
     },
     {
       path: "business",
       name: "业务中心",
       icon: "Briefcase",
-      order: 10,
       children: [
         {
           path: "orders",
           name: "订单中心",
           icon: "Tickets",
           permissions: ["发货", "充值", "接待", "添加"],
-          component: () => import("./views/business/orders/Index.vue"),
+          component: SupplierOrdersPage,
         },
         {
           path: "reports",
           name: "报表中心",
           icon: "TrendCharts",
-          component: () => import("./views/business/reports/Index.vue"),
-        },
-        {
-          path: "ad/placement",
-          name: "广告位管理",
-          icon: "CollectionTag",
-          permissions: ["添加", "编辑", "删除"],
-          component: AdPlacementList
+          component: SupplierReportsPage,
         },
       ],
     },
@@ -147,13 +141,12 @@ const supplierMenuTree: FrontendAppTypeMenuConfig = {
       path: "monitor",
       name: "监控管理",
       icon: "Monitor",
-      order: 20,
       children: [
         {
           path: "overview",
           name: "监控总览",
           icon: "Odometer",
-          component: () => import("./views/monitor/overview/Index.vue"),
+          component: SupplierOverviewPage,
         },
       ],
     },

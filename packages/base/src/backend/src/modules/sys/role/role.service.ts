@@ -42,7 +42,7 @@ export class RoleService {
    */
   @CacheEvict({ keys: 'sys:role:*' })
   async create(createRoleDto: CreateRoleDto): Promise<Role> {
-    const { roleCode } = createRoleDto;
+    const { roleCode, appId, appTypeId } = createRoleDto;
 
     // 检查角色编码是否存在
     const existingRole = await this.roleRepository.findOne({
@@ -51,6 +51,15 @@ export class RoleService {
 
     if (existingRole) {
       throw new ConflictException('角色编码已存在');
+    }
+
+    // 当传了 appId 但未传 appTypeId 时，从 App 实体自动补全 appTypeId
+    if (appId && !appTypeId) {
+      const app = await this.entityManager.findOne(App, { where: { id: appId } });
+      if (!app) {
+        throw new NotFoundException('应用实例不存在');
+      }
+      createRoleDto.appTypeId = app.appTypeId;
     }
 
     // 创建角色
@@ -92,21 +101,24 @@ export class RoleService {
       throw new BadRequestException('缺少 appId 或 appTypeId 参数');
     }
 
+    const isBuiltin = appTypeId ? 0 : 1;
+
     const whereBuilder = new WhereBuilder();
     whereBuilder
       .like('role.roleCode', roleCode)
       .like('role.roleName', roleName)
       .eq('role.roleStatus', roleStatus)
+      .eq('role.isBuiltin', isBuiltin)
 
     const pager = new PaginationX(this.entityManager.connection, query);
     return await pager
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || '';
-        // 有 appId：查询 appId 对应 appType 的角色 + 该 appTypeId 的所有角色
+        // 有 appId：查询 appId 对应 appType 的角色 + 该 appTypeId 的角色 + 该 appId 的私有角色
         // 无 appId：查询指定 appTypeId 的角色
         const appTypeIdCondition = appId
-          ? `(role.appTypeId IN (SELECT appTypeId FROM sys_apps WHERE id = '${appId}') OR role.appTypeId = '${appTypeId}')`
+          ? `(role.appTypeId IN (SELECT appTypeId FROM sys_apps WHERE id = '${appId}')`
           : `role.appTypeId = '${appTypeId}'`;
         return `
           SELECT ${select} FROM sys_roles role

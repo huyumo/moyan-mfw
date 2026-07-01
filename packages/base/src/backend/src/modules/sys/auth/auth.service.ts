@@ -309,7 +309,7 @@ export class AuthService {
     ORDER BY sp.sortOrder ASC;
     `
 
-    const [appTypeIdResult, result] = await executeRawSql(this.entityManager, sql, { userId, appId }, true);
+    const [appTypeIdResult, result] = await executeRawSql(this.entityManager, sql, { userId, appId });
     const permissions = result.map((item: any) => item.permCode)
     const appTypeId = appTypeIdResult[0]?.appTypeId || ''
 

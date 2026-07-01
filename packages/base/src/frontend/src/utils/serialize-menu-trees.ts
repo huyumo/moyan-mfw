@@ -25,17 +25,21 @@ function stripComponent(node: FrontendMenuNode): MenuNode {
 /**
  * 将前端菜单树（含内联组件）序列化为纯数据格式，供 API 传输使用。
  *
+ * 仅序列化定义了 roleCode 的菜单树（无 roleCode 的菜单树无需同步到后端）。
+ *
  * @param trees - 前端菜单树配置数组（含 component 字段）
  * @returns 纯数据菜单树配置数组（不含 component 字段）
  */
 export function serializeMenuTrees(
   trees: FrontendAppTypeMenuConfig[],
 ): AppTypeMenuConfig[] {
-  return trees.map((tree) => ({
-    appTypeCode: tree.appTypeCode,
-    label: tree.label,
-    icon: tree.icon,
-    order: tree.order,
-    children: tree.children.map(stripComponent),
-  }));
+  return trees
+    .filter((tree) => !!tree.roleCode)
+    .map((tree) => ({
+      appTypeCode: tree.appTypeCode,
+      roleCode: tree.roleCode!,
+      label: tree.label,
+      icon: tree.icon,
+      children: tree.children.map(stripComponent),
+    }));
 }

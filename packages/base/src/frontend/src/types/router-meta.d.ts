@@ -21,8 +21,6 @@ declare module 'vue-router' {
     menuIcon?: string;
     /** 菜单徽章 */
     menuBadge?: string;
-    /** 菜单排序 */
-    menuOrder?: number;
     /** 是否固定标签页 */
     affix?: boolean;
     /** 所属模块信息（用于菜单分组，不生成嵌套路由） */
@@ -33,8 +31,6 @@ declare module 'vue-router' {
       moduleName: string;
       /** 模块图标 */
       moduleIcon?: string;
-      /** 模块排序 */
-      moduleOrder?: number;
     };
   }
 }

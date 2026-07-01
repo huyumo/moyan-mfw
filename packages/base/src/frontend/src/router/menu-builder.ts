@@ -7,16 +7,11 @@
  * 核心逻辑：
  * - 有 moduleInfo 的页面 → 归入对应模块分组（如"系统管理"下的"用户管理"）
  * - 无 moduleInfo 的页面 → 作为顶级菜单项（如"首页"）
- * - 模块分组和顶级项均按 meta.menuOrder 排序
+ * - 菜单保持原始数据结构顺序，不做额外排序
  */
 
 import type { RouteRecordRaw } from "vue-router";
 import type { SideMenuItem } from "../types/layout-types";
-
-/** 带 order 字段的内部菜单项，用于排序后剥离 */
-interface OrderedMenuItem extends SideMenuItem {
-  order: number;
-}
 
 /** 路径规范化：去除重复斜杠和尾部斜杠 */
 function normalizePath(path: string): string {
@@ -28,6 +23,7 @@ function normalizePath(path: string): string {
  *
  * 根据 meta.moduleInfo 将页面分组到模块菜单下；
  * 无 moduleInfo 的页面作为顶级菜单项。
+ * 菜单项保持路由数组中出现的原始顺序。
  *
  * @param routes - 扁平路由列表（由 buildRoutesFromConfigs 生成）
  * @param context.parentPath - 父路径前缀（如 '/'），用于生成绝对路径
@@ -37,8 +33,8 @@ export function createMenuTreeFromRoutes(
   context?: { parentPath?: string }
 ): SideMenuItem[] {
   const parentPath = context?.parentPath ?? '';
-  const moduleGroups = new Map<string, OrderedMenuItem>();
-  const topLevelItems: OrderedMenuItem[] = [];
+  const moduleGroups = new Map<string, SideMenuItem>();
+  const topLevelItems: SideMenuItem[] = [];
 
   for (const route of routes) {
     const meta = (route.meta ?? {}) as Record<string, unknown>;
@@ -74,18 +70,17 @@ export function createMenuTreeFromRoutes(
           ? route.name
           : absolutePath;
 
-    const menuItem: OrderedMenuItem = {
+    const menuItem: SideMenuItem = {
       key: menuKey,
       label: String(menuLabel),
       to: absolutePath,
       icon: typeof meta.menuIcon === 'string' ? meta.menuIcon : undefined,
       badge: typeof meta.menuBadge === 'string' ? meta.menuBadge : undefined,
-      order: typeof meta.menuOrder === 'number' ? meta.menuOrder : 50,
     };
 
     // 读取模块信息，决定分组归属
     const moduleInfo = meta.moduleInfo as
-      | { modulePath: string; moduleName: string; moduleIcon?: string; moduleOrder?: number }
+      | { modulePath: string; moduleName: string; moduleIcon?: string }
       | undefined;
 
     if (moduleInfo) {
@@ -96,7 +91,6 @@ export function createMenuTreeFromRoutes(
           label: moduleInfo.moduleName,
           to: absolutePath,
           icon: moduleInfo.moduleIcon,
-          order: moduleInfo.moduleOrder ?? 50,
           children: [],
         });
       }
@@ -109,15 +103,8 @@ export function createMenuTreeFromRoutes(
     }
   }
 
-  // 合并模块分组和顶级项，按 order 排序，剥离内部 order 字段
-  const allItems: OrderedMenuItem[] = [
-    ...Array.from(moduleGroups.values()),
-    ...topLevelItems,
-  ];
-
-  return allItems
-    .sort((a, b) => a.order - b.order)
-    .map(({ order: _order, ...item }) => item);
+  // 合并模块分组和顶级项，保持遍历顺序
+  return [...Array.from(moduleGroups.values()), ...topLevelItems];
 }
 
 /**

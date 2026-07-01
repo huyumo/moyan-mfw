@@ -199,9 +199,9 @@ export class RouteSyncService {
   private computeHash(menuTrees: AppTypeMenuConfig[]): string {
     const sorted = menuTrees.map((tree) => ({
       appTypeCode: tree.appTypeCode,
+      roleCode: tree.roleCode,
       label: tree.label,
       icon: tree.icon,
-      order: tree.order,
       children: this.sortNodes(tree.children),
     }));
     const normalized = JSON.stringify(sorted);
@@ -217,7 +217,6 @@ export class RouteSyncService {
         path: node.path,
         name: node.name,
         icon: node.icon,
-        order: node.order,
         hidden: node.hidden,
         auth: node.auth,
         permissions: node.permissions
@@ -699,11 +698,12 @@ export class RouteSyncService {
     const roleRepo = manager.getRepository(Role);
     const rolePermRepo = manager.getRepository(RolePermission);
 
-    // 查询该 AppType 的内置角色
+    // 查询该 AppType 下匹配 roleCode 的内置角色
     const builtinRoles = await roleRepo.find({
       where: {
         appTypeId,
         isBuiltin: 1,
+        roleCode: appTypeConfig.roleCode,
       },
     });
 

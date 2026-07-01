@@ -39,31 +39,13 @@ export interface FrontendMenuNode extends Omit<MenuNode, "children"> {
 
 /**
  * 前端应用类型菜单树配置：children 为 FrontendMenuNode[]。
+ * roleCode 对业务 AppType 必填，扩展包可省略。
  */
 export interface FrontendAppTypeMenuConfig
-  extends Omit<AppTypeMenuConfig, "children"> {
+  extends Omit<AppTypeMenuConfig, "children" | "roleCode"> {
+  /** 绑定的角色编码，业务 AppType 必填（如 `'super_admin'`、`'supplier_admin'`） */
+  roleCode?: string;
   children: FrontendMenuNode[];
-}
-
-/**
- * 将前端菜单树序列化为纯数据（剥离 component 字段），用于 API 传输。
- */
-export function serializeMenuTrees(
-  trees: FrontendAppTypeMenuConfig[],
-): AppTypeMenuConfig[] {
-  const strip = (nodes: FrontendMenuNode[]): MenuNode[] =>
-    nodes.map((node) => {
-      const { component: _component, ...rest } = node;
-      return {
-        ...rest,
-        children: node.children ? strip(node.children) : undefined,
-      } as MenuNode;
-    });
-
-  return trees.map((tree) => ({
-    ...tree,
-    children: strip(tree.children),
-  }));
 }
 
 // ==================== 核心路由构建函数 ====================
@@ -92,7 +74,6 @@ export function buildRoutesFromMenuTrees(
       "",
       undefined,
       undefined,
-      undefined,
       appTypeConfig,
       routes,
       seenPaths,
@@ -112,7 +93,6 @@ function processMenuNodes(
   parentPath: string,
   parentModuleName: string | undefined,
   parentModuleIcon: string | undefined,
-  parentModuleOrder: number | undefined,
   appTypeConfig: FrontendAppTypeMenuConfig,
   routes: RouteRecordRaw[],
   seenPaths: Set<string>,
@@ -136,13 +116,11 @@ function processMenuNodes(
             title: node.name,
             menuLabel: node.name,
             menuIcon: node.icon,
-            menuOrder: node.order ?? 50,
             menu: true,
             moduleInfo: {
               modulePath: fullPath,
               moduleName: node.name,
               moduleIcon: node.icon,
-              moduleOrder: node.order ?? 50,
               appTypeCode: appTypeConfig.appTypeCode,
             },
           },
@@ -154,7 +132,6 @@ function processMenuNodes(
         fullPath,
         node.name,
         node.icon,
-        node.order ?? 50,
         appTypeConfig,
         routes,
         seenPaths,
@@ -187,7 +164,6 @@ function processMenuNodes(
           title: node.name,
           menuLabel: node.name,
           menuIcon: node.icon,
-          menuOrder: node.order ?? 50,
           requiresAuth: node.auth ?? true,
           hidden: node.hidden,
           permissions: node.permissions,
@@ -198,7 +174,6 @@ function processMenuNodes(
                   modulePath: parentPath,
                   moduleName: parentModuleName,
                   moduleIcon: parentModuleIcon,
-                  moduleOrder: parentModuleOrder ?? 50,
                   appTypeCode: appTypeConfig.appTypeCode,
                 },
               }

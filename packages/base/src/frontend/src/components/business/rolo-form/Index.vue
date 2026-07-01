@@ -17,7 +17,7 @@ import { FormItemConfig, MfwFormCard } from '../../form';
 
 defineOptions({ name: 'MfwAddRoleForm' });
 
-const { id, role ,appTypeId,isBuiltin,appId} = defineProps<{
+const { id, role, appTypeId, isBuiltin, appId } = defineProps<{
   id?: string;
   role?: CreateRoleDto;
   appTypeId: string;
@@ -48,21 +48,22 @@ const formTemplate: FormItemConfig[] = [
     testId: 'role-name-input',
     rules: [{ required: true, message: '请输入角色名称', trigger: 'blur' }],
   },
-  {
-    key: 'roleCode',
-    label: '角色编码',
-    type: 'input',
-    component: 'el-input',
-    testId: 'role-code-input',
-    rules: [
-      { required: true, message: '请输入角色编码', trigger: 'blur' },
-      {
-        pattern: /^[a-z][a-z0-9_]*$/,
-        message: '角色编码只能包含小写字母、数字和下划线，且以小写字母开头',
-        trigger: 'blur',
-      },
-    ],
-  },
+  // {
+  //   key: 'roleCode',
+  //   label: '角色编码',
+  //   type: 'input',
+  //   component: 'el-input',
+  //   testId: 'role-code-input',
+  //   disabled: true,
+  //   rules: [
+  //     { required: true, message: '请输入角色编码', trigger: 'blur' },
+  //     {
+  //       pattern: /^[a-z][a-z0-9_]*$/,
+  //       message: '角色编码只能包含小写字母、数字和下划线，且以小写字母开头',
+  //       trigger: 'blur',
+  //     },
+  //   ],
+  // },
   {
     key: 'roleDesc',
     label: '角色描述',
@@ -82,10 +83,11 @@ const formTemplate: FormItemConfig[] = [
   },
 ];
 
-const onConfirm = async() => {
+const onConfirm = async () => {
   await formRef.value?.validate();
-  !id&& await new ApiRoleCreate({ body: formData },{ hintSuccess: true, successMsg: '角色创建成功' });
-  id&& await new ApiRoleUpdate({ params: { id }, body: formData },{ hintSuccess: true, successMsg: '角色更新成功' });
+  formData.roleCode = formData.roleCode || 'R' + Date.now();
+  !id && await new ApiRoleCreate({ body: formData }, { hintSuccess: true, successMsg: '角色创建成功' });
+  id && await new ApiRoleUpdate({ params: { id }, body: formData }, { hintSuccess: true, successMsg: '角色更新成功' });
 };
 
 defineExpose({

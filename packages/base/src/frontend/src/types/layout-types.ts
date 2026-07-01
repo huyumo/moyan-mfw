@@ -41,7 +41,6 @@ export interface SideMenuItem {
   to?: RouteLocationRaw;
   icon?: string;
   badge?: string;
-  order?: number;
   children?: SideMenuItem[];
 }
 

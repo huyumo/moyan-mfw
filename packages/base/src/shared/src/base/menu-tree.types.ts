@@ -36,8 +36,6 @@ export interface MenuNode {
   name: string;
   /** Element Plus 图标名称（如 `'User'`、`'Setting'`） */
   icon?: string;
-  /** 菜单排序序号，越小越靠前（默认 50） */
-  order?: number;
   /** 是否在侧边栏菜单中隐藏，默认 false */
   hidden?: boolean;
   /** 是否需要登录认证，默认 true */
@@ -70,7 +68,6 @@ export interface MenuNode {
  *   appTypeCode: 'system',
  *   label: '系统管理',
  *   icon: 'Setting',
- *   order: 100,
  *   children: [
  *     { path: 'dashboard', name: '首页', icon: 'DataBoard' },
  *     { path: 'sys', name: '系统管理', icon: 'Setting', children: [
@@ -83,12 +80,12 @@ export interface MenuNode {
 export interface AppTypeMenuConfig {
   /** 绑定的应用类型编码（如 `'system'`、`'supplier'`） */
   appTypeCode: string;
+  /** 绑定的角色编码，同步时仅同步该角色的权限数据（如 `'super_admin'`、`'supplier_admin'`） */
+  roleCode: string;
   /** 菜单树分组显示标签（用于顶部导航或双栏布局的顶级菜单） */
   label: string;
   /** 菜单树分组图标 */
   icon?: string;
-  /** 分组排序序号，越小越靠前（默认 50） */
-  order?: number;
   /** 该应用类型下的完整菜单树（顶级节点列表） */
   children: MenuNode[];
 }
