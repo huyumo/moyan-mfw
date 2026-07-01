@@ -13,14 +13,14 @@ export default () => ({
      * @type {number}
      * @default 7200 (2 小时)
      */
-    expiresIn: parseInt(process.env.JWT_EXPIRES_IN || '7200', 10),
+    expiresIn: process.env.JWT_EXPIRES_IN || '7200',
 
     /**
      * Refresh Token 过期时间（秒）
      * @type {number}
      * @default 7200 (2 小时)
      */
-    refreshExpiresIn: parseInt(process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200', 10),
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || process.env.JWT_EXPIRES_IN || '7200',
 
     /**
      * JWT 签名密钥

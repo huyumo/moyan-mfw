@@ -101,7 +101,7 @@ export class RoleService {
       throw new BadRequestException('缺少 appId 或 appTypeId 参数');
     }
 
-    const isBuiltin = appTypeId ? 0 : 1;
+    const isBuiltin = appTypeId ? 1 : undefined;
 
     const whereBuilder = new WhereBuilder();
     whereBuilder
@@ -118,7 +118,7 @@ export class RoleService {
         // 有 appId：查询 appId 对应 appType 的角色 + 该 appTypeId 的角色 + 该 appId 的私有角色
         // 无 appId：查询指定 appTypeId 的角色
         const appTypeIdCondition = appId
-          ? `(role.appTypeId IN (SELECT appTypeId FROM sys_apps WHERE id = '${appId}')`
+          ? `(role.appTypeId IN (SELECT appTypeId FROM sys_apps WHERE id = '${appId}'))`
           : `role.appTypeId = '${appTypeId}'`;
         return `
           SELECT ${select} FROM sys_roles role
