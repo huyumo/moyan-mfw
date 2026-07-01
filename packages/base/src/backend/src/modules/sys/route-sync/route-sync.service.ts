@@ -82,6 +82,7 @@ export class RouteSyncService {
     permissionCount: number;
     poolCount: number;
     rolePermCount: number;
+    message: string;
   }> {
     // 1. 计算配置哈希
     const newHash = this.computeHash(menuTrees);
@@ -98,6 +99,7 @@ export class RouteSyncService {
         permissionCount: 0,
         poolCount: 0,
         rolePermCount: 0,
+        message:'菜单树配置未变更，已跳过同步',
       };
     }
 
@@ -171,6 +173,7 @@ export class RouteSyncService {
       permissionCount: totalPermissionCount,
       poolCount: totalPoolCount,
       rolePermCount: totalRolePermCount,
+      message:'菜单树同步完成',
     };
   }
 

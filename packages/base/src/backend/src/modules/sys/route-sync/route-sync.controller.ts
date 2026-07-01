@@ -74,7 +74,7 @@ export class RouteSyncController {
   async sync(@User() user: UserDto, @Body() body: AppTypeMenuConfig[]) {
     this.requireDeveloper(user);
     const result = await this.routeSyncService.syncMenuTrees(body);
-    return ApiResponseUtil.success(result, '路由同步完成');
+    return ApiResponseUtil.success(result, result.message);
   }
 
   /**
