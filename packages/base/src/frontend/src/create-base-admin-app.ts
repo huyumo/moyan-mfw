@@ -82,6 +82,9 @@ export function createBaseAdminApp(
   app.use(pinia);
   app.use(router);
 
+  // 提供 menuTrees 给 RouteSyncButton 等内部组件使用
+  app.provide('mfw:menuTrees', options.menuTrees);
+
   const layoutStore = useLayoutStore(pinia);
 
   layoutStore.setLayoutExtensions(options.layoutExtensions);
@@ -95,10 +98,10 @@ export function createBaseAdminApp(
   }
 
   // 合并基包路由和业务路由生成菜单树
-  const basePackageRoutes = buildRoutesFromMenuTrees(
-    options.menuTrees,
-    options.componentMap,
-  );
+  const basePackageRoutes = buildRoutesFromMenuTrees(options.menuTrees);
+
+  // 将 menuTrees 注入应用实例，供 RouteSyncButton 等组件通过 inject 获取
+  app.provide("mfw:menuTrees", options.menuTrees);
   const allRoutes = [...basePackageRoutes, ...(options.routes || [])];
   const businessMenuTree = createMenuTreeFromRoutes(allRoutes, {
     parentPath: "/",

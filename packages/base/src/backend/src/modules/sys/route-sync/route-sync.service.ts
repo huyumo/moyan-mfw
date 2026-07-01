@@ -110,8 +110,12 @@ export class RouteSyncService {
 
     // 在事务中执行完整同步
     await this.dataSource.transaction(async (manager) => {
+      // 扁平化菜单树（供 PC 权限同步和权限池同步共用）
+      const permValueMap = await this.loadPermissionValueMap(manager);
+      const flatRoutes = this.flattenMenuTrees(menuTrees, permValueMap);
+
       // 3. 同步 PC 权限
-      const permResult = await this.syncPcPermissions(menuTrees, manager);
+      const permResult = await this.syncPcPermissions(flatRoutes, manager);
       totalPermissionCount =
         permResult.created + permResult.updated + permResult.deleted;
 
@@ -130,10 +134,11 @@ export class RouteSyncService {
 
         syncedAppTypes.push(appTypeConfig.appTypeCode);
 
-        // 同步权限池
+        // 同步权限池（按 appTypeCode 过滤扁平化路由，兼容自定义 permCode）
         const poolCount = await this.syncAppTypePermissionPool(
           appType.id,
           appTypeConfig,
+          flatRoutes,
           manager,
         );
         totalPoolCount += poolCount;
@@ -167,6 +172,20 @@ export class RouteSyncService {
       poolCount: totalPoolCount,
       rolePermCount: totalRolePermCount,
     };
+  }
+
+  /**
+   * 检查菜单树配置是否需要同步（对比哈希）。
+   *
+   * 供 API 接口调用，前端在展示同步按钮前先调用此方法判断是否需要同步。
+   *
+   * @param menuTrees - 应用类型菜单树配置数组
+   * @returns 是否需要同步
+   */
+  async checkSyncNeeded(menuTrees: AppTypeMenuConfig[]): Promise<boolean> {
+    if (menuTrees.length === 0) return false;
+    const newHash = this.computeHash(menuTrees);
+    return !(await this.shouldSkipSync(menuTrees, newHash));
   }
 
   /**
@@ -277,17 +296,13 @@ export class RouteSyncService {
    * 5. Upsert 权限节点
    */
   private async syncPcPermissions(
-    menuTrees: AppTypeMenuConfig[],
+    flatRoutes: FlatRouteNode[],
     manager: any,
   ): Promise<{ created: number; updated: number; deleted: number }> {
     const permRepo = manager.getRepository(Permission);
 
     // 确保 pc_root 存在
     await this.ensurePcRoot(manager);
-
-    // 扁平化所有菜单节点，生成路由节点列表
-    const permValueMap = await this.loadPermissionValueMap(manager);
-    const flatRoutes = this.flattenMenuTrees(menuTrees, permValueMap);
 
     // 构建新配置的 permCode 集合
     const newPermCodes = new Set(
@@ -599,27 +614,40 @@ export class RouteSyncService {
   /**
    * 同步 AppType 的权限池（sys_app_type_permissions）。
    *
-   * 仅勾选属于该 AppType 的同步权限（通过 permCode 中的 appTypeCode 前缀过滤）。
-   * permCode 格式：pc_root:{appTypeCode}:{path}
+   * 通过扁平化路由按 appTypeCode 过滤，生成该 AppType 下所有节点的 permCode 集合，
+   * 再从 sys_permissions 中查询对应的自动同步权限记录。
+   * 这种方式兼容自定义 permCode（不依赖 pc_root:{appTypeCode}: 前缀）。
    */
   private async syncAppTypePermissionPool(
     appTypeId: string,
     appTypeConfig: AppTypeMenuConfig,
+    flatRoutes: FlatRouteNode[],
     manager: any,
   ): Promise<number> {
     const poolRepo = manager.getRepository(AppTypePermissionEntity);
-    const permRepo = manager.getRepository(Permission);
     const appTypeCode = appTypeConfig.appTypeCode;
 
-    // 仅查询属于该 AppType 的同步 PC 权限
-    // permCode 格式：pc_root:system:dashboard 等
-    const prefix = `pc_root:${appTypeCode}:`;
-    const autoSyncPerms = await manager.query(
-      `SELECT id, permissionValue FROM sys_permissions 
-       WHERE permissionType = 'PC' AND isAutoSync = 1 
-       AND permCode LIKE ?`,
-      [`${prefix}%`],
-    );
+    // 收集该 AppType 下所有节点的 permCode（自定义或自动生成）
+    const appTypePermCodes = flatRoutes
+      .filter((r) => r.appTypeCode === appTypeCode)
+      .map((r) => r.permCode || this.generatePermCode(r.path, r.appTypeCode));
+
+    if (appTypePermCodes.length === 0) {
+      this.logger.log(
+        `应用类型 "${appTypeCode}" 没有可用的同步权限，跳过权限池同步`,
+      );
+      return 0;
+    }
+
+    // 按 permCode 集合查询已同步的 PC 权限
+    const placeholders = appTypePermCodes.map(() => "?").join(", ");
+    const autoSyncPerms: { id: string; permissionValue: bigint }[] =
+      await manager.query(
+        `SELECT id, permissionValue FROM sys_permissions
+         WHERE permissionType = 'PC' AND isAutoSync = 1
+         AND permCode IN (${placeholders})`,
+        appTypePermCodes,
+      );
 
     if (autoSyncPerms.length === 0) {
       this.logger.log(

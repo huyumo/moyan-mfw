@@ -31,6 +31,7 @@
       >
         <el-icon><component :is="compact ? Expand : Fold" /></el-icon>
       </button>
+      <component :is="sidebarFooter" v-if="sidebarFooter" />
       <slot name="sidebar-footer">
         <span></span>
       </slot>
@@ -40,6 +41,7 @@
 
 <script setup lang="ts">
 import { WarningFilled, Expand, Fold } from '@element-plus/icons-vue';
+import type { Component } from 'vue';
 import MenuTreeNode from '../components/menu/MenuTreeNode.vue';
 import type { SideMenuItem } from '../../types/layout-types';
 
@@ -56,6 +58,8 @@ defineProps<{
   displayedSideMenus: SideMenuItem[];
   /** 是否无应用可访问 */
   noApps?: boolean;
+  /** 侧边栏底部扩展组件（如路由同步按钮） */
+  sidebarFooter?: Component;
 }>();
 
 const emit = defineEmits<{

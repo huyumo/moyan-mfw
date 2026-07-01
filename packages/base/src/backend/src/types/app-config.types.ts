@@ -13,7 +13,6 @@ import {
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { DataSource } from "typeorm";
 import { ConfigService } from "@nestjs/config";
-import type { AppTypeMenuConfig } from "@internal/base-shared";
 
 /** 数据库配置 */
 export interface DatabaseConfig {
@@ -143,14 +142,6 @@ export interface AuditLogConfig {
   excludePaths?: string[];
 }
 
-/** 路由数据自动同步配置 */
-export interface RouteSyncConfig {
-  /** 是否启用自动同步（默认 false） */
-  enabled?: boolean;
-  /** 菜单树配置数据（来自业务层 shared 包） */
-  menuTrees: AppTypeMenuConfig[];
-}
-
 /** 创建后端应用选项 */
 export interface CreateBaseBackendAppOptions {
   name?: string;
@@ -163,8 +154,6 @@ export interface CreateBaseBackendAppOptions {
   appTypes?: AppTypeConfig[];
   /** 是否在启动时同步应用类型配置到数据库，默认 false */
   syncAppTypes?: boolean;
-  /** 路由数据自动同步配置（替代手动同步路由功能） */
-  routeSync?: RouteSyncConfig;
   userAttributes?: UserAttributeConfig[];
   memberAttributes?: MemberAttributeConfig[];
   permissions?: PermissionConfig[];

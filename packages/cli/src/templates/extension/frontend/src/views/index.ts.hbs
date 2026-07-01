@@ -1,15 +1,31 @@
 /**
- * @fileoverview {{displayName}}模块配置
- * @description 树形菜单分组，children 承载子页面配置。新增页面时在此处添加 import。
+ * @fileoverview {{displayName}}扩展包菜单树配置
+ * @description 定义扩展包的页面菜单树（含内联组件引用）。
+ *
+ * 新增页面时在此处添加菜单节点，并在节点上内联 component 字段。
  */
-import { defineModuleConfig } from 'moyan-mfw-base/frontend'
-import type { PageConfig } from 'moyan-mfw-base/frontend'
+import type { FrontendAppTypeMenuConfig } from 'moyan-mfw-base/frontend'
 
-const config = defineModuleConfig({
-  type: 'module',
-  name: '{{displayName}}',
-  icon: 'Menu',
-  order: 50,
-})
-
-export default { ...config, children: [] as PageConfig<string>[] }
+/**
+ * {{displayName}}扩展包菜单树
+ *
+ * appTypeCode 使用 _ext_{{name}} 前缀，与业务层 AppType 区分。
+ */
+export const {{camelCase name}}MenuTrees: FrontendAppTypeMenuConfig[] = [
+  {
+    appTypeCode: '_ext_{{name}}',
+    label: '{{displayName}}',
+    icon: 'Menu',
+    order: 50,
+    children: [
+      // 在此添加页面节点，例如：
+      // {
+      //   path: 'demo',
+      //   name: '示例页面',
+      //   icon: 'Document',
+      //   component: () => import('./views/demo/Index.vue'),
+      //   permissions: ['添加', '编辑', '删除'],
+      // },
+    ],
+  },
+]

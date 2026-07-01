@@ -9,7 +9,7 @@ import {
   HttpCode, HttpStatus,
 } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
-import { RequirePermission, ApiPaginatedResponse } from 'moyan-mfw-base/backend'
+import { SkipPermission, ApiPaginatedResponse, RequirePermission } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { AdService } from '../service/ad.service'
 import { CreateAdDto, UpdateAdDto, QueryAdDto, BatchUpdateSortDto, AdResponseDto } from '../dto'

@@ -7,5 +7,6 @@ export * from './permission-pool-panel'
 export * from './permission-tree'
 
 export * from './role-permission-panel'
+export * from './route-sync-button'
 export * from './rolo-form'
 export * from './role-card'

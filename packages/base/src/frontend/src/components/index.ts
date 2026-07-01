@@ -51,6 +51,7 @@ export * from './picker/mod';
 export * from './layout';
 
 // 业务类组件
+export { default as RouteSyncButton } from './business/route-sync-button/Index.vue';
 export * from './business/role-permission-panel';
 export * from './business/app-selector-dialog';
 export * from './business/permission-tree';
@@ -60,3 +61,4 @@ export * from './business/permission-pool-panel';
 export * from './business/permission-value-panel';
 export * from './business/role-card';
 export * from './business/rolo-form';
+export * from './business/route-sync-button';

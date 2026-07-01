@@ -11,6 +11,7 @@ import { AppTypePermissionEntity } from "../app-type/entities/app-type-permissio
 import { Role } from "../role/entities/role.entity";
 import { RolePermission } from "../role/entities/role-permission.entity";
 import { RouteSyncState } from "./route-sync-state.entity";
+import { RouteSyncController } from "./route-sync.controller";
 import { RouteSyncService } from "./route-sync.service";
 
 @Module({
@@ -24,6 +25,7 @@ import { RouteSyncService } from "./route-sync.service";
       RouteSyncState,
     ]),
   ],
+  controllers: [RouteSyncController],
   providers: [RouteSyncService],
   exports: [RouteSyncService],
 })

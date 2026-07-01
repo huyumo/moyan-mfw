@@ -9,13 +9,10 @@ import {
   type Router,
   type RouterHistory,
 } from "vue-router";
-import {
-  buildRoutesFromMenuTrees,
-  type ComponentMap,
-} from "./routes";
+import { buildRoutesFromMenuTrees } from "./routes";
 import { setupRouteGuard } from "./guard";
 import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from "../constants/storage-keys";
-import type { AppTypeMenuConfig } from "@internal/base-shared";
+import type { FrontendAppTypeMenuConfig } from "./routes";
 
 /**
  * 路由创建参数。
@@ -29,10 +26,8 @@ export interface CreateBaseAdminRouterOptions {
   routes?: RouteRecordRaw[];
   /** 页面标题后缀 */
   title?: string;
-  /** 菜单树配置（必需） */
-  menuTrees: AppTypeMenuConfig[];
-  /** 路径 → 组件的映射表（必需，配合 menuTrees 使用） */
-  componentMap: ComponentMap;
+  /** 菜单树配置（必需，节点内联 component 字段） */
+  menuTrees: FrontendAppTypeMenuConfig[];
 }
 
 /**
@@ -93,10 +88,7 @@ function mergeRoutes(
 export function createBaseAdminRouter(
   options: CreateBaseAdminRouterOptions,
 ): Router {
-  const basePackageRoutes = buildRoutesFromMenuTrees(
-    options.menuTrees,
-    options.componentMap,
-  );
+  const basePackageRoutes = buildRoutesFromMenuTrees(options.menuTrees);
 
   const businessRoutes = options.routes || [];
 

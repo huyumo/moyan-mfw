@@ -227,7 +227,7 @@ export const useAuthStore = defineStore('auth', () => {
       nickname: result.nickname,
       avatar: getImageSrc(result.avatar) || '',
       gender: 0,
-      isDeveloper: false,
+      isDeveloper: result.isDeveloper === 1 || result.isDeveloper === true,
       userStatus: 1,
       roles: result.roles || [],
     };

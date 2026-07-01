@@ -27,4 +27,10 @@ export class UserDto {
    */
   @ApiProperty({ description: '角色 ID 列表', type: [String], required: false })
   roleIds?: string[];
+
+  /**
+   * 是否为开发者（开发者绕过所有权限检查）
+   */
+  @ApiProperty({ description: '是否为开发者', required: false })
+  isDeveloper?: number;
 }

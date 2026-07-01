@@ -1,26 +1,7 @@
 /**
  * @fileoverview 广告扩展包前端入口
  *
- * 使用新的 MenuNode + ComponentMap + buildRoutesFromMenuTreeWithPrefix 模式。
- * 向后兼容：仍导出 adRoutes 供现有业务层使用。
+ * 扩展包仅导出页面组件，菜单路由由框架使用者在前端 menu-trees.ts 中统一维护。
  */
 
-import { buildRoutesFromMenuTreeWithPrefix } from "moyan-mfw-base/frontend";
-import { adMenuNodes, adComponentMap } from "./views/index";
-
-export { adMenuNodes, adComponentMap } from "./views/index";
-
-/**
- * 广告扩展包路由（向后兼容导出）。
- * 路由路径自动添加 `/ext/ad/` 前缀。
- */
-export const adRoutes = buildRoutesFromMenuTreeWithPrefix(
-  adMenuNodes,
-  adComponentMap,
-  {
-    extensionName: "ad",
-    namespaceLabel: "广告管理",
-    namespaceIcon: "Notification",
-    namespaceOrder: 60,
-  },
-);
+export { default as AdPlacementList } from "./views/placement/Index.vue";

@@ -1,15 +1,32 @@
-import { createBaseAdminApp, registerPermissionValues } from
-'moyan-mfw-base/frontend' import 'moyan-mfw-base/frontend/style.css' import
-'moyan-mfw-extension-ad/frontend/style.css' import { HeaderCommonActions } from
-'./components/Layout' import { componentMap } from './router' import { adRoutes
-} from 'moyan-mfw-extension-ad/frontend' import { AD_EXTENSION_PERMISSION_VALUES
-} from 'moyan-mfw-extension-ad/shared' import { menuTrees } from '{{sharedPackageName}}'
+import { createBaseAdminApp, registerPermissionValues } from 'moyan-mfw-base/frontend'
+import 'moyan-mfw-base/frontend/style.css'
+import { HeaderCommonActions } from './components/Layout'
+import { RouteSyncButton } from 'moyan-mfw-base/frontend'
+import { menuTrees } from './menu-trees'
 import './permissions'
-registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]) const admin =
-createBaseAdminApp({ title: '{{displayName}}', menuTrees, componentMap, routes:
-[...adRoutes], layout: { layoutMode: 'dual', showTabs: true, colorMode:
-'system', themePackage: 'default', }, navigation: { brandName: '{{displayName}}',
-brandTagline: '{{description}}', homePath: '/dashboard', }, layoutExtensions: {
-headerCommon: HeaderCommonActions, }, }) const values = await
-admin.fetchPermissionValues() admin.initPermissionCache(values) await
-admin.mount('#app')
+
+registerPermissionValues([])
+
+const admin = createBaseAdminApp({
+  title: '{{displayName}}',
+  menuTrees,
+  layout: {
+    layoutMode: 'dual',
+    showTabs: true,
+    colorMode: 'system',
+    themePackage: 'default',
+  },
+  navigation: {
+    brandName: '{{displayName}}',
+    brandTagline: '{{description}}',
+    homePath: '/dashboard',
+  },
+  layoutExtensions: {
+    headerCommon: HeaderCommonActions,
+    sidebarFooter: RouteSyncButton,
+  },
+})
+
+const values = await admin.fetchPermissionValues()
+admin.initPermissionCache(values)
+await admin.mount('#app')

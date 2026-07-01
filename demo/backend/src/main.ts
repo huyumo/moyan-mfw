@@ -17,9 +17,7 @@ import {
   DocumentModule,
   DOCUMENT_PERMISSION_VALUES,
 } from "moyan-mfw-extension-document/backend";
-import { menuTrees } from "moyan-mfw-shared";
 import "./permissions";
-import "moyan-mfw-shared";
 
 const swaggerGroups: SwaggerGroupConfig[] = [
   {
@@ -47,10 +45,6 @@ async function bootstrap() {
     name: "墨焱业务后端",
     appTypes: appTypesConfig,
     syncAppTypes: true,
-    routeSync: {
-      enabled: true,
-      menuTrees,
-    },
     modules: [AppModule],
     swagger: swaggerGroups,
     permissionValues: [

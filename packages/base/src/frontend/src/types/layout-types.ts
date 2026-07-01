@@ -69,6 +69,8 @@ export interface LayoutExtensionComponents {
   headerCommon?: Component;
   headerAvatar?: Component;
   headerUserMenu?: Component;
+  /** 侧边栏底部扩展组件（如路由同步按钮） */
+  sidebarFooter?: Component;
 }
 
 /** 异步扩展组件加载函数。 */

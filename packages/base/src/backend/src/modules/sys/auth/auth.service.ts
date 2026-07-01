@@ -113,6 +113,7 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       roleIds: userRoles.map((ur) => ur.roleId),
+      isDeveloper: user.isDeveloper,
       jti: randomUUID(),
     };
 
@@ -128,6 +129,7 @@ export class AuthService {
         username: user.username,
         nickname: user.nickname || user.username,
         avatar: user.avatar,
+        isDeveloper: user.isDeveloper === 1,
       },
     };
   }
@@ -215,6 +217,7 @@ export class AuthService {
       username: user.username,
       nickname: user.nickname || user.username,
       avatar: user.avatar,
+      isDeveloper: user.isDeveloper === 1,
       // 返回角色名称列表
       roles: userRoles.map((ur) => ur.role.roleName) || [],
     };
@@ -422,6 +425,7 @@ export class AuthService {
         username: user.username,
         nickname: user.nickname || user.username,
         avatar: user.avatar,
+        isDeveloper: user.isDeveloper === 1,
       },
     };
   }

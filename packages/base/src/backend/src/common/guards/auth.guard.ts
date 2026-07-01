@@ -27,6 +27,7 @@ export interface JwtPayload {
   sub: string; // 用户 ID
   username: string;
   roleIds?: string[];
+  isDeveloper?: number;
   jti?: string;
 }
 
@@ -83,6 +84,7 @@ export class AuthGuard implements CanActivate {
       id: payload.sub,
       username: payload.username,
       roleIds: payload.roleIds,
+      isDeveloper: payload.isDeveloper,
     };
 
     if (this.redis && payload.jti) {

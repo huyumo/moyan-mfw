@@ -32,6 +32,7 @@ export type UserSummaryDto = {
   username: string // 用户名
   nickname: string // 昵称
   avatar: ImageResourceDto // 头像
+  isDeveloper: boolean // 是否为开发者
 }
 
 export type LoginResponseDto = {
@@ -48,6 +49,7 @@ export type UserInfoDto = {
   nickname: string // 昵称
   avatar: ImageResourceDto // 头像
   roles: Array<string> // 角色列表
+  isDeveloper: boolean // 是否为开发者
 }
 
 export type LogoutDto = {

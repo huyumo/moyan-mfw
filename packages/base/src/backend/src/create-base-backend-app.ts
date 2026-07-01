@@ -172,51 +172,6 @@ export async function createBaseBackendApp(
     }
   }
 
-  // 路由数据自动同步（在应用类型同步之后执行，仅已初始化的系统且配置启用时才执行）
-  if (options.routeSync?.enabled && options.routeSync.menuTrees?.length > 0) {
-    console.log(
-      `\n🔄 [RouteSync] 开始菜单树同步检查...（${options.routeSync.menuTrees.length} 个 AppType）`,
-    );
-    try {
-      const appTypeRepo = dataSource.getRepository(
-        (await import("./modules/sys/app-type/entities/app-type.entity"))
-          .AppType,
-      );
-      const isInitialized = (await appTypeRepo.count()) > 0;
-      if (!isInitialized) {
-        console.log("⏳ [RouteSync] 系统未初始化，跳过");
-      } else {
-        console.log("📡 [RouteSync] 正在获取 RouteSyncService...");
-        const { RouteSyncService } =
-          await import("./modules/sys/route-sync/route-sync.service");
-        const routeSyncService = app.get(RouteSyncService);
-        console.log("✅ [RouteSync] RouteSyncService 获取成功，开始同步...");
-        const result = await routeSyncService.syncMenuTrees(
-          options.routeSync.menuTrees,
-        );
-        if (result.skipped) {
-          console.log(
-            "✅ [RouteSync] 菜单树配置未变更，跳过路由数据同步",
-          );
-        } else {
-          console.log(
-            `✅ [RouteSync] 路由数据同步完成：${result.syncedAppTypes.length} 个应用类型，` +
-              `${result.permissionCount} 个权限变动，${result.poolCount} 个权限池记录，` +
-              `${result.rolePermCount} 个角色权限记录`,
-          );
-        }
-      }
-    } catch (error: any) {
-      if (error.message?.includes("ER_NO_SUCH_TABLE")) {
-        console.log("⏳ [RouteSync] 数据库表未创建，跳过");
-      } else {
-        console.error("❌ [RouteSync] 路由数据同步失败:");
-        console.error("  错误:", error.message);
-        console.error("  堆栈:", error.stack);
-      }
-    }
-  }
-
   return {
     app,
     listen: async (port: number) => {
@@ -431,7 +386,6 @@ export type {
   BaseBackendAppInstance,
   AppTypeConfig,
   RoleConfig,
-  RouteSyncConfig,
   HookConfig,
   AppContext,
   DatabaseConfig,

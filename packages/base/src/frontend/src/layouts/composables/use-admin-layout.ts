@@ -39,7 +39,7 @@ function syncCssVars(config: LayoutStyleConfig) {
 /**
  * 布局组合逻辑入口。
  */
-export function useAdminLayout(): any {
+export function useAdminLayout() {
   const layoutStore = useLayoutStore();
   const route = useRoute();
   const router = useRouter();

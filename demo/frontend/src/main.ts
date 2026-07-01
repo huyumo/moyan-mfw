@@ -1,19 +1,18 @@
 /**
  * @fileoverview 前端应用入口文件。
  *
- * 菜单树方案：使用手动编写的菜单树配置替代 import.meta.glob 自动扫描。
- * 组件映射表（componentMap）将菜单路径映射到实际的 Vue 组件。
+ * 菜单树（含内联组件）定义在 ./menu-trees.ts，作为路由生成的唯一数据源。
+ * 后端权限同步通过侧边栏同步按钮（仅 developer 可见）以 API 方式推送。
  */
 
 import {
   createBaseAdminApp,
   registerPermissionValues,
+  RouteSyncButton,
 } from "moyan-mfw-base/frontend";
 import { HeaderCommonActions } from "./components/Layout";
-import { componentMap } from "./router";
-import { adRoutes } from "moyan-mfw-extension-ad/frontend";
+import { menuTrees } from "./menu-trees";
 import { AD_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ad/shared";
-import { menuTrees } from "moyan-mfw-shared";
 import "./permissions";
 
 registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
@@ -21,8 +20,6 @@ registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
 const admin = createBaseAdminApp({
   title: "墨焱前端演示",
   menuTrees,
-  componentMap,
-  routes: [...adRoutes],
   layout: {
     layoutMode: "dual",
     showTabs: true,
@@ -36,6 +33,7 @@ const admin = createBaseAdminApp({
   },
   layoutExtensions: {
     headerCommon: HeaderCommonActions,
+    sidebarFooter: RouteSyncButton,
   },
 });
 

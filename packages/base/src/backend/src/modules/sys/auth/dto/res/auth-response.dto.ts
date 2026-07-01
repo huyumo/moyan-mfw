@@ -27,6 +27,12 @@ export class UserSummaryDto {
    */
   @ApiProperty({ description: '头像', type: ImageResourceDto })
   avatar: ImageResourceDto;
+
+  /**
+   * 是否为开发者（拥有全部权限）
+   */
+  @ApiProperty({ description: '是否为开发者', example: false })
+  isDeveloper: boolean;
 }
 
 /**
@@ -97,6 +103,12 @@ export class UserInfoDto {
    */
   @ApiProperty({ description: '角色列表', type: [String] })
   roles: string[];
+
+  /**
+   * 是否为开发者（开发者拥有全部权限）
+   */
+  @ApiProperty({ description: '是否为开发者', example: false })
+  isDeveloper: boolean;
 }
 
 /**

@@ -31,6 +31,7 @@
         :compact="layoutStore.styleConfig.compact" :active-menu-path="activeMenuPath"
         :displayed-side-menus="displayedSideMenus"
         :no-apps="noApps"
+        :sidebar-footer="layoutStore.layoutExtensions.sidebarFooter"
         @toggle-compact="layoutStore.toggleCompact()">
         <template v-if="$slots['sidebar-footer']" #sidebar-footer>
           <slot name="sidebar-footer" />

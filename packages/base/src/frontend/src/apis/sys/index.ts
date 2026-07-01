@@ -615,6 +615,30 @@ export class ApiPermissionValuesGetPermissionValues extends ApiCall<
 }
 
 /**
+ * route-sync|路由同步接口->检查菜单树配置是否需要同步
+ */
+export class ApiRouteSyncCheck extends ApiCall<
+  { body: unknown[] },
+  { needsSync: boolean }
+> {
+  readonly path = '/api/route-sync/check'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * route-sync|路由同步接口->同步菜单树配置到数据库
+ */
+export class ApiRouteSyncSync extends ApiCall<
+  { body: unknown[] },
+  unknown
+> {
+  readonly path = '/api/route-sync/sync'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
  * app-type|应用类型相关接口->创建应用类型
  */
 export class ApiAppTypeCreate extends ApiCall<
