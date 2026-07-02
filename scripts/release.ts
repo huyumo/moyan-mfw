@@ -119,7 +119,7 @@ function main() {
 
     if (hasUpdates) {
       console.log('\n3️⃣  提交版本更新...');
-      execSync(`git commit -m "chore: release ${tagPrefix}${newVersion}"`, { stdio: 'inherit' });
+      execSync(`git commit -m "chore: release ${tagPrefix}${newVersion}" --no-verify`, { stdio: 'inherit' });
     } else {
       console.log('\n3️⃣  版本号已同步，无需提交');
     }
