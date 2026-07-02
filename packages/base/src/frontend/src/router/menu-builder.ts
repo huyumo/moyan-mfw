@@ -15,7 +15,7 @@ import type { SideMenuItem } from "../types/layout-types";
 
 /** 路径规范化：去除重复斜杠和尾部斜杠 */
 function normalizePath(path: string): string {
-  return `/${path}`.replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+  return `/${path}`.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
 }
 
 /**
@@ -30,9 +30,9 @@ function normalizePath(path: string): string {
  */
 export function createMenuTreeFromRoutes(
   routes: RouteRecordRaw[],
-  context?: { parentPath?: string }
+  context?: { parentPath?: string },
 ): SideMenuItem[] {
-  const parentPath = context?.parentPath ?? '';
+  const parentPath = context?.parentPath ?? "";
   const moduleGroups = new Map<string, SideMenuItem>();
   const topLevelItems: SideMenuItem[] = [];
 
@@ -44,18 +44,24 @@ export function createMenuTreeFromRoutes(
       continue;
     }
 
-    const routePath = typeof route.path === 'string' ? route.path : '';
-    const absolutePath = normalizePath(`${parentPath}/${routePath}`);
+    const menuPath =
+      typeof (route.meta as Record<string, unknown> | undefined)?.menuPath ===
+      "string"
+        ? ((route.meta as Record<string, unknown>).menuPath as string)
+        : typeof route.path === "string"
+          ? route.path
+          : "";
+    const absolutePath = normalizePath(`${parentPath}/${menuPath}`);
 
     // 菜单标签优先级：menuLabel > title > route.name
     const menuLabel =
-      typeof meta.menuLabel === 'string'
+      typeof meta.menuLabel === "string"
         ? meta.menuLabel
-        : typeof meta.title === 'string'
+        : typeof meta.title === "string"
           ? meta.title
-          : typeof route.name === 'string'
+          : typeof route.name === "string"
             ? route.name
-            : '';
+            : "";
 
     // 无标签则跳过
     if (!menuLabel) {
@@ -64,9 +70,9 @@ export function createMenuTreeFromRoutes(
 
     // 菜单 key 优先级：menuKey > route.name > 路径
     const menuKey =
-      typeof meta.menuKey === 'string'
+      typeof meta.menuKey === "string"
         ? meta.menuKey
-        : typeof route.name === 'string'
+        : typeof route.name === "string"
           ? route.name
           : absolutePath;
 
@@ -74,8 +80,8 @@ export function createMenuTreeFromRoutes(
       key: menuKey,
       label: String(menuLabel),
       to: absolutePath,
-      icon: typeof meta.menuIcon === 'string' ? meta.menuIcon : undefined,
-      badge: typeof meta.menuBadge === 'string' ? meta.menuBadge : undefined,
+      icon: typeof meta.menuIcon === "string" ? meta.menuIcon : undefined,
+      badge: typeof meta.menuBadge === "string" ? meta.menuBadge : undefined,
     };
 
     // 读取模块信息，决定分组归属
@@ -83,9 +89,27 @@ export function createMenuTreeFromRoutes(
       | { modulePath: string; moduleName: string; moduleIcon?: string }
       | undefined;
 
-    if (moduleInfo) {
-      // 首次遇到该模块时创建分组项
+    // MENU 节点（有 menu: true）作为分组容器
+    const isMenuGroup = meta.menu === true;
+
+    // 获取重定向路径（用于 MENU 节点）
+    const redirect = typeof route.redirect === "string" ? route.redirect : undefined;
+
+    if (isMenuGroup && moduleInfo) {
+      // MENU 节点作为分组容器（顶级项）
       if (!moduleGroups.has(moduleInfo.modulePath)) {
+        moduleGroups.set(moduleInfo.modulePath, {
+          key: `Module_${moduleInfo.modulePath}`,
+          label: moduleInfo.moduleName,
+          to: redirect || absolutePath,
+          icon: moduleInfo.moduleIcon,
+          children: [],
+        });
+      }
+    } else if (moduleInfo) {
+      // PAGE 节点归入对应模块分组
+      if (!moduleGroups.has(moduleInfo.modulePath)) {
+        // 如果分组不存在，创建一个空分组
         moduleGroups.set(moduleInfo.modulePath, {
           key: `Module_${moduleInfo.modulePath}`,
           label: moduleInfo.moduleName,
@@ -94,7 +118,6 @@ export function createMenuTreeFromRoutes(
           children: [],
         });
       }
-      // 将页面归入对应模块分组
       const group = moduleGroups.get(moduleInfo.modulePath)!;
       group.children!.push(menuItem);
     } else {
@@ -114,7 +137,7 @@ export function createMenuTreeFromRoutes(
  */
 export function dedupeMenuTree(
   items: SideMenuItem[],
-  existed = new Set<string>()
+  existed = new Set<string>(),
 ): SideMenuItem[] {
   const result: SideMenuItem[] = [];
 
@@ -122,7 +145,7 @@ export function dedupeMenuTree(
     const children = item.children
       ? dedupeMenuTree(item.children, existed)
       : undefined;
-    const path = typeof item.to === 'string' ? item.to : '';
+    const path = typeof item.to === "string" ? item.to : "";
 
     // 无路径且无有效子项 → 跳过
     if (!path && (!children || children.length === 0)) {

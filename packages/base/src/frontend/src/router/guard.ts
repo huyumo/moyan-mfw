@@ -3,13 +3,13 @@
  * @description 处理页面访问权限验证、登录重定向、Token 过期处理
  */
 
-import type { Router, RouteLocationNormalized } from 'vue-router';
-import { useAuthStore, TOKEN_KEY } from '../store/auth-store';
-import { useAppLoadingStore } from '../store/app-loading-store';
-import { ElMessage } from 'element-plus';
+import type { Router, RouteLocationNormalized } from "vue-router";
+import { useAuthStore, TOKEN_KEY } from "../store/auth-store";
+import { useAppLoadingStore } from "../store/app-loading-store";
+import { ElMessage } from "element-plus";
 
 /** 白名单路由（无需登录即可访问） */
-const WHITE_LIST = ['/login', '/install', '/403', '/404'];
+const WHITE_LIST = ["/login", "/install", "/403", "/404"];
 
 /** 已初始化标记 */
 let isInitialized = false;
@@ -26,16 +26,16 @@ async function checkInitialized(): Promise<boolean> {
     return sysInitialized as boolean;
   }
   try {
-    const response = await fetch('/api/install/status', {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/install/status", {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
     });
     const result = await response.json();
     sysInitialized = Boolean(result.data?.initialized);
     return sysInitialized;
   } catch (error) {
     // 网络/服务不可用时，假设系统已初始化，避免误跳转
-    console.warn('[RouteGuard] 检查初始化状态失败，假设系统已初始化:', error);
+    console.warn("[RouteGuard] 检查初始化状态失败，假设系统已初始化:", error);
     sysInitialized = true;
     return true;
   }
@@ -46,130 +46,142 @@ async function checkInitialized(): Promise<boolean> {
  * @param router Vue Router 实例
  */
 export function setupRouteGuard(router: Router): void {
-  router.beforeEach(async (to: RouteLocationNormalized, _from: RouteLocationNormalized, next) => {
-    const authStore = useAuthStore();
-    const appLoadingStore = useAppLoadingStore();
+  router.beforeEach(
+    async (
+      to: RouteLocationNormalized,
+      _from: RouteLocationNormalized,
+      next,
+    ) => {
+      const authStore = useAuthStore();
+      const appLoadingStore = useAppLoadingStore();
 
-    const initialized = await checkInitialized();
+      const initialized = await checkInitialized();
 
-    if (!initialized) {
-      if (to.path !== '/install') {
-        next({ path: '/install' });
-        return;
-      }
-      next();
-      return;
-    }
-
-    if (initialized && to.path === '/install') {
-      next({ path: '/login' });
-      return;
-    }
-
-    if (to.path === '/' || (to.name === 'RootRedirect' && to.path === '/')) {
-      const hasToken = localStorage.getItem(TOKEN_KEY);
-      if (!hasToken) {
-        next({ path: '/login' });
-        return;
-      }
-      next({ path: '/dashboard' });
-      return;
-    }
-
-    if (WHITE_LIST.includes(to.path)) {
-      const hasToken = localStorage.getItem(TOKEN_KEY);
-      if (to.path === '/login' && hasToken && authStore.isLoggedIn) {
-        // 已登录但尚未选择应用 → 留在登录页展示选择面板
-        if (authStore.needSelectApp) {
-          next();
+      if (!initialized) {
+        if (to.path !== "/install") {
+          next({ path: "/install" });
           return;
         }
-        next({ path: '/' });
-        return;
-      }
-      next();
-      return;
-    }
-
-    const hasToken = localStorage.getItem(TOKEN_KEY);
-    if (!hasToken) {
-      next({
-        path: '/login',
-        query: { redirect: to.fullPath },
-      });
-      return;
-    }
-
-    if (!isInitialized) {
-      isInitialized = true;
-      
-      if (authStore.isAuthenticated) {
         next();
         return;
       }
-      
-      appLoadingStore.showLoading('正在初始化认证...');
-      
-      try {
-        const success = await authStore.initializeAuth();
-        if (!success) {
-          appLoadingStore.hideLoading();
-          next({
-            path: '/login',
-            query: { redirect: to.fullPath },
-          });
-          return;
-        }
 
-        // 多应用且未选择 → 跳转登录页展示选择面板
-        if (authStore.needSelectApp) {
-          appLoadingStore.hideLoading();
-          next({
-            path: '/login',
-            query: { redirect: to.fullPath },
-          });
+      if (initialized && to.path === "/install") {
+        next({ path: "/login" });
+        return;
+      }
+
+      if (to.path === "/" || (to.name === "RootRedirect" && to.path === "/")) {
+      const hasToken = localStorage.getItem(TOKEN_KEY);
+      if (!hasToken) {
+        next({ path: "/login" });
+        return;
+      }
+      // 动态获取当前应用的首页路径
+      const appTypeCode = authStore.currentApp?.appTypeCode;
+      const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
+      next({ path: homePath });
+      return;
+    }
+
+      if (WHITE_LIST.includes(to.path)) {
+        const hasToken = localStorage.getItem(TOKEN_KEY);
+        if (to.path === "/login" && hasToken && authStore.isLoggedIn) {
+          // 已登录但尚未选择应用 → 留在登录页展示选择面板
+          if (authStore.needSelectApp) {
+            next();
+            return;
+          }
+          next({ path: "/" });
           return;
         }
-      } catch (error) {
-        console.error('[RouteGuard] 初始化认证状态失败:', error);
-        authStore.clearToken();
-        appLoadingStore.hideLoading();
+        next();
+        return;
+      }
+
+      const hasToken = localStorage.getItem(TOKEN_KEY);
+      if (!hasToken) {
         next({
-          path: '/login',
+          path: "/login",
           query: { redirect: to.fullPath },
         });
         return;
       }
-      
-      appLoadingStore.hideLoading();
-    }
 
-    if (to.meta.permissions && !to.meta.permissionValue) {
-      const { buildPerValue } = await import('../utils/permissions');
-      to.meta.permissionValue = buildPerValue(to.meta.permissions as string[]).toString();
-    }
+      if (!isInitialized) {
+        isInitialized = true;
 
-    if (to.meta.requiresAuth !== false) {
-      const hasPermission = checkPagePermission(to, authStore);
-      if (!hasPermission) {
-        if (to.path !== '/dashboard' && to.path !== '/') {
-          ElMessage.warning('当前应用无此页面的访问权限，已跳转到首页');
-          next({ path: '/dashboard' });
+        if (authStore.isAuthenticated) {
+          // 已认证，继续后续权限检查
+        } else {
+          appLoadingStore.showLoading("正在初始化认证...");
+
+          try {
+            const success = await authStore.initializeAuth();
+            if (!success) {
+              appLoadingStore.hideLoading();
+              next({
+                path: "/login",
+                query: { redirect: to.fullPath },
+              });
+              return;
+            }
+
+            // 多应用且未选择 → 跳转登录页展示选择面板
+            if (authStore.needSelectApp) {
+              appLoadingStore.hideLoading();
+              next({
+                path: "/login",
+                query: { redirect: to.fullPath },
+              });
+              return;
+            }
+          } catch (error) {
+            console.error("[RouteGuard] 初始化认证状态失败:", error);
+            authStore.clearToken();
+            appLoadingStore.hideLoading();
+            next({
+              path: "/login",
+              query: { redirect: to.fullPath },
+            });
+            return;
+          }
+
+          appLoadingStore.hideLoading();
+        }
+      }
+
+      if (to.meta.permissions && !to.meta.permissionValue) {
+        const { buildPerValue } = await import("../utils/permissions");
+        to.meta.permissionValue = buildPerValue(
+          to.meta.permissions as string[],
+        ).toString();
+      }
+
+      if (to.meta.requiresAuth !== false) {
+        const hasPermission = checkPagePermission(to, authStore);
+        if (!hasPermission) {
+          const appTypeCode = authStore.currentApp?.appTypeCode;
+          const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
+          if (to.path !== homePath && to.path !== "/") {
+            ElMessage.warning("当前应用无此页面的访问权限，已跳转到首页");
+            next({ path: homePath });
+            return;
+          }
+          next({ path: "/403" });
           return;
         }
-        next({ path: '/403' });
-        return;
       }
-    }
 
-    next();
-  });
+      next();
+    },
+  );
 
   // 全局后置守卫
   router.afterEach((to: RouteLocationNormalized) => {
     // 设置页面标题
     const title = to.meta.title as string;
-    if (title && typeof document !== 'undefined') {
+    if (title && typeof document !== "undefined") {
       document.title = title;
     }
   });
@@ -181,7 +193,10 @@ export function setupRouteGuard(router: Router): void {
  * @param authStore 认证 Store
  * @returns 是否有权限
  */
-function checkPagePermission(to: RouteLocationNormalized, authStore: ReturnType<typeof useAuthStore>): boolean {
+function checkPagePermission(
+  to: RouteLocationNormalized,
+  authStore: ReturnType<typeof useAuthStore>,
+): boolean {
   if (to.meta.requiresAuth === false) {
     return true;
   }
@@ -197,7 +212,7 @@ function checkPagePermission(to: RouteLocationNormalized, authStore: ReturnType<
       return checkPermCodeInMenu(permCode, permissionMenu);
     }
 
-    const routePath = to.path;
+    const routePath = (to.meta.menuPath as string | undefined) ?? to.path;
     const hasPermission = checkRouteInMenu(routePath, permissionMenu);
     if (!hasPermission) {
       return false;
@@ -208,14 +223,22 @@ function checkPagePermission(to: RouteLocationNormalized, authStore: ReturnType<
 }
 
 /**
+ * 规范化路由路径，统一比较格式。
+ */
+function normalizeRoutePath(path: string): string {
+  return `/${path}`.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+}
+
+/**
  * 检查路由是否在权限菜单中
  * @param routePath 路由路径
  * @param menu 权限菜单
  * @returns 是否在菜单中
  */
 function checkRouteInMenu(routePath: string, menu: any[]): boolean {
+  const target = normalizeRoutePath(routePath);
   for (const item of menu) {
-    if (item.routePath === routePath) {
+    if (normalizeRoutePath(item.routePath) === target) {
       return true;
     }
 

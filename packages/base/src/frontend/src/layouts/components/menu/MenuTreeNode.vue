@@ -86,7 +86,7 @@ const menuItemIndex = computed(() => resolveMenuIndex(props.item.to));
  */
 function resolveMenuIndex(to?: RouteLocationRaw): string {
   if (!to) {
-    return '/dashboard';
+    return '/';
   }
   if (typeof to === 'string') {
     return to;
@@ -94,7 +94,7 @@ function resolveMenuIndex(to?: RouteLocationRaw): string {
   if ('path' in to && to.path) {
     return to.path;
   }
-  return '/dashboard';
+  return '/';
 }
 
 /**

@@ -41,8 +41,10 @@ export interface FrontendMenuNode extends Omit<MenuNode, "children"> {
  * 前端应用类型菜单树配置：children 为 FrontendMenuNode[]。
  * roleCode 对业务 AppType 必填，扩展包可省略。
  */
-export interface FrontendAppTypeMenuConfig
-  extends Omit<AppTypeMenuConfig, "children" | "roleCode"> {
+export interface FrontendAppTypeMenuConfig extends Omit<
+  AppTypeMenuConfig,
+  "children" | "roleCode"
+> {
   /** 绑定的角色编码，业务 AppType 必填（如 `'super_admin'`、`'supplier_admin'`） */
   roleCode?: string;
   children: FrontendMenuNode[];
@@ -71,7 +73,7 @@ export function buildRoutesFromMenuTrees(
   for (const appTypeConfig of menuTrees) {
     processMenuNodes(
       appTypeConfig.children,
-      "",
+      appTypeConfig.appTypeCode,
       undefined,
       undefined,
       appTypeConfig,
@@ -98,27 +100,32 @@ function processMenuNodes(
   seenPaths: Set<string>,
 ): void {
   for (const node of nodes) {
-    const fullPath = parentPath ? `${parentPath}/${node.path}` : node.path;
+    // 路由路径（含 appTypeCode 前缀）
+    const fullPath = parentPath ? `${parentPath}/${node.path}` : `/${appTypeConfig.appTypeCode}/${node.path}`;
+    const normalizedFullPath = fullPath.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+
     const hasChildren = node.children && node.children.length > 0;
 
     if (hasChildren) {
       // MENU 分组节点：生成重定向路由到第一个子页面
       const firstChild = node.children![0];
       const firstChildPath = `${fullPath}/${firstChild.path}`;
+      const normalizedFirstChildPath =
+        `/${firstChildPath}`.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
 
-      if (!seenPaths.has(fullPath)) {
-        seenPaths.add(fullPath);
+      if (!seenPaths.has(normalizedFullPath)) {
+        seenPaths.add(normalizedFullPath);
         routes.push({
-          path: fullPath,
-          name: `Menu_${fullPath.replace(/\//g, "_").replace(/:/g, "_")}`,
-          redirect: `/${firstChildPath}`,
+          path: normalizedFullPath,
+          name: `Menu_${normalizedFullPath.replace(/\//g, "_").replace(/:/g, "_")}`,
+          redirect: normalizedFirstChildPath,
           meta: {
             title: node.name,
             menuLabel: node.name,
             menuIcon: node.icon,
             menu: true,
             moduleInfo: {
-              modulePath: fullPath,
+              modulePath: normalizedFullPath,
               moduleName: node.name,
               moduleIcon: node.icon,
               appTypeCode: appTypeConfig.appTypeCode,
@@ -129,7 +136,7 @@ function processMenuNodes(
 
       processMenuNodes(
         node.children!,
-        fullPath,
+        normalizedFullPath,
         node.name,
         node.icon,
         appTypeConfig,
@@ -143,21 +150,21 @@ function processMenuNodes(
       if (!component) {
         if (typeof console !== "undefined") {
           console.warn(
-            `[MFW Router] 菜单节点 "${fullPath}" 未提供 component，跳过路由生成`,
+            `[MFW Router] 菜单节点 "${normalizedFullPath}" 未提供 component，跳过路由生成`,
           );
         }
         continue;
       }
 
-      if (seenPaths.has(fullPath)) {
+      if (seenPaths.has(normalizedFullPath)) {
         continue;
       }
-      seenPaths.add(fullPath);
+      seenPaths.add(normalizedFullPath);
 
-      const routeName = `Route_${fullPath.replace(/\//g, "_").replace(/:/g, "_")}`;
+      const routeName = `Route_${normalizedFullPath.replace(/\//g, "_").replace(/:/g, "_")}`;
 
       routes.push({
-        path: fullPath,
+        path: normalizedFullPath,
         name: routeName,
         component: component as RouteRecordRaw["component"],
         meta: {

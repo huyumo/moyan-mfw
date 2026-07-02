@@ -106,6 +106,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Monitor, OfficeBuilding, Check } from '@element-plus/icons-vue'
 import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../apis/sys'
@@ -134,20 +135,24 @@ const appList = ref<AppInstanceItemDto[]>([])
 const selectedAppId = ref<string>('')
 const authStore = useAuthStore()
 const layoutStore = useLayoutStore()
+const router = useRouter()
 
 /**
  * 将权限菜单节点转换为侧边栏菜单格式
  */
 function transformMenuNodesToSideMenu(nodes: any[]): SideMenuItem[] {
   return nodes
-    .filter((item: any) => item.routePath) // 只保留有路由路径的菜单项
+    .filter(
+      (item: any) =>
+        item.routePath || (item.children && item.children.length > 0),
+    )
     .map((item: any) => ({
       key: item.permCode || item.id,
       label: item.permName,
       to: item.routePath,
       icon: item.iconName,
-      children: item.children 
-        ? transformMenuNodesToSideMenu(item.children) 
+      children: item.children
+        ? transformMenuNodesToSideMenu(item.children)
         : undefined,
     }));
 }
@@ -197,6 +202,11 @@ async function handleSelectApp(app: AppInstanceItemDto) {
     }
 
     ElMessage.success(`已进入应用: ${app.appName}`)
+
+    // 7. 跳转到新应用的首页
+    const appTypeCode = app.appTypeCode
+    const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : '/dashboard'
+    router.push(homePath)
   } catch (error: unknown) {
     const err = error as { response?: { data?: { message?: string } }; message?: string }
     ElMessage.error(err?.response?.data?.message || err?.message || '切换应用失败')

@@ -125,7 +125,7 @@ export function createBaseAdminRouter(
         {
           path: "",
           name: "RootRedirect",
-          redirect: "/dashboard",
+          component: { template: "<div />" },
           meta: { requiresAuth: true },
         },
         ...mergedChildren.map((route) => ({

@@ -1,16 +1,24 @@
 /**
  * @fileoverview 布局组合逻辑。
  */
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue';
-import { useRoute, useRouter, type RouteLocationRaw } from 'vue-router';
-import { useLayoutStore } from '../../store/layout-store';
-import { useAuthStore } from '../../store/auth-store';
-import { resetRouteGuard } from '../../router/guard';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../../constants/storage-keys';
-import { useColorMode, useThemeSwitch } from '../../composables';
-import { getAvailableThemes, themeRegistry, getTheme } from '../../themes';
-import type { LayoutMode, LayoutStyleConfig, SideMenuItem } from '../../types/layout-types';
+import { ElMessage, ElMessageBox } from "element-plus";
+import { computed, onMounted, onBeforeUnmount, ref, watch } from "vue";
+import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
+import { useLayoutStore } from "../../store/layout-store";
+import { useAuthStore } from "../../store/auth-store";
+import { resetRouteGuard } from "../../router/guard";
+import {
+  TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  CURRENT_APP_KEY,
+} from "../../constants/storage-keys";
+import { useColorMode, useThemeSwitch } from "../../composables";
+import { getAvailableThemes, themeRegistry, getTheme } from "../../themes";
+import type {
+  LayoutMode,
+  LayoutStyleConfig,
+  SideMenuItem,
+} from "../../types/layout-types";
 
 type CssVarMapping = {
   cssVar: string;
@@ -19,19 +27,23 @@ type CssVarMapping = {
 };
 
 const CSS_VAR_MAPPINGS: CssVarMapping[] = [
-  { cssVar: '--mfw-sidebar-width', configKey: 'sidebarWidth', unit: 'px' },
-  { cssVar: '--mfw-header-height', configKey: 'headerHeight', unit: 'px' },
-  { cssVar: '--mfw-content-max-width', configKey: 'contentMaxWidth', unit: 'px' },
-  { cssVar: '--mfw-card-radius', configKey: 'cardRadius', unit: 'px' },
-  { cssVar: '--mfw-button-radius', configKey: 'buttonRadius', unit: 'px' },
+  { cssVar: "--mfw-sidebar-width", configKey: "sidebarWidth", unit: "px" },
+  { cssVar: "--mfw-header-height", configKey: "headerHeight", unit: "px" },
+  {
+    cssVar: "--mfw-content-max-width",
+    configKey: "contentMaxWidth",
+    unit: "px",
+  },
+  { cssVar: "--mfw-card-radius", configKey: "cardRadius", unit: "px" },
+  { cssVar: "--mfw-button-radius", configKey: "buttonRadius", unit: "px" },
 ];
 
 function syncCssVars(config: LayoutStyleConfig) {
-  if (typeof document === 'undefined') return;
+  if (typeof document === "undefined") return;
   const root = document.documentElement;
   for (const mapping of CSS_VAR_MAPPINGS) {
     const value = config[mapping.configKey];
-    if (typeof value === 'number') {
+    if (typeof value === "number") {
       root.style.setProperty(mapping.cssVar, `${value}${mapping.unit}`);
     }
   }
@@ -44,42 +56,55 @@ export function useAdminLayout() {
   const route = useRoute();
   const router = useRouter();
   const mobileMenuOpen = ref(false);
-  const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1200);
+  const windowWidth = ref(
+    typeof window !== "undefined" ? window.innerWidth : 1200,
+  );
   const settingsSnapshot = ref<LayoutStyleConfig | null>(null);
   const skipSettingsRollback = ref(false);
   const isMobile = computed(() => windowWidth.value < 768);
   const layoutModeOptions: Array<{ label: string; value: LayoutMode }> = [
-    { label: '侧边栏', value: 'sidebar' },
-    { label: '双栏菜单', value: 'dual' },
+    { label: "侧边栏", value: "sidebar" },
+    { label: "双栏菜单", value: "dual" },
   ];
   const themeOptions = computed(() => getAvailableThemes());
   const shellClasses = computed(() => ({
-    'is-compact': layoutStore.styleConfig.compact && layoutStore.showSidebar,
-    'layout-mode-sidebar': layoutStore.styleConfig.layoutMode === 'sidebar',
-    'layout-mode-top': layoutStore.styleConfig.layoutMode === 'top',
-    'layout-mode-dual': layoutStore.styleConfig.layoutMode === 'dual',
+    "is-compact": layoutStore.styleConfig.compact && layoutStore.showSidebar,
+    "layout-mode-sidebar": layoutStore.styleConfig.layoutMode === "sidebar",
+    "layout-mode-top": layoutStore.styleConfig.layoutMode === "top",
+    "layout-mode-dual": layoutStore.styleConfig.layoutMode === "dual",
   }));
   const topLevelMenus = computed(() => layoutStore.navigation.sideMenu);
-  const activeTopMenuKey = computed(() => layoutStore.activeTopMenuKey || topLevelMenus.value[0]?.key || '');
+  const activeTopMenuKey = computed(
+    () => layoutStore.activeTopMenuKey || topLevelMenus.value[0]?.key || "",
+  );
   const activeTopMenu = computed(
     () =>
-      topLevelMenus.value.find((item: SideMenuItem) => item.key === activeTopMenuKey.value) || topLevelMenus.value[0],
+      topLevelMenus.value.find(
+        (item: SideMenuItem) => item.key === activeTopMenuKey.value,
+      ) || topLevelMenus.value[0],
   );
-  const showPrimaryTopMenus = computed(() => layoutStore.styleConfig.layoutMode !== 'sidebar');
+  const showPrimaryTopMenus = computed(
+    () => layoutStore.styleConfig.layoutMode !== "sidebar",
+  );
   const displayedSideMenus = computed(() => {
-    if (layoutStore.styleConfig.layoutMode === 'top') {
+    if (layoutStore.styleConfig.layoutMode === "top") {
       return [];
     }
-    if (layoutStore.styleConfig.layoutMode === 'dual') {
+    if (layoutStore.styleConfig.layoutMode === "dual") {
       const current = activeTopMenu.value;
       if (!current) {
         return [];
       }
-      return current.children && current.children.length > 0 ? current.children : [current];
+      return current.children && current.children.length > 0
+        ? current.children
+        : [current];
     }
     return topLevelMenus.value;
   });
-  const activeMenuPath = computed(() => resolveMenuActivePath(displayedSideMenus.value, route.path) || route.path);
+  const activeMenuPath = computed(
+    () =>
+      resolveMenuActivePath(displayedSideMenus.value, route.path) || route.path,
+  );
   const activeTabPath = computed({
     get: () => layoutStore.activeTabPath,
     set: (path: string) => {
@@ -91,27 +116,30 @@ export function useAdminLayout() {
   });
   function resolveMenuPath(to?: RouteLocationRaw): string {
     if (!to) {
-      return '';
+      return "";
     }
-    if (typeof to === 'string') {
+    if (typeof to === "string") {
       return to;
     }
-    if ('path' in to && to.path) {
+    if ("path" in to && to.path) {
       return to.path;
     }
-    return '';
+    return "";
   }
   function resolveFirstLeafPath(item: SideMenuItem): string {
     if (item.children && item.children.length > 0) {
       return resolveFirstLeafPath(item.children[0]);
     }
-    return resolveMenuPath(item.to) || '/dashboard';
+    return resolveMenuPath(item.to) || "/dashboard";
   }
   function resolveMenuActivePath(items: SideMenuItem[], path: string): string {
-    let matchedPath = '';
+    let matchedPath = "";
     for (const item of items) {
       const currentPath = resolveMenuPath(item.to);
-      if (currentPath && (path === currentPath || path.startsWith(`${currentPath}/`))) {
+      if (
+        currentPath &&
+        (path === currentPath || path.startsWith(`${currentPath}/`))
+      ) {
         if (!matchedPath || currentPath.length > matchedPath.length) {
           matchedPath = currentPath;
         }
@@ -132,9 +160,13 @@ export function useAdminLayout() {
       router.push(targetPath);
     }
   }
-  function handleSubMenuClick(payload: { parent: SideMenuItem; child: SideMenuItem }) {
+  function handleSubMenuClick(payload: {
+    parent: SideMenuItem;
+    child: SideMenuItem;
+  }) {
     layoutStore.setActiveTopMenuKey(payload.parent.key);
-    const targetPath = resolveMenuPath(payload.child.to) || resolveFirstLeafPath(payload.child);
+    const targetPath =
+      resolveMenuPath(payload.child.to) || resolveFirstLeafPath(payload.child);
     if (targetPath && targetPath !== route.path) {
       router.push(targetPath);
     }
@@ -143,16 +175,18 @@ export function useAdminLayout() {
     mobileMenuOpen.value = !mobileMenuOpen.value;
   }
   function handleResetDefaults() {
-    ElMessageBox.confirm(
-      '是否恢复全部布局偏好为默认值？',
-      '恢复默认设置',
-      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'warning' },
-    ).then(() => {
-      skipSettingsRollback.value = true;
-      layoutStore.resetToDefaults();
-      layoutStore.toggleSettingsPanel(false);
-      ElMessage.success('已恢复默认设置');
-    }).catch(() => {});
+    ElMessageBox.confirm("是否恢复全部布局偏好为默认值？", "恢复默认设置", {
+      confirmButtonText: "确认",
+      cancelButtonText: "取消",
+      type: "warning",
+    })
+      .then(() => {
+        skipSettingsRollback.value = true;
+        layoutStore.resetToDefaults();
+        layoutStore.toggleSettingsPanel(false);
+        ElMessage.success("已恢复默认设置");
+      })
+      .catch(() => {});
   }
   function removeTab(name: string | number) {
     const nextPath = layoutStore.closeTab(String(name));
@@ -164,15 +198,15 @@ export function useAdminLayout() {
     const currentPath = route.fullPath;
     const action = String(command);
     let nextPath = currentPath;
-    if (action === 'closeCurrent') {
+    if (action === "closeCurrent") {
       nextPath = layoutStore.closeTab(currentPath);
-    } else if (action === 'closeLeft') {
+    } else if (action === "closeLeft") {
       nextPath = layoutStore.closeTabsLeft(currentPath);
-    } else if (action === 'closeRight') {
+    } else if (action === "closeRight") {
       nextPath = layoutStore.closeTabsRight(currentPath);
-    } else if (action === 'closeOther') {
+    } else if (action === "closeOther") {
       nextPath = layoutStore.closeOtherTabs(currentPath);
-    } else if (action === 'closeAll') {
+    } else if (action === "closeAll") {
       nextPath = layoutStore.closeAllTabs();
     }
     if (nextPath && nextPath !== route.fullPath) {
@@ -181,7 +215,7 @@ export function useAdminLayout() {
   }
   async function handleUserCommand(command: string | number | object) {
     const action = String(command);
-    if (action === 'logout') {
+    if (action === "logout") {
       // 1. 先重置路由守卫状态，防止路由循环
       resetRouteGuard();
       // 2. 清除 Token（直接操作 localStorage，避免响应式延迟）
@@ -195,14 +229,14 @@ export function useAdminLayout() {
       // 5. 清除 store 状态
       authStore.clearToken();
       // 6. 强制刷新到登录页（使用 location.href 避免路由冲突）
-      window.location.href = '/login';
+      window.location.href = "/login";
       return;
     }
-    if (action === 'settings') {
+    if (action === "settings") {
       layoutStore.toggleSettingsPanel(true);
       return;
     }
-    router.push('/dashboard');
+    router.push("/dashboard");
   }
   function handlePreviewChange(payload: Partial<LayoutStyleConfig>) {
     layoutStore.patchStyleConfig(payload, { persist: false });
@@ -212,17 +246,17 @@ export function useAdminLayout() {
     layoutStore.patchStyleConfig(payload, { persist: false });
     layoutStore.persistPreferences();
     layoutStore.toggleSettingsPanel(false);
-    ElMessage.success('\u504f\u597d\u8bbe\u7f6e\u5df2\u4fdd\u5b58');
+    ElMessage.success("\u504f\u597d\u8bbe\u7f6e\u5df2\u4fdd\u5b58");
   }
   function getThemeColor(themeKey: string): string {
     const theme = themeRegistry[themeKey];
     if (!theme) {
-      return 'var(--el-color-primary)';
+      return "var(--el-color-primary)";
     }
     return theme.colors.gradient || theme.colors.primary;
   }
-  if (typeof window !== 'undefined') {
-    window.addEventListener('resize', () => {
+  if (typeof window !== "undefined") {
+    window.addEventListener("resize", () => {
       windowWidth.value = window.innerWidth;
     });
   }
@@ -252,7 +286,9 @@ export function useAdminLayout() {
         return;
       }
       if (settingsSnapshot.value) {
-        layoutStore.patchStyleConfig(settingsSnapshot.value, { persist: false });
+        layoutStore.patchStyleConfig(settingsSnapshot.value, {
+          persist: false,
+        });
         syncCssVars(settingsSnapshot.value);
         const { setColorMode } = useColorMode();
         setColorMode(settingsSnapshot.value.colorMode, { persist: false });

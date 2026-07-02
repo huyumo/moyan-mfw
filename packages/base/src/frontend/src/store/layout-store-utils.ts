@@ -6,8 +6,12 @@ import type {
   LayoutStyleConfig,
   PageTabItem,
   SideMenuItem,
-} from '../types/layout-types';
-import { LAYOUT_PREFERENCES_STORAGE_KEY, LAYOUT_TABS_STORAGE_KEY, type LayoutPersistedState } from './layout-store-model';
+} from "../types/layout-types";
+import {
+  LAYOUT_PREFERENCES_STORAGE_KEY,
+  LAYOUT_TABS_STORAGE_KEY,
+  type LayoutPersistedState,
+} from "./layout-store-model";
 
 /**
  * 深拷贝菜单树。
@@ -25,7 +29,7 @@ export function cloneMenus(items: SideMenuItem[] = []): SideMenuItem[] {
 export function createHomeTab(homePath: string): PageTabItem {
   return {
     key: homePath,
-    title: '首页',
+    title: "首页",
     path: homePath,
     fullPath: homePath,
     affix: true,
@@ -37,7 +41,7 @@ export function createHomeTab(homePath: string): PageTabItem {
  * 读取持久化状态。
  */
 export function readPersistedState(): LayoutPersistedState {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return {};
   }
 
@@ -47,7 +51,7 @@ export function readPersistedState(): LayoutPersistedState {
     const raw = window.localStorage.getItem(LAYOUT_PREFERENCES_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as LayoutPersistedState;
-      if (parsed && typeof parsed === 'object') {
+      if (parsed && typeof parsed === "object") {
         result = { ...result, ...parsed };
       }
     }
@@ -58,8 +62,11 @@ export function readPersistedState(): LayoutPersistedState {
   try {
     const raw = window.sessionStorage.getItem(LAYOUT_TABS_STORAGE_KEY);
     if (raw) {
-      const parsed = JSON.parse(raw) as Pick<LayoutPersistedState, 'visitedTabs' | 'activeTabPath'>;
-      if (parsed && typeof parsed === 'object') {
+      const parsed = JSON.parse(raw) as Pick<
+        LayoutPersistedState,
+        "visitedTabs" | "activeTabPath"
+      >;
+      if (parsed && typeof parsed === "object") {
         result.visitedTabs = parsed.visitedTabs;
         result.activeTabPath = parsed.activeTabPath;
       }
@@ -74,7 +81,10 @@ export function readPersistedState(): LayoutPersistedState {
 /**
  * 规范化持久化标签页。
  */
-export function normalizePersistedTabs(tabs: PageTabItem[] | undefined, homePath: string): PageTabItem[] {
+export function normalizePersistedTabs(
+  tabs: PageTabItem[] | undefined,
+  homePath: string,
+): PageTabItem[] {
   const homeTab = createHomeTab(homePath);
   if (!Array.isArray(tabs) || tabs.length === 0) {
     return [homeTab];
@@ -83,21 +93,32 @@ export function normalizePersistedTabs(tabs: PageTabItem[] | undefined, homePath
   const deduped: PageTabItem[] = [];
   const pathSet = new Set<string>();
   for (const tab of tabs) {
-    if (!tab || typeof tab.fullPath !== 'string' || !tab.fullPath || pathSet.has(tab.fullPath)) {
+    if (
+      !tab ||
+      typeof tab.fullPath !== "string" ||
+      !tab.fullPath ||
+      pathSet.has(tab.fullPath)
+    ) {
       continue;
     }
     pathSet.add(tab.fullPath);
     deduped.push({
       key: tab.key || tab.fullPath,
-      title: tab.title || '未命名页面',
+      title: tab.title || "未命名页面",
       path: tab.path || tab.fullPath,
       fullPath: tab.fullPath,
       affix: tab.affix || tab.path === homePath || tab.fullPath === homePath,
-      closable: !(tab.affix || tab.path === homePath || tab.fullPath === homePath),
+      closable: !(
+        tab.affix ||
+        tab.path === homePath ||
+        tab.fullPath === homePath
+      ),
     });
   }
 
-  if (!deduped.some((tab) => tab.path === homePath || tab.fullPath === homePath)) {
+  if (
+    !deduped.some((tab) => tab.path === homePath || tab.fullPath === homePath)
+  ) {
     deduped.unshift(homeTab);
   }
 
@@ -122,11 +143,15 @@ export function isPathMatched(routePath: string, menuPath?: string): boolean {
 /**
  * 判断路径是否包含在菜单树中。
  */
-export function containsPathInMenu(item: SideMenuItem, routePath: string): boolean {
-  const target = typeof item.to === 'string' ? item.to : undefined;
+export function containsPathInMenu(
+  item: SideMenuItem,
+  routePath: string,
+): boolean {
+  const target = typeof item.to === "string" ? item.to : undefined;
   if (isPathMatched(routePath, target)) {
     return true;
   }
+
   if (!item.children || item.children.length === 0) {
     return false;
   }
@@ -136,7 +161,10 @@ export function containsPathInMenu(item: SideMenuItem, routePath: string): boole
 /**
  * 组装持久化样式配置。
  */
-export function mergeStyleConfig(base: LayoutStyleConfig, persisted?: Partial<LayoutStyleConfig>): LayoutStyleConfig {
+export function mergeStyleConfig(
+  base: LayoutStyleConfig,
+  persisted?: Partial<LayoutStyleConfig>,
+): LayoutStyleConfig {
   return {
     ...base,
     ...persisted,

@@ -250,12 +250,14 @@ const loginApps = computed(() =>
     appLogo: app.appLogo,
     isOwner: app.isOwner,
     role: app.isOwner ? 'owner' : 'member',
+    appTypeId: app.appTypeId,
+    appTypeCode: app.appTypeCode,
     appTypeName: app.appTypeName,
   }))
 );
 
 /** 处理应用选择 */
-async function handleAppSelect(app: { appId: string; appName: string; appCode: string; appLogo?: string; isOwner: boolean; appTypeName?: string }) {
+async function handleAppSelect(app: { appId: string; appName: string; appCode: string; appLogo?: string; isOwner: boolean; appTypeId?: string; appTypeCode?: string; appTypeName?: string }) {
   selectingAppId.value = app.appId;
   try {
     await authStore.selectApp({
@@ -264,10 +266,14 @@ async function handleAppSelect(app: { appId: string; appName: string; appCode: s
       appCode: app.appCode,
       appLogo: app.appLogo,
       isOwner: app.isOwner,
+      appTypeId: app.appTypeId,
+      appTypeCode: app.appTypeCode,
       appTypeName: app.appTypeName,
     });
     ElMessage.success(`已进入应用: ${app.appName}`);
-    await router.replace('/');
+    const appTypeCode = app.appTypeCode;
+    const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : '/dashboard';
+    await router.replace(homePath);
   } catch (error: any) {
     selectingAppId.value = '';
     ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');

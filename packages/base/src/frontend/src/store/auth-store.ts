@@ -3,21 +3,33 @@
  * @description 处理用户登录、Token 管理、用户信息、应用选择
  */
 
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
 import {
   ApiAuthLogin,
   ApiAuthRefreshToken,
   ApiAuthGetCurrentUser,
   ApiAuthGetUserApps,
   ApiAuthGetUserPermissions,
-} from '../apis/sys';
-import type { LoginResponseDto, UserInfoDto, AppInstanceItemDto, PermissionTreeNodeDto } from '../apis/sys/schemas';
-import type { SideMenuItem } from '../types/layout-types';
-import { getImageSrc } from '../utils/image';
-import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
-import { initPermissionCache, getPermissionValueCache } from '../utils/permissions';
-import { ApiPermissionValuesGetPermissionValues } from '../apis/sys';
+} from "../apis/sys";
+import type {
+  LoginResponseDto,
+  UserInfoDto,
+  AppInstanceItemDto,
+  PermissionTreeNodeDto,
+} from "../apis/sys/schemas";
+import type { SideMenuItem } from "../types/layout-types";
+import { getImageSrc } from "../utils/image";
+import {
+  TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+  CURRENT_APP_KEY,
+} from "../constants/storage-keys";
+import {
+  initPermissionCache,
+  getPermissionValueCache,
+} from "../utils/permissions";
+import { ApiPermissionValuesGetPermissionValues } from "../apis/sys";
 
 export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY };
 
@@ -69,10 +81,10 @@ export interface PermissionMenuItem {
 /**
  * 认证状态管理 Store
  */
-export const useAuthStore = defineStore('auth', () => {
+export const useAuthStore = defineStore("auth", () => {
   // ============== 状态 ==============
-  const token = ref<string>('');
-  const refreshTokenValue = ref<string>('');
+  const token = ref<string>("");
+  const refreshTokenValue = ref<string>("");
   const user = ref<UserInfo | null>(null);
   const apps = ref<AppInstance[]>([]);
   const currentApp = ref<AppInstance | null>(null);
@@ -87,7 +99,9 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!token.value && !!user.value);
   const isLoggedIn = computed(() => !!token.value);
   const hasApps = computed(() => apps.value.length > 0);
-  const needSelectApp = computed(() => apps.value.length > 1 && !currentApp.value);
+  const needSelectApp = computed(
+    () => apps.value.length > 1 && !currentApp.value,
+  );
 
   // ============== Token 管理 ==============
 
@@ -99,7 +113,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     if (savedToken) {
       token.value = savedToken;
-      refreshTokenValue.value = savedRefreshToken || '';
+      refreshTokenValue.value = savedRefreshToken || "";
 
       if (savedApp) {
         try {
@@ -115,7 +129,11 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** 保存 Token 到本地存储 */
-  function saveToken(newToken: string, newRefreshToken: string, expiresIn: number): void {
+  function saveToken(
+    newToken: string,
+    newRefreshToken: string,
+    expiresIn: number,
+  ): void {
     token.value = newToken;
     refreshTokenValue.value = newRefreshToken;
     tokenExpiresAt.value = Date.now() + expiresIn * 1000;
@@ -126,8 +144,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 清除 Token */
   function clearToken(): void {
-    token.value = '';
-    refreshTokenValue.value = '';
+    token.value = "";
+    refreshTokenValue.value = "";
     user.value = null;
     apps.value = [];
     currentApp.value = null;
@@ -154,29 +172,29 @@ export const useAuthStore = defineStore('auth', () => {
 
     return await new ApiAuthLogin({
       body: { username: params.username, password: params.password },
-    }).then((response) => {
-      const result = (response as any)?.data || response;
-      saveToken(result.accessToken, result.refreshToken, result.expiresIn);
-
-      user.value = {
-        id: result.user?.id || '',
-        username: result.user?.username || '',
-        nickname: result.user?.nickname || '',
-        avatar: getImageSrc(result.user?.avatar) || '',
-        gender: result.user?.gender || 0,
-        isDeveloper: result.user?.isDeveloper || false,
-        userStatus: result.user?.userStatus ?? 1,
-        roles: result.user?.roles || [],
-      };
-
-      return true;
     })
-      .finally(() => {
-        console.log('=======登录完成=======');
-        loading.value = false;
-        return false
-      })
+      .then((response) => {
+        const result = (response as any)?.data || response;
+        saveToken(result.accessToken, result.refreshToken, result.expiresIn);
 
+        user.value = {
+          id: result.user?.id || "",
+          username: result.user?.username || "",
+          nickname: result.user?.nickname || "",
+          avatar: getImageSrc(result.user?.avatar) || "",
+          gender: result.user?.gender || 0,
+          isDeveloper: result.user?.isDeveloper || false,
+          userStatus: result.user?.userStatus ?? 1,
+          roles: result.user?.roles || [],
+        };
+
+        return true;
+      })
+      .finally(() => {
+        console.log("=======登录完成=======");
+        loading.value = false;
+        return false;
+      });
   }
 
   /** 登出 */
@@ -184,10 +202,10 @@ export const useAuthStore = defineStore('auth', () => {
     // 直接调用后端 API，不使用 ApiCall（避免触发 401 事件处理）
     try {
       const token = localStorage.getItem(TOKEN_KEY);
-      await fetch('/api/auth/logout', {
-        method: 'POST',
+      await fetch("/api/auth/logout", {
+        method: "POST",
         headers: {
-          'Authorization': token ? `Bearer ${token}` : '',
+          Authorization: token ? `Bearer ${token}` : "",
         },
       });
     } catch {
@@ -200,7 +218,7 @@ export const useAuthStore = defineStore('auth', () => {
   /** 刷新 Token */
   async function refreshAccessToken(): Promise<string> {
     if (!refreshTokenValue.value) {
-      throw new Error('No refresh token available');
+      throw new Error("No refresh token available");
     }
 
     const response = await new ApiAuthRefreshToken({
@@ -225,7 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
       id: result.id,
       username: result.username,
       nickname: result.nickname,
-      avatar: getImageSrc(result.avatar) || '',
+      avatar: getImageSrc(result.avatar) || "",
       gender: 0,
       isDeveloper: result.isDeveloper === 1 || result.isDeveloper === true,
       userStatus: 1,
@@ -242,14 +260,16 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await new ApiAuthGetUserApps({});
       const result = (response as any)?.data || response;
-      const appsData = Array.isArray(result) ? result : (result as any)?.list || [];
+      const appsData = Array.isArray(result)
+        ? result
+        : (result as any)?.list || [];
 
       apps.value = appsData.map((app: AppInstanceItemDto) => ({
         appId: app.appId,
         appName: app.appName,
         appCode: app.appCode,
         appLogo: getImageSrc(app.logo),
-        isOwner: app.role === 'owner',
+        isOwner: app.role === "owner",
         appTypeId: app.appTypeId,
         appTypeCode: app.appTypeCode,
         appTypeName: app.appTypeName,
@@ -257,7 +277,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       return apps.value;
     } catch (error) {
-      console.error('获取应用列表失败:', error);
+      console.error("获取应用列表失败:", error);
       apps.value = [];
       return [];
     }
@@ -270,7 +290,7 @@ export const useAuthStore = defineStore('auth', () => {
     currentApp.value = app;
     localStorage.setItem(CURRENT_APP_KEY, JSON.stringify(app));
 
-    const { useLayoutStore } = await import('./layout-store');
+    const { useLayoutStore } = await import("./layout-store");
     const layoutStore = useLayoutStore();
     layoutStore.setCurrentApp({
       appId: app.appId,
@@ -279,22 +299,28 @@ export const useAuthStore = defineStore('auth', () => {
       appLogo: app.appLogo,
     });
     layoutStore.setUserApps(
-      apps.value.map(a => ({
+      apps.value.map((a) => ({
         appId: a.appId,
         appName: a.appName,
         appCode: a.appCode,
         appLogo: a.appLogo,
-      }))
+      })),
     );
 
     await loadPermissions(app.appId);
   }
 
   /** 将权限菜单转换为侧边栏菜单格式 */
-  function transformPermissionMenuToSideMenu(nodes: PermissionMenuItem[]): SideMenuItem[] {
+  function transformPermissionMenuToSideMenu(
+    nodes: PermissionMenuItem[],
+  ): SideMenuItem[] {
     return nodes
-      .filter(item => item.routePath) // 只保留有路由路径的菜单项
-      .map(item => ({
+      .filter(
+        (item) =>
+          item.routePath ||
+          (item.children && item.children.length > 0),
+      )
+      .map((item) => ({
         key: item.permCode || item.id,
         label: item.permName,
         to: item.routePath,
@@ -313,7 +339,7 @@ export const useAuthStore = defineStore('auth', () => {
     permissionValueMap.value = {};
     routePermCodeMap.value.clear();
 
-    const { useLayoutStore } = await import('./layout-store');
+    const { useLayoutStore } = await import("./layout-store");
     const layoutStore = useLayoutStore();
     layoutStore.setNavigation({ sideMenu: [] }, { clearTabs: true });
 
@@ -323,29 +349,32 @@ export const useAuthStore = defineStore('auth', () => {
       });
 
       if (version !== loadPermissionsVersion) {
-        console.warn('loadPermissions: 版本过期，丢弃旧请求结果');
+        console.warn("loadPermissions: 版本过期，丢弃旧请求结果");
         return [];
       }
 
       const result = (response as any)?.data || response;
       const menuNodes = result.menuTree || [];
       permissionMenu.value = transformPermissionMenu(menuNodes);
-      permissionValueMap.value = (result.permissionValueMap || {}) as Record<string, string>;
+      permissionValueMap.value = (result.permissionValueMap || {}) as Record<
+        string,
+        string
+      >;
       buildRoutePermCodeMap(menuNodes);
 
-      console.log('加载权限菜单:', permissionMenu.value);
+      console.log("加载权限菜单:", permissionMenu.value);
 
       const sideMenu = transformPermissionMenuToSideMenu(permissionMenu.value);
       layoutStore.setNavigation({ sideMenu }, { clearTabs: true });
 
-      console.log('已更新侧边栏菜单:', sideMenu);
+      console.log("已更新侧边栏菜单:", sideMenu);
 
       return permissionMenu.value;
     } catch (error) {
       if (version !== loadPermissionsVersion) {
         return [];
       }
-      console.error('加载权限菜单失败:', error);
+      console.error("加载权限菜单失败:", error);
       permissionMenu.value = [];
       permissionValueMap.value = {};
       routePermCodeMap.value.clear();
@@ -355,24 +384,36 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** 将后端权限菜单节点转换为前端格式 */
-  function transformPermissionMenu(nodes: PermissionTreeNodeDto[]): PermissionMenuItem[] {
+  function transformPermissionMenu(
+    nodes: PermissionTreeNodeDto[],
+  ): PermissionMenuItem[] {
     return nodes
-      .filter(node => node.isVisible !== 0) // 过滤不可见节点
-      .map(node => ({
+      .filter((node) => node.isVisible !== 0) // 过滤不可见节点
+      .map((node) => ({
         id: node.id,
         permName: node.permName,
         permCode: node.permCode,
         routePath: node.routePath,
         iconName: node.iconName,
-        children: node.children ? transformPermissionMenu(node.children) : undefined,
+        children: node.children
+          ? transformPermissionMenu(node.children)
+          : undefined,
       }));
+  }
+
+  /** 规范化路由路径，统一比较格式。 */
+  function normalizeRoutePath(path: string): string {
+    return `/${path}`.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
   }
 
   /** 构建路由路径到权限编码的映射 */
   function buildRoutePermCodeMap(nodes: PermissionTreeNodeDto[]): void {
     for (const node of nodes) {
       if (node.routePath && node.permCode) {
-        routePermCodeMap.value.set(node.routePath, node.permCode);
+        routePermCodeMap.value.set(
+          normalizeRoutePath(node.routePath),
+          node.permCode,
+        );
       }
       if (node.children) {
         buildRoutePermCodeMap(node.children);
@@ -382,11 +423,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   /** 根据当前路由路径获取权限编码 */
   function getPermCodeByRoute(currentPath: string): string | undefined {
-    if (routePermCodeMap.value.has(currentPath)) {
-      return routePermCodeMap.value.get(currentPath);
+    const normalized = normalizeRoutePath(currentPath);
+    if (routePermCodeMap.value.has(normalized)) {
+      return routePermCodeMap.value.get(normalized);
     }
+
     for (const [routePath, permCode] of routePermCodeMap.value) {
-      if (currentPath.startsWith(routePath + '/') || currentPath === routePath) {
+      if (normalized.startsWith(routePath + "/") || normalized === routePath) {
         return permCode;
       }
     }
@@ -406,7 +449,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     const savedAppCode = currentApp.value?.appCode;
     if (savedAppCode) {
-      const saved = apps.value.find(a => a.appCode === savedAppCode);
+      const saved = apps.value.find((a) => a.appCode === savedAppCode);
       if (saved) {
         await selectApp(saved);
         return true;
@@ -435,13 +478,15 @@ export const useAuthStore = defineStore('auth', () => {
       if (getPermissionValueCache().size === 0) {
         try {
           const result = await new ApiPermissionValuesGetPermissionValues({});
-          const values = (result as Array<{ name: string; bitValue: string }>).map((item) => ({
+          const values = (
+            result as Array<{ name: string; bitValue: string }>
+          ).map((item) => ({
             name: item.name,
             bitValue: item.bitValue,
           }));
           initPermissionCache(values);
         } catch (error) {
-          console.warn('[AuthStore] 初始化权限值缓存失败:', error);
+          console.warn("[AuthStore] 初始化权限值缓存失败:", error);
         }
       }
 
@@ -460,7 +505,7 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       // 无应用时清空侧边栏菜单，防止暴露 createBaseAdminApp 初始化的全量默认菜单
-      const { useLayoutStore } = await import('./layout-store');
+      const { useLayoutStore } = await import("./layout-store");
       useLayoutStore().setNavigation({ sideMenu: [] }, { clearTabs: true });
       return true;
     } catch (error) {

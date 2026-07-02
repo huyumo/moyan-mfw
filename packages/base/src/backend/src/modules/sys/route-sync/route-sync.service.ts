@@ -441,7 +441,7 @@ export class RouteSyncService {
       for (const node of nodes) {
         const fullPath = parentPath
           ? `/${parentPath}/${node.path}`.replace(/^\/\//, "/")
-          : `/${node.path}`;
+          : `/${appTypeCode}/${node.path}`;
 
         // 使用 permCode 或自动生成时拼上 appTypeCode
         const permCode = node.permCode || undefined;

@@ -90,6 +90,8 @@ export interface AppListItem {
   appLogo?: string
   isOwner: boolean
   role?: string
+  appTypeId?: string
+  appTypeCode?: string
   appTypeName?: string
   disabled?: boolean
 }

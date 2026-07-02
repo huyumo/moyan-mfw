@@ -39,23 +39,32 @@ const menuTrees = inject<FrontendAppTypeMenuConfig[]>(
 const needsSync = ref(false)
 /** 同步中 */
 const syncing = ref(false)
+/** 检查是否失败（如非开发者、无权限等），失败后隐藏按钮 */
+const checkFailed = ref(false)
 
-/** 仅开发者可见 */
-const visible = computed(() => !!authStore.user?.isDeveloper)
+/** 仅开发者可见，且检查未失败 */
+const visible = computed(
+  () => !!authStore.user?.isDeveloper && !checkFailed.value,
+)
 
 /** 检查是否需要同步 */
 async function checkSync() {
-  if (!visible.value || !menuTrees?.length) {
+  if (!authStore.user?.isDeveloper || !menuTrees?.length) {
     needsSync.value = false
     return
   }
   try {
     const payload = serializeMenuTrees(menuTrees)
-    const result = await new ApiRouteSyncCheck({ body: payload })
+    const result = await new ApiRouteSyncCheck(
+      { body: payload },
+      { hintFail: false },
+    )
     const data = (result as any)?.data ?? result
     needsSync.value = !!data?.needsSync
+    checkFailed.value = false
   } catch {
     needsSync.value = false
+    checkFailed.value = true
   }
 }
 

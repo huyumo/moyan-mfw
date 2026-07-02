@@ -149,6 +149,8 @@ const drawerApps = computed<AppListItem[]>(() =>
     appLogo: app.appLogo,
     isOwner: app.isOwner,
     role: app.isOwner ? 'owner' : 'member',
+    appTypeId: app.appTypeId,
+    appTypeCode: app.appTypeCode,
     appTypeName: app.appTypeName,
   }))
 );
@@ -167,11 +169,15 @@ async function handleAppSwitch(app: AppListItem) {
       appCode: app.appCode,
       appLogo: app.appLogo,
       isOwner: app.isOwner,
+      appTypeId: app.appTypeId,
+      appTypeCode: app.appTypeCode,
       appTypeName: app.appTypeName,
     });
     appDrawerVisible.value = false;
     ElMessage.success(`已切换到应用: ${app.appName}`);
-    router.push('/');
+    const appTypeCode = app.appTypeCode;
+    const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : '/dashboard';
+    router.push(homePath);
   } catch (error: any) {
     ElMessage.error(error?.response?.data?.message || error?.message || '切换应用失败');
   }
