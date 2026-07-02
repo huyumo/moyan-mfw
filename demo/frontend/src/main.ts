@@ -35,6 +35,7 @@ const admin = createBaseAdminApp({
     headerCommon: HeaderCommonActions,
     sidebarFooter: RouteSyncButton,
   },
+  loginComponent: () => import('./views/custom-login/index.vue'),
 });
 
 const values = await admin.fetchPermissionValues();

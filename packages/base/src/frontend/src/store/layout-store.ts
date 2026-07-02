@@ -11,7 +11,6 @@ import {
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
-  LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
 } from '../types/layout-types';
@@ -28,7 +27,6 @@ import {
   resetToDefaults,
   setActiveTopMenuKey,
   setLayoutExtensions,
-  setLoginExtensions,
   setLayoutMode,
   setNavigation,
   syncActiveTopMenuByPath,
@@ -71,7 +69,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
       visitedTabs,
       activeTabPath,
       layoutExtensions: {},
-      loginExtensions: {},
       currentApp: null,
       userApps: [],
     };
@@ -121,10 +118,6 @@ export const useLayoutStore = defineStore('mfw-base-layout', {
 
     setLayoutExtensions(payload: LayoutExtensionComponents = {}) {
       setLayoutExtensions(this as unknown as LayoutPreferenceActionContext, payload);
-    },
-
-    setLoginExtensions(payload: LoginExtensionComponents = {}) {
-      setLoginExtensions(this as unknown as LayoutPreferenceActionContext, payload);
     },
 
     setCurrentApp(app: LayoutState['currentApp']) {

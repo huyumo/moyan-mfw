@@ -73,10 +73,6 @@ html.dark .mfw-login-title {
   color: #e2e8f0;
 }
 
-.mfw-login-methods {
-  margin-bottom: 16px;
-}
-
 .mfw-login-submit {
   width: 100%;
 }
@@ -95,36 +91,11 @@ html.dark :deep(.el-input__wrapper) {
   box-shadow: 0 0 0 1px var(--el-color-primary) inset !important;
 }
 
-.mfw-login-footer {
-  margin-top: 16px;
-  text-align: center;
-}
-
-.mfw-login-tip {
-  color: rgba(0, 0, 0, 0.45);
-  font-size: 13px;
-  margin: 0;
-}
-
-html.dark .mfw-login-tip {
-  color: #94a3b8;
-}
-
-.mfw-login-card--app {
-  width: 680px;
-  max-width: 90vw;
-}
-
 @media (max-width: 480px) {
   .mfw-login-card {
     width: auto;
     margin: 16px;
     padding: 28px 24px;
     border-radius: 0;
-  }
-
-  .mfw-login-card--app {
-    width: auto;
-    max-width: none;
   }
 }

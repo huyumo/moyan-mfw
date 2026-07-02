@@ -8,7 +8,6 @@ import type { ColorMode } from '../types/color-mode-types';
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
-  LoginExtensionComponents,
   LayoutMode,
   LayoutStyleConfig,
 } from '../types/layout-types';
@@ -146,16 +145,6 @@ export function setLayoutExtensions(
   store.layoutExtensions = markedExtensions;
 }
 
-/** 偏好操作实现。 */
-export function setLoginExtensions(store: LayoutPreferenceActionContext, payload: LoginExtensionComponents = {}): void {
-  const markedExtensions: LoginExtensionComponents = {};
-  for (const [key, component] of Object.entries(payload)) {
-    if (component) {
-      markedExtensions[key as keyof LoginExtensionComponents] = markRaw(component);
-    }
-  }
-  store.loginExtensions = markedExtensions;
-}
 /** 偏好操作实现。 */
 export function resetToDefaults(store: LayoutPreferenceActionContext): void {
   store.styleConfig = { ...defaultLayoutStyleConfig };

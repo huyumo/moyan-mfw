@@ -5,7 +5,6 @@
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
-  LoginExtensionComponents,
   LayoutStyleConfig,
   PageTabItem,
 } from '../types/layout-types';
@@ -58,8 +57,6 @@ export interface LayoutState {
   activeTabPath: string;
   /** 布局扩展组件 */
   layoutExtensions: LayoutExtensionComponents;
-  /** 登录扩展组件 */
-  loginExtensions: LoginExtensionComponents;
   /** 当前应用 */
   currentApp: AppItem | null;
   /** 用户可访问应用列表 */
@@ -94,8 +91,6 @@ export interface LayoutPreferenceActionContext extends LayoutTabActionContext {
   activeTopMenuKey: string;
   /** 布局扩展组件 */
   layoutExtensions: LayoutExtensionComponents;
-  /** 登录扩展组件 */
-  loginExtensions: LoginExtensionComponents;
   /** 当前应用 */
   currentApp: AppItem | null;
   /** 用户可访问应用列表 */

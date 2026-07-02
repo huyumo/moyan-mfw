@@ -14,6 +14,8 @@ import { setupRouteGuard } from "./guard";
 import { TOKEN_KEY as AUTH_TOKEN_STORAGE_KEY } from "../constants/storage-keys";
 import type { FrontendAppTypeMenuConfig } from "./routes";
 
+import type { Component } from 'vue'
+
 /**
  * 路由创建参数。
  */
@@ -28,6 +30,8 @@ export interface CreateBaseAdminRouterOptions {
   title?: string;
   /** 菜单树配置（必需，节点内联 component 字段） */
   menuTrees: FrontendAppTypeMenuConfig[];
+  /** 自定义登录页组件 */
+  loginComponent?: Component | (() => Promise<unknown>);
 }
 
 /**
@@ -98,7 +102,7 @@ export function createBaseAdminRouter(
     {
       path: "/login",
       name: "AdminLogin",
-      component: () => import("../views/login/index.vue"),
+      component: options.loginComponent ?? (() => import("../views/login/index.vue")),
       meta: {
         title: "登录",
         menu: false,

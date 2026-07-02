@@ -8,7 +8,6 @@ import type { Router } from "vue-router";
 import type {
   AdminNavigationConfig,
   LayoutExtensionComponents,
-  LoginExtensionComponents,
   LayoutStyleConfig,
 } from "./types/layout-types";
 import BaseAdminRoot from "./layouts/components/base/BaseAdminRoot.vue";
@@ -35,8 +34,6 @@ export interface BaseAdminBootstrapOptions extends CreateBaseAdminRouterOptions 
   navigation?: Partial<AdminNavigationConfig>;
   /** 布局扩展组件 */
   layoutExtensions?: LayoutExtensionComponents;
-  /** 登录页扩展组件 */
-  loginExtensions?: LoginExtensionComponents;
 }
 
 /**
@@ -88,7 +85,6 @@ export function createBaseAdminApp(
   const layoutStore = useLayoutStore(pinia);
 
   layoutStore.setLayoutExtensions(options.layoutExtensions);
-  layoutStore.setLoginExtensions(options.loginExtensions);
 
   if (options.layout) {
     const layoutConfig = { ...options.layout };

@@ -71,22 +71,3 @@ export interface LayoutExtensionComponents {
   /** 侧边栏底部扩展组件（如路由同步按钮） */
   sidebarFooter?: Component;
 }
-
-/** 异步扩展组件加载函数。 */
-export type AsyncExtensionLoader = () => Promise<Component | { default: Component }>;
-
-/** 异步扩展组件配置。 */
-export interface AsyncExtensionComponent {
-  loader: AsyncExtensionLoader;
-  timeout?: number;
-}
-
-/** 扩展组件输入类型。 */
-export type ExtensionComponentInput = Component | AsyncExtensionComponent;
-
-/** 登录页扩展组件配置。 */
-export interface LoginExtensionComponents {
-  methods?: ExtensionComponentInput;
-  aside?: ExtensionComponentInput;
-  footer?: ExtensionComponentInput;
-}
