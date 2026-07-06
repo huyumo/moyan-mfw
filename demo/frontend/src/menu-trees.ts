@@ -32,7 +32,7 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
   children: [
     {
       path: "dashboard",
-      name: "首页",
+      name: "运营中心",
       icon: "DataBoard",
       component: SysDashboardPage,
     },
@@ -113,7 +113,7 @@ const supplierMenuTree: FrontendAppTypeMenuConfig = {
   children: [
     {
       path: "dashboard",
-      name: "首页",
+      name: "运营中心",
       icon: "DataBoard",
       component: SupplierDashboardPage,
     },

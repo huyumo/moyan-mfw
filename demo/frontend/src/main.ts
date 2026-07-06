@@ -29,7 +29,7 @@ const admin = createBaseAdminApp({
   navigation: {
     brandName: "墨焱管理后台",
     brandTagline: "业务演示应用",
-    homePath: "/dashboard",
+    homePath: "/",
   },
   layoutExtensions: {
     headerCommon: HeaderCommonActions,
