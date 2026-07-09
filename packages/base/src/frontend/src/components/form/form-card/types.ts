@@ -6,7 +6,12 @@ import type { FormRules } from 'element-plus';
 
 /** 表单项配置 */
 export interface FormItemConfig {
-  /** 字段名 */
+  /**
+   * 字段名
+   * 支持点分路径以映射到嵌套的 formData 结构，无需调用方额外处理。
+   * @example key: 'a.b.c' 会自动映射到 formData.a.b.c
+   * @example key: 'username' 等价于 formData.username（扁平 key 完全兼容）
+   */
   key: string;
   /** 字段标签 */
   label?: string;

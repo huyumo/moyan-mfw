@@ -71,19 +71,6 @@ export function setupRouteGuard(router: Router): void {
         return;
       }
 
-      if (to.path === "/" || (to.name === "RootRedirect" && to.path === "/")) {
-      const hasToken = localStorage.getItem(TOKEN_KEY);
-      if (!hasToken) {
-        next({ path: "/login" });
-        return;
-      }
-      // 动态获取当前应用的首页路径
-      const appTypeCode = authStore.currentApp?.appTypeCode;
-      const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
-      next({ path: homePath });
-      return;
-    }
-
       if (WHITE_LIST.includes(to.path)) {
         const hasToken = localStorage.getItem(TOKEN_KEY);
         if (to.path === "/login" && hasToken && authStore.isLoggedIn) {
@@ -111,9 +98,7 @@ export function setupRouteGuard(router: Router): void {
       if (!isInitialized) {
         isInitialized = true;
 
-        if (authStore.isAuthenticated) {
-          // 已认证，继续后续权限检查
-        } else {
+        if (!authStore.isAuthenticated) {
           appLoadingStore.showLoading("正在初始化认证...");
 
           try {
@@ -149,6 +134,15 @@ export function setupRouteGuard(router: Router): void {
 
           appLoadingStore.hideLoading();
         }
+      }
+
+      // 访问根路径 → 跳转到当前应用的首页（需在认证初始化之后，
+      // 否则 currentApp 尚未恢复，会误判为无应用而跳到 /dashboard → 404）
+      if (to.path === "/" || to.name === "RootRedirect") {
+        const appTypeCode = authStore.currentApp?.appTypeCode;
+        const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
+        next({ path: homePath });
+        return;
       }
 
       if (to.meta.permissions && !to.meta.permissionValue) {

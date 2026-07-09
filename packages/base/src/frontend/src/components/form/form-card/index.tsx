@@ -24,6 +24,7 @@ import {
   type PropType,
   type Ref,
   type Component,
+  type WritableComputedRef,
   resolveComponent,
   toRef
 } from 'vue';
@@ -49,6 +50,11 @@ import type {
   FormItemConfig,
   FormGroupConfig
 } from './types';
+import {
+  getValueByPath,
+  setValueByPath,
+  hasKeyByPath
+} from '../../../utils/object-path';
 
 export default defineComponent({
   name: 'MfwFormCard',
@@ -107,6 +113,33 @@ export default defineComponent({
     const componentRefs = new Map<string, any>();
 
     /**
+     * 表单项 modelValue 的 computed 缓存
+     * key 为 FormItemConfig 对象本身（按引用匹配），value 为对应的可写 computed。
+     * 避免每次渲染都重新创建 computed；同时让点分 key 的 get/set 集中走 object-path 工具。
+     */
+    const modelValueComputedCache = new WeakMap<FormItemConfig, WritableComputedRef<any>>();
+
+    /**
+     * 获取（或创建并缓存）某个表单项的 modelValue computed
+     * computed 读写均按点分路径操作 props.formData，单层 key 同样兼容。
+     */
+    const getModelValueComputed = (item: FormItemConfig): WritableComputedRef<any> => {
+      let cached = modelValueComputedCache.get(item);
+      if (!cached) {
+        cached = computed({
+          get: () => getValueByPath(props.formData, item.key),
+          set: (val: any) => {
+            if (props.formData) {
+              setValueByPath(props.formData, item.key, val);
+            }
+          }
+        });
+        modelValueComputedCache.set(item, cached);
+      }
+      return cached;
+    };
+
+    /**
      * 初始化表单项
      */
     const initTemplateItem = (item: FormItemConfig) => {
@@ -118,9 +151,13 @@ export default defineComponent({
       item.elProps.clearable = item.elProps.clearable ?? true;
 
       // 初始化默认值：只有当 formData 中没有该 key 时，才使用 template 的 value
-      if (props.formData && !(item.key in props.formData)) {
-        props.formData[item.key] = item.value ?? '';
+      // 支持点分 key（如 'a.b.c'）：缺失的中间层级由 setValueByPath 自动创建
+      if (props.formData && !hasKeyByPath(props.formData, item.key)) {
+        setValueByPath(props.formData, item.key, item.value ?? '');
       }
+
+      // 预创建并缓存 computed，确保初始化阶段即建立响应式依赖
+      getModelValueComputed(item);
     };
 
     // 初始化模板
@@ -328,15 +365,9 @@ export default defineComponent({
           : item.component as Component;
 
         const renderComponent = () => {
-          // 使用 computed 确保 modelValue 的响应性
-          const modelValueComputed = computed({
-            get: () => props.formData?.[item.key],
-            set: (val: any) => {
-              if (props.formData) {
-                props.formData[item.key] = val;
-              }
-            }
-          });
+          // 复用缓存的 computed（initTemplateItem 阶段已创建），避免每次渲染重新创建
+          // computed 读写按点分路径操作 props.formData，单层 key 同样兼容
+          const modelValueComputed = getModelValueComputed(item);
 
           const propsData = {
             ...item.elProps,

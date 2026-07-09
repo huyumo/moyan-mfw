@@ -20,6 +20,7 @@ import SupplierDashboardPage from '@/views/dashboard/Index.vue'
 import SupplierOrdersPage from '@/views/business/orders/Index.vue'
 import SupplierReportsPage from '@/views/business/reports/Index.vue'
 import SupplierOverviewPage from '@/views/monitor/overview/Index.vue'
+import FormCardDottedKeyTestPage from '@/views/test/form-card-on-test/Index.vue'
 
 /**
  * 系统管理（system AppType）的菜单树
@@ -96,6 +97,19 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           name: "审计日志",
           icon: "Document",
           component: SysAuditLogPage,
+        },
+      ],
+    },
+    {
+      path: "test",
+      name: "功能测试",
+      icon: "Monitor",
+      children: [
+        {
+          path: "form-card-dotted-key",
+          name: "表单点分Key测试",
+          icon: "EditPen",
+          component: FormCardDottedKeyTestPage,
         },
       ],
     },
