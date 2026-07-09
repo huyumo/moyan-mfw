@@ -22,6 +22,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - set -e
+          - npm config set registry https://registry.npmmirror.com
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build
@@ -32,6 +33,7 @@ stages:
           - pnpm run typecheck
           - VERSION=$(node -p "require('./package.json').version")
           - echo ">>> 发布版本：v${VERSION}"
+          - npm config set registry https://registry.npmjs.org
           - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
           - cd packages/base && npm publish --access public
           - cd ../extensions/extension-ad && npm publish --access public

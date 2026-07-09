@@ -23,6 +23,7 @@ stages:
         nodeVersion: 22.3.0
         commands:
           - set -e
+          - npm config set registry https://registry.npmmirror.com
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
           - pnpm --filter moyan-mfw-base build
