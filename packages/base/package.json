@@ -74,6 +74,10 @@
   "peerDependencies": {
     "moyan-api": "^2.1.19"
   },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "engines": {
     "node": ">=20.0.0"
   },

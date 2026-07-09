@@ -83,6 +83,10 @@
     "moyan-mfw-base": ">=1.0.0"
   },
   "dependencies": {},
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
   "engines": {
     "node": ">=20.0.0"
   }
