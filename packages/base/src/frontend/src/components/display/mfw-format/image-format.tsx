@@ -105,6 +105,7 @@ export default defineComponent({
           previewSrcList: props.preview ? urlList.value : undefined,
           previewTeleported: true,
           style: imageStyle.value,
+          zIndex: 99999,
           class: ['mfw-image-format', props.className],
           onClick: () => handleClick(urlList.value[0])
         }, {
@@ -121,6 +122,7 @@ export default defineComponent({
           initialIndex: index,
           previewTeleported: true,
           style: imageStyle.value,
+          zIndex: 99999,
           class: ['mfw-image-format-item', props.className],
           onClick: () => handleClick(urlList.value[index])
         })
