@@ -33,6 +33,7 @@ stages:
           - pnpm --filter moyan-mfw-extension-config build
           - pnpm --filter moyan-mfw-extension-document build
           - pnpm --filter moyan-mfw-cli build
+          - pnpm --filter moyan-mfw-shared build
           - pnpm run typecheck
           - VERSION=$(node -p "require('./package.json').version")
           - echo ">>> 发布 Beta 版本：v${VERSION}"
