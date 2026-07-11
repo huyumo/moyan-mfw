@@ -49,7 +49,7 @@ export function ApiPaginatedResponse<T>(dataDto: Type<T>) {
         type: 'object',
         allOf: [
           {
-            $ref:getSchemaPath(dataDto),
+            $ref:getSchemaPath(PageResponseDto),
           },
           {
             properties: {
