@@ -9,7 +9,7 @@ import {
   HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { Public, RequirePermission } from 'moyan-mfw-base/backend';
+import { Public } from 'moyan-mfw-base/backend';
 import { ApiResponseUtil } from '../api-response';
 import { ConfigService } from '../service/config.service';
 import { BatchUpdateConfigDto, DeleteConfigDto, ConfigResponseDto } from '../dto';
@@ -20,7 +20,6 @@ export class ConfigController {
   constructor(private readonly service: ConfigService) {}
 
   @Get('group/:groupKey')
-  @RequirePermission({ permCode: '*:ext:config:*'})
   @ApiOperation({ summary: '按分组获取配置', description: '获取指定分组下的所有配置' })
   @ApiParam({ name: 'groupKey', description: '分组标识' })
   @ApiResponse({ status: 200, description: '获取成功', type: [ConfigResponseDto] })
@@ -34,7 +33,6 @@ export class ConfigController {
   }
 
   @Put('batch')
-  @RequirePermission({ permCode: '*:ext:config:*', permissionValue: ['编辑'] })
   @ApiOperation({ summary: '批量更新配置', description: '批量更新指定分组下的配置（upsert 逻辑）' })
   @ApiResponse({ status: 200, description: '更新成功' })
   async batchUpdate(@Body() dto: BatchUpdateConfigDto) {
@@ -44,7 +42,6 @@ export class ConfigController {
   }
 
   @Delete(':id')
-  @RequirePermission({ permCode: '*:ext:config:*', permissionValue: ['删除'] })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: '删除配置' })
   @ApiParam({ name: 'id', description: '配置 ID' })

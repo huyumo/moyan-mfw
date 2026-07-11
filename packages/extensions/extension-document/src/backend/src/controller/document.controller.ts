@@ -9,7 +9,6 @@ import {
   HttpCode, HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { RequirePermission } from 'moyan-mfw-base/backend';
 import { ApiResponseUtil } from '../api-response';
 import { DocumentService } from '../service/document.service';
 import { DocumentExtService } from '../service/document-ext.service';
@@ -32,7 +31,6 @@ export class DocumentController {
   ) {}
 
   @Get('list')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '分页查询文档列表' })
   @ApiResponse({ status: 200, description: '查询成功', type: [DocumentResponseDto] })
   async getList(@Query() query: DocumentListQueryDto) {
@@ -41,7 +39,6 @@ export class DocumentController {
   }
 
   @Get('listByKey')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '按 docKey 分页查询文档' })
   @ApiResponse({ status: 200, description: '查询成功', type: [DocumentResponseDto] })
   async getListByKey(@Query() query: DocumentListQueryDto) {
@@ -50,7 +47,6 @@ export class DocumentController {
   }
 
   @Get('docGroupDict')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '获取文档分组字典' })
   @ApiQuery({ name: 'docKey', description: '文档类型标识', required: false })
   @ApiQuery({ name: 'appId', description: '应用 ID', required: false })
@@ -64,7 +60,6 @@ export class DocumentController {
   }
 
   @Get('byOnlyKey/:onlyKey')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '按 onlyKey 查询文档' })
   @ApiParam({ name: 'onlyKey', description: '唯一业务键' })
   @ApiResponse({ status: 200, description: '查询成功', type: DocumentResponseDto })
@@ -74,7 +69,6 @@ export class DocumentController {
   }
 
   @Get(':id/ext')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '获取文档扩展字段' })
   @ApiParam({ name: 'id', description: '文档 ID' })
   @ApiResponse({ status: 200, description: '查询成功', type: [DocumentExtResponseDto] })
@@ -84,7 +78,6 @@ export class DocumentController {
   }
 
   @Get(':id')
-  @RequirePermission({ permCode: '*:ext:document:*' })
   @ApiOperation({ summary: '按 ID 查询文档' })
   @ApiParam({ name: 'id', description: '文档 ID' })
   @ApiResponse({ status: 200, description: '查询成功', type: DocumentResponseDto })
@@ -94,7 +87,6 @@ export class DocumentController {
   }
 
   @Post('')
-  @RequirePermission({ permCode: '*:ext:document:*', permissionValue: ['添加'] })
   @ApiOperation({ summary: '创建文档' })
   @ApiResponse({ status: 201, description: '创建成功', type: DocumentResponseDto })
   async create(@Body() dto: CreateDocumentDto) {
@@ -103,7 +95,6 @@ export class DocumentController {
   }
 
   @Put('totals')
-  @RequirePermission({ permCode: '*:ext:document:*', permissionValue: ['编辑'] })
   @ApiOperation({ summary: '计数器自增' })
   async updateTotals(@Body() dto: CounterUpdateDto) {
     await this.service.updateTotals(dto);
@@ -111,7 +102,6 @@ export class DocumentController {
   }
 
   @Put(':id/ext')
-  @RequirePermission({ permCode: '*:ext:document:*', permissionValue: ['编辑'] })
   @ApiOperation({ summary: '批量更新文档扩展字段' })
   @ApiParam({ name: 'id', description: '文档 ID' })
   async batchUpdateExt(@Param('id') id: string, @Body() dto: BatchUpdateExtDto) {
@@ -120,7 +110,6 @@ export class DocumentController {
   }
 
   @Put(':id')
-  @RequirePermission({ permCode: '*:ext:document:*', permissionValue: ['编辑'] })
   @ApiOperation({ summary: '更新文档' })
   @ApiParam({ name: 'id', description: '文档 ID' })
   @ApiResponse({ status: 200, description: '更新成功', type: DocumentResponseDto })
@@ -130,7 +119,6 @@ export class DocumentController {
   }
 
   @Delete(':id')
-  @RequirePermission({ permCode: '*:ext:document:*', permissionValue: ['删除'] })
   @ApiOperation({ summary: '删除文档' })
   @ApiParam({ name: 'id', description: '文档 ID' })
   async delete(@Param('id') id: string) {
