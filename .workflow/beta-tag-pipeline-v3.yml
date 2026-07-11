@@ -22,7 +22,7 @@ stages:
       - step: build@nodejs
         name: build_and_publish
         displayName: build_and_publish
-        nodeVersion: 25.8.1
+        nodeVersion: 22.3.0
         commands:
           - set -e
           - npm config set registry https://registry.npmmirror.com
