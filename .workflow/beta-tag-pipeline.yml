@@ -10,7 +10,7 @@ stages:
   - step: build@nodejs
     name: build_and_publish
     displayName: 类型检查、构建与发布 (Beta)
-    nodeVersion: 25.4.0
+    nodeVersion: 22.3.0
     commands:
     - npm install -g pnpm@10.14.0
     - pnpm install --frozen-lockfile --config.node-linker=hoisted
