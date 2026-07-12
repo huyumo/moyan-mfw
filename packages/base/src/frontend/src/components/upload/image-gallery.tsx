@@ -123,12 +123,28 @@ export default defineComponent({
       uploadRef.value?.handleRemove(file);
     };
 
-    const handleRemove = (file: { uid: number }) => {
-      const index = file.uid;
+    const handleRemove = (file: any) => {
       const value = props.modelValue || [];
+      // 从 name 中提取索引（我们在 fileList 中设置了 name: `image-${index}`）
+      let index = -1;
+      if (typeof file.name === 'string' && file.name.startsWith('image-')) {
+        index = parseInt(file.name.replace('image-', ''), 10);
+      }
+      
+      // 如果 name 匹配失败，尝试通过 uid 匹配
+      if (isNaN(index) || index < 0 || index >= value.length) {
+        index = typeof file.uid === 'number' ? file.uid : -1;
+      }
+      
+      // 如果 uid 也匹配失败，尝试通过 url 匹配
+      if (index < 0 || index >= value.length) {
+        index = value.findIndex((item) => item.src === file.url);
+      }
+      
       if (index < 0 || index >= value.length) {
         return;
       }
+      
       const newValue = value.filter((_, i) => i !== index);
       emit('update:modelValue', newValue);
       emit('change', newValue);
