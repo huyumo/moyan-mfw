@@ -9,12 +9,15 @@ import { defineComponent, computed, ref, shallowRef, provide, inject, type PropT
 import { useRoute, useRouter } from 'vue-router';
 import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElTooltip } from 'element-plus';
 import { Refresh, Search, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
+import { useAuthStore } from '../../../store/auth-store';
 import type {
   MfwPageWrapperProps,
   MfwPageWrapperEmits,
   MfwPageWrapperInstance,
   BreadcrumbItem
 } from './types';
+
+import type { PermissionMenuItem } from '../../../store/auth-store';
 
 interface SearchPanelContext {
   doSearch: () => void;
@@ -23,6 +26,26 @@ interface SearchPanelContext {
   expanded: Ref<boolean>;
   showExpandButton: ComputedRef<boolean>;
   loading: ComputedRef<boolean>;
+}
+
+function findMenuPath(
+  menuList: PermissionMenuItem[],
+  targetPath: string,
+  path: PermissionMenuItem[] = []
+): PermissionMenuItem[] {
+  for (const item of menuList) {
+    const currentPath = [...path, item];
+    if (item.routePath === targetPath) {
+      return currentPath;
+    }
+    if (item.children && item.children.length > 0) {
+      const result = findMenuPath(item.children, targetPath, currentPath);
+      if (result.length > 0) {
+        return result;
+      }
+    }
+  }
+  return [];
 }
 
 export default defineComponent({
@@ -99,27 +122,29 @@ export default defineComponent({
       const metaBreadcrumb = route.meta?.breadcrumb as BreadcrumbItem[] | undefined;
       if (metaBreadcrumb) return metaBreadcrumb;
 
+      const authStore = useAuthStore();
       const items: BreadcrumbItem[] = [];
 
-      // 添加首页
+      // 动态计算首页路径（根据当前应用的 appTypeCode）
+      const appTypeCode = authStore.currentApp?.appTypeCode;
+      const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : '/dashboard';
+
+      // 添加首页（可点击）
       items.push({
-        path: '/dashboard',
+        path: homePath,
         title: '首页',
         clickable: true
       });
 
-      const matched = route.matched.filter(r => r.meta?.title);
-
-      if (matched.length > 0) {
-        matched.forEach((r, index) => {
-          const title = typeof r.meta?.title === 'string' ? r.meta.title : '';
-          if (title && title !== '首页') {
-            items.push({
-              path: index < matched.length - 1 ? r.path : undefined,
-              title,
-              clickable: index < matched.length - 1
-            });
-          }
+      // 从权限菜单树中查找当前路由的完整路径链
+      const menuPath = findMenuPath(authStore.permissionMenu, route.path);
+      if (menuPath.length > 0) {
+        menuPath.forEach((menuItem, index) => {
+          items.push({
+            path: index < menuPath.length - 1 ? menuItem.routePath : undefined,
+            title: menuItem.permName,
+            clickable: index < menuPath.length - 1
+          });
         });
       }
 

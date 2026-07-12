@@ -76,6 +76,7 @@ export function buildRoutesFromMenuTrees(
       appTypeConfig.appTypeCode,
       undefined,
       undefined,
+      undefined,
       appTypeConfig,
       routes,
       seenPaths,
@@ -92,7 +93,8 @@ export function buildRoutesFromMenuTrees(
  */
 function processMenuNodes(
   nodes: FrontendMenuNode[],
-  parentPath: string,
+  appTypeCode: string,
+  parentPath: string | undefined,
   parentModuleName: string | undefined,
   parentModuleIcon: string | undefined,
   appTypeConfig: FrontendAppTypeMenuConfig,
@@ -100,14 +102,15 @@ function processMenuNodes(
   seenPaths: Set<string>,
 ): void {
   for (const node of nodes) {
-    // 路由路径（含 appTypeCode 前缀）
-    const fullPath = parentPath ? `${parentPath}/${node.path}` : `/${appTypeConfig.appTypeCode}/${node.path}`;
-    const normalizedFullPath = fullPath.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
+    const fullPath = parentPath
+      ? `${parentPath}/${node.path}`
+      : `/${appTypeCode}/${node.path}`;
+    const normalizedFullPath =
+      fullPath.replace(/\/+/g, "/").replace(/\/$/, "") || "/";
 
     const hasChildren = node.children && node.children.length > 0;
 
     if (hasChildren) {
-      // MENU 分组节点：生成重定向路由到第一个子页面
       const firstChild = node.children![0];
       const firstChildPath = `${fullPath}/${firstChild.path}`;
       const normalizedFirstChildPath =
@@ -136,6 +139,7 @@ function processMenuNodes(
 
       processMenuNodes(
         node.children!,
+        appTypeConfig.appTypeCode,
         normalizedFullPath,
         node.name,
         node.icon,
@@ -144,7 +148,6 @@ function processMenuNodes(
         seenPaths,
       );
     } else {
-      // PAGE 页面节点
       const component = node.component;
 
       if (!component) {
