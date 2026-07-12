@@ -21,6 +21,7 @@ import SupplierOrdersPage from '@/views/business/orders/Index.vue'
 import SupplierReportsPage from '@/views/business/reports/Index.vue'
 import SupplierOverviewPage from '@/views/monitor/overview/Index.vue'
 import FormCardDottedKeyTestPage from '@/views/test/form-card-on-test/Index.vue'
+import AlimapPickerTestPage from '@/views/test/alimap-picker/Index.vue'
 
 /**
  * 系统管理（system AppType）的菜单树
@@ -110,6 +111,12 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           name: "表单点分Key测试",
           icon: "EditPen",
           component: FormCardDottedKeyTestPage,
+        },
+        {
+          path: "alimap-picker",
+          name: "高德地图选点",
+          icon: "Location",
+          component: AlimapPickerTestPage,
         },
       ],
     },

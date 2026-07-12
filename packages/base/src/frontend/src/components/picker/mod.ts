@@ -13,3 +13,7 @@ export type * from './app-selector/types';
 
 export { MfwRadioGroup } from './radio-group/mod';
 export type * from './radio-group/types';
+
+export { default as MfwAlimapPicker } from './alimap-picker';
+export { configureAmap, getAmapConfig, loadAmapSdk, ProvinceCityDistrict, getProvinceCityDistrict } from './alimap-picker/mod';
+export type * from './alimap-picker/types';

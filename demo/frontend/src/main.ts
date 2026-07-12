@@ -9,6 +9,7 @@ import {
   createBaseAdminApp,
   registerPermissionValues,
   RouteSyncButton,
+  configureAmap,
 } from "moyan-mfw-base/frontend";
 import { HeaderCommonActions } from "./components/Layout";
 import { menuTrees } from "./menu-trees";
@@ -16,6 +17,12 @@ import { AD_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ad/shared";
 import "./permissions";
 
 registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
+
+// 配置高德地图凭证
+configureAmap({
+  key: import.meta.env.VITE_AMAP_KEY,
+  securityJsCode: import.meta.env.VITE_AMAP_SECURITY_CODE,
+});
 
 const admin = createBaseAdminApp({
   title: "墨焱前端演示",

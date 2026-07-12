@@ -1,0 +1,81 @@
+/**
+ * @fileoverview MfwAlimapPicker 高德地图选点组件样式
+ */
+
+.mfw-alimap {
+  width: 100%;
+
+  &__panel {
+    width: 100%;
+    line-height: 32px;
+    color: var(--el-text-color-regular);
+    font-size: 14px;
+  }
+
+  &__name {
+    font-weight: 500;
+  }
+
+  &__address {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+    line-height: 20px;
+  }
+
+  &__box {
+    padding-top: 10px;
+    width: 100%;
+    position: relative;
+  }
+
+  &__search {
+    width: 100%;
+    padding: 4px 10px;
+    position: absolute;
+    left: 0;
+    top: 10px;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    box-sizing: border-box;
+
+    .el-form-item {
+      margin-bottom: 0;
+      flex: 1;
+    }
+  }
+}
+
+// 搜索建议项样式（全局，因为 autocomplete 下拉渲染在 body 中）
+.mfw-alimap-suggestion {
+  padding: 5px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &__title {
+    width: 100%;
+    line-height: normal;
+    font-weight: bold;
+    padding: 2px 0;
+    color: var(--el-text-color-primary);
+  }
+
+  &__label {
+    width: 100%;
+    line-height: normal;
+    color: var(--el-text-color-placeholder);
+    padding-bottom: 2px;
+    font-size: 12px;
+  }
+}
+
+// 地图标记图标尺寸调整
+.amap-marker:first-child .amap-icon img {
+  width: 40px;
+  height: 50px;
+}

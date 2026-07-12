@@ -24,7 +24,8 @@
     "md-editor-v3": "catalog:",
     "quill": "catalog:",
     "vue-advanced-cropper": "catalog:",
-    "vue-cropper": "catalog:"
+    "vue-cropper": "catalog:",
+    "@amap/amap-jsapi-loader": "catalog:"
   },
   "devDependencies": {
     "vite": "catalog:",
