@@ -86,6 +86,12 @@ export function useAdminLayout() {
   const showPrimaryTopMenus = computed(
     () => layoutStore.styleConfig.layoutMode !== "sidebar",
   );
+  /** 侧边栏模式下是否将标签栏移至顶部 header 展示。 */
+  const tabsInHeader = computed(
+    () =>
+      layoutStore.styleConfig.layoutMode === "sidebar" &&
+      layoutStore.styleConfig.showTabs,
+  );
   const displayedSideMenus = computed(() => {
     if (layoutStore.styleConfig.layoutMode === "top") {
       return [];
@@ -318,6 +324,7 @@ export function useAdminLayout() {
     topLevelMenus,
     activeTopMenuKey,
     showPrimaryTopMenus,
+    tabsInHeader,
     displayedSideMenus,
     activeMenuPath,
     activeTabPath,

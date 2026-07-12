@@ -19,7 +19,7 @@ export const defaultLayoutStyleConfig: LayoutStyleConfig = {
   cardRadius: 8,
   buttonRadius: 6,
   colorMode: 'light',
-  themePackage: 'default',
+  themePackage: 'tech',
   searchTrigger: 'change',
   keepAlive: true,
 };

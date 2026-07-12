@@ -40,8 +40,14 @@
       :top-level-menus="topLevelMenus"
       :active-top-menu-key="activeTopMenuKey"
       :top-nav="topNav"
+      :show-tabs="showTabs"
+      :visited-tabs="visitedTabs"
+      :active-tab-path="activeTabPath"
       @top-menu-click="emit('top-menu-click', $event)"
       @sub-menu-click="emit('sub-menu-click', $event)"
+      @update:active-tab-path="emit('update:activeTabPath', $event)"
+      @tab-remove="emit('tab-remove', $event)"
+      @tab-command="emit('tab-command', $event)"
     />
 
     <div class="mfw-admin-header-actions">
@@ -64,7 +70,7 @@
 
 <script setup lang="ts">
 import { Menu } from '@element-plus/icons-vue';
-import type { LayoutExtensionComponents, SideMenuItem, TopNavItem } from '../../types/layout-types';
+import type { LayoutExtensionComponents, PageTabItem, SideMenuItem, TopNavItem } from '../../types/layout-types';
 import NavigationPanel from './NavigationPanel.vue';
 import UserPanel from './UserPanel.vue';
 
@@ -89,6 +95,12 @@ defineProps<{
   topNav: TopNavItem[];
   /** 布局扩展组件 */
   layoutExtensions: LayoutExtensionComponents;
+  /** 是否在顶部展示标签栏（侧边栏模式） */
+  showTabs?: boolean;
+  /** 标签列表 */
+  visitedTabs?: PageTabItem[];
+  /** 当前激活标签路径 */
+  activeTabPath?: string;
 }>();
 
 const emit = defineEmits<{
@@ -104,5 +116,11 @@ const emit = defineEmits<{
   (e: 'user-command', command: string | number | object): void;
   /** 品牌区域点击（应用切换） */
   (e: 'brand-click'): void;
+  /** 更新激活标签 */
+  (e: 'update:activeTabPath', value: string): void;
+  /** 移除标签 */
+  (e: 'tab-remove', value: string | number): void;
+  /** 执行标签命令 */
+  (e: 'tab-command', command: string | number | object): void;
 }>();
 </script>

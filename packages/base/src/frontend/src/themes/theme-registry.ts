@@ -22,7 +22,7 @@ export const themeRegistry: ThemeRegistry = {
   sunset: sunsetTheme,
 };
 
-export const defaultThemeKey = 'default';
+export const defaultThemeKey = 'tech';
 
 export function getTheme(name: string) {
   return themeRegistry[name] || themeRegistry[defaultThemeKey];

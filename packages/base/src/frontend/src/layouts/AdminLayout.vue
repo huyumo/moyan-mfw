@@ -10,11 +10,16 @@
       :brand-tagline="headerBrandTagline" :brand-logo="headerBrandLogo" :show-app-switcher="showAppSwitcher"
       :show-primary-top-menus="showPrimaryTopMenus" :top-level-menus="topLevelMenus"
       :active-top-menu-key="activeTopMenuKey" :top-nav="layoutStore.navigation.topNav"
+      :show-tabs="layoutStore.styleConfig.showTabs" :visited-tabs="layoutStore.visitedTabs"
+      :active-tab-path="activeTabPath"
       :layout-extensions="layoutStore.layoutExtensions" @toggle-mobile-menu="toggleMobileMenu"
       @top-menu-click="handleTopMenuClick"
       @sub-menu-click="handleSubMenuClick"
       @open-settings="layoutStore.toggleSettingsPanel(true)" @user-command="handleUserCommand"
-      @brand-click="openAppDrawer">
+      @brand-click="openAppDrawer"
+      @update:active-tab-path="activeTabPath = $event"
+      @tab-remove="removeTab"
+      @tab-command="handleTabCommand">
       <template v-if="$slots['header-common']" #header-common>
         <slot name="header-common" />
       </template>
@@ -38,7 +43,7 @@
         </template>
       </AsidePanel>
 
-      <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs"
+      <MainPanel v-model="activeTabPath" :show-tabs="layoutStore.styleConfig.showTabs && !tabsInHeader"
         :visited-tabs="layoutStore.visitedTabs" @tab-remove="removeTab" @tab-command="handleTabCommand">
         <NoAppsEmpty v-if="noApps" :brand-name="layoutStore.navigation.brandName"
           @logout="authStore.logout()" />
@@ -95,6 +100,7 @@ const {
   topLevelMenus,
   activeTopMenuKey,
   showPrimaryTopMenus,
+  tabsInHeader,
   displayedSideMenus,
   activeMenuPath,
   activeTabPath,

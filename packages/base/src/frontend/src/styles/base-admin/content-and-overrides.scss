@@ -34,6 +34,11 @@
   }
 }
 
+/* 顶部标签栏：覆盖默认 tab 圆角，使用胶囊样式 */
+.mfw-admin-top-tabs .mfw-admin-tabs .el-tabs__item {
+  border-radius: 999px !important;
+}
+
 .mfw-admin-tab-label {
   max-width: 180px;
   overflow: hidden;
@@ -218,6 +223,11 @@ html.dark {
   /* 标签页样式覆盖 */
   .mfw-admin-tabs-wrap {
     background: #1e293b;
+  }
+
+  /* 顶部标签栏在暗黑模式下保持透明（贴合 header 底色） */
+  .mfw-admin-top-tabs .mfw-admin-tabs-wrap {
+    background: transparent;
   }
 }
 

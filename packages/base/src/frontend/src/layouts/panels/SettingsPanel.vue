@@ -43,7 +43,7 @@
                 ><el-slider v-model="draftStyleConfig.sidebarWidth" :min="200" :max="320" show-input
               /></el-form-item>
               <el-form-item :label="text.headerHeight"
-                ><el-slider v-model="draftStyleConfig.headerHeight" :min="56" :max="96" show-input
+                ><el-slider v-model="draftStyleConfig.headerHeight" :min="54" :max="96" show-input
               /></el-form-item>
               <el-form-item :label="text.contentMaxWidth"
                 ><el-slider v-model="draftStyleConfig.contentMaxWidth" :min="1080" :max="1720" show-input

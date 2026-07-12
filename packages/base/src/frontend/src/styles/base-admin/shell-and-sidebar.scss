@@ -202,6 +202,108 @@
   overflow-x: auto;
 }
 
+/* 顶部标签栏（侧边栏模式下将 tabs 移至 header 展示） */
+.mfw-admin-top-tabs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+
+  .mfw-admin-tabs-wrap {
+    background: transparent;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+  }
+
+  .el-tabs {
+    --el-tabs-header-height: 36px;
+  }
+
+  .el-tabs__header {
+    margin: 0;
+    border: none;
+  }
+
+  .el-tabs__nav-wrap::after {
+    display: none;
+  }
+
+  .el-tabs__nav-wrap {
+    display: flex;
+    align-items: center;
+
+    &.is-scrollable {
+      padding: 0 24px;
+    }
+  }
+
+  .el-tabs__nav-prev,
+  .el-tabs__nav-next {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+
+    i,
+    svg {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    &:hover i,
+    &:hover svg {
+      color: #fff;
+    }
+  }
+
+  .el-tabs__nav {
+    border: none !important;
+    gap: 2px;
+  }
+
+  .el-tabs__item {
+    color: rgba(255, 255, 255, 0.75);
+    border: none !important;
+    border-radius: 999px !important;
+    background: transparent;
+    padding: 0 14px;
+    height: 30px;
+    line-height: 30px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      background: color-mix(in srgb, #fff 12%, transparent);
+    }
+
+    &.is-active {
+      color: #fff;
+      background: color-mix(in srgb, #fff 18%, transparent);
+      border-radius: 999px !important;
+    }
+  }
+
+  .is-icon-close {
+    color: rgba(255, 255, 255, 0.6);
+
+    &:hover {
+      color: #fff;
+      background: color-mix(in srgb, #fff 25%, transparent);
+      border-radius: 50%;
+    }
+  }
+
+  .tab-action-btn {
+    color: rgba(255, 255, 255, 0.7);
+
+    &:hover {
+      color: #fff;
+    }
+  }
+}
+
 .mfw-admin-top-link {
   color: #fff;
   font-size: 14px;
