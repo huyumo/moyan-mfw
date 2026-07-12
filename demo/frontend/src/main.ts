@@ -28,10 +28,10 @@ const admin = createBaseAdminApp({
   title: "墨焱前端演示",
   menuTrees,
   layout: {
-    layoutMode: "dual",
+    layoutMode: "sidebar",
     showTabs: true,
     colorMode: "system",
-    themePackage: "default",
+    themePackage: "tech",
   },
   navigation: {
     brandName: "墨焱管理后台",
