@@ -13,7 +13,7 @@ import {
   HttpStatus,
   BadRequestException,
 } from '@nestjs/common';
-import { User, UserDto, AppId } from '../../../common';
+import { User, UserDto, AppId, AppInfo, AppInfoDto } from '../../../common';
 import {
   ApiTags,
   ApiOperation,
@@ -167,13 +167,13 @@ export class AuthController {
   })
   async getUserPermissions(
     @User() user: UserDto,
-    @AppId() appId: string,
+    @AppInfo() appInfo: AppInfoDto,
   ) {
-    if (!appId) {
+    if (!appInfo.id) {
       throw new BadRequestException('缺少应用标识，请传入 X-App-Id 请求头或 appId 参数');
     }
     const userId = user.id;
-    const result = await this.authService.getUserPermissions(userId, appId);
+    const result = await this.authService.getUserPermissions(userId, appInfo.id);
     return ApiResponseUtil.success(result, '获取成功');
   }
 

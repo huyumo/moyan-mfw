@@ -10,6 +10,9 @@ import { UserDto } from '../types/user.dto';
  * 用户装饰器
  * @description 从请求对象中提取用户信息，避免手动从 @Request() 中获取
  *
+ * 可配合 @Public() 使用：在公开接口中，当请求携带有效 Token 时，AuthGuard 会自动
+ * 解析并注入用户信息，此时 @User() 返回 UserDto；未携带 Token 或 Token 无效时返回 undefined。
+ *
  * @example
  * ```typescript
  * // 获取完整用户信息
@@ -28,6 +31,15 @@ import { UserDto } from '../types/user.dto';
  * @Get('roles')
  * async getRoles(@User('roleIds') roleIds: string[]) {
  *   return this.roleService.findByIds(roleIds);
+ * }
+ *
+ * // 配合 @Public() 使用：登录与未登录均可访问，登录后可获取用户信息
+ * @Public()
+ * @Get('article/:id')
+ * async getArticle(@Param('id') id: string, @User() user?: UserDto) {
+ *   const article = await this.articleService.findById(id);
+ *   // 未登录时 user 为 undefined，登录后可据此返回个性化数据
+ *   return { ...article, isLiked: user ? this.likeService.check(id, user.id) : false };
  * }
  * ```
  */
