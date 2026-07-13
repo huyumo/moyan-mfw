@@ -18,6 +18,7 @@ import {
 } from "./router";
 import { createMenuTreeFromRoutes, dedupeMenuTree } from "./router/menu-tree";
 import { useLayoutStore } from "./store/layout-store";
+import { readPersistedState } from "./store/layout-store-utils";
 import { setupPlugins } from "./plugins";
 import { initPermissionCache as initPermissionValueCache } from "./utils/permissions";
 import { ApiPermissionValuesGetPermissionValues } from "./apis/sys";
@@ -90,7 +91,17 @@ export function createBaseAdminApp(
     const layoutConfig = { ...options.layout };
     delete layoutConfig.colorMode;
     delete layoutConfig.themePackage;
-    layoutStore.patchStyleConfig(layoutConfig);
+    // 仅在用户未保存过偏好设置时，才应用 bootstrap 传入的布局配置，
+    // 否则优先使用 localStorage 中已持久化的偏好（避免 F5 刷新后丢失用户选择）。
+    const persisted = readPersistedState();
+    if (persisted.styleConfig) {
+      // 已有持久化偏好，仅补齐持久化中缺失的字段
+      layoutStore.patchStyleConfig(layoutConfig, { persist: false });
+      // 立即用持久化值覆盖，确保用户保存的偏好生效
+      layoutStore.patchStyleConfig(persisted.styleConfig, { persist: false });
+    } else {
+      layoutStore.patchStyleConfig(layoutConfig);
+    }
   }
 
   // 合并基包路由和业务路由生成菜单树
