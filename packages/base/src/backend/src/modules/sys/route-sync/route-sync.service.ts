@@ -39,6 +39,8 @@ interface FlatRouteNode {
   appTypeCode: string;
   permCode?: string;
   permissionValue?: bigint;
+  /** 菜单图标名称（Element Plus 图标名） */
+  icon?: string;
 }
 
 @Injectable()
@@ -391,6 +393,7 @@ export class RouteSyncService {
           permissionValue: nodeType === NodeType.PAGE ? permissionValue : 0n,
           isAutoSync: 1,
           permStatus: 1,
+          iconName: route.icon,
         });
         updated++;
       } else {
@@ -408,6 +411,7 @@ export class RouteSyncService {
             isAutoSync: 1,
             permStatus: 1,
             permissionValue: nodeType === NodeType.PAGE ? permissionValue : 0n,
+            iconName: route.icon,
           }),
         );
         created++;
@@ -468,6 +472,7 @@ export class RouteSyncService {
           appTypeCode,
           permCode,
           permissionValue,
+          icon: node.icon,
         });
 
         if (node.children && node.children.length > 0) {

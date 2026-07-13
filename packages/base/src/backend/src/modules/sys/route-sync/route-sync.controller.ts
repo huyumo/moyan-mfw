@@ -40,16 +40,18 @@ export class RouteSyncController {
   @ApiBearerAuth('Authorization')
   @ApiOperation({
     summary: '检查路由同步状态',
-    description: '对比菜单树配置哈希，判断是否需要同步。仅开发者可调用。',
+    description: '对比菜单树配置哈希，判断是否需要同步。非开发者返回 needsSync: false。',
   })
   @ApiResponse({
     status: 200,
     description: '检查成功',
     type: CheckSyncResponseDto,
   })
-  @ApiResponse({ status: 403, description: '权限不足（需要开发者权限）' })
   async check(@User() user: UserDto, @Body() body: AppTypeMenuConfig[]) {
-    this.requireDeveloper(user);
+    // 非开发者直接返回不需要同步
+    if (user.isDeveloper !== 1) {
+      return ApiResponseUtil.success({ needsSync: false }, '检查成功');
+    }
     const needsSync = await this.routeSyncService.checkSyncNeeded(body);
     return ApiResponseUtil.success({ needsSync }, '检查成功');
   }
