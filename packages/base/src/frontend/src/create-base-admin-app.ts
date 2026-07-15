@@ -35,6 +35,8 @@ export interface BaseAdminBootstrapOptions extends CreateBaseAdminRouterOptions 
   navigation?: Partial<AdminNavigationConfig>;
   /** 布局扩展组件 */
   layoutExtensions?: LayoutExtensionComponents;
+  /** 应用版本号（显示在偏好设置面板中） */
+  appVersion?: string;
 }
 
 /**
@@ -82,6 +84,9 @@ export function createBaseAdminApp(
 
   // 提供 menuTrees 给 RouteSyncButton 等内部组件使用
   app.provide('mfw:menuTrees', options.menuTrees);
+
+  // 提供应用版本号给 SettingsPanel 等内部组件使用
+  app.provide('mfw:appVersion', options.appVersion ?? '');
 
   const layoutStore = useLayoutStore(pinia);
 

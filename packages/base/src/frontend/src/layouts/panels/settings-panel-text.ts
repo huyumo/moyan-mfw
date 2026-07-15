@@ -32,6 +32,7 @@ export const settingsPanelText = {
   cancel: '\u53d6\u6d88',
   save: '\u4fdd\u5b58',
   reset: '\u6062\u590d\u9ed8\u8ba4',
+  versionLabel: '\u7248\u672c\u53f7',
   // 外观设置
   themeSelection: '\u4e3b\u9898\u9009\u62e9',
   colorMode: '\u989c\u8272\u6a21\u5f0f',

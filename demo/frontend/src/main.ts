@@ -14,6 +14,7 @@ import {
 import { HeaderCommonActions } from "./components/Layout";
 import { menuTrees } from "./menu-trees";
 import { AD_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ad/shared";
+import pkg from "../package.json";
 import "./permissions";
 
 registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
@@ -27,6 +28,7 @@ configureAmap({
 const admin = createBaseAdminApp({
   title: "墨焱前端演示",
   menuTrees,
+  appVersion: pkg.version,
   layout: {
     layoutMode: "sidebar",
     showTabs: true,

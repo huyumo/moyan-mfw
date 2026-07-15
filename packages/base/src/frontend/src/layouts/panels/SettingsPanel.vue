@@ -123,6 +123,16 @@
                 </div>
               </div>
             </div>
+            <div v-if="version" class="mfw-admin-settings-group">
+              <div class="mfw-admin-settings-group-title">
+                <el-icon><InfoFilled /></el-icon><span>{{ text.versionLabel }}</span>
+              </div>
+              <div class="mfw-admin-switch-list">
+                <div class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">v{{ version }}</span>
+                </div>
+              </div>
+            </div>
           </el-tab-pane>
         </el-tabs>
       </el-scrollbar>
@@ -147,6 +157,7 @@
 import {
   Check,
   Expand,
+  InfoFilled,
   Menu,
   Moon,
   RefreshLeft,
@@ -169,6 +180,7 @@ const props = defineProps({
   themeOptions: { type: Array as PropType<ThemePackage[]>, default: () => [] },
   styleConfig: { type: Object as PropType<LayoutStyleConfig>, required: true },
   getThemeColor: { type: Function as PropType<(themeName: string) => string>, default: () => '#409eff' },
+  version: { type: String, default: '' },
 });
 
 const emit = defineEmits<{

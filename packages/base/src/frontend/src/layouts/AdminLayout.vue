@@ -58,7 +58,7 @@
 
     <SettingsPanel v-model="layoutStore.settingsPanelOpen" :is-mobile="isMobile"
       :layout-mode-options="layoutModeOptions" :theme-options="themeOptions" :style-config="layoutStore.styleConfig"
-      :get-theme-color="getThemeColor" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
+      :get-theme-color="getThemeColor" :version="appVersion" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
       @reset-defaults="handleResetDefaults" />
 
     <AppSelectorDrawer
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, inject, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import '../styles/base-admin.scss';
@@ -88,6 +88,7 @@ import { useAuthStore } from '../store/auth-store';
 
 const authStore = useAuthStore();
 const router = useRouter();
+const appVersion = inject<string>('mfw:appVersion', '');
 
 
 const {
