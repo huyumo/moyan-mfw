@@ -50,6 +50,7 @@ export type UserInfoDto = {
   avatar: ImageResourceDto // 头像
   roles: Array<string> // 角色列表
   isDeveloper: boolean // 是否为开发者
+  hasDeveloperPassword: boolean // 是否已设置开发者密码
 }
 
 export type LogoutDto = {

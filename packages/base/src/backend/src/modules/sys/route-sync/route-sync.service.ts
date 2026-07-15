@@ -17,6 +17,7 @@ import {
   Permission,
   PermissionType,
   NodeType,
+  ShowMode,
 } from "../permission/entities/permission.entity";
 import { AppType } from "../app-type/entities/app-type.entity";
 import { AppTypePermissionEntity } from "../app-type/entities/app-type-permission.entity";
@@ -41,6 +42,8 @@ interface FlatRouteNode {
   permissionValue?: bigint;
   /** 菜单图标名称（Element Plus 图标名） */
   icon?: string;
+  /** 显示模式：NORMAL-常规 / DEV-开发者模式 */
+  showMode?: string;
 }
 
 @Injectable()
@@ -225,6 +228,7 @@ export class RouteSyncService {
           ? [...node.permissions].sort()
           : undefined,
         permCode: node.permCode,
+        showMode: node.showMode,
         children: node.children ? this.sortNodes(node.children) : undefined,
       }))
       .sort((a, b) => a.path.localeCompare(b.path));
@@ -394,6 +398,7 @@ export class RouteSyncService {
           isAutoSync: 1,
           permStatus: 1,
           iconName: route.icon,
+          showMode: route.showMode === 'DEV' ? ShowMode.DEV : ShowMode.NORMAL,
         });
         updated++;
       } else {
@@ -412,6 +417,7 @@ export class RouteSyncService {
             permStatus: 1,
             permissionValue: nodeType === NodeType.PAGE ? permissionValue : 0n,
             iconName: route.icon,
+            showMode: route.showMode === 'DEV' ? ShowMode.DEV : ShowMode.NORMAL,
           }),
         );
         created++;
@@ -473,6 +479,7 @@ export class RouteSyncService {
           permCode,
           permissionValue,
           icon: node.icon,
+          showMode: node.showMode,
         });
 
         if (node.children && node.children.length > 0) {

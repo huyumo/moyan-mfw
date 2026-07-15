@@ -261,6 +261,14 @@ export function useAdminLayout() {
     }
     return theme.colors.gradient || theme.colors.primary;
   }
+  async function handleToggleDevMode(enabled: boolean) {
+    const authStore = useAuthStore();
+    if (enabled) {
+      await authStore.enableDevMode();
+    } else {
+      await authStore.disableDevMode();
+    }
+  }
   if (typeof window !== "undefined") {
     window.addEventListener("resize", () => {
       windowWidth.value = window.innerWidth;
@@ -337,6 +345,7 @@ export function useAdminLayout() {
     handleUserCommand,
     handlePreviewChange,
     handleSaveSettings,
+    handleToggleDevMode,
     getThemeColor,
   };
 }

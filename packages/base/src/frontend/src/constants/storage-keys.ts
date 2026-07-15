@@ -6,6 +6,7 @@
 export const TOKEN_KEY = 'mfw:admin:token';
 export const REFRESH_TOKEN_KEY = 'mfw:admin:refresh_token';
 export const CURRENT_APP_KEY = 'mfw:admin:current_app';
+export const DEV_MODE_KEY = 'mfw:admin:dev_mode';
 
 export const LAYOUT_PREFERENCES_KEY = 'mfw:base-frontend:layout-preferences';
 export const LAYOUT_TABS_KEY = 'mfw:base-frontend:layout-tabs';

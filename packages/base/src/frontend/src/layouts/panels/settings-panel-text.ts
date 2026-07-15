@@ -29,6 +29,7 @@ export const settingsPanelText = {
   searchTriggerChange: '\u5373\u65f6\u67e5\u8be2',
   searchTriggerSubmit: '\u624b\u52a8\u67e5\u8be2',
   pageCache: '\u9875\u9762\u7f13\u5b58',
+  developerMode: '\u5f00\u53d1\u8005\u6a21\u5f0f',
   cancel: '\u53d6\u6d88',
   save: '\u4fdd\u5b58',
   reset: '\u6062\u590d\u9ed8\u8ba4',

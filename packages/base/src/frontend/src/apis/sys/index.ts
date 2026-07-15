@@ -193,6 +193,30 @@ export class ApiAuthSyncPermissions extends ApiCall<
 }
 
 /**
+ * auth|认证相关接口->验证开发者密码
+ */
+export class ApiAuthVerifyDeveloper extends ApiCall<
+  { body: { password: string } },
+  boolean
+> {
+  readonly path = '/api/auth/verify-developer'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
+ * auth|认证相关接口->设置开发者密码
+ */
+export class ApiAuthSetDeveloperPassword extends ApiCall<
+  { body: { loginPassword: string; developerPassword: string } },
+  unknown
+> {
+  readonly path = '/api/auth/set-developer-password'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/**
  * user|用户相关接口->创建用户
  */
 export class ApiUserCreate extends ApiCall<

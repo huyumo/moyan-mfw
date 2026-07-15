@@ -24,6 +24,7 @@ import {
   TOKEN_KEY,
   REFRESH_TOKEN_KEY,
   CURRENT_APP_KEY,
+  DEV_MODE_KEY,
 } from "../constants/storage-keys";
 import {
   initPermissionCache,
@@ -31,7 +32,7 @@ import {
 } from "../utils/permissions";
 import { ApiPermissionValuesGetPermissionValues } from "../apis/sys";
 
-export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY };
+export { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY, DEV_MODE_KEY };
 
 /** 用户信息接口 */
 export interface UserInfo {
@@ -43,6 +44,7 @@ export interface UserInfo {
   avatar?: string;
   gender: number;
   isDeveloper: boolean;
+  hasDeveloperPassword: boolean;
   userStatus: number;
   roles: string[];
 }
@@ -93,6 +95,9 @@ export const useAuthStore = defineStore("auth", () => {
   const loading = ref<boolean>(false);
   const permissionValueMap = ref<Record<string, string>>({});
   const routePermCodeMap = ref<Map<string, string>>(new Map());
+  const devModeEnabled = ref<boolean>(
+    typeof sessionStorage !== 'undefined' && sessionStorage.getItem(DEV_MODE_KEY) === '1',
+  );
   let loadPermissionsVersion = 0;
 
   // ============== 计算属性 ==============
@@ -101,6 +106,10 @@ export const useAuthStore = defineStore("auth", () => {
   const hasApps = computed(() => apps.value.length > 0);
   const needSelectApp = computed(
     () => apps.value.length > 1 && !currentApp.value,
+  );
+  /** 开发者模式是否激活：用户是开发者 且 开发者模式已开启。可用于控制页面、按钮、区域等开发者专属 UI */
+  const isDevModeActive = computed(
+    () => !!user.value?.isDeveloper && devModeEnabled.value,
   );
 
   // ============== Token 管理 ==============
@@ -151,10 +160,12 @@ export const useAuthStore = defineStore("auth", () => {
     currentApp.value = null;
     permissionMenu.value = [];
     tokenExpiresAt.value = 0;
+    devModeEnabled.value = false;
 
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(CURRENT_APP_KEY);
+    sessionStorage.removeItem(DEV_MODE_KEY);
   }
 
   /** 检查 Token 是否即将过期（10 分钟内） */
@@ -184,6 +195,7 @@ export const useAuthStore = defineStore("auth", () => {
           avatar: getImageSrc(result.user?.avatar) || "",
           gender: result.user?.gender || 0,
           isDeveloper: result.user?.isDeveloper || false,
+          hasDeveloperPassword: false,
           userStatus: result.user?.userStatus ?? 1,
           roles: result.user?.roles || [],
         };
@@ -246,6 +258,7 @@ export const useAuthStore = defineStore("auth", () => {
       avatar: getImageSrc(result.avatar) || "",
       gender: 0,
       isDeveloper: result.isDeveloper === 1 || result.isDeveloper === true,
+      hasDeveloperPassword: result.hasDeveloperPassword === true,
       userStatus: 1,
       roles: result.roles || [],
     };
@@ -387,8 +400,10 @@ export const useAuthStore = defineStore("auth", () => {
   function transformPermissionMenu(
     nodes: PermissionTreeNodeDto[],
   ): PermissionMenuItem[] {
+    const canSeeDev = isDevModeActive.value;
     return nodes
       .filter((node) => node.isVisible !== 0) // 过滤不可见节点
+      .filter((node) => canSeeDev || node.showMode !== 'DEV') // 非开发者模式过滤 DEV 节点
       .map((node) => ({
         id: node.id,
         permName: node.permName,
@@ -466,6 +481,52 @@ export const useAuthStore = defineStore("auth", () => {
     permissionMenu.value = menu;
   }
 
+  // ============== 开发者模式 ==============
+
+  /** 开启开发者模式（弹出密码验证，验证成功后刷新菜单） */
+  async function enableDevMode(): Promise<void> {
+    // 未设置开发者密码 -> 先弹出设置弹窗
+    if (!user.value?.hasDeveloperPassword) {
+      const { default: MfwPopup } = await import('../components/feedback/popup');
+      const { default: DeveloperPasswordForm } = await import('../components/layout/developer-password-form.vue');
+      MfwPopup.open({
+        title: '设置开发者密码',
+        type: 'dialog',
+        component: DeveloperPasswordForm,
+        popupProps: { width: 420 },
+      });
+      return;
+    }
+
+    // 已设置开发者密码 -> 弹出验证弹窗
+    const { default: MfwPopup } = await import('../components/feedback/popup');
+    const { default: DeveloperVerifyForm } = await import('../components/layout/developer-verify-form.vue');
+    MfwPopup.open({
+      title: '开发者模式验证',
+      type: 'dialog',
+      component: DeveloperVerifyForm,
+      popupProps: { width: 420 },
+      on: {
+        confirm: async () => {
+          devModeEnabled.value = true;
+          sessionStorage.setItem(DEV_MODE_KEY, '1');
+          if (currentApp.value) {
+            await loadPermissions(currentApp.value.appId);
+          }
+        },
+      },
+    });
+  }
+
+  /** 关闭开发者模式（直接生效，刷新菜单） */
+  async function disableDevMode(): Promise<void> {
+    devModeEnabled.value = false;
+    sessionStorage.removeItem(DEV_MODE_KEY);
+    if (currentApp.value) {
+      await loadPermissions(currentApp.value.appId);
+    }
+  }
+
   /** 初始化认证状态 */
   async function initializeAuth(): Promise<boolean> {
     // 1. 尝试恢复 Token
@@ -526,12 +587,15 @@ export const useAuthStore = defineStore("auth", () => {
     loading,
     permissionValueMap,
     routePermCodeMap,
+    devModeEnabled,
 
     // 计算属性
     isAuthenticated,
     isLoggedIn,
     hasApps,
     needSelectApp,
+    canSeeDevPages: isDevModeActive,
+    isDevModeActive,
 
     // 方法
     restoreToken,
@@ -550,5 +614,7 @@ export const useAuthStore = defineStore("auth", () => {
     initializeAuth,
     buildRoutePermCodeMap,
     getPermCodeByRoute,
+    enableDevMode,
+    disableDevMode,
   };
 });

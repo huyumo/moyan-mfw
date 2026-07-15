@@ -58,8 +58,10 @@
 
     <SettingsPanel v-model="layoutStore.settingsPanelOpen" :is-mobile="isMobile"
       :layout-mode-options="layoutModeOptions" :theme-options="themeOptions" :style-config="layoutStore.styleConfig"
-      :get-theme-color="getThemeColor" :version="appVersion" @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
-      @reset-defaults="handleResetDefaults" />
+      :get-theme-color="getThemeColor" :version="appVersion"
+      :is-developer="authStore.user?.isDeveloper ?? false" :dev-mode-enabled="authStore.devModeEnabled"
+      @preview-change="handlePreviewChange" @save-settings="handleSaveSettings"
+      @reset-defaults="handleResetDefaults" @toggle-dev-mode="handleToggleDevMode" />
 
     <AppSelectorDrawer
       v-model:visible="appDrawerVisible"
@@ -114,6 +116,7 @@ const {
   handleUserCommand,
   handlePreviewChange,
   handleSaveSettings,
+  handleToggleDevMode,
   getThemeColor,
 } = useAdminLayout();
 

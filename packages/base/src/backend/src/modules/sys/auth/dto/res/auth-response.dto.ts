@@ -109,6 +109,12 @@ export class UserInfoDto {
    */
   @ApiProperty({ description: '是否为开发者', example: false })
   isDeveloper: boolean;
+
+  /**
+   * 是否已设置开发者密码
+   */
+  @ApiProperty({ description: '是否已设置开发者密码', example: false })
+  hasDeveloperPassword: boolean;
 }
 
 /**

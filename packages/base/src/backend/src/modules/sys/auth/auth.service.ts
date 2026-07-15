@@ -218,6 +218,7 @@ export class AuthService {
       nickname: user.nickname || user.username,
       avatar: user.avatar,
       isDeveloper: user.isDeveloper === 1,
+      hasDeveloperPassword: user.isDeveloper === 1 ? !!user.developerPassword : false,
       // 返回角色名称列表
       roles: userRoles.map((ur) => ur.role.roleName) || [],
     };
@@ -273,16 +274,21 @@ export class AuthService {
    * 获取用户权限菜单
    * @param userId - 用户 ID
    * @param appId - 应用实例 ID
+   * @param isDeveloper - 是否为开发者（开发者可看到 showMode=DEV 的页面，非开发者仅看到 NORMAL）
    * @returns 用户权限菜单树
    */
   async getUserPermissions(
     userId: string,
     appId: string,
+    isDeveloper: boolean = false,
   ): Promise<UserPermissionsResponseDto> {
+
+    // 非开发者过滤掉 showMode=DEV 的节点，开发者可见全部
+    const showModeFilter = isDeveloper ? '' : `AND sp.showMode = 'NORMAL'`;
 
     const sql = `
     SELECT sa.appTypeId appTypeId FROM sys_apps sa WHERE sa.id = :appId ;
-    SELECT 
+    SELECT
       sp.id,
       sp.permCode,
       sp.permName,
@@ -301,10 +307,11 @@ export class AuthService {
     INNER JOIN sys_roles sr ON sur.roleId = sr.id
     INNER JOIN sys_role_permissions srp ON srp.roleId = sr.id
     INNER JOIN sys_permissions sp ON sp.id = srp.permissionId
-    WHERE 
-      sur.userId = :userId AND 
+    WHERE
+      sur.userId = :userId AND
       sur.appId = :appId AND
       sp.isVisible = 1
+      ${showModeFilter}
     GROUP BY sp.permCode
     ORDER BY sp.sortOrder ASC;
     `
@@ -492,11 +499,60 @@ export class AuthService {
    * 同步用户权限（重新加载用户权限缓存）
    * @param userId - 用户 ID
    * @param appId - 应用实例 ID
+   * @param isDeveloper - 是否为开发者（开发者可看到 showMode=DEV 的页面，非开发者仅看到 NORMAL）
    * @returns 用户权限菜单树
    */
-  async syncPermissions(userId: string, appId: string): Promise<UserPermissionsResponseDto> {
+  async syncPermissions(userId: string, appId: string, isDeveloper: boolean = false): Promise<UserPermissionsResponseDto> {
     // 直接调用 getUserPermissions 重新获取权限
-    return this.getUserPermissions(userId, appId);
+    return this.getUserPermissions(userId, appId, isDeveloper);
+  }
+
+  /**
+   * 验证开发者密码
+   * @param userId - 用户 ID
+   * @param password - 开发者密码明文
+   * @returns 验证是否成功
+   */
+  async verifyDeveloperPassword(userId: string, password: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new BusinessException('用户不存在', 404);
+    }
+    if (user.isDeveloper !== 1) {
+      throw new BusinessException('当前用户不是开发者', 403);
+    }
+    if (!user.developerPassword) {
+      throw new BusinessException('未设置开发者密码，请先设置', 400);
+    }
+    const isValid = await verifyPassword(password, user.developerPassword);
+    if (!isValid) {
+      throw new BusinessException('开发者密码错误', 400);
+    }
+    return true;
+  }
+
+  /**
+   * 设置开发者密码（需验证登录密码确认身份）
+   * @param userId - 用户 ID
+   * @param loginPassword - 登录密码明文（用于身份验证）
+   * @param developerPassword - 开发者密码明文（待设置）
+   */
+  async setDeveloperPassword(userId: string, loginPassword: string, developerPassword: string): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new BusinessException('用户不存在', 404);
+    }
+    if (user.isDeveloper !== 1) {
+      throw new BusinessException('当前用户不是开发者', 403);
+    }
+    // 验证登录密码确认身份
+    const isValid = await verifyPassword(loginPassword, user.password);
+    if (!isValid) {
+      throw new BusinessException('登录密码错误', 400);
+    }
+    // 哈希并保存开发者密码
+    const hashed = await hashPassword(developerPassword);
+    await this.userRepository.update(userId, { developerPassword: hashed });
   }
 }
 

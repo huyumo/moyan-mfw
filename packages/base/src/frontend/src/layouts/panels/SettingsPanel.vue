@@ -121,6 +121,10 @@
                   <span class="mfw-admin-switch-label">{{ text.pageCache }}</span
                   ><el-switch v-model="draftStyleConfig.keepAlive" data-testid="settings-keepalive-switch" />
                 </div>
+                <div v-if="isDeveloper && devModeUnlocked" class="mfw-admin-switch-item">
+                  <span class="mfw-admin-switch-label">{{ text.developerMode }}</span
+                  ><el-switch :model-value="devModeEnabled" @change="handleDevModeToggle" data-testid="settings-developer-switch" />
+                </div>
               </div>
             </div>
             <div v-if="version" class="mfw-admin-settings-group">
@@ -129,7 +133,7 @@
               </div>
               <div class="mfw-admin-switch-list">
                 <div class="mfw-admin-switch-item">
-                  <span class="mfw-admin-switch-label">v{{ version }}</span>
+                  <span class="mfw-admin-switch-label mfw-admin-version-label" data-testid="settings-version-label" @click="handleVersionClick">v{{ version }}</span>
                 </div>
               </div>
             </div>
@@ -181,6 +185,8 @@ const props = defineProps({
   styleConfig: { type: Object as PropType<LayoutStyleConfig>, required: true },
   getThemeColor: { type: Function as PropType<(themeName: string) => string>, default: () => '#409eff' },
   version: { type: String, default: '' },
+  isDeveloper: { type: Boolean, default: false },
+  devModeEnabled: { type: Boolean, default: false },
 });
 
 const emit = defineEmits<{
@@ -188,6 +194,7 @@ const emit = defineEmits<{
   (e: 'preview-change', payload: Partial<LayoutStyleConfig>): void;
   (e: 'save-settings', payload: LayoutStyleConfig): void;
   (e: 'reset-defaults'): void;
+  (e: 'toggle-dev-mode', enabled: boolean): void;
 }>();
 const activeTab = ref('layout');
 const syncingDraft = ref(false);
@@ -201,6 +208,28 @@ const drawerVisible = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value),
 });
+
+/** 开发者模式开关解锁状态（连续点击版本号 5 次后解锁） */
+const devModeUnlocked = ref(false);
+const versionClickCount = ref(0);
+let versionClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+function handleVersionClick() {
+  if (!props.isDeveloper) return;
+  versionClickCount.value++;
+  if (versionClickTimer) clearTimeout(versionClickTimer);
+  versionClickTimer = setTimeout(() => {
+    versionClickCount.value = 0;
+  }, 2000);
+  if (versionClickCount.value >= 5) {
+    devModeUnlocked.value = true;
+    versionClickCount.value = 0;
+    if (versionClickTimer) {
+      clearTimeout(versionClickTimer);
+      versionClickTimer = null;
+    }
+  }
+}
 
 watch(
   () => props.modelValue,
@@ -244,4 +273,15 @@ function handleDarkModeToggle(value: boolean) {
   setColorMode(newMode, { persist: false });
   draftStyleConfig.colorMode = newMode;
 }
+
+function handleDevModeToggle(enabled: boolean) {
+  emit('toggle-dev-mode', enabled);
+}
 </script>
+
+<style scoped>
+.mfw-admin-version-label {
+  cursor: pointer;
+  user-select: none;
+}
+</style>

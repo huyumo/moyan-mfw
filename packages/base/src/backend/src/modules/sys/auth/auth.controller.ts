@@ -173,7 +173,7 @@ export class AuthController {
       throw new BadRequestException('缺少应用标识，请传入 X-App-Id 请求头或 appId 参数');
     }
     const userId = user.id;
-    const result = await this.authService.getUserPermissions(userId, appInfo.id);
+    const result = await this.authService.getUserPermissions(userId, appInfo.id, user.isDeveloper === 1);
     return ApiResponseUtil.success(result, '获取成功');
   }
 
@@ -269,7 +269,57 @@ export class AuthController {
       throw new BadRequestException('缺少应用标识，请传入 X-App-Id 请求头或 appId 参数');
     }
     const userId = user.id;
-    const result = await this.authService.syncPermissions(userId, appId);
+    const result = await this.authService.syncPermissions(userId, appId, user.isDeveloper === 1);
     return ApiResponseUtil.success(result, '权限同步成功');
+  }
+
+  /**
+   * 验证开发者密码
+   * @param user - 用户信息
+   * @param body - 请求体
+   * @returns 验证结果
+   */
+  @Post('verify-developer')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({ summary: '验证开发者密码', description: '开启开发者模式前验证身份' })
+  @ApiResponse({ status: 200, description: '验证成功' })
+  @ApiResponse({ status: 400, description: '密码错误或未设置开发者密码' })
+  @ApiResponse({ status: 403, description: '非开发者用户' })
+  async verifyDeveloper(
+    @User() user: UserDto,
+    @Body() body: { password: string },
+  ) {
+    if (!body.password) {
+      throw new BadRequestException('密码不能为空');
+    }
+    const userId = user.id;
+    await this.authService.verifyDeveloperPassword(userId, body.password);
+    return ApiResponseUtil.success(true, '验证成功');
+  }
+
+  /**
+   * 设置开发者密码
+   * @param user - 用户信息
+   * @param body - 请求体
+   * @returns 设置结果
+   */
+  @Post('set-developer-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('Authorization')
+  @ApiOperation({ summary: '设置开发者密码', description: '设置开发者模式独立密码，需验证登录密码' })
+  @ApiResponse({ status: 200, description: '设置成功' })
+  @ApiResponse({ status: 400, description: '登录密码错误或参数缺失' })
+  @ApiResponse({ status: 403, description: '非开发者用户' })
+  async setDeveloperPassword(
+    @User() user: UserDto,
+    @Body() body: { loginPassword: string; developerPassword: string },
+  ) {
+    if (!body.loginPassword || !body.developerPassword) {
+      throw new BadRequestException('参数不能为空');
+    }
+    const userId = user.id;
+    await this.authService.setDeveloperPassword(userId, body.loginPassword, body.developerPassword);
+    return ApiResponseUtil.success(null, '开发者密码设置成功');
   }
 }

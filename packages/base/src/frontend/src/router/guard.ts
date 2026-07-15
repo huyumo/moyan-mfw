@@ -195,6 +195,11 @@ function checkPagePermission(
     return true;
   }
 
+  // 开发者模式页面：仅开发者模式开启后可访问
+  if (to.meta.showMode === 'DEV' && !authStore.isDevModeActive) {
+    return false;
+  }
+
   if (to.meta.menu !== false) {
     const permissionMenu = authStore.permissionMenu;
     if (permissionMenu.length === 0) {

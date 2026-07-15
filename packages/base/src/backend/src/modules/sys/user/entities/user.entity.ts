@@ -88,6 +88,13 @@ export class User extends Base {
   isDeveloper: number
 
   /**
+   * 开发者密码哈希
+   * @description 开发者模式独立密码，使用 bcrypt 加密，仅 isDeveloper=1 的用户有值
+   */
+  @Column({ type: 'varchar', length: 255, nullable: true, comment: '开发者密码哈希 - 开发者模式独立密码，bcrypt 加密' })
+  developerPassword: string | null;
+
+  /**
    * 关联角色
    * @description 用户关联的所有角色，通过 sys_user_role 关联表管理
    */

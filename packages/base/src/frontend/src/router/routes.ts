@@ -127,6 +127,7 @@ function processMenuNodes(
             menuLabel: node.name,
             menuIcon: node.icon,
             menu: true,
+            showMode: node.showMode,
             moduleInfo: {
               modulePath: normalizedFullPath,
               moduleName: node.name,
@@ -176,6 +177,7 @@ function processMenuNodes(
           menuIcon: node.icon,
           requiresAuth: node.auth ?? true,
           hidden: node.hidden,
+          showMode: node.showMode,
           permissions: node.permissions,
           permCode: node.permCode,
           ...(parentModuleName

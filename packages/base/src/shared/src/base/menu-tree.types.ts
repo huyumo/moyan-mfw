@@ -49,6 +49,15 @@ export interface MenuNode {
    */
   permCode?: string;
   /**
+   * 显示模式。
+   * - `'NORMAL'`（默认）：常规模式，所有有权限的用户可见可访问
+   * - `'DEV'`：开发者模式，仅开发者（`isDeveloper`）可见可访问
+   *
+   * 设为 `'DEV'` 的页面/菜单在同步后写入数据库 `sys_permissions.showMode`，
+   * 后端 `getUserPermissions` 和前端路由守卫均会对非开发者进行过滤/拦截。
+   */
+  showMode?: 'NORMAL' | 'DEV';
+  /**
    * 子节点列表。
    * - 有 children：该节点为 MENU 分组类型，生成重定向路由（redirect 到第一个子页面）
    * - 无 children：该节点为 PAGE 页面类型，生成实际路由
