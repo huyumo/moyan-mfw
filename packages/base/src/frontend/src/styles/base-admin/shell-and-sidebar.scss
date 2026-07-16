@@ -1,5 +1,8 @@
 .mfw-admin-shell {
-  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
   background: var(--el-bg-color-page);
   color: var(--el-text-color-primary);
 
@@ -21,6 +24,7 @@
 .mfw-admin-header {
   position: relative;
   z-index: 100;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -347,7 +351,8 @@
 
 .mfw-admin-main {
   display: flex;
-  height: calc(100vh - var(--mfw-header-height));
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
