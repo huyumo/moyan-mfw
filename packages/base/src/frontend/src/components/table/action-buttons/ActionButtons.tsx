@@ -2,7 +2,6 @@ import './style.scss';
 
 import { defineComponent, type PropType } from 'vue';
 import { ElButton, ElTooltip } from 'element-plus';
-import { More } from '@element-plus/icons-vue';
 import { usePermission } from '../../../hooks';
 import type { ActionButtonConfig, ActionButtonsProps } from './types';
 
@@ -82,7 +81,7 @@ export default defineComponent({
         >
           {{
             default: () => (
-              <ElButton type="primary" link icon={More}>
+              <ElButton type="primary" link>
                 {props.moreText}
               </ElButton>
             ),
@@ -102,7 +101,7 @@ export default defineComponent({
         return <div class="action-buttons" />;
       }
 
-      if (filteredButtons.length <= maxVisible) {
+      if (filteredButtons.length <= maxVisible + 1) {
         const buttonNodes = filteredButtons.map(renderButton);
         return <div class="action-buttons">{buttonNodes}</div>;
       }

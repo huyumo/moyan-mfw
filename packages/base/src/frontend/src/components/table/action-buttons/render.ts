@@ -2,7 +2,6 @@ import './style.scss';
 
 import { h, type VNode } from 'vue';
 import { ElButton, ElTooltip } from 'element-plus';
-import { More } from '@element-plus/icons-vue';
 import { usePermission } from '../../../hooks';
 import type { ActionButtonConfig, ActionButtonsOptions } from './types';
 
@@ -56,7 +55,6 @@ function renderMoreButton(hiddenButtons: ActionButtonConfig[], row: any, moreTex
     default: () => h(ElButton, {
       type: 'primary',
       link: true,
-      icon: More,
     }, () => moreText),
     content: () => h('div', { class: 'action-buttons-more-content' }, hiddenButtonsNodes),
   });
@@ -77,7 +75,7 @@ export function renderActionButtons(
     return h('div', { class: 'action-buttons' });
   }
 
-  if (filteredByPermission.length <= maxVisible) {
+  if (filteredByPermission.length <= maxVisible + 1) {
     const buttonNodes = filteredByPermission.map((btn) => renderButton(btn, row));
     return h('div', { class: 'action-buttons' }, buttonNodes);
   }
