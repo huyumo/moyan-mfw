@@ -19,7 +19,9 @@ let sysInitialized: boolean | null = null;
 
 /**
  * 检查系统初始化状态
- * @description 网络/服务不可用时返回 true，避免误判为"未初始化"导致跳转
+ * @description 网络/服务不可用、HTTP 错误、业务错误时均返回 true（保守视为已初始化），
+ * 避免后端异常被误判为"未初始化"导致跳转 install 页面（重新初始化会清空数据）。
+ * 只有明确收到 initialized: false 时才认为未初始化。
  */
 async function checkInitialized(): Promise<boolean> {
   if (sysInitialized !== null) {
@@ -30,7 +32,27 @@ async function checkInitialized(): Promise<boolean> {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     });
+
+    // HTTP 错误（如 500 Pool is closed）：保守视为已初始化
+    if (!response.ok) {
+      console.warn(
+        `[RouteGuard] 检查初始化状态失败 (HTTP ${response.status})，假设系统已初始化`,
+      );
+      sysInitialized = true;
+      return true;
+    }
+
     const result = await response.json();
+
+    // 业务错误码（code !== 0）：保守视为已初始化
+    if (result.code !== 0) {
+      console.warn(
+        `[RouteGuard] 检查初始化状态失败 (code ${result.code}: ${result.message})，假设系统已初始化`,
+      );
+      sysInitialized = true;
+      return true;
+    }
+
     sysInitialized = Boolean(result.data?.initialized);
     return sysInitialized;
   } catch (error) {

@@ -52,7 +52,7 @@ export class InstallController {
   })
   @ApiResponse({
     status: 409,
-    description: '系统已初始化，无法重复执行',
+    description: '系统已初始化或检测到业务数据，拒绝执行（防止数据丢失）',
   })
   async initialize(@Body() initData: InitRequestDto): Promise<InitResponseDto> {
     return this.installService.initialize(initData);
