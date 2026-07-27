@@ -9,6 +9,7 @@ import {
   NestMiddleware,
   Provider,
   INestApplication,
+  NestApplicationOptions,
 } from "@nestjs/common";
 import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.interface";
 import { DataSource } from "typeorm";
@@ -177,6 +178,13 @@ export interface CreateBaseBackendAppOptions {
   swagger?: SwaggerGroupConfig[];
   hooks?: HookConfig;
   auditLog?: AuditLogConfig;
+  /**
+   * 透传给 NestFactory.create 的原生应用选项
+   * （如 rawBody、bodyParser、abortOnError、httpsOptions 等）。
+   * 注意：顶层 `cors` 字段由 setupCors 统一处理，建议优先使用顶层 `cors`；
+   * 若同时在此设置 cors，以 setupCors 的配置为准（其在创建后执行）。
+   */
+  nestOptions?: NestApplicationOptions;
 }
 
 /** 应用实例 */

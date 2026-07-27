@@ -80,8 +80,10 @@ export async function createBaseBackendApp(
 
   const DynamicAppModule = await createDynamicAppModule(options, allAppTypes);
 
-  const app =
-    await NestFactory.create<NestExpressApplication>(DynamicAppModule);
+  const app = await NestFactory.create<NestExpressApplication>(
+    DynamicAppModule,
+    options.nestOptions,
+  );
 
   setupBigIntSerialization(app);
 

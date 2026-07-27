@@ -3,12 +3,18 @@
  * @description 为扩展包提供统一的 NestJS 启动逻辑，封装路由前缀、CORS、Swagger。
  */
 import { createBaseBackendApp } from './create-base-backend-app'
+import { NestApplicationOptions } from '@nestjs/common'
 
 export interface CreateExtensionBackendAppOptions {
   name: string
   module: any
   entities?: any[]
   port?: number
+  /**
+   * 透传给 NestFactory.create 的原生应用选项
+   * （如 rawBody、bodyParser、abortOnError、httpsOptions 等）。
+   */
+  nestOptions?: NestApplicationOptions
 }
 
 export type { BaseBackendAppInstance as ExtensionBackendAppInstance } from './types/app-config.types'
@@ -49,6 +55,7 @@ export async function createExtensionBackendApp(options: CreateExtensionBackendA
       cors: true,
       syncAppTypes: false,
       swagger: [swaggerGroup],
+      nestOptions: options.nestOptions,
     })
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)
