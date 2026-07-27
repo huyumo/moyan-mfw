@@ -7,7 +7,12 @@
 <template>
   <MfwPageWrapper>
     <template #header-extra>
-      <el-button type="primary" data-testid="placement-create-btn" @click="handleAdd">
+      <el-button
+        v-if="!devModeOnly || authStore.isDevModeActive"
+        type="primary"
+        data-testid="placement-create-btn"
+        @click="handleAdd"
+      >
         <el-icon><Plus /></el-icon>
         新建广告位
       </el-button>
@@ -38,7 +43,7 @@
 import { ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { ElMessageBox } from 'element-plus'
-import { MfwPageWrapper, MfwCardListPage, MfwPopup } from 'moyan-mfw-base/frontend'
+import { MfwPageWrapper, MfwCardListPage, MfwPopup, useAuthStore } from 'moyan-mfw-base/frontend'
 import type { MfwCardListPageInstance } from 'moyan-mfw-base/frontend'
 import {
   ApiAdPlacementFindAll,
@@ -52,6 +57,9 @@ import MfwAdPlacementCard from '../../components/ad-placement-card/Index.vue'
 
 const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
+
+withDefaults(defineProps<{ devModeOnly?: boolean }>(), { devModeOnly: false })
+const authStore = useAuthStore()
 
 const cardListPage = ref<MfwCardListPageInstance>()
 const detailRef = ref<InstanceType<typeof MfwAdPlacementDetail>>()

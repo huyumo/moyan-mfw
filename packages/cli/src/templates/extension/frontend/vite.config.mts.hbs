@@ -25,7 +25,10 @@ export default defineConfig({
       fileName: () => 'index.mjs',
     },
     rollupOptions: {
-      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'moyan-mfw-base/frontend', 'moyan-mfw-base/shared'],
+      // moyan-api 必须外部化：否则 ApiCall 类会被内联进产物，导致运行时存在两个 ApiCall 实例，
+      // 而 MoAxios.install() 只把请求处理器（MoCall）注册到 moyan-api 包的 ApiCall 上，
+      // 扩展内联的 ApiCall.MoCall 永远为 undefined，API 调用会抛错。
+      external: ['vue', 'vue-router', 'element-plus', '@element-plus/icons-vue', 'moyan-api', 'moyan-mfw-base/frontend', 'moyan-mfw-base/shared'],
       output: { exports: 'named' },
     },
   },
