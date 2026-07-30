@@ -80,16 +80,20 @@ export default () => ({
 
     /**
      * Token 过期时间
-     * @type {string}
-     * @default '24h'
+     * 支持 jwt 库能识别的所有格式：数字（秒）、'24h'、'30s'、'7d' 等
+     * @type {number | string}
+     * @default 7200 (2 小时)
      */
-    expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+    expiresIn: process.env.JWT_EXPIRES_IN || 7200,
 
     /**
      * 刷新 Token 过期时间
-     * @type {string}
-     * @default '7d'
+     * @type {number | string}
+     * @default 604800 (7 天)
      */
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    refreshExpiresIn:
+      process.env.JWT_REFRESH_EXPIRES_IN ||
+      process.env.JWT_EXPIRES_IN ||
+      604800,
   },
 });

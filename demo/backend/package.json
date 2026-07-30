@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prebuild": "pnpm --filter @internal/base-shared build && pnpm --filter @internal/base-backend build && pnpm --filter @internal/ad-shared build && pnpm --filter @internal/ad-backend build && pnpm --filter @internal/config-shared build && pnpm --filter @internal/config-backend build && pnpm --filter @internal/document-shared build && pnpm --filter @internal/document-backend build && pnpm --filter moyan-mfw-shared build",
+    "prebuild": "pnpm --filter @internal/base-shared build && pnpm --filter @internal/base-backend build && pnpm --filter @internal/ad-shared build && pnpm --filter @internal/ad-backend build && pnpm --filter @internal/config-shared build && pnpm --filter @internal/config-backend build && pnpm --filter @internal/document-shared build && pnpm --filter @internal/document-backend build && pnpm --filter @internal/scheduler-shared build && pnpm --filter @internal/scheduler-backend build && pnpm --filter moyan-mfw-shared build",
     "dev": "pnpm run prebuild && nest start --watch",
     "build": "nest build",
     "typecheck:backend": "tsc --noEmit -p tsconfig.json",
@@ -22,12 +22,14 @@
     "class-validator": "catalog:",
     "reflect-metadata": "catalog:",
     "rxjs": "catalog:",
+    "redis": "^4.7.1",
     "mysql2": "catalog:",
     "dotenv": "catalog:",
     "moyan-mfw-base": "workspace:*",
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-extension-config": "workspace:*",
     "moyan-mfw-extension-document": "workspace:*",
+    "moyan-mfw-extension-scheduler": "workspace:*",
     "moyan-mfw-shared": "workspace:*"
   },
   "devDependencies": {

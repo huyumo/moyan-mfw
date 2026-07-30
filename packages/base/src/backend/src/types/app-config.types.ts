@@ -15,33 +15,13 @@ import { CorsOptions } from "@nestjs/common/interfaces/external/cors-options.int
 import { DataSource } from "typeorm";
 import { ConfigService } from "@nestjs/config";
 
-/** 数据库配置 */
-export interface DatabaseConfig {
-  host?: string;
-  port?: number;
-  username?: string;
-  password?: string;
-  database?: string;
-  charset?: string;
-  timezone?: string;
-  poolSize?: number;
-  synchronize?: boolean;
-  logging?: boolean;
-}
-
-/** Redis 配置 */
-export interface RedisConfig {
-  host?: string;
-  port?: number;
-  password?: string;
-  db?: number;
-}
-
-/** JWT 配置 */
-export interface JwtConfig {
-  secret?: string;
-  expiresIn?: string | number;
-}
+// 基础设施配置类型已拆分到独立文件，此处 import 供本文件使用并 re-export 保持公共 API 不变
+import type { DatabaseConfig } from "./database.types";
+import type { RedisConfig } from "./redis.types";
+import type { JwtConfig } from "./jwt.types";
+export type { DatabaseConfig } from "./database.types";
+export type { RedisConfig } from "./redis.types";
+export type { JwtConfig } from "./jwt.types";
 
 /** 安全配置 */
 export interface SecurityConfig {

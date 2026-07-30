@@ -7,6 +7,7 @@ import { Module, Global, DynamicModule, Type } from '@nestjs/common';
 import { RedisCacheService } from './services/redis-cache.service';
 import { MemoryCacheService } from './services/memory-cache.service';
 import { ICacheService, IRedisOnlyService } from './interfaces/cache-service.interface';
+import type { RedisConfig } from '../types/redis.types';
 
 export type CacheDriver = 'auto' | 'redis' | 'memory' | 'none';
 
@@ -17,10 +18,14 @@ export interface CacheModuleOptions {
   useCacheService?: Type<ICacheService>;
   /** 自定义 Redis 专属服务实现（锁/限流/黑名单），需实现 IRedisOnlyService */
   useRedisOnlyService?: Type<IRedisOnlyService>;
+  /** Redis 连接配置，透传给 RedisCacheService。未提供时回退到环境变量 */
+  redisConfig?: RedisConfig;
 }
 
 export const CACHE_SERVICE = Symbol('CACHE_SERVICE');
 export const REDIS_ONLY_SERVICE = Symbol('REDIS_ONLY_SERVICE');
+/** Redis 连接配置注入 token */
+export const REDIS_CONFIG = Symbol('REDIS_CONFIG');
 
 class NoopCacheService implements ICacheService {
   async get<T = unknown>(): Promise<T | null> {
@@ -69,6 +74,7 @@ export class CacheModule {
         providers: [
           { provide: CACHE_SERVICE, useClass: NoopCacheService },
           { provide: REDIS_ONLY_SERVICE, useClass: NoopRedisOnlyService },
+          { provide: REDIS_CONFIG, useValue: options.redisConfig },
         ],
         exports: [CACHE_SERVICE, REDIS_ONLY_SERVICE],
       };
@@ -80,6 +86,7 @@ export class CacheModule {
         ...buildBuiltinProviders(options),
         buildCacheServiceProvider(driver, options),
         buildRedisOnlyServiceProvider(driver, options),
+        { provide: REDIS_CONFIG, useValue: options.redisConfig },
       ],
       exports: [CACHE_SERVICE, REDIS_ONLY_SERVICE],
     };

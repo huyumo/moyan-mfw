@@ -211,6 +211,7 @@ async function createDynamicAppModule(
     imports: [
       CacheModule.forRoot({
         driver: (process.env.CACHE_DRIVER as CacheDriver) || "none",
+        redisConfig: options.redis,
       }),
       ConfigModule.forRoot({
         isGlobal: true,
@@ -224,8 +225,15 @@ async function createDynamicAppModule(
           appConfig,
           redisConfig,
           userConfig,
-          jwtConfig,
           ossConfig,
+          // 包装 jwtConfig：将 options.jwt 合并进 ConfigService，使 refreshExpiresIn 等可被消费
+          () => {
+            const baseJwt = jwtConfig();
+            const merged = options.jwt
+              ? { ...baseJwt.jwt, ...options.jwt }
+              : baseJwt.jwt;
+            return { jwt: merged };
+          },
         ],
         ignoreEnvFile: false,
       }),
@@ -234,6 +242,23 @@ async function createDynamicAppModule(
         useFactory: (configService: ConfigService) => {
           const dbConfig =
             options.database || configService.get<any>("databaseConfig") || {};
+          // 连接池/连接行为类型化字段：仅当用户显式传入时写入 extra，未传入则保持 mysql2 默认行为
+          // 合并优先级：用户 extra > 用户类型化字段 > 框架默认值
+          const poolExtra: Record<string, any> = {
+            multipleStatements: dbConfig.multipleStatements ?? true,
+          };
+          if (dbConfig.connectionLimit != null)
+            poolExtra.connectionLimit = dbConfig.connectionLimit;
+          if (dbConfig.waitForConnections != null)
+            poolExtra.waitForConnections = dbConfig.waitForConnections;
+          if (dbConfig.queueLimit != null)
+            poolExtra.queueLimit = dbConfig.queueLimit;
+          if (dbConfig.enableKeepAlive != null)
+            poolExtra.enableKeepAlive = dbConfig.enableKeepAlive;
+          if (dbConfig.keepAliveInitialDelay != null)
+            poolExtra.keepAliveInitialDelay = dbConfig.keepAliveInitialDelay;
+          if (dbConfig.connectTimeout != null)
+            poolExtra.connectTimeout = dbConfig.connectTimeout;
           return {
             type: "mysql",
             host: dbConfig.host || process.env.DB_HOST || "localhost",
@@ -252,7 +277,8 @@ async function createDynamicAppModule(
             entities: [...entities, ...(options.extraEntities || [])],
             autoLoadEntities: true,
             extra: {
-              multipleStatements: true,
+              ...poolExtra,
+              ...(dbConfig.extra || {}),
             },
             keepConnectionAlive: true,
             retryAttempts: 10,
@@ -265,7 +291,11 @@ async function createDynamicAppModule(
         global: true,
         secret: options.jwt?.secret || process.env.JWT_SECRET || "",
         signOptions: {
-          expiresIn: options.jwt?.expiresIn || 7200,
+          expiresIn:
+            options.jwt?.expiresIn ||
+            process.env.JWT_EXPIRES_IN ||
+            7200,
+          ...(options.jwt?.signOptions || {}),
         },
       }),
       SysModule,

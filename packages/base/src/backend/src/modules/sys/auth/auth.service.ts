@@ -160,6 +160,7 @@ export class AuthService {
         sub: user.id,
         username: user.username,
         roleIds: userRoles.map((ur) => ur.roleId),
+        isDeveloper: user.isDeveloper,
         jti: randomUUID(),
       };
 
@@ -414,6 +415,7 @@ export class AuthService {
       sub: user.id,
       username: user.username,
       roleIds: [],
+      isDeveloper: user.isDeveloper,
       jti: randomUUID(),
     };
 

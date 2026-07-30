@@ -27,6 +27,10 @@
       "moyan-mfw-extension-document/backend/*": ["../../packages/extensions/extension-document/src/backend/dist/*"],
       "moyan-mfw-extension-document/shared": ["../../packages/extensions/extension-document/src/shared/dist"],
       "moyan-mfw-extension-document/shared/*": ["../../packages/extensions/extension-document/src/shared/dist/*"],
+      "moyan-mfw-extension-scheduler/backend": ["../../packages/extensions/extension-scheduler/src/backend/dist"],
+      "moyan-mfw-extension-scheduler/backend/*": ["../../packages/extensions/extension-scheduler/src/backend/dist/*"],
+      "moyan-mfw-extension-scheduler/shared": ["../../packages/extensions/extension-scheduler/src/shared/dist"],
+      "moyan-mfw-extension-scheduler/shared/*": ["../../packages/extensions/extension-scheduler/src/shared/dist/*"],
       "moyan-mfw-shared": ["../shared/dist/esm"],
       "moyan-mfw-shared/*": ["../shared/dist/esm/*"]
     }

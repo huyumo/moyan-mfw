@@ -187,7 +187,7 @@ function createTypeOrmOptions(configService: ConfigService): TypeOrmModuleOption
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET', 'default_jwt_secret'),
         signOptions: {
-          expiresIn: configService.get('JWT_EXPIRES_IN', '7200'),
+          expiresIn: configService.get('JWT_EXPIRES_IN', 7200),
         },
       }),
       inject: [ConfigService],

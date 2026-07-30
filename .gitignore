@@ -33,3 +33,6 @@ temp/
 
 # E2E 验证临时目录
 .e2e-verify/
+# IDE / tool generated
+.zcode/
+console.log('ERR

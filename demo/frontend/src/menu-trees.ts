@@ -14,6 +14,7 @@
 
 import type { FrontendAppTypeMenuConfig } from "moyan-mfw-base/frontend";
 import { AdPlacementList ,} from 'moyan-mfw-extension-ad/frontend'
+import { MfwScheduledTaskPage } from 'moyan-mfw-extension-scheduler/frontend'
 import { SysAppTypePage, SysAppPage, SysUserPage, SysRolePage, SysMemberPage, SysPermissionPage, SysAuditLogPage } from 'moyan-mfw-base/frontend'
 import SysDashboardPage from '@/views/dashboard/Index.vue'
 import SupplierDashboardPage from '@/views/dashboard/Index.vue'
@@ -99,6 +100,15 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           name: "审计日志",
           icon: "Document",
           component: SysAuditLogPage,
+        },
+        {
+          path: "scheduled-task",
+          name: "定时任务管理",
+          icon: "Clock",
+          permCode: "ext:scheduler:task",
+          permissions: ["编辑", "执行"],
+          showMode: "DEV",
+          component: MfwScheduledTaskPage,
         },
       ],
     },

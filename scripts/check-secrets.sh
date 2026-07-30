@@ -36,6 +36,7 @@ ALLOWED_PATTERNS=(
   'Test@123'
   'test_password'
   'NewPass@123'
+  'redis://..password'  # Redis URL 模板拼接（非硬编码密码）
 )
 
 # ============================================

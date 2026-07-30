@@ -485,7 +485,7 @@ export const useAuthStore = defineStore("auth", () => {
 
   /** 开启开发者模式（弹出密码验证，验证成功后刷新菜单） */
   async function enableDevMode(): Promise<void> {
-    // 未设置开发者密码 -> 先弹出设置弹窗
+    // 未设置开发者密码 -> 先弹出设置弹窗，设置成功后自动开启开发者模式
     if (!user.value?.hasDeveloperPassword) {
       const { default: MfwPopup } = await import('../components/feedback/popup');
       const { default: DeveloperPasswordForm } = await import('../components/layout/developer-password-form.vue');
@@ -494,6 +494,15 @@ export const useAuthStore = defineStore("auth", () => {
         type: 'dialog',
         component: DeveloperPasswordForm,
         popupProps: { width: 420 },
+        on: {
+          confirm: async () => {
+            devModeEnabled.value = true;
+            sessionStorage.setItem(DEV_MODE_KEY, '1');
+            if (currentApp.value) {
+              await loadPermissions(currentApp.value.appId);
+            }
+          },
+        },
       });
       return;
     }

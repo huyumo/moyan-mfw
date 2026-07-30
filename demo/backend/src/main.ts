@@ -17,6 +17,10 @@ import {
   DocumentModule,
   DOCUMENT_PERMISSION_VALUES,
 } from "moyan-mfw-extension-document/backend";
+import {
+  SCHEDULER_EXTENSION_PERMISSION_VALUES,
+} from "moyan-mfw-extension-scheduler/backend";
+import { DemoSchedulerModule } from "./modules/scheduler/demo-scheduler.module";
 import "./permissions";
 
 const swaggerGroups: SwaggerGroupConfig[] = [
@@ -38,6 +42,12 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     description: "通用文档管理（含 EAV 扩展字段）API",
     include: [DocumentModule],
   },
+  {
+    name: "scheduler-extension",
+    title: "定时任务管理API文档",
+    description: "Cron周期任务 + 延迟任务管理 API",
+    include: [DemoSchedulerModule],
+  },
 ];
 
 async function bootstrap() {
@@ -50,6 +60,7 @@ async function bootstrap() {
     permissionValues: [
       ...AD_EXTENSION_PERMISSION_VALUES,
       ...DOCUMENT_PERMISSION_VALUES,
+      ...SCHEDULER_EXTENSION_PERMISSION_VALUES,
     ],
     hooks: {
       onAppInit: async (ctx) => {

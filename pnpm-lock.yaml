@@ -114,6 +114,9 @@ catalogs:
     tsconfig-paths:
       specifier: ^4.2.0
       version: 4.2.0
+    tsx:
+      specifier: ^4.21.0
+      version: 4.21.0
     typeorm:
       specifier: ^0.3.28
       version: 0.3.28
@@ -233,12 +236,18 @@ importers:
       moyan-mfw-extension-document:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-document
+      moyan-mfw-extension-scheduler:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-scheduler
       moyan-mfw-shared:
         specifier: workspace:*
         version: link:../shared
       mysql2:
         specifier: 'catalog:'
         version: 3.20.0(@types/node@22.19.15)
+      redis:
+        specifier: ^4.7.1
+        version: 4.7.1
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.1.14
@@ -291,6 +300,9 @@ importers:
       moyan-mfw-extension-document:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-document
+      moyan-mfw-extension-scheduler:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-scheduler
       moyan-mfw-shared:
         specifier: workspace:*
         version: link:../shared
@@ -987,6 +999,143 @@ importers:
         version: 2.2.12(typescript@5.9.3)
 
   packages/extensions/extension-document/src/shared:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/extensions/extension-scheduler: {}
+
+  packages/extensions/extension-scheduler/src/backend:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/scheduler-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: 'catalog:'
+        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)
+      '@nestjs/typeorm':
+        specifier: 'catalog:'
+        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))
+      class-transformer:
+        specifier: 'catalog:'
+        version: 0.5.1
+      class-validator:
+        specifier: 'catalog:'
+        version: 0.14.4
+      cron:
+        specifier: ^3.0.0
+        version: 3.5.0
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-scheduler:
+        specifier: workspace:*
+        version: link:../..
+      redis:
+        specifier: ^4.7.1
+        version: 4.7.1
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      typeorm:
+        specifier: 'catalog:'
+        version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
+    devDependencies:
+      '@nestjs/cli':
+        specifier: 'catalog:'
+        version: 10.4.9
+      '@nestjs/schematics':
+        specifier: 'catalog:'
+        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.3)
+      tsc-alias:
+        specifier: 'catalog:'
+        version: 1.8.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/extensions/extension-scheduler/src/frontend:
+    dependencies:
+      '@element-plus/icons-vue':
+        specifier: 'catalog:'
+        version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/scheduler-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@vueuse/core':
+        specifier: 'catalog:'
+        version: 14.2.1(vue@3.5.30(typescript@5.9.3))
+      axios:
+        specifier: 'catalog:'
+        version: 1.13.6
+      element-plus:
+        specifier: 'catalog:'
+        version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      moyan-api:
+        specifier: 'catalog:'
+        version: 2.1.19
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-scheduler:
+        specifier: workspace:*
+        version: link:../..
+      pinia:
+        specifier: 'catalog:'
+        version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.30(typescript@5.9.3)
+      vue-router:
+        specifier: 'catalog:'
+        version: 4.6.4(vue@3.5.30(typescript@5.9.3))
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 5.2.4(vite@5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      '@vitejs/plugin-vue-jsx':
+        specifier: 'catalog:'
+        version: 5.1.5(vite@5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      sass:
+        specifier: 'catalog:'
+        version: 1.98.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: 'catalog:'
+        version: 5.4.21(@types/node@22.19.15)(sass@1.98.0)(terser@5.46.1)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 2.2.12(typescript@5.9.3)
+
+  packages/extensions/extension-scheduler/src/shared:
     dependencies:
       '@internal/base-shared':
         specifier: workspace:*
@@ -2203,6 +2352,9 @@ packages:
   '@types/lodash@4.17.24':
     resolution: {integrity: sha512-gIW7lQLZbue7lRSWEFql49QJJWThrTFFeIMJdp3eH4tKoxm1OvEPg02rm4wCCSHS0cL3/Fizimb35b7k8atwsQ==}
 
+  '@types/luxon@3.4.2':
+    resolution: {integrity: sha512-TifLZlFudklWlMBfhubvgqTXRzLDI5pCbGa4P8a3wPyUQSW+1xQ5eDsreP9DWHX3tjq1ke96uYG/nwundroWcA==}
+
   '@types/markdown-it@14.1.2':
     resolution: {integrity: sha512-promo4eFwuiW+TfGxhi+0x3czqTYJkG8qB17ZUJiVF10Xm7NLVRSLUsfRTU/6h1e24VvRnXCx+hG7li58lkzog==}
 
@@ -3004,6 +3156,9 @@ packages:
 
   crelt@1.0.6:
     resolution: {integrity: sha512-VQ2MBenTq1fWZUH9DJNGti7kKv6EeAuYr3cLwxUWhIu1baTaXh4Ib5W2CqHVqib4/MqbYGJqiL3Zb8GJZr3l4g==}
+
+  cron@3.5.0:
+    resolution: {integrity: sha512-0eYZqCnapmxYcV06uktql93wNWdlTmmBFP2iYz+JPVcQqlyFYcn1lFuIk4R54pkOmE7mcldTAPZv6X5XA4Q46A==}
 
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
@@ -4180,6 +4335,10 @@ packages:
     deprecated: Package deprecated. Please use @lucide/vue instead.
     peerDependencies:
       vue: '>=3.0.1'
+
+  luxon@3.5.0:
+    resolution: {integrity: sha512-rh+Zjr6DNfUYR3bPwJEnuwDdqMbxZW7LOQfUN4B54+Cl+0o5zaU9RJ6bcidfDtC1cWCZXQ+nvX8bf6bAji37QQ==}
+    engines: {node: '>=12'}
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -5484,7 +5643,6 @@ packages:
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -7099,6 +7257,8 @@ snapshots:
 
   '@types/lodash@4.17.24': {}
 
+  '@types/luxon@3.4.2': {}
+
   '@types/markdown-it@14.1.2':
     dependencies:
       '@types/linkify-it': 5.0.0
@@ -7998,6 +8158,11 @@ snapshots:
   create-require@1.1.1: {}
 
   crelt@1.0.6: {}
+
+  cron@3.5.0:
+    dependencies:
+      '@types/luxon': 3.4.2
+      luxon: 3.5.0
 
   cross-spawn@7.0.6:
     dependencies:
@@ -9323,6 +9488,8 @@ snapshots:
   lucide-vue-next@0.543.0(vue@3.5.30(typescript@5.9.3)):
     dependencies:
       vue: 3.5.30(typescript@5.9.3)
+
+  luxon@3.5.0: {}
 
   magic-string@0.30.21:
     dependencies:

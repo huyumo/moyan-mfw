@@ -4,12 +4,21 @@
  */
 import { createBaseBackendApp } from './create-base-backend-app'
 import { NestApplicationOptions } from '@nestjs/common'
+import type { DatabaseConfig } from './types/database.types'
+import type { RedisConfig } from './types/redis.types'
+import type { JwtConfig } from './types/jwt.types'
 
 export interface CreateExtensionBackendAppOptions {
   name: string
   module: any
   entities?: any[]
   port?: number
+  /** 数据库配置，透传给 createBaseBackendApp */
+  database?: DatabaseConfig
+  /** Redis 配置，透传给 createBaseBackendApp */
+  redis?: RedisConfig
+  /** JWT 配置，透传给 createBaseBackendApp */
+  jwt?: JwtConfig
   /**
    * 透传给 NestFactory.create 的原生应用选项
    * （如 rawBody、bodyParser、abortOnError、httpsOptions 等）。
@@ -56,6 +65,9 @@ export async function createExtensionBackendApp(options: CreateExtensionBackendA
       syncAppTypes: false,
       swagger: [swaggerGroup],
       nestOptions: options.nestOptions,
+      database: options.database,
+      redis: options.redis,
+      jwt: options.jwt,
     })
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2)

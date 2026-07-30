@@ -14,10 +14,11 @@ import {
 import { HeaderCommonActions } from "./components/Layout";
 import { menuTrees } from "./menu-trees";
 import { AD_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ad/shared";
+import { SCHEDULER_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-scheduler/shared";
 import pkg from "../package.json";
 import "./permissions";
 
-registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES]);
+registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES, ...SCHEDULER_EXTENSION_PERMISSION_VALUES]);
 
 // 配置高德地图凭证
 configureAmap({

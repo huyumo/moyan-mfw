@@ -3,10 +3,12 @@
  * @description 基于 node-redis v4 的缓存实现，提供缓存、锁、限流、黑名单能力
  */
 
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy, Logger, Optional, Inject } from '@nestjs/common';
 import { createClient, RedisClientType } from 'redis';
 import { ICacheService, IRedisOnlyService } from '../interfaces/cache-service.interface';
 import { CacheTTL } from '../constants/cache.constants';
+import { REDIS_CONFIG } from '../cache.module';
+import type { RedisConfig } from '../../types/redis.types';
 
 @Injectable()
 export class RedisCacheService
@@ -16,26 +18,33 @@ export class RedisCacheService
   private client: RedisClientType;
   private connected = false;
 
-  constructor() {}
+  constructor(@Optional() @Inject(REDIS_CONFIG) private readonly redisOpts?: RedisConfig) {}
 
   async onModuleInit() {
-    const host = process.env.REDIS_HOST || 'localhost';
-    const port = parseInt(process.env.REDIS_PORT || '6379', 10);
-    const password = process.env.REDIS_PASSWORD || '';
-    const db = parseInt(process.env.REDIS_DB || '0', 10);
+    const opts = this.redisOpts || {};
+    // 合并优先级：用户类型化字段 > 环境变量 > 框架默认值
+    const host = opts.host || process.env.REDIS_HOST || 'localhost';
+    const port = opts.port ?? parseInt(process.env.REDIS_PORT || '6379', 10);
+    const password = opts.password ?? (process.env.REDIS_PASSWORD || '');
+    const db = opts.db ?? parseInt(process.env.REDIS_DB || '0', 10);
+    const connectTimeout = opts.connectTimeout ?? 5000;
+    const maxRetries = opts.maxRetriesPerRequest ?? 10;
 
     this.client = createClient({
       socket: {
         host,
         port,
-        connectTimeout: 5000,
+        connectTimeout,
         reconnectStrategy: (retries) => {
-          if (retries > 10) return new Error('重连次数超限');
+          if (retries > maxRetries) return new Error('重连次数超限');
           return Math.min(retries * 500, 5000);
         },
       },
       password: password || undefined,
       database: db,
+      ...(opts.keyPrefix ? { keyPrefix: opts.keyPrefix } : {}),
+      // 用户 extra 最后展开，优先级最高，可覆盖以上所有
+      ...(opts.extra || {}),
     });
 
     this.client.on('ready', () => {
