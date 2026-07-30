@@ -1,0 +1,85 @@
+{
+  "name": "moyan-mfw-extension-scheduler",
+  "version": "1.2.0-beta.32",
+  "description": "MFW 分布式定时任务管理扩展包",
+  "exports": {
+    "./backend": {
+      "types": "./src/backend/dist/index.d.ts",
+      "import": "./src/backend/dist/index.js",
+      "require": "./src/backend/dist/index.js"
+    },
+    "./backend/*": {
+      "types": "./src/backend/dist/*.d.ts",
+      "import": "./src/backend/dist/*.js",
+      "require": "./src/backend/dist/*"
+    },
+    "./frontend": {
+      "types": "./src/frontend/dist/index.d.ts",
+      "import": "./src/frontend/dist/index.mjs",
+      "require": "./src/frontend/dist/index.mjs",
+      "style": "./src/frontend/dist/style.css"
+    },
+    "./frontend/*": {
+      "types": "./src/frontend/dist/*.d.ts",
+      "import": "./src/frontend/dist/*",
+      "require": "./src/frontend/dist/*"
+    },
+    "./shared": {
+      "types": "./src/shared/dist/index.d.ts",
+      "import": "./src/shared/dist/index.js",
+      "require": "./src/shared/dist/index.js"
+    },
+    "./shared/*": {
+      "types": "./src/shared/dist/*.d.ts",
+      "import": "./src/shared/dist/*",
+      "require": "./src/shared/dist/*"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./src/*/dist/*.d.ts",
+        "./src/*/dist/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @internal/scheduler-shared build",
+    "build:backend": "pnpm --filter moyan-mfw-base run build:shared && pnpm --filter moyan-mfw-base run build:backend && pnpm --filter @internal/scheduler-backend build",
+    "build:frontend": "pnpm --filter @internal/scheduler-frontend build",
+    "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",
+    "dev:backend": "pnpm --filter @internal/scheduler-backend dev",
+    "dev:frontend": "pnpm --filter @internal/scheduler-frontend dev",
+    "typecheck:shared": "pnpm --filter @internal/scheduler-shared typecheck",
+    "typecheck:backend": "pnpm --filter @internal/scheduler-backend typecheck",
+    "typecheck:frontend": "pnpm --filter @internal/scheduler-frontend typecheck",
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "verify": "pnpm run verify:dist"
+  },
+  "license": "MIT",
+  "keywords": [
+    "moyan",
+    "mfw",
+    "extension",
+    "scheduler",
+    "定时任务",
+    "cron",
+    "task"
+  ],
+  "files": [
+    "src/backend/dist",
+    "src/frontend/dist",
+    "src/shared/dist",
+    "database/migrations",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
