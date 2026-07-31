@@ -230,9 +230,9 @@ export class TypeOrmStorage implements ITaskStorage {
       .where('main', whereBuilder)
       .sql(({ select, wheres, orderBy, limit }) => {
         const whereClause = wheres?.main || ''
-        return `SELECT ${select} FROM ext_scheduler_task_instance inst ${whereClause} ${orderBy} ${limit}`
+        return `SELECT ${select} FROM ext_scheduler_task_instance inst LEFT JOIN ext_scheduler_task t ON inst.taskCode = t.taskCode ${whereClause} ${orderBy} ${limit}`
       })
-      .select('inst.*')
+      .select('inst.*, t.taskName')
       .defaultOrderBy('inst.executeAt DESC')
       .getData()
 

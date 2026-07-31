@@ -228,8 +228,17 @@ const instanceSearchTemplate = [
 ]
 
 const instanceColumns: TableColumnConfig[] = [
+  { prop: 'taskName', label: '任务名称', minWidth: 120 },
   { prop: 'taskCode', label: '任务编码', minWidth: 140 },
-  { prop: 'entityId', label: '实体ID', minWidth: 120 },
+  { prop: 'entityId', label: '实体ID', minWidth: 120, render: ({ row }) => row.entityId || '-' },
+  {
+    prop: 'payload', label: '业务数据', minWidth: 160,
+    render: ({ row }) => {
+      if (!row.payload) return '-'
+      const str = JSON.stringify(row.payload)
+      return str.length > 50 ? str.substring(0, 50) + '...' : str
+    },
+  },
   {
     prop: 'executeAt', label: '应执行时间', width: 180,
     render: ({ row }) => h(MfwDateFormat, { value: row.executeAt }),
@@ -244,8 +253,10 @@ const instanceColumns: TableColumnConfig[] = [
     render: ({ row }) => row.startedAt ? h(MfwDateFormat, { value: row.startedAt }) : '-',
   },
   {
-    prop: 'finishedAt', label: '完成时间', width: 180,
-    render: ({ row }) => row.finishedAt ? h(MfwDateFormat, { value: row.finishedAt }) : '-',
+    prop: 'errorMessage', label: '错误信息', minWidth: 200,
+    render: ({ row }) => row.errorMessage
+      ? h(ElTag, { type: 'danger', size: 'small' }, () => row.errorMessage.substring(0, 50))
+      : '-',
   },
 ]
 
@@ -355,6 +366,15 @@ const handleViewLogDetail = async (row: any) => {
 
 <style scoped>
 .scheduler-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.scheduler-tabs :deep(.el-tabs__content) {
+  flex: 1;
+  overflow: hidden;
+}
+.scheduler-tabs :deep(.el-tab-pane) {
   height: 100%;
 }
 </style>
