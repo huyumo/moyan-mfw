@@ -17,6 +17,13 @@ export default defineConfig({
       'moyan-mfw-extension-scheduler/shared': resolve(__dirname, '../shared/src/index.ts'),
     },
   },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        api: 'modern-compiler',
+      },
+    },
+  },
   build: {
     outDir: 'dist',
     lib: {

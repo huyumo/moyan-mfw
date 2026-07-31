@@ -33,6 +33,7 @@
     "@vitejs/plugin-vue-jsx": "catalog:",
     "vue-tsc": "catalog:",
     "sass": "catalog:",
+    "sass-embedded": "catalog:",
     "typescript": "catalog:"
   }
 }

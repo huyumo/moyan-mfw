@@ -151,7 +151,6 @@ async function main() {
     ], {
       cwd: projectDir,
       stdio: 'pipe',
-      shell: true,
     });
 
     frontendProcess.stderr.on('data', () => {});
