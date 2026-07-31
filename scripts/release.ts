@@ -17,6 +17,7 @@ const PACKAGES = [
   'packages/extensions/extension-ad',
   'packages/extensions/extension-config',
   'packages/extensions/extension-document',
+  'packages/extensions/extension-scheduler',
 ];
 
 function getCurrentVersion(): string {
