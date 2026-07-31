@@ -48,8 +48,8 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { ElTag, ElSwitch, ElMessageBox } from 'element-plus'
-import { Edit, VideoPlay, Close, View } from '@element-plus/icons-vue'
+import { ElTag, ElSwitch, ElMessageBox, ElMessage, ElIcon } from 'element-plus'
+import { Edit, VideoPlay, Close, View, CopyDocument } from '@element-plus/icons-vue'
 import {
   MfwPageWrapper,
   MfwListPage,
@@ -77,6 +77,24 @@ import {
 } from '../../apis/scheduler'
 
 defineOptions({ name: 'MfwScheduledTaskPage' })
+
+/** 复制文本到剪贴板 */
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).then(() => {
+    ElMessage.success(`已复制: ${text.length > 30 ? text.substring(0, 30) + '...' : text}`)
+  }).catch(() => {
+    ElMessage.error('复制失败')
+  })
+}
+
+/** 渲染可复制文本（值 + 复制图标） */
+const renderCopyableText = (text: string | null | undefined) => {
+  if (!text) return '-'
+  return h('span', { style: 'display: inline-flex; align-items: center; gap: 4px; cursor: pointer;', onClick: (e: Event) => { e.stopPropagation(); copyToClipboard(text) } }, [
+    h('span', { style: 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;' }, text.length > 36 ? text.substring(0, 36) + '...' : text),
+    h(ElIcon, { size: 14, style: 'color: var(--el-color-primary); flex-shrink: 0;' }, () => h(CopyDocument)),
+  ])
+}
 
 const activeTab = ref('tasks')
 const taskListPage = ref<MfwListPageInstance>()
@@ -148,8 +166,9 @@ const taskSearchTemplate = [
 ]
 
 const taskColumns: TableColumnConfig[] = [
+  { prop: 'id', label: '任务ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 140 },
+  { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
     prop: 'taskType', label: '类型', width: 100, align: 'center' as const,
     render: ({ row }) => h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-'),
@@ -228,9 +247,10 @@ const instanceSearchTemplate = [
 ]
 
 const instanceColumns: TableColumnConfig[] = [
+  { prop: 'id', label: '实例ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 140 },
-  { prop: 'entityId', label: '实体ID', minWidth: 120, render: ({ row }) => row.entityId || '-' },
+  { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
+  { prop: 'entityId', label: '实体ID', minWidth: 120, render: ({ row }) => renderCopyableText(row.entityId) },
   {
     prop: 'payload', label: '业务数据', minWidth: 160,
     render: ({ row }) => {
@@ -310,8 +330,9 @@ const logSearchTemplate = [
 ]
 
 const logColumns: TableColumnConfig[] = [
+  { prop: 'id', label: '日志ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 140 },
+  { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
     prop: 'triggerType', label: '触发方式', width: 80, align: 'center' as const,
     render: ({ row }) => triggerTypeLabel[row.triggerType] || '-',

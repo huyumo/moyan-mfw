@@ -116,7 +116,7 @@ export class ScheduledTaskService {
     return this.storage.queryLogs(filters)
   }
 
-  async getLogDetail(id: string): Promise<ScheduledTaskLog | null> {
+  async getLogDetail(id: string): Promise<any> {
     return this.storage.getLog(id)
   }
 }

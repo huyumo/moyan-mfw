@@ -196,8 +196,22 @@ export class TypeOrmStorage implements ITaskStorage {
     await this.logRepo.update(id, { status, ...(fields as any) })
   }
 
-  async getLog(id: string): Promise<ScheduledTaskLog | null> {
-    return this.logRepo.findOne({ where: { id } })
+  async getLog(id: string): Promise<any> {
+    const log = await this.logRepo.findOne({ where: { id } })
+    if (!log) return null
+    // 关联查询实例的调用参数
+    let instanceData: any = null
+    if (log.instanceId) {
+      const inst = await this.instanceRepo.findOne({ where: { id: log.instanceId } })
+      if (inst) {
+        instanceData = {
+          entityId: inst.entityId,
+          payload: inst.payload,
+          retryCount: inst.retryCount,
+        }
+      }
+    }
+    return { ...log, instanceData }
   }
 
   // ── 孤儿清理 ──

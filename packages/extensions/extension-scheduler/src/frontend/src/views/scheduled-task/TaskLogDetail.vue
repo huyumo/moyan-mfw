@@ -5,7 +5,7 @@
  */
 -->
 <template>
-  <el-descriptions :column="2" border>
+  <el-descriptions :column="2" :border="false" direction="vertical" class="log-detail">
     <el-descriptions-item label="任务编码">{{ detail.taskCode || '-' }}</el-descriptions-item>
     <el-descriptions-item label="任务名称">{{ detail.taskName || '-' }}</el-descriptions-item>
     <el-descriptions-item label="实例ID">{{ detail.instanceId || '-' }}</el-descriptions-item>
@@ -17,7 +17,19 @@
     <el-descriptions-item label="开始时间">{{ formatDate(detail.startedAt) }}</el-descriptions-item>
     <el-descriptions-item label="完成时间">{{ formatDate(detail.finishedAt) }}</el-descriptions-item>
     <el-descriptions-item label="耗时">{{ detail.durationMs ? detail.durationMs + ' ms' : '-' }}</el-descriptions-item>
-    <el-descriptions-item label="结果摘要" :span="2">
+
+    <!-- 任务调用参数（从关联的延迟实例获取） -->
+    <el-descriptions-item v-if="detail.instanceData?.entityId" label="业务实体ID" :span="2">
+      {{ detail.instanceData.entityId }}
+    </el-descriptions-item>
+    <el-descriptions-item v-if="detail.instanceData?.retryCount !== undefined" label="重试次数">
+      {{ detail.instanceData.retryCount }}
+    </el-descriptions-item>
+    <el-descriptions-item v-if="detail.instanceData?.payload" label="调用参数(payload)" :span="2">
+      <pre class="json-block">{{ JSON.stringify(detail.instanceData.payload, null, 2) }}</pre>
+    </el-descriptions-item>
+
+    <el-descriptions-item label="执行结果" :span="2">
       <pre v-if="detail.result" class="json-block">{{ JSON.stringify(detail.result, null, 2) }}</pre>
       <span v-else>-</span>
     </el-descriptions-item>
@@ -82,10 +94,19 @@ const formatDate = (val: any) => {
 </script>
 
 <style scoped>
+.log-detail :deep(.el-descriptions__label) {
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.log-detail :deep(.el-descriptions__content) {
+  font-size: 14px;
+}
 .json-block {
   background: var(--el-fill-color-light);
   padding: 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 13px;
   max-height: 200px;
   overflow: auto;

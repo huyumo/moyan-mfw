@@ -104,7 +104,7 @@ export interface ITaskStorage {
   /** 批量创建（归档链 K 用） */
   batchCreateLogs(logs: Partial<ScheduledTaskLog>[]): Promise<void>
   updateLogStatus(id: string, status: number, fields?: Partial<LogFields>): Promise<void>
-  getLog(id: string): Promise<ScheduledTaskLog | null>
+  getLog(id: string): Promise<any>
 
   // ── 孤儿清理（启动时批量） ──
   cleanupOrphanRecords(timeoutSeconds: number): Promise<number>
