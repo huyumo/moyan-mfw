@@ -166,7 +166,7 @@ const taskSearchTemplate = [
 ]
 
 const taskColumns: TableColumnConfig[] = [
-  { prop: 'id', label: '任务ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'id', label: '任务ID', minWidth: 300, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
   { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
@@ -206,7 +206,8 @@ const taskActionColumn: ActionColumnConfig = {
 const loadTasks = async (_params: Record<string, unknown>) => {
   // 任务定义列表不分页，直接返回全部
   const result = await new ApiSchedulerListTasks({})
-  return { list: (result as any).data ?? result, total: Array.isArray(result) ? result.length : 0 }
+  const list = Array.isArray(result) ? result : []
+  return { list, total: list.length }
 }
 
 const handleEditTask = (row: any) => {
@@ -247,7 +248,7 @@ const instanceSearchTemplate = [
 ]
 
 const instanceColumns: TableColumnConfig[] = [
-  { prop: 'id', label: '实例ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'id', label: '实例ID', minWidth: 300, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
   { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
   { prop: 'entityId', label: '实体ID', minWidth: 120, render: ({ row }) => renderCopyableText(row.entityId) },
@@ -330,7 +331,7 @@ const logSearchTemplate = [
 ]
 
 const logColumns: TableColumnConfig[] = [
-  { prop: 'id', label: '日志ID', width: 120, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'id', label: '日志ID', minWidth: 300, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 120 },
   { prop: 'taskCode', label: '任务编码', minWidth: 140, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
@@ -379,7 +380,7 @@ const handleViewLogDetail = async (row: any) => {
     title: '日志详情',
     type: 'drawer',
     component: TaskLogDetail,
-    elProps: (detail as any).data ?? detail,
+    elProps: { detail: detail ?? {} },
     popupProps: { size: 700 },
   })
 }
@@ -394,8 +395,20 @@ const handleViewLogDetail = async (row: any) => {
 .scheduler-tabs :deep(.el-tabs__content) {
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 .scheduler-tabs :deep(.el-tab-pane) {
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.scheduler-tabs :deep(.mfw-base-list-page) {
+  flex: 1;
+  min-height: 0;
+}
+.scheduler-tabs :deep(.mfw-base-list-page__content) {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
 }
 </style>

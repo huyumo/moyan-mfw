@@ -27,6 +27,7 @@ export interface ScheduledTaskItem {
 export interface ScheduledTaskInstanceItem {
   id: string
   taskCode: string
+  taskName: string | null
   entityId: string | null
   payload: Record<string, any> | null
   executeAt: string
