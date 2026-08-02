@@ -116,7 +116,7 @@ export class DemoSchedulerController {
     if (!handler) {
       return { error: `任务处理器未注册: ${dto.taskCode}` }
     }
-    const instance = await this.taskService.triggerTask(dto.taskCode, dto.payload)
+    const instance = await this.taskService.triggerTask(dto.taskCode, undefined, dto.payload)
     return {
       message: `任务已触发: ${dto.taskCode}`,
       instance,
