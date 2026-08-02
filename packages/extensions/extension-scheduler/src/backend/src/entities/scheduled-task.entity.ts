@@ -41,6 +41,17 @@ export class ScheduledTaskDefinition extends Base {
   @Column({ type: 'boolean', default: false, comment: '重启后是否补偿执行' })
   catchUpOnRestart: boolean
 
+  // ── 重试配置（可由前端编辑，覆盖 handler 默认值） ──
+
+  @Column({ type: 'int', default: 3, comment: '最大重试次数（0=不重试）' })
+  maxRetry: number
+
+  @Column({ type: 'text', nullable: true, comment: '退避策略JSON：{"type":"fixed","delays":[60000,300000,3600000,86400000]}' })
+  backoffStrategy: string | null
+
+  @Column({ type: 'boolean', default: true, comment: '是否记录执行日志（高频任务可关闭）' })
+  enableLog: boolean
+
   // ── 运行时状态（引擎更新，非人工编辑） ──
 
   @Column({ type: 'datetime', nullable: true, comment: '上次执行时间' })

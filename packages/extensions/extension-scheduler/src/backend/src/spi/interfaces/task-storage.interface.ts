@@ -78,7 +78,7 @@ export interface ITaskStorage {
   // ── 任务定义 ──
   upsertTaskDefinition(task: Partial<ScheduledTaskDefinition>): Promise<void>
   getTaskDefinition(taskCode: string): Promise<ScheduledTaskDefinition | null>
-  listTaskDefinitions(): Promise<ScheduledTaskDefinition[]>
+  listTaskDefinitions(filters?: { taskName?: string; taskType?: number }): Promise<ScheduledTaskDefinition[]>
   updateTaskRuntime(taskCode: string, fields: Partial<RuntimeFields>): Promise<void>
 
   // ── 延迟实例 ──

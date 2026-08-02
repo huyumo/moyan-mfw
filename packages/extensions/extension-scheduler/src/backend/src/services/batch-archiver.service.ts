@@ -50,7 +50,7 @@ export class BatchArchiverService {
 
     this.logger.debug(`归档: ${entries.length} 条结果`)
 
-    // 按状态分组
+    // 按状态分组（按 run-status 分组）
     const groups = new Map<number, typeof entries>()
     for (const e of entries) {
       const g = groups.get(e.status) ?? []
@@ -59,8 +59,17 @@ export class BatchArchiverService {
     }
 
     // 批量更新实例状态（每组1次UPDATE）
-    const archiveUpdates = [...groups.entries()].map(([status, items]) => ({
-      status,
+    // 注意：ResultBuffer 中存的是 TaskRunStatusDict 值（1-5），
+    //   需要转换为 TaskInstanceStatusDict 值（3=成功, 4=失败）写入实例表
+    const runToInstanceStatus: Record<number, number> = {
+      [TaskRunStatusDict.SUCCESS]: TaskInstanceStatusDict.SUCCESS,
+      [TaskRunStatusDict.FAILED]: TaskInstanceStatusDict.FAILED,
+      [TaskRunStatusDict.TIMEOUT]: TaskInstanceStatusDict.TIMEOUT,
+      [TaskRunStatusDict.SKIPPED]: TaskInstanceStatusDict.FAILED,
+      [TaskRunStatusDict.RUNNING]: TaskInstanceStatusDict.RUNNING,
+    }
+    const archiveUpdates = [...groups.entries()].map(([runStatus, items]) => ({
+      status: runToInstanceStatus[runStatus] ?? TaskInstanceStatusDict.FAILED,
       ids: items.map((i) => i.instanceId),
       fields: {
         finishedAt: new Date(),
@@ -75,10 +84,21 @@ export class BatchArchiverService {
       const retryInstances: Partial<ScheduledTaskInstance>[] = []
 
       for (const f of failed) {
-        // 获取 handler 级别配置，回退到全局默认
+        // 优先从 DB 任务定义读取重试配置（前端可编辑），回退到 handler 级别，再回退到全局默认
+        const taskDef = await this.storage.getTaskDefinition(f.taskCode)
         const handler = this.registry.get(f.taskCode)
-        const maxRetry = handler?.maxRetry ?? this.defaultMaxRetry
-        const backoff = handler?.backoffStrategy ?? this.defaultBackoff
+        let maxRetry: number
+        let backoff: any
+
+        if (taskDef?.maxRetry !== undefined && taskDef.maxRetry !== null) {
+          // DB 有配置（前端编辑过），优先使用
+          maxRetry = taskDef.maxRetry
+          backoff = taskDef.backoffStrategy ? JSON.parse(taskDef.backoffStrategy) : (handler?.backoffStrategy ?? this.defaultBackoff)
+        } else {
+          // 回退到 handler 级别
+          maxRetry = handler?.maxRetry ?? this.defaultMaxRetry
+          backoff = handler?.backoffStrategy ?? this.defaultBackoff
+        }
 
         // 超过最大重试次数则放弃
         if (f.retryCount >= maxRetry) {
@@ -105,22 +125,26 @@ export class BatchArchiverService {
       }
     }
 
-    // 批量生成日志
-    const logs: Partial<ScheduledTaskLog>[] = entries.map((e) => ({
-      taskCode: e.taskCode,
-      taskName: this.registry.get(e.taskCode)?.taskName ?? e.taskCode,
-      instanceId: e.instanceId,
-      status: e.status,
-      triggerType: 1, // AUTO
-      startedAt: e.startedAt,
-      finishedAt: e.finishedAt,
-      durationMs: e.finishedAt.getTime() - e.startedAt.getTime(),
-      executor: e.executor ?? null,
-      errorMessage: e.error?.message ?? null,
-      errorStack: e.error?.stack ?? null,
-      result: e.result ?? null,
-    }))
-    await this.storage.batchCreateLogs(logs)
+    // 批量生成日志（仅对 enableLog=true 的任务）
+    const logs: Partial<ScheduledTaskLog>[] = entries
+      .filter((e) => e.enableLog !== false)
+      .map((e) => ({
+        taskCode: e.taskCode,
+        taskName: e.taskName ?? this.registry.get(e.taskCode)?.taskName ?? e.taskCode,
+        instanceId: e.instanceId,
+        status: e.status,
+        triggerType: 1, // AUTO
+        startedAt: e.startedAt,
+        finishedAt: e.finishedAt,
+        durationMs: e.finishedAt.getTime() - e.startedAt.getTime(),
+        executor: e.executor ?? null,
+        errorMessage: e.error?.message ?? null,
+        errorStack: e.error?.stack ?? null,
+        result: e.result ?? null,
+      }))
+    if (logs.length > 0) {
+      await this.storage.batchCreateLogs(logs)
+    }
 
     // 清空缓冲
     this.resultBuffer.clear()

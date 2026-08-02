@@ -13,12 +13,12 @@ export class UpdateTaskDto {
   @IsString()
   taskName?: string
 
-  @ApiPropertyOptional({ description: 'Cron表达式（6段秒级）' })
+  @ApiPropertyOptional({ description: 'Cron表达式（6段秒级，仅CRON类型）' })
   @IsOptional()
   @IsString()
   cronExpression?: string
 
-  @ApiPropertyOptional({ description: '固定间隔秒数' })
+  @ApiPropertyOptional({ description: '固定间隔秒数（仅CRON类型）' })
   @IsOptional()
   @IsInt()
   @Min(0)
@@ -40,14 +40,37 @@ export class UpdateTaskDto {
   @IsString()
   description?: string
 
-  @ApiPropertyOptional({ description: '重启后是否补偿执行' })
+  @ApiPropertyOptional({ description: '重启后是否补偿执行（仅CRON类型）' })
   @IsOptional()
   @IsBoolean()
   catchUpOnRestart?: boolean
+
+  @ApiPropertyOptional({ description: '最大重试次数（0=不重试）' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  maxRetry?: number
+
+  @ApiPropertyOptional({
+    description: '退避策略JSON，如 {"type":"fixed","delays":[60000,300000,3600000,86400000]}',
+  })
+  @IsOptional()
+  @IsObject()
+  backoffStrategy?: { type: string; delays?: number[]; base?: number; max?: number; multiplier?: number; interval?: number; increment?: number }
+
+  @ApiPropertyOptional({ description: '是否记录执行日志（高频任务可关闭）' })
+  @IsOptional()
+  @IsBoolean()
+  enableLog?: boolean
 }
 
 /** 手动触发任务 DTO */
 export class TriggerTaskDto {
+  @ApiPropertyOptional({ description: '业务实体ID' })
+  @IsOptional()
+  @IsString()
+  entityId?: string
+
   @ApiPropertyOptional({ description: '业务数据' })
   @IsOptional()
   @IsObject()
@@ -75,6 +98,19 @@ export class CreateDelayInstanceDto {
   @IsOptional()
   @IsObject()
   payload?: Record<string, any>
+}
+
+/** 任务定义查询 DTO */
+export class TaskQueryDto {
+  @ApiPropertyOptional({ description: '任务名称（模糊匹配）' })
+  @IsOptional()
+  @IsString()
+  taskName?: string
+
+  @ApiPropertyOptional({ description: '任务类型：1=Cron定时 2=延迟任务' })
+  @IsOptional()
+  @IsInt()
+  taskType?: number
 }
 
 /** 实例查询 DTO */

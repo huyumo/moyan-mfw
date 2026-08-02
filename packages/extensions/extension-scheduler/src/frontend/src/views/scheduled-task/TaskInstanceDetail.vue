@@ -1,16 +1,20 @@
 <!--
 /**
- * @fileoverview 任务执行日志详情
- * @description 展示日志结构化字段 + 调用参数 + 执行结果 + 错误信息/堆栈
- *   采用项目统一的 detail-section + info-grid 风格，大数据量字段独占一行
+ * @fileoverview 延迟实例详情
+ * @description 展示延迟实例的全部字段，业务数据(payload)以 JSON 格式独占一行展示
+ *   采用项目统一的 detail-section + info-grid 风格
  */
 -->
 <template>
-  <div class="task-log-detail" v-if="detail">
+  <div class="task-instance-detail" v-if="detail">
     <!-- 基本信息 -->
     <section class="detail-section">
       <h4 class="section-title">基本信息</h4>
       <div class="info-grid">
+        <div class="info-row full">
+          <span class="info-label">实例ID</span>
+          <span class="info-value mono copyable" @click="copyText(detail.id)">{{ detail.id }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+        </div>
         <div class="info-row">
           <span class="info-label">任务名称</span>
           <span class="info-value">{{ detail.taskName || '-' }}</span>
@@ -20,26 +24,22 @@
           <span class="info-value mono copyable" @click="copyText(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row full">
-          <span class="info-label">实例ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.instanceId)">{{ detail.instanceId || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-label">实体ID</span>
+          <span class="info-value mono copyable" @click="copyText(detail.entityId)">{{ detail.entityId || '-' }}<el-icon v-if="detail.entityId" class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row">
-          <span class="info-label">执行状态</span>
+          <span class="info-label">状态</span>
           <span class="info-value">
             <el-tag :type="statusTagType" size="small">{{ statusLabel }}</el-tag>
           </span>
         </div>
         <div class="info-row">
-          <span class="info-label">触发方式</span>
-          <span class="info-value">{{ triggerTypeLabel }}</span>
+          <span class="info-label">重试次数</span>
+          <span class="info-value">{{ detail.retryCount ?? 0 }}</span>
         </div>
         <div class="info-row">
-          <span class="info-label">执行实例</span>
-          <span class="info-value copyable" @click="copyText(detail.instanceId)" >{{ detail.executor || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">耗时</span>
-          <span class="info-value">{{ detail.durationMs != null ? detail.durationMs + ' ms' : '-' }}</span>
+          <span class="info-label">应执行时间</span>
+          <span class="info-value">{{ formatDate(detail.executeAt) }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">开始时间</span>
@@ -49,43 +49,23 @@
           <span class="info-label">完成时间</span>
           <span class="info-value">{{ formatDate(detail.finishedAt) }}</span>
         </div>
-      </div>
-    </section>
-
-    <!-- 关联延迟实例信息 -->
-    <section class="detail-section" v-if="detail.instanceData?.entityId || detail.instanceData?.retryCount !== undefined">
-      <h4 class="section-title">实例信息</h4>
-      <div class="info-grid">
-        <div class="info-row full" v-if="detail.instanceData?.entityId">
-          <span class="info-label">业务实体ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.instanceData.entityId)">
-            {{ detail.instanceData.entityId }}
-            <el-icon class="copy-icon"><CopyDocument /></el-icon>
+        <div class="info-row" v-if="detail.executor">
+          <span class="info-label">执行实例</span>
+          <span class="info-value copyable" @click="copyText(detail.executor)" >
+            {{ detail.executor || '-' }}
+            <el-icon  class="copy-icon"><CopyDocument /></el-icon>
           </span>
         </div>
-        <div class="info-row" v-if="detail.instanceData?.retryCount !== undefined">
-          <span class="info-label">重试次数</span>
-          <span class="info-value">{{ detail.instanceData.retryCount }}</span>
-        </div>
       </div>
     </section>
 
-    <!-- 调用参数 -->
-    <section class="detail-section" v-if="detail.instanceData?.payload">
+    <!-- 业务数据 -->
+    <section class="detail-section" v-if="detail.payload">
       <h4 class="section-title">
-        调用参数
-        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.instanceData.payload))"><CopyDocument /></el-icon>
+        业务数据
+        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.payload))"><CopyDocument /></el-icon>
       </h4>
-      <pre class="json-block">{{ formatJson(detail.instanceData.payload) }}</pre>
-    </section>
-
-    <!-- 执行结果 -->
-    <section class="detail-section" v-if="detail.result">
-      <h4 class="section-title">
-        执行结果
-        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.result))"><CopyDocument /></el-icon>
-      </h4>
-      <pre class="json-block">{{ formatJson(detail.result) }}</pre>
+      <pre class="json-block">{{ formatJson(detail.payload) }}</pre>
     </section>
 
     <!-- 错误信息 -->
@@ -96,15 +76,6 @@
       </h4>
       <div class="error-message">{{ detail.errorMessage }}</div>
     </section>
-
-    <!-- 错误堆栈 -->
-    <section class="detail-section" v-if="detail.errorStack">
-      <h4 class="section-title">
-        错误堆栈
-        <el-icon class="copy-icon title-copy" @click="copyText(detail.errorStack)"><CopyDocument /></el-icon>
-      </h4>
-      <pre class="json-block error-stack">{{ detail.errorStack }}</pre>
-    </section>
   </div>
 </template>
 
@@ -112,15 +83,12 @@
 import { computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
-import {
-  TaskRunStatusDict,
-  TaskTriggerTypeDict,
-} from 'moyan-mfw-extension-scheduler/shared'
+import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
 
 const props = defineProps<{
   detail: Record<string, any>
 }>()
-defineOptions({ name: 'MfwTaskLogDetail' })
+defineOptions({ name: 'MfwTaskInstanceDetail' })
 
 const detail = computed(() => props.detail || {})
 
@@ -135,32 +103,28 @@ function copyText(text: string | null | undefined): void {
 
 const statusTagType = computed(() => {
   const map: Record<number, string> = {
-    [TaskRunStatusDict.RUNNING]: 'info',
-    [TaskRunStatusDict.SUCCESS]: 'success',
-    [TaskRunStatusDict.FAILED]: 'danger',
-    [TaskRunStatusDict.TIMEOUT]: 'danger',
-    [TaskRunStatusDict.SKIPPED]: 'info',
+    [TaskInstanceStatusDict.PENDING]: 'warning',
+    [TaskInstanceStatusDict.RUNNING]: 'info',
+    [TaskInstanceStatusDict.SUCCESS]: 'success',
+    [TaskInstanceStatusDict.FAILED]: 'danger',
+    [TaskInstanceStatusDict.CANCELLED]: 'info',
+    [TaskInstanceStatusDict.TIMEOUT]: 'danger',
+    [TaskInstanceStatusDict.TIMEOUT_ORPHAN]: 'danger',
   }
   return (map[detail.value.status] || 'info') as any
 })
 
 const statusLabel = computed(() => {
   const map: Record<number, string> = {
-    [TaskRunStatusDict.RUNNING]: '执行中',
-    [TaskRunStatusDict.SUCCESS]: '成功',
-    [TaskRunStatusDict.FAILED]: '失败',
-    [TaskRunStatusDict.TIMEOUT]: '超时',
-    [TaskRunStatusDict.SKIPPED]: '跳过',
+    [TaskInstanceStatusDict.PENDING]: '待执行',
+    [TaskInstanceStatusDict.RUNNING]: '执行中',
+    [TaskInstanceStatusDict.SUCCESS]: '已成功',
+    [TaskInstanceStatusDict.FAILED]: '已失败',
+    [TaskInstanceStatusDict.CANCELLED]: '已取消',
+    [TaskInstanceStatusDict.TIMEOUT]: '已超时',
+    [TaskInstanceStatusDict.TIMEOUT_ORPHAN]: '未归档',
   }
   return map[detail.value.status] || '-'
-})
-
-const triggerTypeLabel = computed(() => {
-  const map: Record<number, string> = {
-    [TaskTriggerTypeDict.AUTO]: '自动',
-    [TaskTriggerTypeDict.MANUAL]: '手动',
-  }
-  return map[detail.value.triggerType] || '-'
 })
 
 function formatDate(val: any): string {
@@ -179,7 +143,7 @@ function formatJson(obj: Record<string, any>): string {
 </script>
 
 <style scoped lang="scss">
-.task-log-detail {
+.task-instance-detail {
   padding: 4px 0;
 }
 
@@ -287,12 +251,5 @@ function formatJson(obj: Record<string, any>): string {
   border-radius: 4px;
   padding: 12px;
   word-break: break-all;
-}
-
-// ── 错误堆栈 ──
-.error-stack {
-  background: #fef0f0;
-  border-color: #fde2e2;
-  color: #f56c6c;
 }
 </style>

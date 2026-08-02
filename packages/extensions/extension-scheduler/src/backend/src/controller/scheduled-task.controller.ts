@@ -17,6 +17,7 @@ import {
   TriggerTaskDto,
   InstanceQueryDto,
   LogQueryDto,
+  TaskQueryDto,
   ScheduledTaskResponseDto,
   ScheduledTaskInstanceResponseDto,
   ScheduledTaskLogResponseDto,
@@ -31,11 +32,11 @@ export class ScheduledTaskController {
   // ── 任务定义 ──
 
   @Get('tasks')
-  @ApiOperation({ summary: '查询任务定义列表', description: '查询所有定时任务定义' })
+  @ApiOperation({ summary: '查询任务定义列表', description: '查询所有定时任务定义，支持按名称和类型筛选' })
   @ApiResponse({ status: 200, type: [ScheduledTaskResponseDto] })
   @SkipPermission()
-  async listTasks() {
-    const result = await this.taskService.listTasks()
+  async listTasks(@Query() query: TaskQueryDto) {
+    const result = await this.taskService.listTasks(query)
     return ApiResponseUtil.success(result, '查询成功')
   }
 
@@ -69,7 +70,7 @@ export class ScheduledTaskController {
     @Param('taskCode') taskCode: string,
     @Body() dto: TriggerTaskDto,
   ) {
-    const result = await this.taskService.triggerTask(taskCode, dto.payload)
+    const result = await this.taskService.triggerTask(taskCode, dto.entityId, dto.payload)
     return ApiResponseUtil.success(result, '触发成功')
   }
 

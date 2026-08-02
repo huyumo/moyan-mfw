@@ -17,6 +17,9 @@ export interface ScheduledTaskItem {
   timeoutSeconds: number
   description: string | null
   catchUpOnRestart: boolean
+  maxRetry: number
+  backoffStrategy: string | null
+  enableLog: boolean
   lastRunAt: string | null
   nextRunAt: string | null
   lastRunStatus: number | null
@@ -74,10 +77,16 @@ export interface UpdateTaskParams {
   timeoutSeconds?: number
   description?: string
   catchUpOnRestart?: boolean
+  maxRetry?: number
+  backoffStrategy?: { type: string; delays?: number[]; base?: number; max?: number; multiplier?: number; interval?: number; increment?: number }
+  enableLog?: boolean
 }
 
 /** 查询任务定义列表 */
-export class ApiSchedulerListTasks extends ApiCall<{}, ScheduledTaskItem[]> {
+export class ApiSchedulerListTasks extends ApiCall<
+  { query?: { taskName?: string; taskType?: number } },
+  ScheduledTaskItem[]
+> {
   readonly path = '/api/ext/scheduler/tasks'
   readonly method: MoMethod = 'GET'
   readonly auth = true
@@ -88,7 +97,7 @@ export class ApiSchedulerGetTask extends ApiCall<
   { params: { taskCode: string } },
   ScheduledTaskItem
 > {
-  readonly path = '/api/ext/scheduler/tasks/:taskCode'
+  readonly path = '/api/ext/scheduler/tasks/{taskCode}'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
@@ -98,17 +107,17 @@ export class ApiSchedulerUpdateTask extends ApiCall<
   { params: { taskCode: string }; body: UpdateTaskParams },
   void
 > {
-  readonly path = '/api/ext/scheduler/tasks/:taskCode'
+  readonly path = '/api/ext/scheduler/tasks/{taskCode}'
   readonly method: MoMethod = 'PUT'
   readonly auth = true
 }
 
 /** 手动触发任务 */
 export class ApiSchedulerTriggerTask extends ApiCall<
-  { params: { taskCode: string }; body?: { payload?: Record<string, any> } },
+  { params: { taskCode: string }; body?: { entityId?: string; payload?: Record<string, any> } },
   ScheduledTaskInstanceItem
 > {
-  readonly path = '/api/ext/scheduler/tasks/:taskCode/trigger'
+  readonly path = '/api/ext/scheduler/tasks/{taskCode}/trigger'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }
@@ -138,7 +147,7 @@ export class ApiSchedulerCancelInstance extends ApiCall<
   { params: { id: string } },
   boolean
 > {
-  readonly path = '/api/ext/scheduler/instances/:id/cancel'
+  readonly path = '/api/ext/scheduler/instances/{id}/cancel'
   readonly method: MoMethod = 'POST'
   readonly auth = true
 }
@@ -168,7 +177,7 @@ export class ApiSchedulerGetLog extends ApiCall<
   { params: { id: string } },
   ScheduledTaskLogItem
 > {
-  readonly path = '/api/ext/scheduler/logs/:id'
+  readonly path = '/api/ext/scheduler/logs/{id}'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }

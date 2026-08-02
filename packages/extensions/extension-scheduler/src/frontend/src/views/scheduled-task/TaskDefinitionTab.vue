@@ -1,0 +1,137 @@
+<!--
+/**
+ * @fileoverview 任务定义 Tab
+ * @description 任务定义列表、搜索筛选、配置编辑、手动触发
+ *   独立组件，自带 MfwPageWrapper（解决 provide/inject 冲突）
+ */
+-->
+<template>
+  <MfwListPage
+    ref="listPageRef"
+    :search-template="searchTemplate"
+    :columns="columns"
+    :action-column="actionColumn"
+    :load-data="loadData"
+    :show-search="true"
+  />
+</template>
+
+<script setup lang="ts">
+import { ref, h } from 'vue'
+import { ElTag, ElSwitch } from 'element-plus'
+import { Edit, VideoPlay } from '@element-plus/icons-vue'
+import {
+  MfwListPage,
+  MfwDateFormat,
+  MfwPopup,
+  renderActionButtons,
+} from 'moyan-mfw-base/frontend'
+import type { MfwListPageInstance, TableColumnConfig, ActionColumnConfig } from 'moyan-mfw-base/frontend'
+import { TaskTypeDict } from 'moyan-mfw-extension-scheduler/shared'
+import TaskConfigForm from './TaskConfigForm.vue'
+import TaskTriggerForm from './TaskTriggerForm.vue'
+import { ApiSchedulerListTasks, ApiSchedulerTriggerTask } from '../../apis/scheduler'
+import {
+  taskTypeTagType, taskTypeLabel,
+  runStatusTagType, runStatusLabel,
+  renderCopyableText,
+} from './shared'
+
+defineOptions({ name: 'MfwTaskDefinitionTab' })
+
+const emit = defineEmits<{
+  triggered: []
+}>()
+
+const listPageRef = ref<MfwListPageInstance>()
+
+const searchTemplate = [
+  { key: 'taskName', label: '任务名称', type: 'input' as const, testId: 'task-search-name', placeholder: '请输入任务名称' },
+  { key: 'taskType', label: '任务类型', type: 'select' as const, testId: 'task-search-type', placeholder: '请选择类型', elProps: { options: [
+    { label: 'Cron定时', value: TaskTypeDict.CRON },
+    { label: '延迟任务', value: TaskTypeDict.DELAY },
+  ] } },
+]
+
+const columns: TableColumnConfig[] = [
+  { prop: 'id', label: '任务ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'taskName', label: '任务名称', minWidth: 220 },
+  { prop: 'taskCode', label: '任务编码', minWidth: 200, render: ({ row }) => renderCopyableText(row.taskCode) },
+  {
+    prop: 'taskType', label: '类型', width: 100, align: 'center' as const,
+    render: ({ row }) => h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-'),
+  },
+  {
+    prop: 'schedule', label: '调度方式', minWidth: 150,
+    render: ({ row }) => row.cronExpression || (row.intervalSeconds ? `每${row.intervalSeconds}秒` : '-'),
+  },
+  {
+    prop: 'enabled', label: '启用', width: 80, align: 'center' as const,
+    render: ({ row }) => h(ElSwitch, { modelValue: row.enabled, size: 'small' }),
+  },
+  {
+    prop: 'lastRunAt', label: '上次执行', width: 180,
+    render: ({ row }) => row.lastRunAt ? h(MfwDateFormat, { value: row.lastRunAt }) : '-',
+  },
+  {
+    prop: 'nextRunAt', label: '下次执行', width: 180,
+    render: ({ row }) => row.nextRunAt ? h(MfwDateFormat, { value: row.nextRunAt }) : '-',
+  },
+  {
+    prop: 'lastRunStatus', label: '状态', width: 80, align: 'center' as const,
+    render: ({ row }) => row.lastRunStatus
+      ? h(ElTag, { type: runStatusTagType[row.lastRunStatus] as any, size: 'small' }, () => runStatusLabel[row.lastRunStatus] || '-')
+      : h(ElTag, { type: 'info', size: 'small' }, () => '未执行'),
+  },
+]
+
+const actionColumn: ActionColumnConfig = {
+  label: '操作', width: 160, fixed: 'right' as const,
+  render: ({ row }) => renderActionButtons([
+    { label: '配置', type: 'primary', icon: Edit, onClick: handleEdit, permission: ['编辑'], testId: 'task-edit-btn' },
+    {
+      label: '执行', type: 'success', icon: VideoPlay, onClick: handleTrigger, permission: ['执行'], testId: 'task-trigger-btn',
+      visible: (row: any) => row.taskType === TaskTypeDict.CRON,
+    },
+  ], { maxVisible: 2 }, row),
+}
+
+const loadData = async (params: Record<string, unknown>) => {
+  const result = await new ApiSchedulerListTasks({
+    query: {
+      taskName: params.taskName as string,
+      taskType: params.taskType as number,
+    },
+  })
+  const list = Array.isArray(result) ? result : []
+  return { list, total: list.length }
+}
+
+const handleEdit = (row: any) => {
+  MfwPopup.open({
+    title: '配置任务',
+    type: 'dialog',
+    component: TaskConfigForm,
+    elProps: { ...row },
+    popupProps: { width: 600 },
+    on: { confirm: () => listPageRef.value?.refresh() },
+  })
+}
+
+const handleTrigger = (row: any) => {
+  MfwPopup.open({
+    title: `手动触发任务「${row.taskName}」`,
+    type: 'dialog',
+    component: TaskTriggerForm,
+    elProps: { taskCode: row.taskCode, taskName: row.taskName, taskType: row.taskType },
+    popupProps: { width: 500 },
+    on: { confirm: () => emit('triggered') },
+  })
+}
+
+/** 供父组件调用 */
+function refresh() {
+  listPageRef.value?.refresh()
+}
+defineExpose({ refresh })
+</script>

@@ -12,6 +12,8 @@ export interface ResultEntry {
   instanceId: string
   /** 任务编码 */
   taskCode: string
+  /** 任务名称 */
+  taskName?: string
   /** 执行状态 */
   status: number
   /** 执行结果 */
@@ -30,6 +32,8 @@ export interface ResultEntry {
   payload?: Record<string, any>
   /** 重试次数 */
   retryCount: number
+  /** 是否记录执行日志 */
+  enableLog?: boolean
 }
 
 @Injectable()
@@ -57,9 +61,11 @@ export class ResultBufferPool {
       finishedAt: extra?.finishedAt ?? new Date(),
       executor: extra?.executor,
       taskCode: extra?.taskCode ?? '',
+      taskName: extra?.taskName,
       entityId: extra?.entityId,
       payload: extra?.payload,
       retryCount: extra?.retryCount ?? 0,
+      enableLog: extra?.enableLog ?? true,
     })
     this.buckets.set(status, bucket)
   }

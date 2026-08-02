@@ -35,7 +35,8 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private readonly ARCHIVE_INTERVAL_MS: number
   private isDestroying = false
   private tickTimer: NodeJS.Timeout | null = null
-  private cronJobs: CronJob[] = []
+  private orphanCleanupTimer: NodeJS.Timeout | null = null
+  private cronJobs = new Map<string, CronJob>()
 
   constructor(
     private readonly preloader: TaskPreloaderService,
@@ -57,6 +58,8 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
 
   async onModuleInit(): Promise<void> {
     this.logger.log('调度引擎启动中...')
+    // 0. 将自身引用注入 ScheduledTaskService（解决双向依赖）
+    this.taskService.setEngine(this)
     // 1. 同步任务定义（upsert code-registered tasks）
     await this.syncFromCode()
     // 2. 清理孤儿记录（崩溃残留的 RUNNING）
@@ -72,7 +75,17 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     this.tickTimer = setInterval(() => this.tick(), this.TICK_INTERVAL_MS)
     // 7. 启动归档轮（每60s）
     this.archiveWheel.start(() => this.archiver.archive(), this.ARCHIVE_INTERVAL_MS)
-    // 8. 注册结果回调（远程派发 F2/F3 用；本地 F1 走快速路径）
+    // 8. 启动孤儿记录定期清理（每5分钟，清理崩溃残留的 RUNNING）
+    this.orphanCleanupTimer = setInterval(async () => {
+      if (this.isDestroying) return
+      try {
+        const orphans = await this.storage.cleanupOrphanRecords(600)
+        if (orphans > 0) this.logger.warn(`定期清理 ${orphans} 条孤儿记录（RUNNING 超时未归档）`)
+      } catch (err) {
+        this.logger.error(`孤儿记录清理失败: ${(err as Error).message}`)
+      }
+    }, 300_000)
+    // 9. 注册结果回调（远程派发 F2/F3 用；本地 F1 走快速路径）
     this.dispatcher.onResult((instanceId, result, error) => {
       const status = error ? TaskRunStatusDict.FAILED : TaskRunStatusDict.SUCCESS
       this.resultBuffer.push(instanceId, status, result, error)
@@ -130,20 +143,30 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
    */
   private async dispatchInstance(instance: any, handler: any): Promise<void> {
     const startedAt = new Date()
-    // 先创建日志
-    const log = await this.storage.createLog({
-      taskCode: instance.taskCode,
-      taskName: handler.taskName,
-      instanceId: instance.id,
-      status: TaskRunStatusDict.RUNNING,
-      triggerType: TaskTriggerTypeDict.AUTO,
-      startedAt,
-      executor: this.preloader['executorId'],
-    })
+    let logId: string | null = null
+
+    // 根据 enableLog 决定是否创建执行日志（高频任务可关闭以减少 DB 写入）
+    const enableLog = handler.enableLog ?? true
+    if (enableLog) {
+      try {
+        const log = await this.storage.createLog({
+          taskCode: instance.taskCode,
+          taskName: handler.taskName,
+          instanceId: instance.id,
+          status: TaskRunStatusDict.RUNNING,
+          triggerType: TaskTriggerTypeDict.AUTO,
+          startedAt,
+          executor: this.preloader['executorId'],
+        })
+        logId = log.id
+      } catch (err) {
+        this.logger.warn(`创建执行日志失败 instanceId=${instance.id}: ${(err as Error).message}，继续执行任务`)
+      }
+    }
 
     const ctx: TaskExecutionContext = {
       taskCode: instance.taskCode,
-      logId: log.id,
+      logId: logId ?? '',
       instanceId: instance.id,
       entityId: instance.entityId ?? undefined,
       payload: instance.payload ?? undefined,
@@ -165,12 +188,14 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         null,
         {
           taskCode: instance.taskCode,
+          taskName: handler.taskName,
           startedAt,
           finishedAt: new Date(),
           executor: this.preloader['executorId'],
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
+          enableLog,
         },
       )
     } catch (err) {
@@ -181,12 +206,14 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         err instanceof Error ? err : new Error(String(err)),
         {
           taskCode: instance.taskCode,
+          taskName: handler.taskName,
           startedAt,
           finishedAt: new Date(),
           executor: this.preloader['executorId'],
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
+          enableLog,
         },
       )
     }
@@ -198,6 +225,10 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private async syncFromCode(): Promise<void> {
     const handlers = this.registry.getAll()
     for (const handler of handlers) {
+      // syncFromCode 只同步代码声明的只读属性（taskName/taskType/调度配置/描述）
+      // 不传 admin 可编辑字段（enableLog/maxRetry/backoffStrategy/catchUpOnRestart），
+      // 这些字段仅在 INSERT 时由 upsertTaskDefinition 的 else 分支设默认值，
+      // UPDATE 时通过省略让 storage 的 ?? 保留 DB 中已有的值。
       await this.storage.upsertTaskDefinition({
         taskCode: handler.taskCode,
         taskName: handler.taskName,
@@ -205,7 +236,6 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         cronExpression: handler.defaultCron ?? null,
         intervalSeconds: handler.defaultIntervalSeconds ?? 0,
         timeoutSeconds: handler.defaultTimeoutSeconds ?? 300,
-        catchUpOnRestart: handler.catchUpOnRestart ?? false,
         description: handler.description ?? null,
       })
     }
@@ -246,22 +276,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         this.logger.warn(`CRON 任务 ${task.taskCode} 处理器未注册，跳过`)
         continue
       }
-      // cronExpression 或 intervalSeconds
-      let cronExpression = task.cronExpression
-      if (!cronExpression && task.intervalSeconds > 0) {
-        // 将间隔秒数转为 cron 表达式
-        const sec = task.intervalSeconds
-        if (sec < 60) {
-          // 低于60秒：秒级 cron
-          cronExpression = `*/${sec} * * * * *`
-        } else if (sec % 60 === 0) {
-          // 整分钟：分钟级 cron
-          cronExpression = `0 */${sec / 60} * * * *`
-        } else {
-          // 非整分钟：按秒级拆分（向下取整到分钟 + 秒偏移）
-          cronExpression = `*/${sec} * * * * *`
-        }
-      }
+      const cronExpression = this.buildCronExpression(task)
       if (!cronExpression) {
         this.logger.warn(`CRON 任务 ${task.taskCode} 无 cron 表达式且无间隔，跳过`)
         continue
@@ -274,13 +289,86 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           },
         )
         job.start()
-        this.cronJobs.push(job as any)
+        this.cronJobs.set(task.taskCode, job as any)
         // 更新 nextRunAt
         await this.storage.updateTaskRuntime(task.taskCode, { nextRunAt: job.nextDate()?.toJSDate() ?? null })
         this.logger.log(`启动 CRON 任务: ${task.taskCode} (${cronExpression})`)
       } catch (err) {
         this.logger.error(`启动 CRON 任务 ${task.taskCode} 失败: ${err instanceof Error ? err.message : String(err)}`)
       }
+    }
+  }
+
+  /**
+   * 构建 CRON 表达式
+   * @description 从任务定义的 cronExpression 或 intervalSeconds 生成 cron 表达式
+   */
+  private buildCronExpression(task: any): string | null {
+    let cronExpression = task.cronExpression
+    if (!cronExpression && task.intervalSeconds > 0) {
+      const sec = task.intervalSeconds
+      if (sec < 60) {
+        // 低于60秒：秒级 cron
+        cronExpression = `*/${sec} * * * * *`
+      } else if (sec % 60 === 0) {
+        // 整分钟：分钟级 cron
+        cronExpression = `0 */${sec / 60} * * * *`
+      } else {
+        // 非整分钟：按秒级拆分（向下取整到分钟 + 秒偏移）
+        cronExpression = `*/${sec} * * * * *`
+      }
+    }
+    return cronExpression ?? null
+  }
+
+  /**
+   * 热重载单个 CRON 任务
+   * @description 编辑任务定义后，停止旧 CronJob 并用新配置重启
+   */
+  async restartCronTask(taskCode: string): Promise<void> {
+    // 1. 停止旧 job
+    const oldJob = this.cronJobs.get(taskCode)
+    if (oldJob) {
+      oldJob.stop()
+      this.cronJobs.delete(taskCode)
+    }
+    // 2. 从 DB 重新读取任务定义
+    const task = await this.storage.getTaskDefinition(taskCode)
+    if (!task || task.taskType !== TaskTypeDict.CRON || !task.enabled) return
+    // 3. 用新配置创建 CronJob
+    const cronExpression = this.buildCronExpression(task)
+    if (!cronExpression) {
+      this.logger.warn(`热重载 CRON 任务 ${taskCode} 无 cron 表达式且无间隔，跳过`)
+      return
+    }
+    const handler = this.registry.get(taskCode)
+    if (!handler) {
+      this.logger.warn(`热重载 CRON 任务 ${taskCode} 处理器未注册，跳过`)
+      return
+    }
+    try {
+      const job = new CronJob(cronExpression, async () => {
+        await this.executeCronTask(taskCode, handler)
+      })
+      job.start()
+      this.cronJobs.set(taskCode, job as any)
+      await this.storage.updateTaskRuntime(taskCode, { nextRunAt: job.nextDate()?.toJSDate() ?? null })
+      this.logger.log(`热重载 CRON 任务: ${taskCode} (${cronExpression})`)
+    } catch (err) {
+      this.logger.error(`热重载 CRON 任务 ${taskCode} 失败: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  /**
+   * 停止单个 CRON 任务
+   * @description enabled=false 或任务被删除时调用
+   */
+  async stopCronTask(taskCode: string): Promise<void> {
+    const job = this.cronJobs.get(taskCode)
+    if (job) {
+      job.stop()
+      this.cronJobs.delete(taskCode)
+      this.logger.log(`停止 CRON 任务: ${taskCode}`)
     }
   }
 
@@ -293,19 +381,24 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     const startedAt = new Date()
     this.logger.debug(`执行 CRON 任务: ${taskCode}`)
 
-    // 先创建日志
-    const log = await this.storage.createLog({
-      taskCode,
-      taskName: handler.taskName,
-      status: TaskRunStatusDict.RUNNING,
-      triggerType: TaskTriggerTypeDict.AUTO,
-      startedAt,
-      executor: this.preloader['executorId'],
-    })
+    // 根据 enableLog 决定是否创建执行日志
+    const enableLog = handler.enableLog ?? true
+    let logId: string | null = null
+    if (enableLog) {
+      const log = await this.storage.createLog({
+        taskCode,
+        taskName: handler.taskName,
+        status: TaskRunStatusDict.RUNNING,
+        triggerType: TaskTriggerTypeDict.AUTO,
+        startedAt,
+        executor: this.preloader['executorId'],
+      })
+      logId = log.id
+    }
 
     const ctx: TaskExecutionContext = {
       taskCode,
-      logId: log.id,
+      logId: logId ?? '',
       triggeredAt: startedAt,
       triggerType: TaskTriggerTypeDict.AUTO,
       logger: this.logger,
@@ -315,12 +408,14 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
 
     try {
       const result = await this.taskPool.submit(handler, ctx)
-      // 更新日志
-      await this.storage.updateLogStatus(log.id, TaskRunStatusDict.SUCCESS, {
-        finishedAt: new Date(),
-        durationMs: Date.now() - startedAt.getTime(),
-        result: result ?? null,
-      })
+      // 更新日志（仅在开启日志时）
+      if (logId) {
+        await this.storage.updateLogStatus(logId, TaskRunStatusDict.SUCCESS, {
+          finishedAt: new Date(),
+          durationMs: Date.now() - startedAt.getTime(),
+          result: result ?? null,
+        })
+      }
       // 更新任务运行时状态
       await this.storage.updateTaskRuntime(taskCode, {
         lastRunAt: startedAt,
@@ -329,12 +424,14 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       })
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err))
-      await this.storage.updateLogStatus(log.id, TaskRunStatusDict.FAILED, {
-        finishedAt: new Date(),
-        durationMs: Date.now() - startedAt.getTime(),
-        errorMessage: error.message,
-        errorStack: error.stack ?? null,
-      })
+      if (logId) {
+        await this.storage.updateLogStatus(logId, TaskRunStatusDict.FAILED, {
+          finishedAt: new Date(),
+          durationMs: Date.now() - startedAt.getTime(),
+          errorMessage: error.message,
+          errorStack: error.stack ?? null,
+        })
+      }
       await this.storage.updateTaskRuntime(taskCode, {
         lastRunAt: startedAt,
         lastRunStatus: TaskRunStatusDict.FAILED,
@@ -347,8 +444,8 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('调度引擎停止中...')
     this.isDestroying = true
     // 停止 CRON 任务
-    for (const job of this.cronJobs) job.stop()
-    this.cronJobs = []
+    for (const job of this.cronJobs.values()) job.stop()
+    this.cronJobs.clear()
     // 停止 tick
     if (this.tickTimer) {
       clearInterval(this.tickTimer)
@@ -356,6 +453,11 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     }
     // 停止归档轮
     this.archiveWheel.stop()
+    // 停止孤儿清理定时器
+    if (this.orphanCleanupTimer) {
+      clearInterval(this.orphanCleanupTimer)
+      this.orphanCleanupTimer = null
+    }
     // 停止预加载
     this.preloader.onModuleDestroy()
     // 优雅停机：flush I 残留缓冲强制落库

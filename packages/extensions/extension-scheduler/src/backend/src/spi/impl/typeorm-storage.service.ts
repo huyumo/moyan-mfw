@@ -37,6 +37,8 @@ export class TypeOrmStorage implements ITaskStorage {
   async upsertTaskDefinition(task: Partial<ScheduledTaskDefinition>): Promise<void> {
     const existing = await this.taskRepo.findOne({ where: { taskCode: task.taskCode } })
     if (existing) {
+      // UPDATE：仅同步代码声明的只读属性，不覆盖 admin 可编辑字段
+      // （enableLog/maxRetry/backoffStrategy/catchUpOnRestart 仅在 INSERT 时设默认值）
       await this.taskRepo.update(existing.id, {
         taskName: task.taskName ?? existing.taskName,
         taskType: task.taskType ?? existing.taskType,
@@ -44,9 +46,9 @@ export class TypeOrmStorage implements ITaskStorage {
         intervalSeconds: task.intervalSeconds ?? existing.intervalSeconds,
         timeoutSeconds: task.timeoutSeconds ?? existing.timeoutSeconds,
         description: task.description ?? existing.description,
-        catchUpOnRestart: task.catchUpOnRestart ?? existing.catchUpOnRestart,
       })
     } else {
+      // INSERT：设置所有默认值
       await this.taskRepo.insert({
         taskCode: task.taskCode!,
         taskName: task.taskName!,
@@ -57,6 +59,9 @@ export class TypeOrmStorage implements ITaskStorage {
         timeoutSeconds: task.timeoutSeconds ?? 300,
         description: task.description ?? null,
         catchUpOnRestart: task.catchUpOnRestart ?? false,
+        maxRetry: task.maxRetry ?? 3,
+        backoffStrategy: task.backoffStrategy ?? null,
+        enableLog: task.enableLog ?? true,
       })
     }
   }
@@ -65,8 +70,16 @@ export class TypeOrmStorage implements ITaskStorage {
     return this.taskRepo.findOne({ where: { taskCode } })
   }
 
-  async listTaskDefinitions(): Promise<ScheduledTaskDefinition[]> {
-    return this.taskRepo.find({ order: { createdAt: 'ASC' } })
+  async listTaskDefinitions(filters?: { taskName?: string; taskType?: number }): Promise<ScheduledTaskDefinition[]> {
+    const qb = this.taskRepo.createQueryBuilder('task')
+    if (filters?.taskName) {
+      qb.andWhere('task.taskName LIKE :name', { name: `%${filters.taskName}%` })
+    }
+    if (filters?.taskType !== undefined && filters?.taskType !== null) {
+      qb.andWhere('task.taskType = :type', { type: filters.taskType })
+    }
+    qb.orderBy('task.createdAt', 'ASC')
+    return qb.getMany()
   }
 
   async updateTaskRuntime(taskCode: string, fields: Partial<RuntimeFields>): Promise<void> {

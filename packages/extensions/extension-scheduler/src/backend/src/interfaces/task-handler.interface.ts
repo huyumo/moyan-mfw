@@ -124,6 +124,11 @@ export interface ScheduledTaskHandler {
   /** 退避策略（默认使用全局配置的指数退避） */
   readonly backoffStrategy?: BackoffStrategy
 
+  // ── 日志配置 ──
+
+  /** 是否记录执行日志（默认 true。高频任务可设为 false 减少日志写入） */
+  readonly enableLog?: boolean
+
   /** 执行任务 */
   execute(ctx: TaskExecutionContext): Promise<TaskExecutionResult | void>
 }
