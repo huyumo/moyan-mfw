@@ -59,18 +59,18 @@ const columns: TableColumnConfig[] = [
   { prop: 'id', label: '实例ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
   { prop: 'taskName', label: '任务名称', minWidth: 200 },
   { prop: 'taskCode', label: '任务编码', minWidth: 180, render: ({ row }) => renderCopyableText(row.taskCode) },
-  {
-    prop: 'taskType', label: '任务类型', width: 90, align: 'center' as const,
-    render: ({ row }) => row.taskType
-      ? h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-')
-      : '-',
-  },
-  {
-    prop: 'triggerType', label: '触发方式', width: 80, align: 'center' as const,
-    render: ({ row }) => row.triggerType
-      ? h(ElTag, { type: row.triggerType === 2 ? 'primary' : 'info', size: 'small' }, () => triggerTypeLabel[row.triggerType] || '-')
-      : '-',
-  },
+  // {
+  //   prop: 'taskType', label: '任务类型', width: 90, align: 'center' as const,
+  //   render: ({ row }) => row.taskType
+  //     ? h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-')
+  //     : '-',
+  // },
+  // {
+  //   prop: 'triggerType', label: '触发方式', width: 80, align: 'center' as const,
+  //   render: ({ row }) => row.triggerType
+  //     ? h(ElTag, { type: row.triggerType === 2 ? 'primary' : 'info', size: 'small' }, () => triggerTypeLabel[row.triggerType] || '-')
+  //     : '-',
+  // },
   {
     prop: 'delayInfo', label: '执行方式', width: 90, align: 'center' as const,
     render: ({ row }) => {

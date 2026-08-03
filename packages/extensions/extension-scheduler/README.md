@@ -231,12 +231,10 @@ export class OrderService {
 ### 手动触发任务
 
 ```typescript
-// 立即创建一个 PENDING 实例（executeAt = now）
-const instance = await this.schedulerService.triggerTask('payment.callback', {
-  orderId: 'ORD123',
-  amount: 99.9,
-})
+await this.schedulerService.triggerTask('payment.callback')
 ```
+
+> 手动触发仅支持 Cron 类型任务（任务定义页「执行」按钮）。延迟任务通过 `createDelayInstance` 创建实例（delaySeconds=0 为立即执行），由业务方在代码中调用。
 
 ### ScheduledTaskService 完整方法
 
@@ -245,7 +243,7 @@ const instance = await this.schedulerService.triggerTask('payment.callback', {
 | `listTasks()` | 查询所有任务定义 |
 | `getTaskDetail(taskCode)` | 查询单个任务定义 |
 | `updateTask(taskCode, fields)` | 更新任务运行时配置 |
-| `triggerTask(taskCode)` | 手动触发任务（不创建实例，立即执行，结果见执行日志） |
+| `triggerTask(taskCode)` | 手动触发任务（创建立即执行实例，走完整实例管线） |
 | `createDelayInstance(taskCode, executeAt, entityId?, payload?)` | 创建延迟任务实例 |
 | `cancelInstance(id)` | 取消待执行的延迟实例 |
 | `getInstance(id)` | 查询实例详情 |
@@ -428,10 +426,11 @@ SchedulerModule.forRoot({
 | GET | `/tasks` | 查询任务定义列表 | 无（登录即可） |
 | GET | `/tasks/:taskCode` | 查询任务定义详情 | 无 |
 | PUT | `/tasks/:taskCode` | 更新任务配置 | `编辑` |
-| POST | `/tasks/:taskCode/trigger` | 手动触发任务 | `执行` |
+| POST | `/tasks/:taskCode/trigger` | 手动触发任务（创建立即执行实例） | `执行` |
+| POST | `/instances` | 创建延迟任务实例（delaySeconds=0 立即执行） | `执行` |
 | GET | `/instances` | 分页查询延迟实例 | 无 |
 | POST | `/instances/:id/cancel` | 取消延迟实例 | `编辑` |
-| GET | `/logs` | 分页查询执行日志 | 无 |
+| GET | `/logs` | 分页查询执行日志（支持 instanceId 筛选） | 无 |
 | GET | `/logs/:id` | 查询日志详情 | 无 |
 
 ### API 示例
@@ -441,14 +440,17 @@ SchedulerModule.forRoot({
 curl http://localhost:3000/api/ext/scheduler/tasks \
   -H "Authorization: Bearer <token>"
 
-# 手动触发任务
+# 手动触发任务（创建立即执行实例）
 curl -X POST http://localhost:3000/api/ext/scheduler/tasks/demo.cron.hello/trigger \
-  -H "Authorization: Bearer <token>" \
-  -H "Content-Type: application/json" \
-  -d '{"payload":{"key":"value"}}'
+  -H "Authorization: Bearer <token>"
 
-# 查询执行日志
-curl "http://localhost:3000/api/ext/scheduler/logs?taskCode=payment.callback&page=1&pageSize=10" \
+# 创建延迟任务实例（delaySeconds=0 立即执行，失败走重试）
+curl -X POST http://localhost:3000/api/ext/scheduler/instances \
+  -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+  -d '{"taskCode":"order.auto.cancel","delaySeconds":300,"entityId":"ORD123","payload":{"amount":99.9}}'
+
+# 查询执行日志（按实例ID筛选）
+curl "http://localhost:3000/api/ext/scheduler/logs?taskCode=payment.callback&instanceId=<instanceId>&page=1&pageSize=10" \
   -H "Authorization: Bearer <token>"
 
 # 取消延迟实例
@@ -467,8 +469,8 @@ curl -X POST http://localhost:3000/api/ext/scheduler/instances/<instanceId>/canc
 | Tab | 内容 | 操作 |
 |-----|------|------|
 | 任务定义 | 任务定义列表（名称/编码/类型/调度方式/启用/上次/下次/状态） | 配置(编辑)、手动执行 |
-| 延迟实例 | 延迟任务实例列表（编码/实体ID/应执行时间/状态/重试次数） | 取消 |
-| 执行日志 | 派发日志列表（名称/触发方式/状态/开始时间/耗时/错误） | 查看详情 |
+| 延迟实例 | 延迟实例列表（实例ID/任务类型/触发方式/执行方式/实体ID/应执行时间/状态/重试） | 取消、详情 |
+| 执行日志 | 派发日志列表（日志ID/实例ID/触发方式/状态/开始时间/耗时/错误） | 查看详情 |
 
 ### 前端 API 调用类
 
@@ -489,7 +491,7 @@ import {
 // 查询任务定义
 const result = await new ApiSchedulerListTasks({})
 
-// 手动触发任务
+// 手动触发任务（创建立即执行实例）
 await new ApiSchedulerTriggerTask({ params: { taskCode: 'demo.cron.hello' } })
 
 // 查询日志
@@ -665,12 +667,17 @@ SchedulerModule.forRoot({
 | timeoutSeconds | INT | 超时秒数 |
 | description | TEXT | 任务描述 |
 | catchUpOnRestart | BOOLEAN | 重启补偿 |
+| maxRetry | INT | 最大重试次数（延迟任务失败重试用） |
+| backoffStrategy | TEXT | 退避策略 JSON |
+| enableLog | BOOLEAN | 是否记录执行日志（高频任务可关闭） |
 | lastRunAt | DATETIME | 上次执行时间 |
 | nextRunAt | DATETIME | 下次执行时间 |
 | lastRunStatus | TINYINT | 上次执行状态 |
 | lastErrorMessage | TEXT | 上次错误信息 |
 
 ### ext_scheduler_task_instance（延迟任务实例）
+
+> 手动触发任务会创建立即执行的实例（executeAt = now，触发方式 = 手动），与延迟任务共用实例管线。
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
@@ -680,6 +687,7 @@ SchedulerModule.forRoot({
 | payload | JSON | 业务数据 |
 | executeAt | DATETIME | 应执行时间 |
 | status | TINYINT | 实例状态 |
+| triggerType | TINYINT | 触发方式（1=自动 2=手动） |
 | startedAt | DATETIME | 开始执行时间 |
 | finishedAt | DATETIME | 完成时间 |
 | retryCount | INT | 重试次数 |
@@ -795,7 +803,7 @@ SchedulerModule.forRoot({
 
 | 权限标签 | 说明 |
 |---------|------|
-| `执行` | 手动触发任务（扩展包自定义） |
+| `执行` | 手动触发任务 / 创建延迟实例（扩展包自定义） |
 | `查看` | 查看任务/实例/日志（框架内置） |
 | `编辑` | 编辑任务配置/取消实例（框架内置） |
 | `删除` | 删除任务（框架内置） |
