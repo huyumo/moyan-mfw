@@ -6,13 +6,8 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 import { IsNotEmpty, IsOptional, IsString, IsInt, IsBoolean, Min, IsObject } from 'class-validator'
 import { PaginationQueryDto } from 'moyan-mfw-base/backend'
 
-/** 更新任务定义 DTO */
+/** 更新任务定义 DTO（taskName/taskType/taskCode 由代码注册定义，不可修改） */
 export class UpdateTaskDto {
-  @ApiPropertyOptional({ description: '任务名称' })
-  @IsOptional()
-  @IsString()
-  taskName?: string
-
   @ApiPropertyOptional({ description: 'Cron表达式（6段秒级，仅CRON类型）' })
   @IsOptional()
   @IsString()

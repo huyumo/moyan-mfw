@@ -75,6 +75,8 @@ export class ScheduledTaskService implements OnModuleInit {
       fields.backoffStrategy = JSON.stringify(dto.backoffStrategy)
     }
     await this.storage.updateTaskRuntime(taskCode, fields)
+    // 清除引擎侧任务配置缓存（如 enableLog），保证编辑后立即生效
+    if (this.engine) this.engine.invalidateTaskConfig(taskCode)
     // 热重载：如果修改了调度相关字段，重启对应 CronJob
     const scheduleFields = ['cronExpression', 'intervalSeconds', 'enabled', 'timeoutSeconds']
     if (scheduleFields.some((f) => f in dto)) {

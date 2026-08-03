@@ -70,7 +70,6 @@ export interface PageResponse<T> {
 
 /** 更新任务定义参数 */
 export interface UpdateTaskParams {
-  taskName?: string
   cronExpression?: string
   intervalSeconds?: number
   enabled?: boolean

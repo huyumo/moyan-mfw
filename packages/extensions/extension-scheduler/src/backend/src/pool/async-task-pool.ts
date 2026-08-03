@@ -54,26 +54,28 @@ export class AsyncTaskPool {
    * 提交任务执行
    * @description 根据超时阈值选择长短池，acquire 信号量后执行
    * 超时通过 AbortSignal.timeout 实现
+   * @param timeoutSeconds 超时秒数（DB/前端可配置，优先于 handler 默认值）
    */
   async submit(
     handler: ScheduledTaskHandler,
     ctx: TaskExecutionContext,
+    timeoutSeconds?: number,
   ): Promise<TaskExecutionResult | void> {
-    const timeoutSeconds = handler.defaultTimeoutSeconds ?? 300
-    const pool = timeoutSeconds * 1000 > this.LONG_THRESHOLD_MS
+    const timeout = timeoutSeconds ?? handler.defaultTimeoutSeconds ?? 300
+    const pool = timeout * 1000 > this.LONG_THRESHOLD_MS
       ? this.longPool
       : this.shortPool
 
     await pool.acquire()
     try {
       // 构造带超时的上下文
-      const signal = AbortSignal.timeout(timeoutSeconds * 1000)
+      const signal = AbortSignal.timeout(timeout * 1000)
       const ctxWithSignal: TaskExecutionContext = { ...ctx, signal }
 
       // Promise.race 实现超时控制
       return await Promise.race([
         handler.execute(ctxWithSignal),
-        this.createTimeout(timeoutSeconds),
+        this.createTimeout(timeout),
       ])
     } finally {
       pool.release()

@@ -80,8 +80,8 @@ const formTemplate = computed<FormItemConfig[]>(() => {
   const items: FormItemConfig[] = [
     {
       key: 'taskName', label: '任务名称', component: 'el-input',
-      rules: [{ required: true, message: '请输入任务名称', trigger: 'blur' }],
-      elProps: { placeholder: '请输入任务名称', clearable: true },
+      elProps: { disabled: true },
+      afterText: '任务名称由代码注册定义，不可修改',
     },
   ]
 
@@ -153,7 +153,6 @@ const onConfirm = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) throw new Error('表单验证失败')
   const body: any = {
-    taskName: form.taskName,
     timeoutSeconds: form.timeoutSeconds,
     enabled: form.enabled,
     enableLog: form.enableLog,

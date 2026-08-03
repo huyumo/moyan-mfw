@@ -28,6 +28,13 @@ import {
   TaskInstanceStatusDict,
 } from 'moyan-mfw-extension-scheduler/shared'
 
+/** 任务运行时配置（DB 前端可编辑字段，执行时解析） */
+interface TaskRuntimeConfig {
+  enableLog: boolean
+  timeoutSeconds: number
+  maxRetry: number
+}
+
 @Injectable()
 export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SchedulerEngineService.name)
@@ -37,6 +44,9 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private tickTimer: NodeJS.Timeout | null = null
   private orphanCleanupTimer: NodeJS.Timeout | null = null
   private cronJobs = new Map<string, CronJob>()
+  /** 运行时配置缓存（TTL，避免高频任务每次查 DB） */
+  private readonly taskConfigCache = new Map<string, { config: TaskRuntimeConfig; expireAt: number }>()
+  private readonly TASK_CONFIG_CACHE_TTL_MS = 5_000
 
   constructor(
     private readonly preloader: TaskPreloaderService,
@@ -139,15 +149,51 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private due: ScheduledTaskInstance[] = []
 
   /**
+   * 解析任务运行时配置
+   * @description 优先读取 DB 中前端可编辑的 enableLog/timeoutSeconds/maxRetry（TTL 缓存），回退到 handler 默认值
+   */
+  private async resolveTaskConfig(taskCode: string, handler: any): Promise<TaskRuntimeConfig> {
+    const now = Date.now()
+    const cached = this.taskConfigCache.get(taskCode)
+    if (cached && cached.expireAt > now) return cached.config
+    let config: TaskRuntimeConfig = {
+      enableLog: handler.enableLog ?? true,
+      timeoutSeconds: handler.defaultTimeoutSeconds ?? 300,
+      maxRetry: handler.maxRetry ?? (this as any).options?.maxRetry ?? 3,
+    }
+    try {
+      const task = await this.storage.getTaskDefinition(taskCode)
+      if (task) {
+        if (task.enableLog !== undefined && task.enableLog !== null) config.enableLog = task.enableLog
+        if (task.timeoutSeconds !== undefined && task.timeoutSeconds !== null) config.timeoutSeconds = task.timeoutSeconds
+        if (task.maxRetry !== undefined && task.maxRetry !== null) config.maxRetry = task.maxRetry
+      }
+    } catch {
+      // 查询失败回退 handler 默认值
+    }
+    this.taskConfigCache.set(taskCode, { config, expireAt: now + this.TASK_CONFIG_CACHE_TTL_MS })
+    return config
+  }
+
+  /**
+   * 清除任务运行时配置缓存（任务编辑后调用，保证立即生效）
+   */
+  invalidateTaskConfig(taskCode: string): void {
+    this.taskConfigCache.delete(taskCode)
+  }
+
+  /**
    * 派发任务实例执行
    */
   private async dispatchInstance(instance: any, handler: any): Promise<void> {
     const startedAt = new Date()
     let logId: string | null = null
 
+    // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
+    const config = await this.resolveTaskConfig(instance.taskCode, handler)
+
     // 根据 enableLog 决定是否创建执行日志（高频任务可关闭以减少 DB 写入）
-    const enableLog = handler.enableLog ?? true
-    if (enableLog) {
+    if (config.enableLog) {
       try {
         const log = await this.storage.createLog({
           taskCode: instance.taskCode,
@@ -174,12 +220,12 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       triggerType: TaskTriggerTypeDict.AUTO,
       logger: this.logger,
       retryCount: instance.retryCount ?? 0,
-      maxRetry: handler.maxRetry ?? (this as any).options?.maxRetry ?? 3,
+      maxRetry: config.maxRetry,
     }
 
     try {
       // F1 快速路径：dispatcher 内部调 taskPool.submit 或直接调 handler
-      const result = await this.taskPool.submit(handler, ctx)
+      const result = await this.taskPool.submit(handler, ctx, config.timeoutSeconds)
       // 结果直写 I（绕过事件层，零开销）
       this.resultBuffer.push(
         instance.id,
@@ -195,7 +241,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
-          enableLog,
+          enableLog: config.enableLog,
         },
       )
     } catch (err) {
@@ -213,7 +259,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
-          enableLog,
+          enableLog: config.enableLog,
         },
       )
     }
@@ -381,10 +427,12 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     const startedAt = new Date()
     this.logger.debug(`执行 CRON 任务: ${taskCode}`)
 
+    // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
+    const config = await this.resolveTaskConfig(taskCode, handler)
+
     // 根据 enableLog 决定是否创建执行日志
-    const enableLog = handler.enableLog ?? true
     let logId: string | null = null
-    if (enableLog) {
+    if (config.enableLog) {
       const log = await this.storage.createLog({
         taskCode,
         taskName: handler.taskName,
@@ -403,11 +451,11 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       triggerType: TaskTriggerTypeDict.AUTO,
       logger: this.logger,
       retryCount: 0,
-      maxRetry: handler.maxRetry ?? (this as any).options?.maxRetry ?? 3,
+      maxRetry: config.maxRetry,
     }
 
     try {
-      const result = await this.taskPool.submit(handler, ctx)
+      const result = await this.taskPool.submit(handler, ctx, config.timeoutSeconds)
       // 更新日志（仅在开启日志时）
       if (logId) {
         await this.storage.updateLogStatus(logId, TaskRunStatusDict.SUCCESS, {
