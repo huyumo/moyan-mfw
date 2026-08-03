@@ -17,11 +17,11 @@
         </div>
         <div class="info-row">
           <span class="info-label">任务编码</span>
-          <span class="info-value mono copyable" @click="copyText(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row full">
           <span class="info-label">实例ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.instanceId)">{{ detail.instanceId || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.instanceId)">{{ detail.instanceId || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row">
           <span class="info-label">执行状态</span>
@@ -35,7 +35,7 @@
         </div>
         <div class="info-row">
           <span class="info-label">执行实例</span>
-          <span class="info-value copyable" @click="copyText(detail.instanceId)" >{{ detail.executor || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value copyable" @click="copyToClipboard(detail.instanceId)" >{{ detail.executor || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row">
           <span class="info-label">耗时</span>
@@ -58,7 +58,7 @@
       <div class="info-grid">
         <div class="info-row full" v-if="detail.instanceData?.entityId">
           <span class="info-label">业务实体ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.instanceData.entityId)">
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.instanceData.entityId)">
             {{ detail.instanceData.entityId }}
             <el-icon class="copy-icon"><CopyDocument /></el-icon>
           </span>
@@ -74,7 +74,7 @@
     <section class="detail-section" v-if="detail.instanceData?.payload">
       <h4 class="section-title">
         调用参数
-        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.instanceData.payload))"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.instanceData.payload))"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block">{{ formatJson(detail.instanceData.payload) }}</pre>
     </section>
@@ -83,7 +83,7 @@
     <section class="detail-section" v-if="detail.result">
       <h4 class="section-title">
         执行结果
-        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.result))"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.result))"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block">{{ formatJson(detail.result) }}</pre>
     </section>
@@ -92,7 +92,7 @@
     <section class="detail-section" v-if="detail.errorMessage">
       <h4 class="section-title">
         错误信息
-        <el-icon class="copy-icon title-copy" @click="copyText(detail.errorMessage)"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorMessage)"><CopyDocument /></el-icon>
       </h4>
       <div class="error-message">{{ detail.errorMessage }}</div>
     </section>
@@ -101,7 +101,7 @@
     <section class="detail-section" v-if="detail.errorStack">
       <h4 class="section-title">
         错误堆栈
-        <el-icon class="copy-icon title-copy" @click="copyText(detail.errorStack)"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorStack)"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block error-stack">{{ detail.errorStack }}</pre>
     </section>
@@ -110,12 +110,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import {
   TaskRunStatusDict,
   TaskTriggerTypeDict,
 } from 'moyan-mfw-extension-scheduler/shared'
+import { copyToClipboard, formatDate, formatJson } from './shared'
 
 const props = defineProps<{
   detail: Record<string, any>
@@ -123,15 +123,6 @@ const props = defineProps<{
 defineOptions({ name: 'MfwTaskLogDetail' })
 
 const detail = computed(() => props.detail || {})
-
-function copyText(text: string | null | undefined): void {
-  if (!text) return
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success(`已复制: ${text.length > 30 ? text.substring(0, 30) + '...' : text}`)
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
-}
 
 const statusTagType = computed(() => {
   const map: Record<number, string> = {
@@ -162,20 +153,6 @@ const triggerTypeLabel = computed(() => {
   }
   return map[detail.value.triggerType] || '-'
 })
-
-function formatDate(val: any): string {
-  if (!val) return '-'
-  const d = new Date(val)
-  return isNaN(d.getTime()) ? '-' : d.toLocaleString('zh-CN')
-}
-
-function formatJson(obj: Record<string, any>): string {
-  try {
-    return JSON.stringify(obj, null, 2)
-  } catch {
-    return String(obj)
-  }
-}
 </script>
 
 <style scoped lang="scss">

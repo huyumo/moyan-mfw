@@ -1,5 +1,5 @@
-export const META_KEY = Symbol('dict:meta')
-export const ITEMS_KEY = Symbol('dict:items')
+export const META_KEY = Symbol.for('dict:meta')
+export const ITEMS_KEY = Symbol.for('dict:items')
 
 export interface DictItem {
   value: string | number

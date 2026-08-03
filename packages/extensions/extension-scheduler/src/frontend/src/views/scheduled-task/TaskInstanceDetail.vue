@@ -13,7 +13,7 @@
       <div class="info-grid">
         <div class="info-row full">
           <span class="info-label">实例ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.id)">{{ detail.id }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.id)">{{ detail.id }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row">
           <span class="info-label">任务名称</span>
@@ -21,11 +21,11 @@
         </div>
         <div class="info-row">
           <span class="info-label">任务编码</span>
-          <span class="info-value mono copyable" @click="copyText(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row full">
           <span class="info-label">实体ID</span>
-          <span class="info-value mono copyable" @click="copyText(detail.entityId)">{{ detail.entityId || '-' }}<el-icon v-if="detail.entityId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.entityId)">{{ detail.entityId || '-' }}<el-icon v-if="detail.entityId" class="copy-icon"><CopyDocument /></el-icon></span>
         </div>
         <div class="info-row">
           <span class="info-label">状态</span>
@@ -51,7 +51,7 @@
         </div>
         <div class="info-row" v-if="detail.executor">
           <span class="info-label">执行实例</span>
-          <span class="info-value copyable" @click="copyText(detail.executor)" >
+          <span class="info-value copyable" @click="copyToClipboard(detail.executor)" >
             {{ detail.executor || '-' }}
             <el-icon  class="copy-icon"><CopyDocument /></el-icon>
           </span>
@@ -63,7 +63,7 @@
     <section class="detail-section" v-if="detail.payload">
       <h4 class="section-title">
         业务数据
-        <el-icon class="copy-icon title-copy" @click="copyText(formatJson(detail.payload))"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.payload))"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block">{{ formatJson(detail.payload) }}</pre>
     </section>
@@ -72,7 +72,7 @@
     <section class="detail-section" v-if="detail.errorMessage">
       <h4 class="section-title">
         错误信息
-        <el-icon class="copy-icon title-copy" @click="copyText(detail.errorMessage)"><CopyDocument /></el-icon>
+        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorMessage)"><CopyDocument /></el-icon>
       </h4>
       <div class="error-message">{{ detail.errorMessage }}</div>
     </section>
@@ -81,9 +81,9 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
+import { copyToClipboard, formatDate, formatJson } from './shared'
 
 const props = defineProps<{
   detail: Record<string, any>
@@ -91,15 +91,6 @@ const props = defineProps<{
 defineOptions({ name: 'MfwTaskInstanceDetail' })
 
 const detail = computed(() => props.detail || {})
-
-function copyText(text: string | null | undefined): void {
-  if (!text) return
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success(`已复制: ${text.length > 30 ? text.substring(0, 30) + '...' : text}`)
-  }).catch(() => {
-    ElMessage.error('复制失败')
-  })
-}
 
 const statusTagType = computed(() => {
   const map: Record<number, string> = {
@@ -126,20 +117,6 @@ const statusLabel = computed(() => {
   }
   return map[detail.value.status] || '-'
 })
-
-function formatDate(val: any): string {
-  if (!val) return '-'
-  const d = new Date(val)
-  return isNaN(d.getTime()) ? '-' : d.toLocaleString('zh-CN')
-}
-
-function formatJson(obj: Record<string, any>): string {
-  try {
-    return JSON.stringify(obj, null, 2)
-  } catch {
-    return String(obj)
-  }
-}
 </script>
 
 <style scoped lang="scss">

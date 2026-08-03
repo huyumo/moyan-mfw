@@ -4,7 +4,7 @@
  */
 
 import { h } from 'vue'
-import { ElIcon, ElMessage, ElTag } from 'element-plus'
+import { ElIcon, ElMessage } from 'element-plus'
 import { CopyDocument } from '@element-plus/icons-vue'
 import {
   TaskTypeDict,
@@ -74,13 +74,37 @@ export const triggerTypeLabel: Record<number, string> = {
 
 // ── 工具函数 ──
 
-/** 复制文本到剪贴板 */
+/** 复制文本到剪贴板（兼容非 HTTPS 环境） */
 export function copyToClipboard(text: string): void {
-  navigator.clipboard.writeText(text).then(() => {
-    ElMessage.success(`已复制: ${text.length > 30 ? text.substring(0, 30) + '...' : text}`)
-  }).catch(() => {
+  const label = text.length > 30 ? text.substring(0, 30) + '...' : text
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      ElMessage.success(`已复制: ${label}`)
+    }).catch(() => {
+      fallbackCopy(text, label)
+    })
+  } else {
+    fallbackCopy(text, label)
+  }
+}
+
+function fallbackCopy(text: string, label: string): void {
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  try {
+    // 降级方案：非 HTTPS 环境下 navigator.clipboard 不可用
+    // execCommand 虽已弃用，但在无 Clipboard API 的环境下仍为唯一可用手段
+    document.execCommand('copy')
+    ElMessage.success(`已复制: ${label}`)
+  } catch {
     ElMessage.error('复制失败')
-  })
+  }
+  document.body.removeChild(textarea)
 }
 
 /** 渲染可复制文本（值 + 复制图标），不换行不裁剪 */
