@@ -107,7 +107,6 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           icon: "Clock",
           permCode: "ext:scheduler:task",
           permissions: ["编辑", "执行"],
-          showMode: "DEV",
           component: MfwScheduledTaskPage,
         },
       ],

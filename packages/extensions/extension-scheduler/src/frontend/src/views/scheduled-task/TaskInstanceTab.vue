@@ -32,6 +32,8 @@ import TaskInstanceDetail from './TaskInstanceDetail.vue'
 import { ApiSchedulerListInstances, ApiSchedulerCancelInstance } from '../../apis/scheduler'
 import {
   instanceStatusTagType, instanceStatusLabel,
+  taskTypeTagType, taskTypeLabel,
+  triggerTypeLabel,
   renderCopyableText,
 } from './shared'
 
@@ -55,11 +57,34 @@ const searchTemplate = [
 
 const columns: TableColumnConfig[] = [
   { prop: 'id', label: '实例ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
-  { prop: 'taskName', label: '任务名称', minWidth: 220 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 200, render: ({ row }) => renderCopyableText(row.taskCode) },
-  { prop: 'entityId', label: '实体ID', minWidth: 200, render: ({ row }) => renderCopyableText(row.entityId) },
+  { prop: 'taskName', label: '任务名称', minWidth: 200 },
+  { prop: 'taskCode', label: '任务编码', minWidth: 180, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
-    prop: 'executeAt', label: '应执行时间', width: 180,
+    prop: 'taskType', label: '任务类型', width: 90, align: 'center' as const,
+    render: ({ row }) => row.taskType
+      ? h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-')
+      : '-',
+  },
+  {
+    prop: 'triggerType', label: '触发方式', width: 80, align: 'center' as const,
+    render: ({ row }) => row.triggerType
+      ? h(ElTag, { type: row.triggerType === 2 ? 'primary' : 'info', size: 'small' }, () => triggerTypeLabel[row.triggerType] || '-')
+      : '-',
+  },
+  {
+    prop: 'delayInfo', label: '执行方式', width: 90, align: 'center' as const,
+    render: ({ row }) => {
+      if (!row.createdAt || !row.executeAt) return '-'
+      const delayMs = new Date(row.executeAt).getTime() - new Date(row.createdAt).getTime()
+      if (delayMs <= 2000) return h(ElTag, { type: 'success', size: 'small' }, () => '立即')
+      const sec = Math.round(delayMs / 1000)
+      const text = sec < 60 ? `${sec}秒后` : sec < 3600 ? `${Math.round(sec / 60)}分钟后` : `${(sec / 3600).toFixed(1)}小时后`
+      return h(ElTag, { type: 'warning', size: 'small' }, () => text)
+    },
+  },
+  { prop: 'entityId', label: '实体ID', minWidth: 160, render: ({ row }) => renderCopyableText(row.entityId) },
+  {
+    prop: 'executeAt', label: '应执行时间', width: 170,
     render: ({ row }) => h(MfwDateFormat, { value: row.executeAt }),
   },
   {
@@ -68,11 +93,11 @@ const columns: TableColumnConfig[] = [
   },
   { prop: 'retryCount', label: '重试', width: 60, align: 'center' as const },
   {
-    prop: 'startedAt', label: '开始时间', width: 180,
+    prop: 'startedAt', label: '开始时间', width: 170,
     render: ({ row }) => row.startedAt ? h(MfwDateFormat, { value: row.startedAt }) : '-',
   },
   {
-    prop: 'errorMessage', label: '错误信息', minWidth: 200,
+    prop: 'errorMessage', label: '错误信息', minWidth: 180,
     render: ({ row }) => row.errorMessage
       ? h(ElTag, { type: 'danger', size: 'small' }, () => row.errorMessage.substring(0, 50))
       : '-',

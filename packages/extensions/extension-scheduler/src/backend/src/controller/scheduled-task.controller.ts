@@ -14,7 +14,7 @@ import { ApiResponseUtil } from '../api-response'
 import { ScheduledTaskService } from '../services/scheduled-task.service'
 import {
   UpdateTaskDto,
-  TriggerTaskDto,
+  CreateDelayInstanceDto,
   InstanceQueryDto,
   LogQueryDto,
   TaskQueryDto,
@@ -63,18 +63,35 @@ export class ScheduledTaskController {
 
   @Post('tasks/:taskCode/trigger')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '手动触发任务', description: '立即触发指定任务的执行' })
+  @ApiOperation({ summary: '手动触发任务', description: '立即执行指定任务（不创建实例，执行结果见执行日志，触发方式=手动）' })
   @ApiParam({ name: 'taskCode', description: '任务编码' })
   @RequirePermission({ permCode: 'ext:scheduler:task', permissionValue: ['执行'] })
-  async triggerTask(
-    @Param('taskCode') taskCode: string,
-    @Body() dto: TriggerTaskDto,
-  ) {
-    const result = await this.taskService.triggerTask(taskCode, dto.entityId, dto.payload)
-    return ApiResponseUtil.success(result, '触发成功')
+  async triggerTask(@Param('taskCode') taskCode: string) {
+    await this.taskService.triggerTask(taskCode)
+    return ApiResponseUtil.success(null, '触发成功')
   }
 
   // ── 延迟实例 ──
+
+  @Post('instances')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: '创建延迟任务实例',
+    description: '创建延迟实例：delaySeconds=0（默认）立即执行；或传 executeAt 指定执行时间；失败后按任务配置的 maxRetry/backoffStrategy 重试',
+  })
+  @RequirePermission({ permCode: 'ext:scheduler:task', permissionValue: ['执行'] })
+  async createInstance(@Body() dto: CreateDelayInstanceDto) {
+    const executeAt = dto.executeAt
+      ? new Date(dto.executeAt)
+      : new Date(Date.now() + (dto.delaySeconds ?? 0) * 1000)
+    const result = await this.taskService.createDelayInstance(
+      dto.taskCode,
+      executeAt,
+      dto.entityId,
+      dto.payload,
+    )
+    return ApiResponseUtil.success(result, '创建成功')
+  }
 
   @Get('instances')
   @ApiOperation({ summary: '查询延迟实例列表', description: '分页查询延迟任务实例' })

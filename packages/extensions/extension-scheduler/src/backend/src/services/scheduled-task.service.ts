@@ -16,7 +16,7 @@ import {
 } from '../spi/interfaces'
 import { TaskRegistry } from './task.registry'
 import { SchedulerEngineService } from './scheduler-engine.service'
-import { TaskTypeDict, TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
+import { TaskTypeDict, TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import type { ScheduledTaskDefinition, ScheduledTaskInstance, ScheduledTaskLog } from '../entities'
 
 @Injectable()
@@ -93,27 +93,22 @@ export class ScheduledTaskService implements OnModuleInit {
 
   /**
    * 手动触发任务
-   * @description 直接创建 PENDING 实例并通知
+   * @description 与自动执行一致：不创建实例，直接执行 handler → 写日志 → 更新任务运行时状态；
+   *   执行结果在「执行日志」中查看（触发方式=手动）
    */
-  async triggerTask(
-    taskCode: string,
-    entityId?: string,
-    payload?: Record<string, any>,
-  ): Promise<ScheduledTaskInstance> {
-    const instance = await this.storage.createInstance({
-      taskCode,
-      executeAt: new Date(),
-      entityId: entityId ?? null,
-      payload: payload ?? null,
-      status: TaskInstanceStatusDict.PENDING,
-    })
-    await this.notify.notifyTaskScheduled(taskCode, instance.executeAt)
-    this.logger.log(`手动触发任务: ${taskCode}, instanceId=${instance.id}`)
-    return instance
+  async triggerTask(taskCode: string): Promise<void> {
+    const handler = this.registry.get(taskCode)
+    if (!handler) {
+      throw new Error(`处理器未注册: ${taskCode}`)
+    }
+    await this.getEngine().executeTaskNow(taskCode, handler, TaskTriggerTypeDict.MANUAL)
+    this.logger.log(`手动触发任务: ${taskCode}`)
   }
 
   /**
    * 同步代码注册的任务到 DB
+   * @description 将 handler 声明的只读属性与运行配置作为默认值 upsert；
+   * UPDATE 时 storage 仅更新只读属性，admin 已编辑的运行配置保留 DB 值
    */
   async syncFromCode(): Promise<void> {
     for (const handler of this.registry.getAll()) {
@@ -128,6 +123,7 @@ export class ScheduledTaskService implements OnModuleInit {
         description: handler.description ?? null,
         maxRetry: handler.maxRetry ?? 3,
         backoffStrategy: handler.backoffStrategy ? JSON.stringify(handler.backoffStrategy) : null,
+        enableLog: handler.enableLog,
       })
     }
   }

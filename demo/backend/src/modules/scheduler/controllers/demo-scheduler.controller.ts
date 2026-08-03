@@ -21,6 +21,19 @@
  *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
  *     -d '{"taskCode":"demo.delay.greeting","delaySeconds":5,"payload":{"greeting":"你好","target":"世界"}}'
  *
+ *   # 用例3b：创建立即执行任务（delaySeconds=0，创建即执行，失败后走重试）
+ *   curl -X POST http://localhost:3000/api/demo/scheduler/create-delay-task \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"taskCode":"demo.immediate.hello","delaySeconds":0,"payload":{"greeting":"立即","target":"执行"}}'
+ *
+ *   # 框架 API：创建延迟/立即执行实例（POST /api/ext/scheduler/instances）
+ *   curl -X POST http://localhost:3000/api/ext/scheduler/instances \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"taskCode":"demo.immediate.hello","delaySeconds":0,"payload":{"greeting":"立即","target":"执行"}}'
+ *
+ *   # 说明：delaySeconds=0 立即执行；失败后按任务 maxRetry/backoffStrategy 重试，
+ *   # 与延时任务共用同一重试管线（归档器驱动）。
+ *
  *   # 用例4：查看任务定义列表
  *   curl http://localhost:3000/api/demo/scheduler/tasks \
  *     -H "Authorization: Bearer <token>"
@@ -47,11 +60,6 @@ class TriggerCronDto {
   @IsNotEmpty()
   @IsString()
   taskCode: string
-
-  @ApiProperty({ description: '业务数据', required: false })
-  @IsOptional()
-  @IsObject()
-  payload?: Record<string, any>
 }
 
 class CreateDelayTaskDto {
@@ -60,9 +68,9 @@ class CreateDelayTaskDto {
   @IsString()
   taskCode: string
 
-  @ApiProperty({ description: '延迟秒数' })
+  @ApiProperty({ description: '延迟秒数（0=立即执行）' })
   @IsInt()
-  @Min(1)
+  @Min(0)
   delaySeconds: number
 
   @ApiProperty({ description: '业务实体ID', required: false })
@@ -105,32 +113,31 @@ export class DemoSchedulerController {
   }
 
   /**
-   * 用例2：手动触发已注册的 Cron 任务
-   * @description 通过 ScheduledTaskService.triggerTask 创建 PENDING 实例
+   * 用例2：手动执行已注册的 Cron 任务
+   * @description 与自动执行一致：不创建实例，直接执行 handler → 写日志 → 更新任务状态
    */
   @Post('trigger-cron')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '手动触发 Cron 任务', description: '创建一个立即执行的实例' })
+  @ApiOperation({ summary: '手动执行 Cron 任务', description: '立即执行任务（不创建实例，结果见执行日志）' })
   async triggerCron(@Body() dto: TriggerCronDto) {
     const handler = this.registry.get(dto.taskCode)
     if (!handler) {
       return { error: `任务处理器未注册: ${dto.taskCode}` }
     }
-    const instance = await this.taskService.triggerTask(dto.taskCode, undefined, dto.payload)
+    await this.taskService.triggerTask(dto.taskCode)
     return {
-      message: `任务已触发: ${dto.taskCode}`,
-      instance,
+      message: `任务已触发: ${dto.taskCode}（不创建实例，结果见执行日志）`,
     }
   }
 
   /**
    * 用例3：创建延迟任务
    * @description 通过 ScheduledTaskService.createDelayInstance 创建延迟实例
-   * 引擎会在 executeAt 到期时自动加载并执行
+   * 引擎会在 executeAt 到期时自动加载并执行；delaySeconds=0 表示立即执行
    */
   @Post('create-delay-task')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '创建延迟任务', description: '创建延迟实例，到点自动执行' })
+  @ApiOperation({ summary: '创建延迟任务', description: '创建延迟实例，到点自动执行；delaySeconds=0 立即执行' })
   async createDelayTask(@Body() dto: CreateDelayTaskDto) {
     const handler = this.registry.get(dto.taskCode)
     if (!handler) {

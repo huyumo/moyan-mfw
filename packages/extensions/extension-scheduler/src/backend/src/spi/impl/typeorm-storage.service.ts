@@ -2,14 +2,14 @@
  * @fileoverview 默认存储实现（TypeOrmStorage）
  * @description 基于 TypeORM Repository 实现 ITaskStorage 接口
  * batchClaim: 1次UPDATE(id IN + status=PENDING → RUNNING) + 1次SELECT(executor=本机)
- * batchArchiveStatus: 按状态分组，每组1次UPDATE
+ * batchArchiveStatus: 按状态分组，每组1次UPDATE + 错误消息合并为1条 CASE-WHEN UPDATE
  */
 
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, In, Between, LessThan } from 'typeorm'
 import { PaginationResult, PaginationX, WhereBuilder, NotFoundError } from 'moyan-mfw-base/backend'
-import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
+import { TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import { ScheduledTaskDefinition, ScheduledTaskInstance, ScheduledTaskLog } from '../../entities'
 import {
   ITaskStorage,
@@ -98,6 +98,7 @@ export class TypeOrmStorage implements ITaskStorage {
       executeAt: instance.executeAt!,
       status: instance.status ?? TaskInstanceStatusDict.PENDING,
       retryCount: instance.retryCount ?? 0,
+      triggerType: instance.triggerType ?? TaskTriggerTypeDict.AUTO,
     })
     return this.instanceRepo.save(entity)
   }
@@ -112,6 +113,7 @@ export class TypeOrmStorage implements ITaskStorage {
         executeAt: i.executeAt!,
         status: i.status ?? TaskInstanceStatusDict.PENDING,
         retryCount: i.retryCount ?? 0,
+        triggerType: i.triggerType ?? TaskTriggerTypeDict.AUTO,
       }),
     )
     await this.instanceRepo.save(entities)
@@ -141,6 +143,7 @@ export class TypeOrmStorage implements ITaskStorage {
   }
 
   async batchArchiveStatus(updates: BatchArchiveUpdate[]): Promise<void> {
+    const allErrors: { instanceId: string; message: string | null }[] = []
     for (const update of updates) {
       if (update.ids.length === 0) continue
       await this.instanceRepo.update(
@@ -150,6 +153,23 @@ export class TypeOrmStorage implements ITaskStorage {
           ...(update.fields as any),
         },
       )
+      if (update.errors && update.errors.length > 0) allErrors.push(...update.errors)
+    }
+    // 错误消息逐实例写入：合并为一条 CASE-WHEN UPDATE（保持批量语义，避免 N 次单条更新）
+    if (allErrors.length > 0) {
+      const params: Record<string, string | null> = {}
+      const cases = allErrors.map((err, i) => {
+        params[`errId_${i}`] = err.instanceId
+        params[`errMsg_${i}`] = err.message
+        return `WHEN :errId_${i} THEN :errMsg_${i}`
+      })
+      await this.instanceRepo
+        .createQueryBuilder()
+        .update(ScheduledTaskInstance)
+        .set({ errorMessage: () => `CASE id ${cases.join(' ')} ELSE errorMessage END` })
+        .where('id IN (:...ids)', { ids: allErrors.map((e) => e.instanceId) })
+        .setParameters(params)
+        .execute()
     }
   }
 
@@ -259,7 +279,7 @@ export class TypeOrmStorage implements ITaskStorage {
         const whereClause = wheres?.main || ''
         return `SELECT ${select} FROM ext_scheduler_task_instance inst LEFT JOIN ext_scheduler_task t ON inst.taskCode = t.taskCode ${whereClause} ${orderBy} ${limit}`
       })
-      .select('inst.*, t.taskName')
+      .select('inst.*, t.taskName, t.taskType')
       .defaultOrderBy('inst.executeAt DESC')
       .getData()
 
@@ -272,6 +292,7 @@ export class TypeOrmStorage implements ITaskStorage {
     if (filters.taskCode) whereBuilder.eq('log.taskCode', filters.taskCode)
     if (filters.status) whereBuilder.eq('log.status', filters.status)
     if (filters.triggerType) whereBuilder.eq('log.triggerType', filters.triggerType)
+    if (filters.instanceId) whereBuilder.eq('log.instanceId', filters.instanceId)
     if (filters.startTime) whereBuilder.gte('log.startedAt', filters.startTime)
     if (filters.endTime) whereBuilder.lte('log.startedAt', filters.endTime)
 

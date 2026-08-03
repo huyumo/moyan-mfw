@@ -70,8 +70,8 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     this.logger.log('调度引擎启动中...')
     // 0. 将自身引用注入 ScheduledTaskService（解决双向依赖）
     this.taskService.setEngine(this)
-    // 1. 同步任务定义（upsert code-registered tasks）
-    await this.syncFromCode()
+    // 1. 同步任务定义（upsert code-registered tasks，含 handler 运行配置默认值）
+    await this.taskService.syncFromCode()
     // 2. 清理孤儿记录（崩溃残留的 RUNNING）
     const orphans = await this.storage.cleanupOrphanRecords(600)
     if (orphans > 0) this.logger.warn(`清理 ${orphans} 条孤儿记录`)
@@ -188,6 +188,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   private async dispatchInstance(instance: any, handler: any): Promise<void> {
     const startedAt = new Date()
     let logId: string | null = null
+    const triggerType = instance.triggerType ?? TaskTriggerTypeDict.AUTO
 
     // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
     const config = await this.resolveTaskConfig(instance.taskCode, handler)
@@ -200,7 +201,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           taskName: handler.taskName,
           instanceId: instance.id,
           status: TaskRunStatusDict.RUNNING,
-          triggerType: TaskTriggerTypeDict.AUTO,
+          triggerType,
           startedAt,
           executor: this.preloader['executorId'],
         })
@@ -217,7 +218,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       entityId: instance.entityId ?? undefined,
       payload: instance.payload ?? undefined,
       triggeredAt: startedAt,
-      triggerType: TaskTriggerTypeDict.AUTO,
+      triggerType,
       logger: this.logger,
       retryCount: instance.retryCount ?? 0,
       maxRetry: config.maxRetry,
@@ -242,6 +243,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           payload: instance.payload,
           retryCount: instance.retryCount,
           enableLog: config.enableLog,
+          triggerType,
         },
       )
     } catch (err) {
@@ -260,32 +262,10 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           payload: instance.payload,
           retryCount: instance.retryCount,
           enableLog: config.enableLog,
+          triggerType,
         },
       )
     }
-  }
-
-  /**
-   * 同步代码注册的任务到 DB
-   */
-  private async syncFromCode(): Promise<void> {
-    const handlers = this.registry.getAll()
-    for (const handler of handlers) {
-      // syncFromCode 只同步代码声明的只读属性（taskName/taskType/调度配置/描述）
-      // 不传 admin 可编辑字段（enableLog/maxRetry/backoffStrategy/catchUpOnRestart），
-      // 这些字段仅在 INSERT 时由 upsertTaskDefinition 的 else 分支设默认值，
-      // UPDATE 时通过省略让 storage 的 ?? 保留 DB 中已有的值。
-      await this.storage.upsertTaskDefinition({
-        taskCode: handler.taskCode,
-        taskName: handler.taskName,
-        taskType: handler.taskType,
-        cronExpression: handler.defaultCron ?? null,
-        intervalSeconds: handler.defaultIntervalSeconds ?? 0,
-        timeoutSeconds: handler.defaultTimeoutSeconds ?? 300,
-        description: handler.description ?? null,
-      })
-    }
-    this.logger.log(`同步 ${handlers.length} 个任务定义`)
   }
 
   /**
@@ -331,7 +311,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         const job = new CronJob(
           cronExpression,
           async () => {
-            await this.executeCronTask(task.taskCode, handler)
+            await this.executeTaskNow(task.taskCode, handler, TaskTriggerTypeDict.AUTO)
           },
         )
         job.start()
@@ -394,7 +374,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     }
     try {
       const job = new CronJob(cronExpression, async () => {
-        await this.executeCronTask(taskCode, handler)
+        await this.executeTaskNow(taskCode, handler, TaskTriggerTypeDict.AUTO)
       })
       job.start()
       this.cronJobs.set(taskCode, job as any)
@@ -419,13 +399,14 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * 执行 CRON 任务
-   * @description 条件 UPDATE nextRunAt 充当锁 → 执行 handler → 写日志
+   * 立即执行任务（自动/手动共用）
+   * @description 直接执行 handler → 写日志 → 更新任务运行时状态，不创建实例；
+   *   Cron 自动触发与手动执行共用此路径，触发来源通过 triggerType 区分
    */
-  private async executeCronTask(taskCode: string, handler: any): Promise<void> {
+  async executeTaskNow(taskCode: string, handler: any, triggerType: number): Promise<void> {
     if (this.isDestroying) return
     const startedAt = new Date()
-    this.logger.debug(`执行 CRON 任务: ${taskCode}`)
+    this.logger.debug(`立即执行任务: ${taskCode} (triggerType=${triggerType})`)
 
     // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
     const config = await this.resolveTaskConfig(taskCode, handler)
@@ -437,7 +418,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
         taskCode,
         taskName: handler.taskName,
         status: TaskRunStatusDict.RUNNING,
-        triggerType: TaskTriggerTypeDict.AUTO,
+        triggerType,
         startedAt,
         executor: this.preloader['executorId'],
       })
@@ -448,7 +429,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       taskCode,
       logId: logId ?? '',
       triggeredAt: startedAt,
-      triggerType: TaskTriggerTypeDict.AUTO,
+      triggerType,
       logger: this.logger,
       retryCount: 0,
       maxRetry: config.maxRetry,

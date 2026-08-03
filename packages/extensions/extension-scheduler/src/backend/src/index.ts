@@ -9,7 +9,6 @@ export type { ScheduledTaskHandler, TaskExecutionContext, TaskExecutionResult, B
 export { ScheduledTaskDefinition, ScheduledTaskInstance, ScheduledTaskLog } from './entities'
 export {
   UpdateTaskDto,
-  TriggerTaskDto,
   CreateDelayInstanceDto,
   InstanceQueryDto,
   LogQueryDto,

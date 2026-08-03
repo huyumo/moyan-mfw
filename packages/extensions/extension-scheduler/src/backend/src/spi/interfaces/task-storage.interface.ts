@@ -50,6 +50,11 @@ export interface BatchArchiveUpdate {
   status: number
   ids: string[]
   fields?: Partial<InstanceFields>
+  /**
+   * 错误消息按实例单独写入
+   * @description 不能放入共享 fields（同状态组内多个失败实例会互相覆盖），需逐实例更新
+   */
+  errors?: Array<{ instanceId: string; message: string | null }>
 }
 
 /** 实例查询过滤条件 */
@@ -66,6 +71,8 @@ export interface LogQueryFilters extends PaginationQueryDto {
   taskCode?: string
   status?: number
   triggerType?: number
+  /** 关联实例ID（精确匹配） */
+  instanceId?: string
   startTime?: string
   endTime?: string
 }

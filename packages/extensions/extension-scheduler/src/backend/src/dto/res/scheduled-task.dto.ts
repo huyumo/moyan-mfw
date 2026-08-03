@@ -82,6 +82,18 @@ export class ScheduledTaskInstanceResponseDto {
   @Expose()
   taskCode: string
 
+  @ApiPropertyOptional({ description: '任务名称（关联任务定义）' })
+  @Expose()
+  taskName: string | null
+
+  @ApiPropertyOptional({ description: '任务类型：1=Cron定时 2=延迟任务' })
+  @Expose()
+  taskType: number | null
+
+  @ApiPropertyOptional({ description: '触发方式：1=自动 2=手动' })
+  @Expose()
+  triggerType: number | null
+
   @ApiPropertyOptional({ description: '业务实体ID' })
   @Expose()
   entityId: string | null

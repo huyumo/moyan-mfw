@@ -245,7 +245,7 @@ const instance = await this.schedulerService.triggerTask('payment.callback', {
 | `listTasks()` | 查询所有任务定义 |
 | `getTaskDetail(taskCode)` | 查询单个任务定义 |
 | `updateTask(taskCode, fields)` | 更新任务运行时配置 |
-| `triggerTask(taskCode, payload?)` | 手动触发任务（创建立即执行实例） |
+| `triggerTask(taskCode)` | 手动触发任务（不创建实例，立即执行，结果见执行日志） |
 | `createDelayInstance(taskCode, executeAt, entityId?, payload?)` | 创建延迟任务实例 |
 | `cancelInstance(id)` | 取消待执行的延迟实例 |
 | `getInstance(id)` | 查询实例详情 |

@@ -12,7 +12,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common'
 import { SCHEDULER_TASK_STORAGE, type ITaskStorage, type SchedulerModuleOptions } from '../spi/interfaces'
 import { ResultBufferPool } from '../pool/result-buffer-pool'
 import { TaskRegistry } from './task.registry'
-import { TaskRunStatusDict, TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
+import { TaskRunStatusDict, TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import type { ScheduledTaskInstance, ScheduledTaskLog } from '../entities'
 import type { BackoffStrategy } from '../interfaces/task-handler.interface'
 
@@ -73,8 +73,11 @@ export class BatchArchiverService {
       ids: items.map((i) => i.instanceId),
       fields: {
         finishedAt: new Date(),
-        errorMessage: items.find((i) => i.error)?.error?.message ?? null,
       } as any,
+      // 错误消息按实例单独记录，避免同组共享导致互相覆盖
+      errors: items
+        .map((i) => (i.error ? { instanceId: i.instanceId, message: i.error.message } : null))
+        .filter((e): e is { instanceId: string; message: string } => e !== null),
     }))
     await this.storage.batchArchiveStatus(archiveUpdates)
 
@@ -116,6 +119,8 @@ export class BatchArchiverService {
           retryCount: f.retryCount + 1,
           entityId: f.entityId,
           payload: f.payload,
+          // 重试实例沿用原执行来源（手动触发的链保持"手动"）
+          triggerType: f.triggerType ?? TaskTriggerTypeDict.AUTO,
         })
       }
 
@@ -133,7 +138,7 @@ export class BatchArchiverService {
         taskName: e.taskName ?? this.registry.get(e.taskCode)?.taskName ?? e.taskCode,
         instanceId: e.instanceId,
         status: e.status,
-        triggerType: 1, // AUTO
+        triggerType: e.triggerType ?? TaskTriggerTypeDict.AUTO,
         startedAt: e.startedAt,
         finishedAt: e.finishedAt,
         durationMs: e.finishedAt.getTime() - e.startedAt.getTime(),

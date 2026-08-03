@@ -31,6 +31,8 @@ export interface ScheduledTaskInstanceItem {
   id: string
   taskCode: string
   taskName: string | null
+  taskType: number | null
+  triggerType: number | null
   entityId: string | null
   payload: Record<string, any> | null
   executeAt: string
@@ -111,10 +113,10 @@ export class ApiSchedulerUpdateTask extends ApiCall<
   readonly auth = true
 }
 
-/** 手动触发任务 */
+/** 手动触发任务（立即执行，不创建实例，结果见执行日志） */
 export class ApiSchedulerTriggerTask extends ApiCall<
-  { params: { taskCode: string }; body?: { entityId?: string; payload?: Record<string, any> } },
-  ScheduledTaskInstanceItem
+  { params: { taskCode: string } },
+  void
 > {
   readonly path = '/api/ext/scheduler/tasks/{taskCode}/trigger'
   readonly method: MoMethod = 'POST'
@@ -160,6 +162,7 @@ export class ApiSchedulerListLogs extends ApiCall<
       taskCode?: string
       status?: number
       triggerType?: number
+      instanceId?: string
       startTime?: string
       endTime?: string
     }

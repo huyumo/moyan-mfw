@@ -59,30 +59,23 @@ export class UpdateTaskDto {
   enableLog?: boolean
 }
 
-/** 手动触发任务 DTO */
-export class TriggerTaskDto {
-  @ApiPropertyOptional({ description: '业务实体ID' })
-  @IsOptional()
-  @IsString()
-  entityId?: string
-
-  @ApiPropertyOptional({ description: '业务数据' })
-  @IsOptional()
-  @IsObject()
-  payload?: Record<string, any>
-}
-
-/** 创建延迟任务实例 DTO */
+/** 创建延迟任务实例 DTO（delaySeconds=0 或省略时立即执行） */
 export class CreateDelayInstanceDto {
   @ApiProperty({ description: '任务编码' })
   @IsNotEmpty()
   @IsString()
   taskCode: string
 
-  @ApiProperty({ description: '应执行时间（ISO 字符串）' })
-  @IsNotEmpty()
+  @ApiPropertyOptional({ description: '应执行时间（ISO 字符串），与 delaySeconds 二选一' })
+  @IsOptional()
   @IsString()
-  executeAt: string
+  executeAt?: string
+
+  @ApiPropertyOptional({ description: '延迟秒数（默认0=立即执行）' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  delaySeconds?: number
 
   @ApiPropertyOptional({ description: '业务实体ID' })
   @IsOptional()
@@ -152,6 +145,11 @@ export class LogQueryDto extends PaginationQueryDto {
   @IsOptional()
   @IsInt()
   triggerType?: number
+
+  @ApiPropertyOptional({ description: '实例ID（精确匹配）' })
+  @IsOptional()
+  @IsString()
+  instanceId?: string
 
   @ApiPropertyOptional({ description: '开始时间' })
   @IsOptional()

@@ -41,6 +41,7 @@ defineOptions({ name: 'MfwTaskLogTab' })
 const listPageRef = ref<MfwListPageInstance>()
 
 const searchTemplate = [
+  { key: 'instanceId', label: '实例ID', type: 'input' as const, testId: 'log-search-instance', placeholder: '请输入实例ID' },
   { key: 'taskCode', label: '任务编码', type: 'input' as const, testId: 'log-search-code', placeholder: '请输入任务编码' },
   { key: 'status', label: '状态', type: 'select' as const, testId: 'log-search-status', placeholder: '请选择状态', elProps: { options: [
     { label: '执行中', value: TaskRunStatusDict.RUNNING },
@@ -55,6 +56,10 @@ const searchTemplate = [
 
 const columns: TableColumnConfig[] = [
   { prop: 'id', label: '日志ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
+  {
+    prop: 'instanceId', label: '实例ID', minWidth: 340,
+    render: ({ row }) => (row.instanceId ? renderCopyableText(row.instanceId) : '-'),
+  },
   { prop: 'taskName', label: '任务名称', minWidth: 220 },
   { prop: 'taskCode', label: '任务编码', minWidth: 200, render: ({ row }) => renderCopyableText(row.taskCode) },
   {
@@ -88,6 +93,7 @@ const loadData = async (params: Record<string, unknown>) => {
     query: {
       page: params.page as number,
       pageSize: params.pageSize as number,
+      instanceId: params.instanceId as string,
       taskCode: params.taskCode as string,
       status: params.status as number,
       startTime: params.startTime as string,

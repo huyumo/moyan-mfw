@@ -20,6 +20,8 @@ import { DemoOrderController } from './controllers/demo-order.controller'
 import { DemoOrder } from './entities/demo-order.entity'
 import { DemoCronTaskHandler } from './handlers/demo-cron-task.handler'
 import { DemoDelayTaskHandler } from './handlers/demo-delay-task.handler'
+import { DemoImmediateTaskHandler } from './handlers/demo-immediate-task.handler'
+import { DemoTimeoutTaskHandler } from './handlers/demo-timeout-task.handler'
 import { OrderAutoCancelHandler } from './handlers/order-auto-cancel.handler'
 import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
 
@@ -38,7 +40,9 @@ import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
     RedisPubSubNotify,
     DemoCronTaskHandler,
     DemoDelayTaskHandler,
-    OrderAutoCancelHandler,  // 订单超时自动取消处理器
+    DemoImmediateTaskHandler,  // 立即执行模式示例处理器
+    DemoTimeoutTaskHandler,    // 超时验证示例处理器
+    OrderAutoCancelHandler,    // 订单超时自动取消处理器
     PaymentCallbackHandler,  // 支付回调递增重试处理器
   ],
   exports: [DemoCronTaskHandler, DemoDelayTaskHandler],

@@ -34,6 +34,8 @@ export interface ResultEntry {
   retryCount: number
   /** 是否记录执行日志 */
   enableLog?: boolean
+  /** 触发方式（1=自动 2=手动） */
+  triggerType?: number
 }
 
 @Injectable()
@@ -66,6 +68,7 @@ export class ResultBufferPool {
       payload: extra?.payload,
       retryCount: extra?.retryCount ?? 0,
       enableLog: extra?.enableLog ?? true,
+      triggerType: extra?.triggerType,
     })
     this.buckets.set(status, bucket)
   }

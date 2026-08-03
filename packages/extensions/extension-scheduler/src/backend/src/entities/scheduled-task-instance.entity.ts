@@ -6,7 +6,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm'
 import { Base } from 'moyan-mfw-base/backend'
 import { toDescription } from 'moyan-mfw-base/shared'
-import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
+import { TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 
 @Entity('ext_scheduler_task_instance')
 @Index('idx_task_instance_scan', ['status', 'executeAt'])
@@ -49,4 +49,7 @@ export class ScheduledTaskInstance extends Base {
 
   @Column({ type: 'varchar', length: 64, nullable: true, comment: '执行实例标识（hostname-pid）' })
   executor: string | null
+
+  @Column({ type: 'tinyint', default: TaskTriggerTypeDict.AUTO, comment: toDescription(TaskTriggerTypeDict) })
+  triggerType: number
 }

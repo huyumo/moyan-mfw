@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { ref, h } from 'vue'
-import { ElTag, ElSwitch } from 'element-plus'
+import { ElTag, ElSwitch, ElMessageBox } from 'element-plus'
 import { Edit, VideoPlay } from '@element-plus/icons-vue'
 import {
   MfwListPage,
@@ -29,7 +29,6 @@ import {
 import type { MfwListPageInstance, TableColumnConfig, ActionColumnConfig } from 'moyan-mfw-base/frontend'
 import { TaskTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import TaskConfigForm from './TaskConfigForm.vue'
-import TaskTriggerForm from './TaskTriggerForm.vue'
 import { ApiSchedulerListTasks, ApiSchedulerTriggerTask } from '../../apis/scheduler'
 import {
   taskTypeTagType, taskTypeLabel,
@@ -118,15 +117,17 @@ const handleEdit = (row: any) => {
   })
 }
 
-const handleTrigger = (row: any) => {
-  MfwPopup.open({
-    title: `手动触发任务「${row.taskName}」`,
-    type: 'dialog',
-    component: TaskTriggerForm,
-    elProps: { taskCode: row.taskCode, taskName: row.taskName, taskType: row.taskType },
-    popupProps: { width: 500 },
-    on: { confirm: () => emit('triggered') },
-  })
+/** 手动执行：确认后直接触发（不建实例，结果见执行日志） */
+const handleTrigger = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定立即执行任务「${row.taskName}」吗？\n执行不创建实例，结果可在「执行日志」中查看。`,
+      '手动执行',
+      { type: 'warning', confirmButtonText: '执行' },
+    )
+  } catch { return }
+  await new ApiSchedulerTriggerTask({ params: { taskCode: row.taskCode } }, { hintSuccess: true } as any)
+  emit('triggered')
 }
 
 /** 供父组件调用 */
