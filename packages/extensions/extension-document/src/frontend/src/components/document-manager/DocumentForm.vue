@@ -91,7 +91,7 @@ const BUILTIN_DEFAULTS: Record<string, Partial<FormItemConfig>> = {
       ],
     },
   },
-  content: { label: '正文', component: MfwQuillEditor },
+  content: { label: '正文', component: MfwQuillEditor, elProps: { height: '400px' } },
   summary: { label: '摘要', component: 'el-input', elProps: { type: 'textarea', rows: 3 } },
   images: { label: '图片', component: MfwImageGallery },
   video: { label: '视频', component: MfwVideoSingle, show: (d: any) => d.type === DocumentType.VIDEO },

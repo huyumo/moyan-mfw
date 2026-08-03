@@ -6,6 +6,15 @@
 
     .mfw-document-form__editor {
       width: 100%;
+
+      .mfw-quill-editor {
+        border: 1px solid var(--el-border-color);
+        border-radius: var(--el-border-radius-base);
+
+        .ql-toolbar {
+          border-bottom: 1px solid var(--el-border-color-lighter);
+        }
+      }
     }
   }
 
