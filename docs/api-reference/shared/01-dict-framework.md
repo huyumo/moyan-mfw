@@ -29,8 +29,8 @@ interface DictMetaOptions {
 ### 元数据键
 
 ```typescript
-const META_KEY  = Symbol.for('dict:meta')   // 存储 DictMetaOptions
-const ITEMS_KEY = Symbol.for('dict:items')  // 存储 DictEntry 条目
+const META_KEY  = Symbol.for('MOYAN:MFW:dict:meta')   // 存储 DictMetaOptions
+const ITEMS_KEY = Symbol.for('MOYAN:MFW:dict:items')  // 存储 DictEntry 条目
 ```
 
 ---

@@ -10,7 +10,7 @@ import { ApiEvents } from 'moyan-api/dist/lib/base';
 import type { App } from 'vue';
 import { TOKEN_KEY, REFRESH_TOKEN_KEY, CURRENT_APP_KEY } from '../constants/storage-keys';
 
-const AXIOS = Symbol.for('mo#Api#axios');
+const AXIOS = Symbol.for('MOYAN:MFW:mo#Api#axios');
 
 /** Token 刷新状态 */
 let isRefreshing = false;

@@ -5,9 +5,9 @@
 
 import { SetMetadata } from '@nestjs/common';
 
-export const CACHE_OPTIONS = Symbol.for('cache:options');
-export const CACHE_EVICT_OPTIONS = Symbol.for('cache:evict');
-export const CACHE_METHOD_KEY = Symbol.for('cache:method_key');
+export const CACHE_OPTIONS = Symbol.for('MOYAN:MFW:cache:options');
+export const CACHE_EVICT_OPTIONS = Symbol.for('MOYAN:MFW:cache:evict');
+export const CACHE_METHOD_KEY = Symbol.for('MOYAN:MFW:cache:method_key');
 
 export interface CacheableOptions {
   key: string;
