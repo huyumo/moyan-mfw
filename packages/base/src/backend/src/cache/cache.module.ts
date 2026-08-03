@@ -22,10 +22,10 @@ export interface CacheModuleOptions {
   redisConfig?: RedisConfig;
 }
 
-export const CACHE_SERVICE = Symbol('CACHE_SERVICE');
-export const REDIS_ONLY_SERVICE = Symbol('REDIS_ONLY_SERVICE');
+export const CACHE_SERVICE = Symbol.for('CACHE_SERVICE');
+export const REDIS_ONLY_SERVICE = Symbol.for('REDIS_ONLY_SERVICE');
 /** Redis 连接配置注入 token */
-export const REDIS_CONFIG = Symbol('REDIS_CONFIG');
+export const REDIS_CONFIG = Symbol.for('REDIS_CONFIG');
 
 class NoopCacheService implements ICacheService {
   async get<T = unknown>(): Promise<T | null> {

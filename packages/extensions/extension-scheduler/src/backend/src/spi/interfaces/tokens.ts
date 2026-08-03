@@ -3,10 +3,10 @@
  * @description 用于 NestJS 依赖注入的 token 标识
  */
 
-export const SCHEDULER_TASK_STORAGE = Symbol('SCHEDULER_TASK_STORAGE')
-export const SCHEDULER_DISTRIBUTED_LOCK = Symbol('SCHEDULER_DISTRIBUTED_LOCK')
-export const SCHEDULER_TASK_DISPATCHER = Symbol('SCHEDULER_TASK_DISPATCHER')
-export const SCHEDULER_RUNTIME_NOTIFY = Symbol('SCHEDULER_RUNTIME_NOTIFY')
+export const SCHEDULER_TASK_STORAGE = Symbol.for('SCHEDULER_TASK_STORAGE')
+export const SCHEDULER_DISTRIBUTED_LOCK = Symbol.for('SCHEDULER_DISTRIBUTED_LOCK')
+export const SCHEDULER_TASK_DISPATCHER = Symbol.for('SCHEDULER_TASK_DISPATCHER')
+export const SCHEDULER_RUNTIME_NOTIFY = Symbol.for('SCHEDULER_RUNTIME_NOTIFY')
 
 /** 调度器模块配置选项 */
 export interface SchedulerModuleOptions {
