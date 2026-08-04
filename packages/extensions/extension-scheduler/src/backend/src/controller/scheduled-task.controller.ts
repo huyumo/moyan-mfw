@@ -121,6 +121,16 @@ export class ScheduledTaskController {
     return ApiResponseUtil.success(result, result ? '取消成功' : '取消失败（实例不存在或已执行）')
   }
 
+  @Post('instances/:id/retry')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '手动重跑延迟实例', description: '将终态(失败/超时/未归档)实例重置为待执行，保留原始entityId/payload，retryCount+1' })
+  @ApiParam({ name: 'id', description: '实例ID' })
+  @RequirePermission({ permCode: 'ext:scheduler:instance', permissionValue: ['执行'] })
+  async retryInstance(@Param('id') id: string) {
+    const result = await this.taskService.retryInstance(id)
+    return ApiResponseUtil.success(result, result ? '重跑已触发' : '重跑失败（实例不存在或非终态）')
+  }
+
   // ── 执行日志 ──
 
   @Get('logs')

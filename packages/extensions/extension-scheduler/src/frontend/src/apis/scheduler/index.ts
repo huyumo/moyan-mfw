@@ -150,6 +150,26 @@ export class ApiSchedulerCancelInstance extends ApiCall<
   readonly auth = true
 }
 
+/** 手动重跑延迟实例（终态 -> PENDING，retryCount+1） */
+export class ApiSchedulerRetryInstance extends ApiCall<
+  { params: { id: string } },
+  boolean
+> {
+  readonly path = '/api/ext/scheduler/instances/{id}/retry'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/** 创建延迟实例（手动触发 DELAY 任务） */
+export class ApiSchedulerCreateInstance extends ApiCall<
+  { body: { taskCode: string; delaySeconds?: number; entityId?: string; payload?: Record<string, any> } },
+  ScheduledTaskInstanceItem
+> {
+  readonly path = '/api/ext/scheduler/instances'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
 /** 查询执行日志列表 */
 export class ApiSchedulerListLogs extends ApiCall<
   {

@@ -29,7 +29,7 @@ import {
 import type { MfwListPageInstance, TableColumnConfig, ActionColumnConfig } from 'moyan-mfw-base/frontend'
 import { TaskTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import TaskConfigForm from './TaskConfigForm.vue'
-import { ApiSchedulerListTasks, ApiSchedulerTriggerTask } from '../../apis/scheduler'
+import { ApiSchedulerListTasks, ApiSchedulerTriggerTask, ApiSchedulerCreateInstance } from '../../apis/scheduler'
 import {
   taskTypeTagType, taskTypeLabel,
   runStatusTagType, runStatusLabel,
@@ -92,6 +92,10 @@ const actionColumn: ActionColumnConfig = {
       label: '执行', type: 'success', icon: VideoPlay, onClick: handleTrigger, permission: ['执行'], testId: 'task-trigger-btn',
       visible: (row: any) => row.taskType === TaskTypeDict.CRON,
     },
+    {
+      label: '创建实例', type: 'warning', icon: VideoPlay, onClick: handleCreateInstance, permission: ['执行'], testId: 'task-create-instance-btn',
+      visible: (row: any) => row.taskType === TaskTypeDict.DELAY,
+    },
   ], { maxVisible: 2 }, row),
 }
 
@@ -127,6 +131,35 @@ const handleTrigger = async (row: any) => {
     )
   } catch { return }
   await new ApiSchedulerTriggerTask({ params: { taskCode: row.taskCode } }, { hintSuccess: true } as any)
+  emit('triggered')
+}
+
+/** 创建延迟实例：弹出 payload 输入框，立即执行（delaySeconds=0） */
+const handleCreateInstance = async (row: any) => {
+  let payloadStr = '{}'
+  try {
+    const { value } = await ElMessageBox.prompt(
+      `任务「${row.taskName}」\n请输入业务数据（JSON 格式），将创建实例并立即执行：`,
+      '创建延迟实例',
+      {
+        confirmButtonText: '创建并执行',
+        inputType: 'textarea',
+        inputValue: '{}',
+        inputPlaceholder: '{"key": "value"}',
+        inputValidator: (val: string) => {
+          try { JSON.parse(val); return true } catch { return '请输入有效的 JSON' }
+        },
+      },
+    )
+    payloadStr = value
+  } catch { return }
+  await new ApiSchedulerCreateInstance({
+    body: {
+      taskCode: row.taskCode,
+      delaySeconds: 0,
+      payload: JSON.parse(payloadStr),
+    },
+  }, { hintSuccess: true } as any)
   emit('triggered')
 }
 

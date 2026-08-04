@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref, h } from 'vue'
 import { ElTag, ElMessageBox } from 'element-plus'
-import { Close, View } from '@element-plus/icons-vue'
+import { Close, View, RefreshRight } from '@element-plus/icons-vue'
 import {
   MfwListPage,
   MfwDateFormat,
@@ -29,7 +29,7 @@ import {
 import type { MfwListPageInstance, TableColumnConfig, ActionColumnConfig } from 'moyan-mfw-base/frontend'
 import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
 import TaskInstanceDetail from './TaskInstanceDetail.vue'
-import { ApiSchedulerListInstances, ApiSchedulerCancelInstance } from '../../apis/scheduler'
+import { ApiSchedulerListInstances, ApiSchedulerCancelInstance, ApiSchedulerRetryInstance } from '../../apis/scheduler'
 import {
   instanceStatusTagType, instanceStatusLabel,
   taskTypeTagType, taskTypeLabel,
@@ -95,14 +95,18 @@ const columns: TableColumnConfig[] = [
 ]
 
 const actionColumn: ActionColumnConfig = {
-  label: '操作', width: 140, fixed: 'right' as const,
+  label: '操作', width: 200, fixed: 'right' as const,
   render: ({ row }) => renderActionButtons([
     { label: '详情', type: 'primary', icon: View, onClick: handleView, testId: 'instance-detail-btn' },
     {
       label: '取消', type: 'danger', icon: Close, onClick: handleCancel, permission: ['编辑'], testId: 'instance-cancel-btn',
       visible: (row: any) => row.status === TaskInstanceStatusDict.PENDING,
     },
-  ], { maxVisible: 2 }, row),
+    {
+      label: '重跑', type: 'warning', icon: RefreshRight, onClick: handleRetry, permission: ['执行'], testId: 'instance-retry-btn',
+      visible: (row: any) => [TaskInstanceStatusDict.FAILED, TaskInstanceStatusDict.TIMEOUT, TaskInstanceStatusDict.TIMEOUT_ORPHAN].includes(row.status),
+    },
+  ], { maxVisible: 3 }, row),
 }
 
 const loadData = async (params: Record<string, unknown>) => {
@@ -134,6 +138,18 @@ const handleCancel = async (row: any) => {
     await ElMessageBox.confirm(`确定取消实例「${row.id}」吗？`, '确认取消', { type: 'warning' })
   } catch { return }
   await new ApiSchedulerCancelInstance({ params: { id: row.id } }, { hintSuccess: true } as any)
+  listPageRef.value?.refresh()
+}
+
+const handleRetry = async (row: any) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定重跑实例「${row.id}」吗？\n将保留原始业务数据，重试次数 +1，立即重新执行。`,
+      '确认重跑',
+      { type: 'warning' },
+    )
+  } catch { return }
+  await new ApiSchedulerRetryInstance({ params: { id: row.id } }, { hintSuccess: true } as any)
   listPageRef.value?.refresh()
 }
 

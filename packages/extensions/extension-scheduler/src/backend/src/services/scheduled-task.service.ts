@@ -155,6 +155,37 @@ export class ScheduledTaskService implements OnModuleInit {
     return this.storage.cancelInstance(id)
   }
 
+  /**
+   * 手动重跑延迟实例
+   * @description 将终态(FAILED/TIMEOUT/TIMEOUT_ORPHAN)实例重置为 PENDING，保留原始 entityId/payload，retryCount+1
+   *   与自动重试(archiver)对称：自动重试是失败后自动重跑，手动重试是运维确认后重跑
+   *   复用现有实例管线（PENDING -> preloader 认领 -> dispatchInstance -> archiver），不绕过 WAL
+   */
+  async retryInstance(id: string): Promise<boolean> {
+    const instance = await this.storage.getInstance(id)
+    if (!instance) return false
+
+    // 仅终态实例可重跑（FAILED=4, TIMEOUT=6, TIMEOUT_ORPHAN=7）
+    const retryableStatuses = [
+      TaskInstanceStatusDict.FAILED,
+      TaskInstanceStatusDict.TIMEOUT,
+      TaskInstanceStatusDict.TIMEOUT_ORPHAN,
+    ]
+    if (!retryableStatuses.includes(instance.status)) return false
+
+    // 重置为 PENDING，保留 entityId/payload，retryCount+1，立即执行
+    await this.storage.updateInstanceStatus(id, TaskInstanceStatusDict.PENDING, {
+      executor: null,
+      claimToken: null,
+      executeAt: new Date(),
+      retryCount: (instance.retryCount ?? 0) + 1,
+    })
+
+    // 通知预加载即时认领
+    await this.notify.notifyTaskScheduled(instance.taskCode, new Date())
+    return true
+  }
+
   async getInstance(id: string): Promise<ScheduledTaskInstance | null> {
     return this.storage.getInstance(id)
   }

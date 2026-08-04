@@ -29,6 +29,8 @@ export interface RuntimeFields {
 export interface InstanceFields {
   executor?: string | null
   retryCount?: number
+  claimToken?: string | null
+  executeAt?: Date
 }
 
 /** 日志可更新字段 */

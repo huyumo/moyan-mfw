@@ -8,8 +8,8 @@ import './style.scss';
 import { defineComponent, ref, computed, type PropType } from 'vue';
 import { ElMessage, ElProgress } from 'element-plus';
 import { Plus, VideoPlay, Delete } from '@element-plus/icons-vue';
-import { FormUploader } from './uploader';
-import type { MediaResource, UploadMethodType } from './types';
+import { getUploader } from '../../config/upload-config';
+import type { MediaResource, UploadMethodType, UploadResult } from './types';
 
 function getVideoDuration(file: File): Promise<number> {
   return new Promise((resolve) => {
@@ -95,8 +95,9 @@ export default defineComponent({
       uploadProgress.value = 0;
 
       try {
-        const uploader = new FormUploader(props.uploadUrl, props.businessType);
-        const result = await uploader.upload({
+        // 通过 getUploader 获取上传器，遵循 uploadType prop → 全局 VITE_UPLOAD_TYPE 配置
+        const uploader = getUploader(props.uploadType, props.businessType);
+        const result: UploadResult = await uploader.upload({
           file,
           filename: 'file',
           onProgress: (percentage) => {
