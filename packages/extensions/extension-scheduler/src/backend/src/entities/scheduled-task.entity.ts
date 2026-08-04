@@ -65,4 +65,12 @@ export class ScheduledTaskDefinition extends Base {
 
   @Column({ type: 'text', nullable: true, comment: '上次错误信息' })
   lastErrorMessage: string | null
+
+  // ── CRON 多实例抢占锁（引擎维护，非人工编辑） ──
+
+  @Column({ type: 'datetime', nullable: true, comment: 'CRON抢占锁到期时间' })
+  cronLockUntil: Date | null
+
+  @Column({ type: 'varchar', length: 64, nullable: true, comment: 'CRON抢占锁令牌' })
+  cronLockToken: string | null
 }

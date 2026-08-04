@@ -14,6 +14,7 @@ import { Injectable, Logger, Inject } from '@nestjs/common'
 import { SCHEDULER_TASK_STORAGE, type ITaskStorage, type SchedulerModuleOptions } from '../spi/interfaces'
 import { ResultBufferPool } from '../pool/result-buffer-pool'
 import { TaskRegistry } from './task.registry'
+import { WalService, type WalEntry } from './wal.service'
 import { TaskRunStatusDict, TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import type { ScheduledTaskLog } from '../entities'
 import type { BackoffStrategy } from '../interfaces/task-handler.interface'
@@ -36,6 +37,7 @@ export class BatchArchiverService {
     @Inject(SCHEDULER_TASK_STORAGE) private readonly storage: ITaskStorage,
     private readonly resultBuffer: ResultBufferPool,
     private readonly registry: TaskRegistry,
+    private readonly wal: WalService,
     @Inject('SCHEDULER_OPTIONS') options: SchedulerModuleOptions = {},
   ) {
     this.defaultMaxRetry = options.maxRetry ?? 3
@@ -137,8 +139,72 @@ export class BatchArchiverService {
       await this.storage.batchCreateLogs(logs)
     }
 
-    // 清空缓冲
-    this.resultBuffer.clear()
+    // 注意：此处不再调用 resultBuffer.clear() —— drainAll() 已清空旧缓冲，
+    // 若再 clear 会误删本批 await 期间新 push 的结果（并发丢数据 bug）
+
+    // WAL 清理：archive 成功后，本轮 entries 对应的 WAL 条目可安全移除
+    const maxSeq = entries.reduce((max, e: any) => Math.max(max, e.__walSeq ?? 0), 0)
+    if (maxSeq > 0) this.wal.truncateArchived(maxSeq)
+  }
+
+  /**
+   * WAL 重放：将崩溃前已完成但未归档的终态结果补落盘
+   * @description 由 SchedulerEngineService.onModuleInit 调用（WAL replay 阶段）
+   */
+  async replayFromWal(entries: WalEntry[]): Promise<void> {
+    if (entries.length === 0) return
+    this.logger.log(`WAL 重放归档: ${entries.length} 条终态结果`)
+    const successIds: string[] = []
+    const timeoutIds: string[] = []
+    const skippedIds: string[] = []
+    const failedEntries: Array<{ entry: WalEntry; retryCount: number }> = []
+    for (const e of entries) {
+      switch (e.status) {
+        case TaskRunStatusDict.SUCCESS: successIds.push(e.instanceId); break
+        case TaskRunStatusDict.TIMEOUT: timeoutIds.push(e.instanceId); break
+        case TaskRunStatusDict.SKIPPED: skippedIds.push(e.instanceId); break
+        case TaskRunStatusDict.FAILED: failedEntries.push({ entry: e, retryCount: e.retryCount ?? 0 }); break
+      }
+    }
+    const retryUpdates: Array<{ instanceId: string; executeAt: Date; retryCount: number }> = []
+    const giveUpIds: string[] = []
+    for (const { entry, retryCount } of failedEntries) {
+      const taskDef = await this.storage.getTaskDefinition(entry.taskCode)
+      const handler = this.registry.get(entry.taskCode)
+      let maxRetry: number
+      let backoff: any
+      if (taskDef?.maxRetry !== undefined && taskDef.maxRetry !== null) {
+        maxRetry = taskDef.maxRetry
+        backoff = taskDef.backoffStrategy ? JSON.parse(taskDef.backoffStrategy) : (handler?.backoffStrategy ?? this.defaultBackoff)
+      } else {
+        maxRetry = handler?.maxRetry ?? this.defaultMaxRetry
+        backoff = handler?.backoffStrategy ?? this.defaultBackoff
+      }
+      if (retryCount >= maxRetry) { giveUpIds.push(entry.instanceId) }
+      else {
+        const delayMs = this.computeBackoff(backoff, retryCount)
+        retryUpdates.push({ instanceId: entry.instanceId, executeAt: new Date(Date.now() + delayMs), retryCount: retryCount + 1 })
+      }
+    }
+    await this.storage.archiveWithRetry({ successIds, timeoutIds, skippedIds, retryUpdates, giveUpIds })
+    const logs: Partial<ScheduledTaskLog>[] = entries
+      .filter((e) => e.enableLog !== false)
+      .map((e) => ({
+        taskCode: e.taskCode,
+        taskName: e.taskName ?? this.registry.get(e.taskCode)?.taskName ?? e.taskCode,
+        instanceId: e.instanceId,
+        status: e.status,
+        triggerType: e.triggerType ?? TaskTriggerTypeDict.AUTO,
+        startedAt: new Date(e.startedAt),
+        finishedAt: new Date(e.finishedAt),
+        durationMs: new Date(e.finishedAt).getTime() - new Date(e.startedAt).getTime(),
+        executor: e.executor ?? null,
+        errorMessage: e.errorMessage ?? null,
+        errorStack: e.errorStack ?? null,
+        result: e.result ?? null,
+      }))
+    if (logs.length > 0) { await this.storage.batchCreateLogs(logs) }
+    this.logger.log(`WAL 重放归档完成: success=${successIds.length}, timeout=${timeoutIds.length}, failed=${failedEntries.length}, retry=${retryUpdates.length}`)
   }
 
   /**

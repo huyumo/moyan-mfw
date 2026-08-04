@@ -259,6 +259,9 @@ async function createDynamicAppModule(
             poolExtra.keepAliveInitialDelay = dbConfig.keepAliveInitialDelay;
           if (dbConfig.connectTimeout != null)
             poolExtra.connectTimeout = dbConfig.connectTimeout;
+          // 空闲连接超时回收（毫秒）：避免池子只扩不缩
+          if (dbConfig.idleTimeout != null)
+            poolExtra.idleTimeout = dbConfig.idleTimeout;
           return {
             type: "mysql",
             host: dbConfig.host || process.env.DB_HOST || "localhost",
@@ -268,7 +271,7 @@ async function createDynamicAppModule(
             database: dbConfig.database || process.env.DB_NAME,
             charset: dbConfig.charset || "utf8mb4",
             timezone: dbConfig.timezone || "+08:00",
-            poolSize: dbConfig.poolSize || 100,
+            poolSize: dbConfig.poolSize || 20,
             synchronize:
               dbConfig.synchronize ??
               (process.env.NODE_ENV === "development" ||

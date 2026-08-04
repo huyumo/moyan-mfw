@@ -6,5 +6,6 @@ export type { ITaskStorage, RuntimeFields, InstanceFields, LogFields, ArchiveWit
 export type { IDistributedLock } from './distributed-lock.interface'
 export type { ITaskDispatcher } from './task-dispatcher.interface'
 export type { IRuntimeNotify } from './runtime-notify.interface'
-export { SCHEDULER_TASK_STORAGE, SCHEDULER_DISTRIBUTED_LOCK, SCHEDULER_TASK_DISPATCHER, SCHEDULER_RUNTIME_NOTIFY } from './tokens'
+export type { IExecutorRegistry, ExecutorInfo } from './executor-registry.interface'
+export { SCHEDULER_TASK_STORAGE, SCHEDULER_DISTRIBUTED_LOCK, SCHEDULER_TASK_DISPATCHER, SCHEDULER_RUNTIME_NOTIFY, SCHEDULER_EXECUTOR_REGISTRY } from './tokens'
 export type { SchedulerModuleOptions } from './tokens'

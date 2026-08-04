@@ -60,6 +60,9 @@ class NoopRedisOnlyService implements IRedisOnlyService {
   async isBlacklisted(): Promise<boolean> {
     return false;
   }
+  getClient(): null {
+    return null;
+  }
 }
 
 @Global()

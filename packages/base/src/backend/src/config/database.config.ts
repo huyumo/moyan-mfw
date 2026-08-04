@@ -3,7 +3,9 @@
  * @description TypeORM 数据库连接配置
  */
 
-export default () => ({
+import { registerAs } from '@nestjs/config';
+
+export default registerAs('databaseConfig', () => ({
   /**
    * 数据库类型
    * @type {string}
@@ -57,9 +59,9 @@ export default () => ({
   /**
    * 连接池大小
    * @type {number}
-   * @default 100
+   * @default 20
    */
-  poolSize: parseInt(process.env.DB_POOL_SIZE || '100', 10),
+  poolSize: parseInt(process.env.DB_POOL_SIZE || '20', 10),
 
   /**
    * 连接超时时间（毫秒）
@@ -106,10 +108,12 @@ export default () => ({
     // 连接池心跳
     enableKeepAlive: true,
     keepAliveInitialDelay: 30000, // 30 秒
+    // 空闲连接超时回收（毫秒）：空闲 60s 的连接自动关闭，避免池子只扩不缩
+    idleTimeout: 60000,
     // 支持大数字
     supportBigNumbers: true,
     bigNumberStrings: false,
-    // 时区配置
-    timezone: 'Z',
+    // 时区配置（与顶层 timezone: '+08:00' 保持一致，避免 extra 覆盖导致时差）
+    timezone: '+08:00',
   },
-});
+}));

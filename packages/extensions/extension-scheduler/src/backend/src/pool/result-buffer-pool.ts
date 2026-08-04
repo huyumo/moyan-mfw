@@ -36,6 +36,8 @@ export interface ResultEntry {
   enableLog?: boolean
   /** 触发方式（1=自动 2=手动） */
   triggerType?: number
+  /** WAL 序号（归档成功后用于截断 WAL 文件） */
+  __walSeq?: number
 }
 
 @Injectable()
@@ -69,6 +71,7 @@ export class ResultBufferPool {
       retryCount: extra?.retryCount ?? 0,
       enableLog: extra?.enableLog ?? true,
       triggerType: extra?.triggerType,
+      __walSeq: extra?.__walSeq,
     })
     this.buckets.set(status, bucket)
   }

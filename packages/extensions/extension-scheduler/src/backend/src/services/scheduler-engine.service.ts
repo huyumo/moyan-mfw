@@ -1,10 +1,15 @@
 /**
  * @fileoverview 调度引擎核心服务（G 核心编排）
  * @description 编排预加载、时间轮、派发、归档的全生命周期
+ *   增强：
+ *   - 崩溃恢复：启动时按 executor 心跳判定孤儿 RUNNING 实例/日志，按配置策略处理
+ *   - CRON 去重：AUTO 触发令牌化抢占 cronLockUntil，防多实例重复执行
+ *   - 执行器心跳：启动即注册，供动态分片/清理协调复用
  */
 
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Inject } from '@nestjs/common'
 import { CronJob } from 'cron'
+import { randomBytes } from 'crypto'
 import {
   SCHEDULER_TASK_STORAGE,
   SCHEDULER_TASK_DISPATCHER,
@@ -19,6 +24,10 @@ import { MinuteWheel, SecondWheel, ArchiveWheel } from '../wheel'
 import { AsyncTaskPool } from '../pool/async-task-pool'
 import { ResultBufferPool } from '../pool/result-buffer-pool'
 import { ScheduledTaskService } from './scheduled-task.service'
+import { SchedulerConfigService } from './scheduler-config.service'
+import { SchedulerCleanupService } from './scheduler-cleanup.service'
+import { ExecutorHeartbeatService } from './executor-heartbeat.service'
+import { WalService } from './wal.service'
 import type { TaskExecutionContext } from '../interfaces/task-handler.interface'
 import type { ScheduledTaskInstance } from '../entities'
 import {
@@ -26,6 +35,7 @@ import {
   TaskRunStatusDict,
   TaskTriggerTypeDict,
   TaskInstanceStatusDict,
+  CrashRecoveryStrategyDict,
 } from 'moyan-mfw-extension-scheduler/shared'
 
 /** 任务运行时配置（DB 前端可编辑字段，执行时解析） */
@@ -60,6 +70,10 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     @Inject(SCHEDULER_TASK_STORAGE) private readonly storage: ITaskStorage,
     private readonly registry: TaskRegistry,
     private readonly taskService: ScheduledTaskService,
+    private readonly configService: SchedulerConfigService,
+    private readonly cleanupService: SchedulerCleanupService,
+    private readonly heartbeat: ExecutorHeartbeatService,
+    private readonly wal: WalService,
     @Inject('SCHEDULER_OPTIONS') private readonly options: SchedulerModuleOptions = {},
   ) {
     this.TICK_INTERVAL_MS = options.tickIntervalMs ?? 200
@@ -72,27 +86,54 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     this.taskService.setEngine(this)
     // 1. 同步任务定义（upsert code-registered tasks，含 handler 运行配置默认值）
     await this.taskService.syncFromCode()
-    // 2. 清理孤儿记录（崩溃残留的 RUNNING）
-    const orphans = await this.storage.cleanupOrphanRecords(600)
-    if (orphans > 0) this.logger.warn(`清理 ${orphans} 条孤儿记录`)
+    // 1.5 启动执行器心跳（注册本实例，供动态分片/清理协调/孤儿判定）
+    await this.heartbeat.start()
+    // 1.6 初始化 WAL + 重放本地缓存（崩溃前已完成但未归档的结果补落盘）
+    this.wal.init(this.heartbeat.executorId)
+    const replayed = await this.wal.replay(async (entries) => {
+      // 重放：将 WAL 中终态结果直接 archiveWithRetry + batchCreateLogs 补落盘
+      await this.archiver.replayFromWal(entries)
+    })
+    if (replayed > 0) {
+      this.logger.warn(`WAL 重放: 补落盘 ${replayed} 条终态结果（崩溃前未归档）`)
+    }
+    // 2. 崩溃恢复：按 executor 心跳判定孤儿（旧实例已死 → 按配置策略处理）
+    const alive = await this.heartbeat.getAliveExecutors()
+    const aliveIds = alive.map((e) => e.executorId)
+    const config = await this.configService.getConfig()
+    const recovered = await this.storage.recoverOrphanedInstances(config.crashRecoveryStrategy, aliveIds)
+    if (recovered > 0) {
+      this.logger.warn(`崩溃恢复: ${recovered} 条孤儿 RUNNING 实例（策略=${CrashRecoveryStrategyDict[config.crashRecoveryStrategy] ?? config.crashRecoveryStrategy}）`)
+    }
+    // 2.5 清理孤儿 RUNNING 日志（CRON/手动崩溃残留）
+    const orphanLogs = await this.storage.cleanupOrphanedLogs(aliveIds)
+    if (orphanLogs > 0) this.logger.warn(`清理 ${orphanLogs} 条孤儿 RUNNING 日志`)
     // 3. catchUpOnRestart 补偿执行
     await this.catchUpMissedTasks()
     // 4. 启动 CRON 类型任务
     await this.startCronTasks()
-    // 5. 启动预加载服务
+    // 5. 启动预加载服务（动态分片 + 重启限流）
     this.preloader.start()
+    // 5.5 启动定期清理服务（自调度，延迟 60s 首轮）
+    this.cleanupService.start()
     // 6. 启动秒轮 tick
     this.tickTimer = setInterval(() => this.tick(), this.TICK_INTERVAL_MS)
     // 7. 启动归档轮（每60s）
     this.archiveWheel.start(() => this.archiver.archive(), this.ARCHIVE_INTERVAL_MS)
-    // 8. 启动孤儿记录定期清理（每5分钟，清理崩溃残留的 RUNNING）
+    // 8. 定期崩溃恢复（每5分钟，按心跳判定 + 动态配置）
     this.orphanCleanupTimer = setInterval(async () => {
       if (this.isDestroying) return
       try {
-        const orphans = await this.storage.cleanupOrphanRecords(600)
-        if (orphans > 0) this.logger.warn(`定期清理 ${orphans} 条孤儿记录（RUNNING 超时未归档）`)
+        const cfg = await this.configService.getConfig()
+        const execs = await this.heartbeat.getAliveExecutors()
+        const ids = execs.map((e) => e.executorId)
+        const orphans = await this.storage.recoverOrphanedInstances(cfg.crashRecoveryStrategy, ids)
+        const logs = await this.storage.cleanupOrphanedLogs(ids)
+        if (orphans > 0 || logs > 0) {
+          this.logger.warn(`定期恢复: ${orphans} 条孤儿实例, ${logs} 条孤儿日志`)
+        }
       } catch (err) {
-        this.logger.error(`孤儿记录清理失败: ${(err as Error).message}`)
+        this.logger.error(`孤儿恢复失败: ${(err as Error).message}`)
       }
     }, 300_000)
     // 9. 注册结果回调（远程派发 F2/F3 用；本地 F1 走快速路径）
@@ -193,22 +234,19 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
     const config = await this.resolveTaskConfig(instance.taskCode, handler)
 
-    // 根据 enableLog 决定是否创建执行日志（高频任务可关闭以减少 DB 写入）
+    // 根据 enableLog 决定是否记录执行日志：WAL 模式下写本地文件（0 MySQL 连接），archive 时随结果批量落盘
     if (config.enableLog) {
-      try {
-        const log = await this.storage.createLog({
-          taskCode: instance.taskCode,
-          taskName: handler.taskName,
-          instanceId: instance.id,
-          status: TaskRunStatusDict.RUNNING,
-          triggerType,
-          startedAt,
-          executor: this.preloader['executorId'],
-        })
-        logId = log.id
-      } catch (err) {
-        this.logger.warn(`创建执行日志失败 instanceId=${instance.id}: ${(err as Error).message}，继续执行任务`)
-      }
+      this.wal.append('log', {
+        instanceId: instance.id,
+        taskCode: instance.taskCode,
+        taskName: handler.taskName,
+        status: TaskRunStatusDict.RUNNING,
+        startedAt,
+        executor: this.heartbeat.executorId,
+        triggerType,
+        enableLog: true,
+      })
+      logId = instance.id // WAL 模式下 logId 用 instanceId 占位（日志行由 archive 批量生成）
     }
 
     const ctx: TaskExecutionContext = {
@@ -228,6 +266,21 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       // F1 快速路径：dispatcher 内部调 taskPool.submit 或直接调 handler
       const result = await this.taskPool.submit(handler, ctx, config.timeoutSeconds)
       // 结果直写 I（绕过事件层，零开销）
+      const walSeq = this.wal.append('result', {
+        instanceId: instance.id,
+        taskCode: instance.taskCode,
+        taskName: handler.taskName,
+        status: TaskRunStatusDict.SUCCESS,
+        result: result ?? null,
+        startedAt,
+        finishedAt: new Date(),
+        executor: this.heartbeat.executorId,
+        entityId: instance.entityId,
+        payload: instance.payload,
+        retryCount: instance.retryCount,
+        enableLog: config.enableLog,
+        triggerType,
+      })
       this.resultBuffer.push(
         instance.id,
         TaskRunStatusDict.SUCCESS,
@@ -238,31 +291,51 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
           taskName: handler.taskName,
           startedAt,
           finishedAt: new Date(),
-          executor: this.preloader['executorId'],
+          executor: this.heartbeat.executorId,
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
           enableLog: config.enableLog,
           triggerType,
+          __walSeq: walSeq,
         },
       )
     } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      // 超时错误 -> TIMEOUT 状态（归档器 TIMEOUT 桶，不触发失败重试）
+      const isTimeout = /超时|timeout/i.test(error.message)
+      const walSeq = this.wal.append('result', {
+        instanceId: instance.id,
+        taskCode: instance.taskCode,
+        taskName: handler.taskName,
+        status: isTimeout ? TaskRunStatusDict.TIMEOUT : TaskRunStatusDict.FAILED,
+        error,
+        startedAt,
+        finishedAt: new Date(),
+        executor: this.heartbeat.executorId,
+        entityId: instance.entityId,
+        payload: instance.payload,
+        retryCount: instance.retryCount,
+        enableLog: config.enableLog,
+        triggerType,
+      })
       this.resultBuffer.push(
         instance.id,
-        TaskRunStatusDict.FAILED,
+        isTimeout ? TaskRunStatusDict.TIMEOUT : TaskRunStatusDict.FAILED,
         null,
-        err instanceof Error ? err : new Error(String(err)),
+        error,
         {
           taskCode: instance.taskCode,
           taskName: handler.taskName,
           startedAt,
           finishedAt: new Date(),
-          executor: this.preloader['executorId'],
+          executor: this.heartbeat.executorId,
           entityId: instance.entityId,
           payload: instance.payload,
           retryCount: instance.retryCount,
           enableLog: config.enableLog,
           triggerType,
+          __walSeq: walSeq,
         },
       )
     }
@@ -278,7 +351,7 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
       if (task.taskType !== TaskTypeDict.CRON) continue
       const handler = this.registry.get(task.taskCode)
       if (!handler) continue
-      // 创建补偿执行实例
+      // 创建补偿执行实例（走实例管道，不经 executeTaskNow，不受 CRON 去重影响）
       const now = new Date()
       await this.storage.createInstance({
         taskCode: task.taskCode,
@@ -402,70 +475,103 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
    * 立即执行任务（自动/手动共用）
    * @description 直接执行 handler → 写日志 → 更新任务运行时状态，不创建实例；
    *   Cron 自动触发与手动执行共用此路径，触发来源通过 triggerType 区分
+   *   CRON 自动触发（AUTO）多实例去重：令牌化抢占 cronLockUntil，抢占失败跳过；
+   *   手动触发（MANUAL）与补偿实例（走实例管道）不经过去重，始终执行
    */
   async executeTaskNow(taskCode: string, handler: any, triggerType: number): Promise<void> {
     if (this.isDestroying) return
     const startedAt = new Date()
     this.logger.debug(`立即执行任务: ${taskCode} (triggerType=${triggerType})`)
 
-    // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
-    const config = await this.resolveTaskConfig(taskCode, handler)
-
-    // 根据 enableLog 决定是否创建执行日志
-    let logId: string | null = null
-    if (config.enableLog) {
-      const log = await this.storage.createLog({
-        taskCode,
-        taskName: handler.taskName,
-        status: TaskRunStatusDict.RUNNING,
-        triggerType,
-        startedAt,
-        executor: this.preloader['executorId'],
-      })
-      logId = log.id
-    }
-
-    const ctx: TaskExecutionContext = {
-      taskCode,
-      logId: logId ?? '',
-      triggeredAt: startedAt,
-      triggerType,
-      logger: this.logger,
-      retryCount: 0,
-      maxRetry: config.maxRetry,
+    // CRON 自动触发：多实例去重（令牌化抢占）
+    let cronLockToken: string | null = null
+    if (triggerType === TaskTriggerTypeDict.AUTO) {
+      const cfg = await this.configService.getConfig()
+      if (cfg.cronDedupEnabled) {
+        cronLockToken = randomBytes(8).toString('hex')
+        // 锁 TTL 覆盖任务超时时间（至少30s），崩溃后锁自动过期
+        const lockTtlMs = Math.max(30_000, (handler.defaultTimeoutSeconds ?? 300) * 1000)
+        const claimed = await this.storage.tryClaimCronExecution(
+          taskCode,
+          new Date(Date.now() + lockTtlMs),
+          cronLockToken,
+        )
+        if (!claimed) {
+          this.logger.debug(`CRON 任务 ${taskCode} 已被其他实例抢占，跳过`)
+          return
+        }
+      }
     }
 
     try {
-      const result = await this.taskPool.submit(handler, ctx, config.timeoutSeconds)
-      // 更新日志（仅在开启日志时）
-      if (logId) {
-        await this.storage.updateLogStatus(logId, TaskRunStatusDict.SUCCESS, {
-          finishedAt: new Date(),
-          durationMs: Date.now() - startedAt.getTime(),
-          result: result ?? null,
+      // 运行时配置（DB 前端可编辑值优先，回退 handler 默认值）
+      const config = await this.resolveTaskConfig(taskCode, handler)
+
+      // 根据 enableLog 决定是否创建执行日志
+      let logId: string | null = null
+      if (config.enableLog) {
+        const log = await this.storage.createLog({
+          taskCode,
+          taskName: handler.taskName,
+          status: TaskRunStatusDict.RUNNING,
+          triggerType,
+          startedAt,
+          executor: this.heartbeat.executorId,
+        })
+        logId = log.id
+      }
+
+      const ctx: TaskExecutionContext = {
+        taskCode,
+        logId: logId ?? '',
+        triggeredAt: startedAt,
+        triggerType,
+        logger: this.logger,
+        retryCount: 0,
+        maxRetry: config.maxRetry,
+      }
+
+      try {
+        const result = await this.taskPool.submit(handler, ctx, config.timeoutSeconds)
+        // 更新日志（仅在开启日志时）
+        if (logId) {
+          await this.storage.updateLogStatus(logId, TaskRunStatusDict.SUCCESS, {
+            finishedAt: new Date(),
+            durationMs: Date.now() - startedAt.getTime(),
+            result: result ?? null,
+          })
+        }
+        // 更新任务运行时状态
+        await this.storage.updateTaskRuntime(taskCode, {
+          lastRunAt: startedAt,
+          lastRunStatus: TaskRunStatusDict.SUCCESS,
+          lastErrorMessage: null,
+        })
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err))
+        if (logId) {
+          await this.storage.updateLogStatus(logId, TaskRunStatusDict.FAILED, {
+            finishedAt: new Date(),
+            durationMs: Date.now() - startedAt.getTime(),
+            errorMessage: error.message,
+            errorStack: error.stack ?? null,
+          })
+        }
+        await this.storage.updateTaskRuntime(taskCode, {
+          lastRunAt: startedAt,
+          lastRunStatus: TaskRunStatusDict.FAILED,
+          lastErrorMessage: error.message,
         })
       }
-      // 更新任务运行时状态
-      await this.storage.updateTaskRuntime(taskCode, {
-        lastRunAt: startedAt,
-        lastRunStatus: TaskRunStatusDict.SUCCESS,
-        lastErrorMessage: null,
-      })
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      if (logId) {
-        await this.storage.updateLogStatus(logId, TaskRunStatusDict.FAILED, {
-          finishedAt: new Date(),
-          durationMs: Date.now() - startedAt.getTime(),
-          errorMessage: error.message,
-          errorStack: error.stack ?? null,
-        })
+    } finally {
+      // 释放 CRON 锁（仅释放自己令牌的锁，不影响其他实例）
+      if (cronLockToken) {
+        try {
+          await this.storage.releaseCronLock(taskCode, cronLockToken)
+        } catch (err) {
+          this.logger.warn(`释放 CRON 锁失败 taskCode=${taskCode}: ${(err as Error).message}`)
+        }
       }
-      await this.storage.updateTaskRuntime(taskCode, {
-        lastRunAt: startedAt,
-        lastRunStatus: TaskRunStatusDict.FAILED,
-        lastErrorMessage: error.message,
-      })
     }
   }
 
@@ -482,17 +588,21 @@ export class SchedulerEngineService implements OnModuleInit, OnModuleDestroy {
     }
     // 停止归档轮
     this.archiveWheel.stop()
-    // 停止孤儿清理定时器
+    // 停止孤儿恢复定时器
     if (this.orphanCleanupTimer) {
       clearInterval(this.orphanCleanupTimer)
       this.orphanCleanupTimer = null
     }
-    // 停止预加载
+    // 停止预加载（清理定时器）
     this.preloader.onModuleDestroy()
+    // 停止心跳并注销执行器（优雅停机）
+    await this.heartbeat.stop()
     // 优雅停机：flush I 残留缓冲强制落库
     if (this.resultBuffer.size() > 0) {
       await this.archiver.archive()
     }
+    // WAL 落盘确保（优雅停机时强制 fsync）
+    this.wal.flush()
     this.logger.log('调度引擎已停止，缓冲已落库')
   }
 }

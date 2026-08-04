@@ -11,6 +11,7 @@ import {
   TaskInstanceStatusDict,
   TaskRunStatusDict,
   TaskTriggerTypeDict,
+  CrashRecoveryStrategyDict,
 } from 'moyan-mfw-extension-scheduler/shared'
 
 // ── 任务类型 ──
@@ -70,6 +71,20 @@ export const runStatusLabel: Record<number, string> = {
 export const triggerTypeLabel: Record<number, string> = {
   [TaskTriggerTypeDict.AUTO]: '自动',
   [TaskTriggerTypeDict.MANUAL]: '手动',
+}
+
+// ── 崩溃恢复策略 ──
+
+export const crashRecoveryTagType: Record<number, string> = {
+  [CrashRecoveryStrategyDict.REQUEUE]: 'warning',
+  [CrashRecoveryStrategyDict.MARK_FAILED]: 'danger',
+  [CrashRecoveryStrategyDict.MARK_TIMEOUT_ORPHAN]: 'info',
+}
+
+export const crashRecoveryLabel: Record<number, string> = {
+  [CrashRecoveryStrategyDict.REQUEUE]: '重新入队',
+  [CrashRecoveryStrategyDict.MARK_FAILED]: '标记失败',
+  [CrashRecoveryStrategyDict.MARK_TIMEOUT_ORPHAN]: '标记未归档',
 }
 
 // ── 工具函数 ──

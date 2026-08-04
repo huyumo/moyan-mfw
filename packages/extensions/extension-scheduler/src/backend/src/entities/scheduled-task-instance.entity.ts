@@ -40,4 +40,7 @@ export class ScheduledTaskInstance extends Base {
 
   @Column({ type: 'tinyint', default: TaskTriggerTypeDict.AUTO, comment: toDescription(TaskTriggerTypeDict) })
   triggerType: number
+
+  @Column({ type: 'varchar', length: 64, nullable: true, comment: '认领令牌（防并发reload重复入轮）' })
+  claimToken: string | null
 }

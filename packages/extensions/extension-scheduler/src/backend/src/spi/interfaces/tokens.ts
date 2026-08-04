@@ -7,11 +7,12 @@ export const SCHEDULER_TASK_STORAGE = Symbol.for('MOYAN:MFW:SCHEDULER_TASK_STORA
 export const SCHEDULER_DISTRIBUTED_LOCK = Symbol.for('MOYAN:MFW:SCHEDULER_DISTRIBUTED_LOCK')
 export const SCHEDULER_TASK_DISPATCHER = Symbol.for('MOYAN:MFW:SCHEDULER_TASK_DISPATCHER')
 export const SCHEDULER_RUNTIME_NOTIFY = Symbol.for('MOYAN:MFW:SCHEDULER_RUNTIME_NOTIFY')
+export const SCHEDULER_EXECUTOR_REGISTRY = Symbol.for('MOYAN:MFW:SCHEDULER_EXECUTOR_REGISTRY')
 
 /** 调度器模块配置选项 */
 export interface SchedulerModuleOptions {
-  /** 哈希分片数，默认1（单实例） */
-  shardCount?: number
+  /** IExecutorRegistry 实现类（默认 DbExecutorRegistry） */
+  executorRegistryImpl?: any
   /** IDistributedLock 实现类 */
   lockImpl?: any
   /** ITaskDispatcher 实现类 */
@@ -36,4 +37,20 @@ export interface SchedulerModuleOptions {
   tickIntervalMs?: number
   /** 归档轮触发间隔（毫秒），默认60000 */
   archiveIntervalMs?: number
+  /** 哈希分片数（>0 时覆盖动态分片，用于向后兼容）；默认 0=动态分片 */
+  shardCount?: number
+  /** 数据清理：实例保留天数默认值（DB 配置表可覆盖） */
+  instanceRetentionDays?: number
+  /** 数据清理：日志保留天数默认值（DB 配置表可覆盖） */
+  logRetentionDays?: number
+  /** 崩溃恢复策略默认值（DB 配置表可覆盖） */
+  crashRecoveryStrategy?: number
+  /** 重启限流：批次大小默认值（DB 配置表可覆盖） */
+  restartBatchSize?: number
+  /** WAL 本地文件缓存：是否启用（默认 true） */
+  walEnabled?: boolean
+  /** WAL 文件目录（默认 os.tmpdir()/mfw-scheduler-wal） */
+  walDir?: string
+  /** WAL fsync 间隔毫秒（默认 100） */
+  walFsyncIntervalMs?: number
 }

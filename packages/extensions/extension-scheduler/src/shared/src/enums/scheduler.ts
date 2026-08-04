@@ -40,3 +40,13 @@ export class TaskTriggerTypeDict {
   @DictEntry({ label: '自动' }) static AUTO = 1
   @DictEntry({ label: '手动' }) static MANUAL = 2
 }
+
+/** 崩溃恢复策略 */
+@DictMeta({ key: 'scheduler_crash_recovery', label: '崩溃恢复策略', module: '定时任务' })
+export class CrashRecoveryStrategyDict {
+  /** 重置为待执行重新执行（要求任务幂等，防重复副作用） */
+  @DictEntry({ label: '重新入队', type: 'warning' }) static REQUEUE = 1
+  @DictEntry({ label: '标记失败', type: 'danger' }) static MARK_FAILED = 2
+  /** 标记为未归档（结果未知，不重试） */
+  @DictEntry({ label: '标记未归档', type: 'info' }) static MARK_TIMEOUT_ORPHAN = 3
+}

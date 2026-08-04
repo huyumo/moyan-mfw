@@ -22,6 +22,7 @@ import { DemoCronTaskHandler } from './handlers/demo-cron-task.handler'
 import { DemoDelayTaskHandler } from './handlers/demo-delay-task.handler'
 import { DemoImmediateTaskHandler } from './handlers/demo-immediate-task.handler'
 import { DemoTimeoutTaskHandler } from './handlers/demo-timeout-task.handler'
+import { StressWorkerHandler } from './handlers/stress-worker.handler'
 import { OrderAutoCancelHandler } from './handlers/order-auto-cancel.handler'
 import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
 
@@ -29,7 +30,7 @@ import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
   imports: [
     TypeOrmModule.forFeature([DemoOrder]),
     SchedulerModule.forRoot({
-      shardCount: 1,
+      // shardCount 不配置（0）→ 启用动态分片：根据存活执行器心跳自动计算分片数
       lockImpl: RedisLock,            // Redis 分布式锁（替代 DbLock）
       notifyImpl: RedisPubSubNotify,  // Redis pub/sub 即时通知（替代 PollingNotify）
     }),
@@ -42,6 +43,7 @@ import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
     DemoDelayTaskHandler,
     DemoImmediateTaskHandler,  // 立即执行模式示例处理器
     DemoTimeoutTaskHandler,    // 超时验证示例处理器
+    StressWorkerHandler,      // 压测工作处理器
     OrderAutoCancelHandler,    // 订单超时自动取消处理器
     PaymentCallbackHandler,  // 支付回调递增重试处理器
   ],

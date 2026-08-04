@@ -131,6 +131,11 @@ export class MemoryCacheService implements ICacheService, IRedisOnlyService, OnM
     return (await this.get(`token:blacklist:${jti}`)) !== null;
   }
 
+  /** 内存模式无原始 Redis 客户端，返回 null */
+  getClient(): null {
+    return null;
+  }
+
   private cleanExpired(): void {
     const now = Date.now();
     let cleaned = 0;

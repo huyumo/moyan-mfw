@@ -6,21 +6,38 @@
 import { Module, DynamicModule } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { RouterModule } from '@nestjs/core'
-import { ScheduledTaskDefinition, ScheduledTaskInstance, ScheduledTaskLog } from './entities'
+import {
+  ScheduledTaskDefinition,
+  ScheduledTaskInstance,
+  ScheduledTaskLog,
+  SchedulerConfig,
+  SchedulerExecutor,
+} from './entities'
 import {
   SCHEDULER_TASK_STORAGE,
   SCHEDULER_DISTRIBUTED_LOCK,
   SCHEDULER_TASK_DISPATCHER,
   SCHEDULER_RUNTIME_NOTIFY,
+  SCHEDULER_EXECUTOR_REGISTRY,
   type SchedulerModuleOptions,
 } from './spi/interfaces'
-import { TypeOrmStorage, DbLock, EventEmitterDispatcher, PollingNotify } from './spi/impl'
+import {
+  TypeOrmStorage,
+  DbLock,
+  EventEmitterDispatcher,
+  PollingNotify,
+  DbExecutorRegistry,
+} from './spi/impl'
 import {
   SchedulerEngineService,
   TaskPreloaderService,
   BatchArchiverService,
   ScheduledTaskService,
   TaskRegistry,
+  SchedulerConfigService,
+  SchedulerCleanupService,
+  ExecutorHeartbeatService,
+  WalService,
 } from './services'
 import { MinuteWheel, SecondWheel, ArchiveWheel } from './wheel'
 import { AsyncTaskPool, ResultBufferPool } from './pool'
@@ -39,6 +56,8 @@ export class SchedulerModule {
           ScheduledTaskDefinition,
           ScheduledTaskInstance,
           ScheduledTaskLog,
+          SchedulerConfig,
+          SchedulerExecutor,
         ]),
         RouterModule.register([{ path: 'ext/scheduler', module: SchedulerModule }]),
       ],
@@ -49,12 +68,17 @@ export class SchedulerModule {
         { provide: SCHEDULER_DISTRIBUTED_LOCK, useClass: options?.lockImpl ?? DbLock },
         { provide: SCHEDULER_TASK_DISPATCHER, useClass: options?.dispatcherImpl ?? EventEmitterDispatcher },
         { provide: SCHEDULER_RUNTIME_NOTIFY, useClass: options?.notifyImpl ?? PollingNotify },
+        { provide: SCHEDULER_EXECUTOR_REGISTRY, useClass: options?.executorRegistryImpl ?? DbExecutorRegistry },
         // 核心服务
         SchedulerEngineService,
         TaskPreloaderService,
         BatchArchiverService,
         ScheduledTaskService,
         TaskRegistry,
+        SchedulerConfigService,
+        SchedulerCleanupService,
+        ExecutorHeartbeatService,
+        WalService,
         // 时间轮
         MinuteWheel,
         SecondWheel,
@@ -71,7 +95,7 @@ export class SchedulerModule {
           useValue: options ?? {},
         },
       ],
-      exports: [ScheduledTaskService, TaskRegistry],
+      exports: [ScheduledTaskService, TaskRegistry, SchedulerConfigService],
     }
   }
 }

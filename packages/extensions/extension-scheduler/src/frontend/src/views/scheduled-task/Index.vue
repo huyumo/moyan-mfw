@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 定时任务管理页面
- * @description 三视图容器：任务定义 / 执行实例 / 执行日志
+ * @description 四视图容器：任务定义 / 执行实例 / 执行日志 / 系统配置
  *   每个 Tab 为独立组件，自带 MfwPageWrapper（独立刷新/搜索上下文）
  *   el-tab-pane 使用 lazy 延迟挂载，首次打开才加载
  */
@@ -18,6 +18,9 @@
       <el-tab-pane label="执行日志" name="logs" lazy>
         <TaskLogTab v-if="activeTab === 'logs'" ref="logTabRef" />
       </el-tab-pane>
+      <el-tab-pane label="系统配置" name="config" lazy>
+        <SystemConfigTab v-if="activeTab === 'config'" />
+      </el-tab-pane>
     </el-tabs>
   </MfwPageWrapper>
 
@@ -28,6 +31,7 @@ import { ref } from 'vue'
 import TaskDefinitionTab from './TaskDefinitionTab.vue'
 import TaskInstanceTab from './TaskInstanceTab.vue'
 import TaskLogTab from './TaskLogTab.vue'
+import SystemConfigTab from './SystemConfigTab.vue'
 import { MfwPageWrapper } from 'moyan-mfw-base/frontend'
 
 defineOptions({ name: 'MfwScheduledTaskPage' })

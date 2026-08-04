@@ -180,3 +180,63 @@ export class ApiSchedulerGetLog extends ApiCall<
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }
+
+/** 调度器全局配置 */
+export interface SchedulerConfigItem {
+  id: string
+  configKey: string
+  cleanupEnabled: boolean
+  instanceRetentionDays: number
+  logRetentionDays: number
+  cleanupIntervalHours: number
+  crashRecoveryStrategy: number
+  orphanTimeoutSeconds: number
+  restartBatchSize: number
+  restartBatchDelayMs: number
+  cronDedupEnabled: boolean
+}
+
+/** 存活执行器信息 */
+export interface SchedulerExecutorItem {
+  executorId: string
+  hostname: string | null
+  pid: number | null
+  lastHeartbeat: string
+}
+
+/** 手动清理结果 */
+export interface CleanupResult {
+  instances: number
+  logs: number
+}
+
+/** 查询调度器全局配置 */
+export class ApiSchedulerGetConfig extends ApiCall<{}, SchedulerConfigItem> {
+  readonly path = '/api/ext/scheduler/config'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/** 更新调度器全局配置 */
+export class ApiSchedulerUpdateConfig extends ApiCall<
+  { body: Partial<SchedulerConfigItem> },
+  void
+> {
+  readonly path = '/api/ext/scheduler/config'
+  readonly method: MoMethod = 'PUT'
+  readonly auth = true
+}
+
+/** 手动清理过期实例与日志 */
+export class ApiSchedulerCleanup extends ApiCall<{}, CleanupResult> {
+  readonly path = '/api/ext/scheduler/config/cleanup'
+  readonly method: MoMethod = 'POST'
+  readonly auth = true
+}
+
+/** 查询存活执行器列表（动态分片状态） */
+export class ApiSchedulerListExecutors extends ApiCall<{}, SchedulerExecutorItem[]> {
+  readonly path = '/api/ext/scheduler/executors'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}

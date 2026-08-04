@@ -12,12 +12,16 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam } from '@ne
 import { RequirePermission, ApiPaginatedResponse, SkipPermission } from 'moyan-mfw-base/backend'
 import { ApiResponseUtil } from '../api-response'
 import { ScheduledTaskService } from '../services/scheduled-task.service'
+import { SchedulerConfigService } from '../services/scheduler-config.service'
+import { SchedulerCleanupService } from '../services/scheduler-cleanup.service'
+import { ExecutorHeartbeatService } from '../services/executor-heartbeat.service'
 import {
   UpdateTaskDto,
   CreateDelayInstanceDto,
   InstanceQueryDto,
   LogQueryDto,
   TaskQueryDto,
+  UpdateSchedulerConfigDto,
   ScheduledTaskResponseDto,
   ScheduledTaskInstanceResponseDto,
   ScheduledTaskLogResponseDto,
@@ -27,7 +31,12 @@ import {
 @ApiBearerAuth('Authorization')
 @Controller()
 export class ScheduledTaskController {
-  constructor(private readonly taskService: ScheduledTaskService) {}
+  constructor(
+    private readonly taskService: ScheduledTaskService,
+    private readonly configService: SchedulerConfigService,
+    private readonly cleanupService: SchedulerCleanupService,
+    private readonly heartbeat: ExecutorHeartbeatService,
+  ) {}
 
   // ── 任务定义 ──
 
@@ -129,6 +138,44 @@ export class ScheduledTaskController {
   @SkipPermission()
   async getLog(@Param('id') id: string) {
     const result = await this.taskService.getLogDetail(id)
+    return ApiResponseUtil.success(result, '查询成功')
+  }
+
+  // ── 系统配置 ──
+
+  @Get('config')
+  @ApiOperation({ summary: '查询调度器全局配置', description: '查询清理/崩溃恢复/限流等全局配置' })
+  @SkipPermission()
+  async getConfig() {
+    const result = await this.configService.getConfig()
+    return ApiResponseUtil.success(result, '查询成功')
+  }
+
+  @Put('config')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '更新调度器全局配置', description: '更新后清除缓存立即生效' })
+  @RequirePermission({ permCode: 'ext:scheduler:task', permissionValue: ['编辑'] })
+  async updateConfig(@Body() dto: UpdateSchedulerConfigDto) {
+    await this.configService.updateConfig(dto as any)
+    return ApiResponseUtil.success(null, '更新成功')
+  }
+
+  @Post('config/cleanup')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '手动清理', description: '立即清理过期终态实例与日志，返回删除数量' })
+  @RequirePermission({ permCode: 'ext:scheduler:task', permissionValue: ['编辑'] })
+  async manualCleanup() {
+    const result = await this.cleanupService.cleanupNow()
+    return ApiResponseUtil.success(result, '清理完成')
+  }
+
+  // ── 执行器状态（动态分片实时展示） ──
+
+  @Get('executors')
+  @ApiOperation({ summary: '查询存活执行器列表', description: '用于展示动态分片状态' })
+  @SkipPermission()
+  async listExecutors() {
+    const result = await this.heartbeat.getAliveExecutors()
     return ApiResponseUtil.success(result, '查询成功')
   }
 }

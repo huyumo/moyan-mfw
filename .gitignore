@@ -36,3 +36,5 @@ temp/
 # IDE / tool generated
 .zcode/
 console.log('ERR
+scripts/stress/logs/
+scripts/stress/results/

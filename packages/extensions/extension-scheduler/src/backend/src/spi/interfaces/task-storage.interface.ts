@@ -97,6 +97,11 @@ export interface ITaskStorage {
    */
   batchClaim(ids: string[], executor: string): Promise<ScheduledTaskInstance[]>
   /**
+   * 令牌化批量认领（防同实例并发 reload 双派发）
+   * UPDATE 写入 claimToken，SELECT 仅按本次令牌确认
+   */
+  batchClaimWithToken(ids: string[], executor: string, claimToken: string): Promise<ScheduledTaskInstance[]>
+  /**
    * 批量归档并处理重试（单次 CASE-WHEN UPDATE）
    * @description 成功/超时/跳过/放弃 → 更新 status；重试 → 原地重置为 PENDING + retryCount+1 + 新 executeAt
    */
@@ -114,6 +119,29 @@ export interface ITaskStorage {
 
   // ── 孤儿清理（启动时批量） ──
   cleanupOrphanRecords(timeoutSeconds: number): Promise<number>
+
+  // ── 数据清理（定期/手动） ──
+  /** 分批硬删除终态实例（含软删行），返回总删除数 */
+  purgeOldInstances(retentionDays: number, batchSize: number): Promise<number>
+  /** 分批硬删除过期日志，返回总删除数 */
+  purgeOldLogs(retentionDays: number, batchSize: number): Promise<number>
+
+  // ── 崩溃恢复 ──
+  /**
+   * 按策略恢复孤儿 RUNNING 实例（executor 不在存活列表）
+   * @param strategy CrashRecoveryStrategyDict: 1=REQUEUE(带retryCount记账+maxRetry封顶) 2=MARK_FAILED 3=MARK_TIMEOUT_ORPHAN
+   * @param aliveExecutors 存活执行器ID列表
+   * @returns 恢复数
+   */
+  recoverOrphanedInstances(strategy: number, aliveExecutors: string[]): Promise<number>
+  /** 清理孤儿 RUNNING 日志（executor 不在存活列表的崩溃残留）→ 标记 TIMEOUT，返回清理数 */
+  cleanupOrphanedLogs(aliveExecutors: string[]): Promise<number>
+
+  // ── CRON 多实例去重 ──
+  /** 原子抢占 CRON 执行权（令牌化），成功返回 true */
+  tryClaimCronExecution(taskCode: string, lockUntil: Date, token: string): Promise<boolean>
+  /** 释放 CRON 执行权（仅释放自己令牌的锁） */
+  releaseCronLock(taskCode: string, token: string): Promise<void>
 
   // ── 查询（管理页面用） ──
   queryInstances(filters: InstanceQueryFilters): Promise<PaginationResult<ScheduledTaskInstance>>
