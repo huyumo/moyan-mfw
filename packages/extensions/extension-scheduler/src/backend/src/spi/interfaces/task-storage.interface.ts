@@ -27,10 +27,6 @@ export interface RuntimeFields {
 
 /** 实例可更新字段 */
 export interface InstanceFields {
-  startedAt?: Date | null
-  finishedAt?: Date | null
-  errorMessage?: string | null
-  errorStack?: string | null
   executor?: string | null
   retryCount?: number
 }
@@ -45,16 +41,18 @@ export interface LogFields {
   result?: Record<string, any> | null
 }
 
-/** 批量归档状态更新项 */
-export interface BatchArchiveUpdate {
-  status: number
-  ids: string[]
-  fields?: Partial<InstanceFields>
-  /**
-   * 错误消息按实例单独写入
-   * @description 不能放入共享 fields（同状态组内多个失败实例会互相覆盖），需逐实例更新
-   */
-  errors?: Array<{ instanceId: string; message: string | null }>
+/** 批量归档+重试参数 */
+export interface ArchiveWithRetryParams {
+  /** 成功实例ID列表 */
+  successIds: string[]
+  /** 超时实例ID列表 */
+  timeoutIds: string[]
+  /** 跳过实例ID列表 */
+  skippedIds: string[]
+  /** 需重试的实例（原地重置为 PENDING） */
+  retryUpdates: Array<{ instanceId: string; executeAt: Date; retryCount: number }>
+  /** 放弃重试的实例（置为 FAILED 终态） */
+  giveUpIds: string[]
 }
 
 /** 实例查询过滤条件 */
@@ -90,8 +88,6 @@ export interface ITaskStorage {
 
   // ── 延迟实例 ──
   createInstance(instance: Partial<ScheduledTaskInstance>): Promise<ScheduledTaskInstance>
-  /** 批量创建（归档链 K 生成重试任务用） */
-  createInstances(instances: Partial<ScheduledTaskInstance>[]): Promise<void>
   /** 窗口加载：status=PENDING AND executeAt BETWEEN now AND windowEnd */
   loadDueInstances(now: Date, windowEnd: Date, limit: number): Promise<ScheduledTaskInstance[]>
   /**
@@ -100,8 +96,11 @@ export interface ITaskStorage {
    * 再 SELECT 确认本实例认领成功的
    */
   batchClaim(ids: string[], executor: string): Promise<ScheduledTaskInstance[]>
-  /** 批量归档：按状态分组，每组 1 次 UPDATE */
-  batchArchiveStatus(updates: BatchArchiveUpdate[]): Promise<void>
+  /**
+   * 批量归档并处理重试（单次 CASE-WHEN UPDATE）
+   * @description 成功/超时/跳过/放弃 → 更新 status；重试 → 原地重置为 PENDING + retryCount+1 + 新 executeAt
+   */
+  archiveWithRetry(params: ArchiveWithRetryParams): Promise<void>
   cancelInstance(id: string): Promise<boolean>
   updateInstanceStatus(id: string, status: number, fields?: Partial<InstanceFields>): Promise<void>
   getInstance(id: string): Promise<ScheduledTaskInstance | null>

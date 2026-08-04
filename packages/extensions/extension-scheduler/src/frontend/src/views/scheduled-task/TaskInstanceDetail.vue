@@ -41,21 +41,6 @@
           <span class="info-label">应执行时间</span>
           <span class="info-value">{{ formatDate(detail.executeAt) }}</span>
         </div>
-        <div class="info-row">
-          <span class="info-label">开始时间</span>
-          <span class="info-value">{{ formatDate(detail.startedAt) }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">完成时间</span>
-          <span class="info-value">{{ formatDate(detail.finishedAt) }}</span>
-        </div>
-        <div class="info-row" v-if="detail.executor">
-          <span class="info-label">执行实例</span>
-          <span class="info-value copyable" @click="copyToClipboard(detail.executor)" >
-            {{ detail.executor || '-' }}
-            <el-icon  class="copy-icon"><CopyDocument /></el-icon>
-          </span>
-        </div>
       </div>
     </section>
 
@@ -66,15 +51,6 @@
         <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.payload))"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block">{{ formatJson(detail.payload) }}</pre>
-    </section>
-
-    <!-- 错误信息 -->
-    <section class="detail-section" v-if="detail.errorMessage">
-      <h4 class="section-title">
-        错误信息
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorMessage)"><CopyDocument /></el-icon>
-      </h4>
-      <div class="error-message">{{ detail.errorMessage }}</div>
     </section>
   </div>
 </template>
@@ -216,17 +192,5 @@ const statusLabel = computed(() => {
   white-space: pre-wrap;
   word-break: break-all;
   margin: 0;
-}
-
-// ── 错误信息 ──
-.error-message {
-  color: #f56c6c;
-  font-size: 13px;
-  line-height: 1.6;
-  background: #fef0f0;
-  border: 1px solid #fde2e2;
-  border-radius: 4px;
-  padding: 12px;
-  word-break: break-all;
 }
 </style>

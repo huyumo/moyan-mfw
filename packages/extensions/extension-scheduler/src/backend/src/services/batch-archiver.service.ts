@@ -1,11 +1,13 @@
 /**
  * @fileoverview 批量归档服务（K 批量归档）
- * @description 读 I 全部分组缓存 → 批量 UPDATE 实例状态 → 失败重试 → 批量 INSERT 日志
+ * @description 读 I 全部分组缓存 → 重试判定 → 单次 CASE-WHEN UPDATE 归档+重试 → 批量 INSERT 日志
  *
- * 重试机制：
+ * 重试机制（原地更新）：
  *   - 失败任务按 handler 级别配置的 maxRetry + backoffStrategy 决定是否重试及下次执行时间
+ *   - 重试时原地更新同一实例（status→PENDING, retryCount+1, executeAt=now+退避），不创建新实例
+ *   - 达到 maxRetry 的实例置为 FAILED 终态
  *   - handler 未配置时回退到全局 SchedulerModuleOptions 默认值
- *   - 支持三种退避策略：fixed（固定序列）/ exponential（指数退避）/ linear（线性递增）
+ *   - 支持四种退避策略：none / fixed（固定序列）/ exponential（指数退避）/ linear（线性递增）
  */
 
 import { Injectable, Logger, Inject } from '@nestjs/common'
@@ -13,7 +15,7 @@ import { SCHEDULER_TASK_STORAGE, type ITaskStorage, type SchedulerModuleOptions 
 import { ResultBufferPool } from '../pool/result-buffer-pool'
 import { TaskRegistry } from './task.registry'
 import { TaskRunStatusDict, TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
-import type { ScheduledTaskInstance, ScheduledTaskLog } from '../entities'
+import type { ScheduledTaskLog } from '../entities'
 import type { BackoffStrategy } from '../interfaces/task-handler.interface'
 
 /** 全局默认退避策略：指数退避 60s→120s→240s */
@@ -42,7 +44,7 @@ export class BatchArchiverService {
 
   /**
    * 执行归档
-   * @description drainAll → 按状态分组 → batchArchiveStatus → 失败重试 → batchCreateLogs → clear
+   * @description drainAll → 按状态分组 → 重试判定 → archiveWithRetry 单次 UPDATE → batchCreateLogs → clear
    */
   async archive(): Promise<void> {
     const entries = this.resultBuffer.drainAll()
@@ -58,76 +60,60 @@ export class BatchArchiverService {
       groups.set(e.status, g)
     }
 
-    // 批量更新实例状态（每组1次UPDATE）
-    // 注意：ResultBuffer 中存的是 TaskRunStatusDict 值（1-5），
-    //   需要转换为 TaskInstanceStatusDict 值（3=成功, 4=失败）写入实例表
-    const runToInstanceStatus: Record<number, number> = {
-      [TaskRunStatusDict.SUCCESS]: TaskInstanceStatusDict.SUCCESS,
-      [TaskRunStatusDict.FAILED]: TaskInstanceStatusDict.FAILED,
-      [TaskRunStatusDict.TIMEOUT]: TaskInstanceStatusDict.TIMEOUT,
-      [TaskRunStatusDict.SKIPPED]: TaskInstanceStatusDict.FAILED,
-      [TaskRunStatusDict.RUNNING]: TaskInstanceStatusDict.RUNNING,
-    }
-    const archiveUpdates = [...groups.entries()].map(([runStatus, items]) => ({
-      status: runToInstanceStatus[runStatus] ?? TaskInstanceStatusDict.FAILED,
-      ids: items.map((i) => i.instanceId),
-      fields: {
-        finishedAt: new Date(),
-      } as any,
-      // 错误消息按实例单独记录，避免同组共享导致互相覆盖
-      errors: items
-        .map((i) => (i.error ? { instanceId: i.instanceId, message: i.error.message } : null))
-        .filter((e): e is { instanceId: string; message: string } => e !== null),
-    }))
-    await this.storage.batchArchiveStatus(archiveUpdates)
+    // 收集各类实例ID
+    const successIds = (groups.get(TaskRunStatusDict.SUCCESS) ?? []).map((e) => e.instanceId)
+    const timeoutIds = (groups.get(TaskRunStatusDict.TIMEOUT) ?? []).map((e) => e.instanceId)
+    const skippedIds = (groups.get(TaskRunStatusDict.SKIPPED) ?? []).map((e) => e.instanceId)
 
-    // 失败的重试：按 handler 各自配置创建新实例
+    // 失败的重试判定：决定原地重试还是放弃
     const failed = groups.get(TaskRunStatusDict.FAILED) ?? []
-    if (failed.length > 0) {
-      const retryInstances: Partial<ScheduledTaskInstance>[] = []
+    const retryUpdates: Array<{ instanceId: string; executeAt: Date; retryCount: number }> = []
+    const giveUpIds: string[] = []
 
-      for (const f of failed) {
-        // 优先从 DB 任务定义读取重试配置（前端可编辑），回退到 handler 级别，再回退到全局默认
-        const taskDef = await this.storage.getTaskDefinition(f.taskCode)
-        const handler = this.registry.get(f.taskCode)
-        let maxRetry: number
-        let backoff: any
+    for (const f of failed) {
+      // 优先从 DB 任务定义读取重试配置（前端可编辑），回退到 handler 级别，再回退到全局默认
+      const taskDef = await this.storage.getTaskDefinition(f.taskCode)
+      const handler = this.registry.get(f.taskCode)
+      let maxRetry: number
+      let backoff: any
 
-        if (taskDef?.maxRetry !== undefined && taskDef.maxRetry !== null) {
-          // DB 有配置（前端编辑过），优先使用
-          maxRetry = taskDef.maxRetry
-          backoff = taskDef.backoffStrategy ? JSON.parse(taskDef.backoffStrategy) : (handler?.backoffStrategy ?? this.defaultBackoff)
-        } else {
-          // 回退到 handler 级别
-          maxRetry = handler?.maxRetry ?? this.defaultMaxRetry
-          backoff = handler?.backoffStrategy ?? this.defaultBackoff
-        }
-
-        // 超过最大重试次数则放弃
-        if (f.retryCount >= maxRetry) {
-          this.logger.warn(`任务 ${f.taskCode} 达到最大重试次数 ${maxRetry}，放弃重试: instanceId=${f.instanceId}`)
-          continue
-        }
-
-        // 计算退避时间
-        const delayMs = this.computeBackoff(backoff, f.retryCount)
-
-        retryInstances.push({
-          taskCode: f.taskCode,
-          executeAt: new Date(Date.now() + delayMs),
-          status: TaskInstanceStatusDict.PENDING,
-          retryCount: f.retryCount + 1,
-          entityId: f.entityId,
-          payload: f.payload,
-          // 重试实例沿用原执行来源（手动触发的链保持"手动"）
-          triggerType: f.triggerType ?? TaskTriggerTypeDict.AUTO,
-        })
+      if (taskDef?.maxRetry !== undefined && taskDef.maxRetry !== null) {
+        // DB 有配置（前端编辑过），优先使用
+        maxRetry = taskDef.maxRetry
+        backoff = taskDef.backoffStrategy ? JSON.parse(taskDef.backoffStrategy) : (handler?.backoffStrategy ?? this.defaultBackoff)
+      } else {
+        // 回退到 handler 级别
+        maxRetry = handler?.maxRetry ?? this.defaultMaxRetry
+        backoff = handler?.backoffStrategy ?? this.defaultBackoff
       }
 
-      if (retryInstances.length > 0) {
-        await this.storage.createInstances(retryInstances)
-        this.logger.debug(`归档: 创建 ${retryInstances.length} 条重试实例`)
+      // 超过最大重试次数则放弃
+      if (f.retryCount >= maxRetry) {
+        this.logger.warn(`任务 ${f.taskCode} 达到最大重试次数 ${maxRetry}，放弃重试: instanceId=${f.instanceId}`)
+        giveUpIds.push(f.instanceId)
+        continue
       }
+
+      // 计算退避时间，原地重置为 PENDING
+      const delayMs = this.computeBackoff(backoff, f.retryCount)
+      retryUpdates.push({
+        instanceId: f.instanceId,
+        executeAt: new Date(Date.now() + delayMs),
+        retryCount: f.retryCount + 1,
+      })
+    }
+
+    // 单次 CASE-WHEN UPDATE：归档 + 重试一步到位
+    await this.storage.archiveWithRetry({
+      successIds,
+      timeoutIds,
+      skippedIds,
+      retryUpdates,
+      giveUpIds,
+    })
+
+    if (retryUpdates.length > 0) {
+      this.logger.debug(`归档: 原地重置 ${retryUpdates.length} 条实例为 PENDING 等待重试`)
     }
 
     // 批量生成日志（仅对 enableLog=true 的任务）

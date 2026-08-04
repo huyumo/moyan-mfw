@@ -37,10 +37,7 @@ export interface ScheduledTaskInstanceItem {
   payload: Record<string, any> | null
   executeAt: string
   status: number
-  startedAt: string | null
-  finishedAt: string | null
   retryCount: number
-  errorMessage: string | null
   executor: string | null
 }
 

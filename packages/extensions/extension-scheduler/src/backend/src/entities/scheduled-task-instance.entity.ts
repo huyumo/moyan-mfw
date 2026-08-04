@@ -32,22 +32,10 @@ export class ScheduledTaskInstance extends Base {
   @Column({ type: 'tinyint', default: TaskInstanceStatusDict.PENDING, comment: toDescription(TaskInstanceStatusDict) })
   status: number
 
-  @Column({ type: 'datetime', nullable: true, comment: '开始执行时间' })
-  startedAt: Date | null
-
-  @Column({ type: 'datetime', nullable: true, comment: '完成时间' })
-  finishedAt: Date | null
-
   @Column({ type: 'int', default: 0, comment: '重试次数' })
   retryCount: number
 
-  @Column({ type: 'text', nullable: true, comment: '错误信息' })
-  errorMessage: string | null
-
-  @Column({ type: 'text', nullable: true, comment: '错误堆栈' })
-  errorStack: string | null
-
-  @Column({ type: 'varchar', length: 64, nullable: true, comment: '执行实例标识（hostname-pid）' })
+  @Column({ type: 'varchar', length: 64, nullable: true, comment: '执行实例标识（hostname-pid，分布式协调用）' })
   executor: string | null
 
   @Column({ type: 'tinyint', default: TaskTriggerTypeDict.AUTO, comment: toDescription(TaskTriggerTypeDict) })

@@ -2,12 +2,12 @@
  * @fileoverview 默认存储实现（TypeOrmStorage）
  * @description 基于 TypeORM Repository 实现 ITaskStorage 接口
  * batchClaim: 1次UPDATE(id IN + status=PENDING → RUNNING) + 1次SELECT(executor=本机)
- * batchArchiveStatus: 按状态分组，每组1次UPDATE + 错误消息合并为1条 CASE-WHEN UPDATE
+ * archiveWithRetry: 单次 CASE-WHEN UPDATE，归档+重试一步到位（原地更新，不创建新实例）
  */
 
 import { Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, In, Between, LessThan } from 'typeorm'
+import { Repository, In, LessThan } from 'typeorm'
 import { PaginationResult, PaginationX, WhereBuilder, NotFoundError } from 'moyan-mfw-base/backend'
 import { TaskInstanceStatusDict, TaskTriggerTypeDict } from 'moyan-mfw-extension-scheduler/shared'
 import { ScheduledTaskDefinition, ScheduledTaskInstance, ScheduledTaskLog } from '../../entities'
@@ -16,7 +16,7 @@ import {
   RuntimeFields,
   InstanceFields,
   LogFields,
-  BatchArchiveUpdate,
+  ArchiveWithRetryParams,
   InstanceQueryFilters,
   LogQueryFilters,
 } from '../interfaces'
@@ -98,25 +98,10 @@ export class TypeOrmStorage implements ITaskStorage {
       executeAt: instance.executeAt!,
       status: instance.status ?? TaskInstanceStatusDict.PENDING,
       retryCount: instance.retryCount ?? 0,
+      executor: instance.executor ?? null,
       triggerType: instance.triggerType ?? TaskTriggerTypeDict.AUTO,
     })
     return this.instanceRepo.save(entity)
-  }
-
-  async createInstances(instances: Partial<ScheduledTaskInstance>[]): Promise<void> {
-    if (instances.length === 0) return
-    const entities = instances.map((i) =>
-      this.instanceRepo.create({
-        taskCode: i.taskCode!,
-        entityId: i.entityId ?? null,
-        payload: i.payload ?? null,
-        executeAt: i.executeAt!,
-        status: i.status ?? TaskInstanceStatusDict.PENDING,
-        retryCount: i.retryCount ?? 0,
-        triggerType: i.triggerType ?? TaskTriggerTypeDict.AUTO,
-      }),
-    )
-    await this.instanceRepo.save(entities)
   }
 
   async loadDueInstances(now: Date, windowEnd: Date, limit: number): Promise<ScheduledTaskInstance[]> {
@@ -134,7 +119,7 @@ export class TypeOrmStorage implements ITaskStorage {
     // 1. 原子 UPDATE：PENDING → RUNNING
     await this.instanceRepo.update(
       { id: In(ids), status: TaskInstanceStatusDict.PENDING },
-      { status: TaskInstanceStatusDict.RUNNING, executor, startedAt: new Date() },
+      { status: TaskInstanceStatusDict.RUNNING, executor },
     )
     // 2. SELECT 确认本实例认领成功的
     return this.instanceRepo.find({
@@ -142,41 +127,66 @@ export class TypeOrmStorage implements ITaskStorage {
     })
   }
 
-  async batchArchiveStatus(updates: BatchArchiveUpdate[]): Promise<void> {
-    const allErrors: { instanceId: string; message: string | null }[] = []
-    for (const update of updates) {
-      if (update.ids.length === 0) continue
-      await this.instanceRepo.update(
-        { id: In(update.ids) },
-        {
-          status: update.status,
-          ...(update.fields as any),
-        },
-      )
-      if (update.errors && update.errors.length > 0) allErrors.push(...update.errors)
-    }
-    // 错误消息逐实例写入：合并为一条 CASE-WHEN UPDATE（保持批量语义，避免 N 次单条更新）
-    if (allErrors.length > 0) {
-      const params: Record<string, string | null> = {}
-      const cases = allErrors.map((err, i) => {
-        params[`errId_${i}`] = err.instanceId
-        params[`errMsg_${i}`] = err.message
-        return `WHEN :errId_${i} THEN :errMsg_${i}`
+  async archiveWithRetry(params: ArchiveWithRetryParams): Promise<void> {
+    const { successIds, timeoutIds, skippedIds, retryUpdates, giveUpIds } = params
+
+    // 收集所有需要更新 status 的实例及其目标状态
+    const statusEntries: Array<{ id: string; status: number }> = []
+    for (const id of successIds) statusEntries.push({ id, status: TaskInstanceStatusDict.SUCCESS })
+    for (const id of timeoutIds) statusEntries.push({ id, status: TaskInstanceStatusDict.TIMEOUT })
+    for (const id of skippedIds) statusEntries.push({ id, status: TaskInstanceStatusDict.FAILED })
+    for (const id of giveUpIds) statusEntries.push({ id, status: TaskInstanceStatusDict.FAILED })
+    for (const r of retryUpdates) statusEntries.push({ id: r.instanceId, status: TaskInstanceStatusDict.PENDING })
+
+    if (statusEntries.length === 0) return
+
+    // 构建单条 CASE-WHEN UPDATE
+    const qp: Record<string, any> = {}
+    const statusCases = statusEntries.map((e, i) => {
+      qp[`sid_${i}`] = e.id
+      qp[`st_${i}`] = e.status
+      return `WHEN :sid_${i} THEN :st_${i}`
+    })
+
+    // retryCount 仅对重试实例更新
+    const retryCountCases = retryUpdates.map((r, i) => {
+      qp[`rid_${i}`] = r.instanceId
+      qp[`rc_${i}`] = r.retryCount
+      return `WHEN :rid_${i} THEN :rc_${i}`
+    })
+
+    // executeAt 仅对重试实例更新
+    const executeAtCases = retryUpdates.map((r, i) => {
+      qp[`eid_${i}`] = r.instanceId
+      qp[`at_${i}`] = r.executeAt
+      return `WHEN :eid_${i} THEN :at_${i}`
+    })
+
+    const allIds = statusEntries.map((e) => e.id)
+
+    await this.instanceRepo
+      .createQueryBuilder()
+      .update(ScheduledTaskInstance)
+      .set({
+        status: () => `CASE id ${statusCases.join(' ')} ELSE status END`,
+        retryCount: () =>
+          retryCountCases.length > 0
+            ? `CASE id ${retryCountCases.join(' ')} ELSE retryCount END`
+            : 'retryCount',
+        executeAt: () =>
+          executeAtCases.length > 0
+            ? `CASE id ${executeAtCases.join(' ')} ELSE executeAt END`
+            : 'executeAt',
       })
-      await this.instanceRepo
-        .createQueryBuilder()
-        .update(ScheduledTaskInstance)
-        .set({ errorMessage: () => `CASE id ${cases.join(' ')} ELSE errorMessage END` })
-        .where('id IN (:...ids)', { ids: allErrors.map((e) => e.instanceId) })
-        .setParameters(params)
-        .execute()
-    }
+      .where('id IN (:...ids)', { ids: allIds })
+      .setParameters(qp)
+      .execute()
   }
 
   async cancelInstance(id: string): Promise<boolean> {
     const result = await this.instanceRepo.update(
       { id, status: TaskInstanceStatusDict.PENDING },
-      { status: TaskInstanceStatusDict.CANCELLED, finishedAt: new Date() },
+      { status: TaskInstanceStatusDict.CANCELLED },
     )
     return (result.affected ?? 0) > 0
   }
@@ -253,7 +263,7 @@ export class TypeOrmStorage implements ITaskStorage {
     const threshold = new Date(Date.now() - timeoutSeconds * 1000)
     const result = await this.instanceRepo.update(
       { status: TaskInstanceStatusDict.RUNNING, updateAt: LessThan(threshold) },
-      { status: TaskInstanceStatusDict.TIMEOUT_ORPHAN, finishedAt: new Date() },
+      { status: TaskInstanceStatusDict.TIMEOUT_ORPHAN },
     )
     return result.affected ?? 0
   }

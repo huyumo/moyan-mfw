@@ -110,23 +110,11 @@ export class ScheduledTaskInstanceResponseDto {
   @Expose()
   status: number
 
-  @ApiPropertyOptional({ description: '开始执行时间' })
-  @Expose()
-  startedAt: Date | null
-
-  @ApiPropertyOptional({ description: '完成时间' })
-  @Expose()
-  finishedAt: Date | null
-
   @ApiPropertyOptional({ description: '重试次数' })
   @Expose()
   retryCount: number
 
-  @ApiPropertyOptional({ description: '错误信息' })
-  @Expose()
-  errorMessage: string | null
-
-  @ApiPropertyOptional({ description: '执行实例标识' })
+  @ApiPropertyOptional({ description: '执行实例标识（分布式协调用）' })
   @Expose()
   executor: string | null
 }

@@ -92,16 +92,6 @@ const columns: TableColumnConfig[] = [
     render: ({ row }) => h(ElTag, { type: instanceStatusTagType[row.status] as any, size: 'small' }, () => instanceStatusLabel[row.status] || '-'),
   },
   { prop: 'retryCount', label: '重试', width: 60, align: 'center' as const },
-  {
-    prop: 'startedAt', label: '开始时间', width: 170,
-    render: ({ row }) => row.startedAt ? h(MfwDateFormat, { value: row.startedAt }) : '-',
-  },
-  {
-    prop: 'errorMessage', label: '错误信息', minWidth: 180,
-    render: ({ row }) => row.errorMessage
-      ? h(ElTag, { type: 'danger', size: 'small' }, () => row.errorMessage.substring(0, 50))
-      : '-',
-  },
 ]
 
 const actionColumn: ActionColumnConfig = {
