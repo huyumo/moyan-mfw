@@ -5,7 +5,11 @@
     "rootDir": "..",
     "outDir": "../dist-tests",
     "noEmit": true,
-    "typeRoots": ["../src/backend/node_modules/@types"],
+    "types": ["bcryptjs", "express", "jest", "multer", "node", "supertest"],
+    "typeRoots": [
+      "../src/backend/node_modules/@types",
+      "../../../node_modules/@types"
+    ],
     "paths": {
       "@/*": ["../src/backend/src/*"],
       "*": ["../src/backend/node_modules/*"]
