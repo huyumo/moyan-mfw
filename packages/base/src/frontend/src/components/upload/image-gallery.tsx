@@ -1,6 +1,6 @@
 import './style.scss';
 import { defineComponent, ref, computed, type PropType, defineExpose } from 'vue';
-import { ElUpload, ElMessage, type UploadRequestOptions } from 'element-plus';
+import { ElUpload, ElMessage, ElImageViewer, type UploadRequestOptions, type UploadFile } from 'element-plus';
 import { Plus } from '@element-plus/icons-vue';
 import { uploadImage } from '../../config/upload-config';
 import type { ImageResource, UploadMethodType } from './types';
@@ -151,6 +151,31 @@ export default defineComponent({
       emit('remove', file);
     };
 
+    const previewVisible = ref(false);
+    const previewIndex = ref(0);
+
+    const previewUrlList = computed(() => {
+      return (props.modelValue || []).map((item: ImageResource) => item.src);
+    });
+
+    const handlePreview = (file: UploadFile) => {
+      const value = props.modelValue || [];
+      let index = -1;
+      if (typeof file.name === 'string' && file.name.startsWith('image-')) {
+        index = parseInt(file.name.replace('image-', ''), 10);
+      }
+      if (isNaN(index) || index < 0 || index >= value.length) {
+        index = typeof file.uid === 'number' ? file.uid : -1;
+      }
+      if (index < 0 || index >= value.length) {
+        index = value.findIndex((item) => item.src === file.url);
+      }
+      if (index >= 0) {
+        previewIndex.value = index;
+        previewVisible.value = true;
+      }
+    };
+
     defineExpose({ isUploading: uploading });
 
     return () => (
@@ -164,6 +189,7 @@ export default defineComponent({
           multiple={props.multiple}
           beforeUpload={beforeUpload}
           httpRequest={handleHttpRequest}
+          onPreview={handlePreview}
           onError={handleError}
           onRemove={handleRemove}
           disabled={props.disabled || uploading.value}
@@ -177,6 +203,14 @@ export default defineComponent({
             </div>
           )}
         </ElUpload>
+
+        {previewVisible.value && previewUrlList.value.length > 0 && (
+          <ElImageViewer
+            url-list={previewUrlList.value}
+            initial-index={previewIndex.value}
+            onClose={() => { previewVisible.value = false; }}
+          />
+        )}
       </div>
     );
   },
