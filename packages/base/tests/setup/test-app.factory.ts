@@ -3,12 +3,16 @@
  * @description 创建用于测试的 NestJS 应用实例
  */
 
-import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppModule } from '../../src/backend/app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { AllExceptionsFilter, LoggingInterceptor, TransformInterceptor } from '../../src/backend/common';
-import request from 'supertest';
+import { INestApplication } from "@nestjs/common";
+import { Test, TestingModule } from "@nestjs/testing";
+import { TestAppModule } from "./test-app.module";
+import { ValidationPipe } from "@nestjs/common";
+import {
+  AllExceptionsFilter,
+  LoggingInterceptor,
+  TransformInterceptor,
+} from "../../src/backend/src/common";
+import request from "supertest";
 
 /**
  * 测试应用配置接口
@@ -41,7 +45,7 @@ export async function createTestApp(
 
   // 创建测试模块
   const moduleRef: TestingModule = await Test.createTestingModule({
-    imports: [AppModule],
+    imports: [TestAppModule],
   }).compile();
 
   // 创建应用实例
@@ -49,7 +53,7 @@ export async function createTestApp(
 
   // 应用配置
   if (useGlobalPrefix) {
-    app.setGlobalPrefix('/api');
+    app.setGlobalPrefix("/api");
   }
 
   if (useGlobalFilters) {
@@ -91,11 +95,11 @@ export async function createTestApp(
  */
 export async function getTestToken(
   app: INestApplication,
-  username: string = 'admin',
-  password: string = 'Admin@123',
+  username: string = "admin",
+  password: string = "Admin@123",
 ): Promise<string> {
   const response = await request(app.getHttpServer())
-    .post('/api/auth/login')
+    .post("/api/auth/login")
     .send({
       username,
       password,
@@ -110,6 +114,6 @@ export async function getTestToken(
  * @returns Supertest 测试客户端
  */
 export function createTestClient(app: INestApplication) {
-  import('supertest').then((t) => t.default);
+  import("supertest").then((t) => t.default);
   return (app as any).getHttpServer();
 }

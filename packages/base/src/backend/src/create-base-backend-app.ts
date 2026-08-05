@@ -12,7 +12,7 @@ import {
 import { ConfigService, ConfigModule } from "@nestjs/config";
 import { ValidationPipe, Type } from "@nestjs/common";
 import { JwtModule, JwtService } from "@nestjs/jwt";
-import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
+import { TypeOrmModule } from "@nestjs/typeorm";
 import { DataSource } from "typeorm";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { Request, Response, NextFunction } from "express";
@@ -45,12 +45,8 @@ import {
   jwtConfig,
   ossConfig,
 } from "./config";
-import {
-  AppModule,
-  DatabaseHealthService,
-  createTypeOrmOptions,
-  entities,
-} from "./app.module";
+import { DatabaseHealthService } from "./database/database-health.service";
+import { buildTypeOrmOptions, entities } from "./database/typeorm-options";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { PermissionGuard } from "./common/guards/permission.guard";
 import { RolePermission } from "./modules/sys/role/entities/role-permission.entity";
@@ -239,55 +235,13 @@ async function createDynamicAppModule(
       }),
       TypeOrmModule.forRootAsync({
         imports: [ConfigModule],
-        useFactory: (configService: ConfigService) => {
-          const dbConfig =
-            options.database || configService.get<any>("databaseConfig") || {};
-          // 连接池/连接行为类型化字段：仅当用户显式传入时写入 extra，未传入则保持 mysql2 默认行为
-          // 合并优先级：用户 extra > 用户类型化字段 > 框架默认值
-          const poolExtra: Record<string, any> = {
-            multipleStatements: dbConfig.multipleStatements ?? true,
-          };
-          if (dbConfig.connectionLimit != null)
-            poolExtra.connectionLimit = dbConfig.connectionLimit;
-          if (dbConfig.waitForConnections != null)
-            poolExtra.waitForConnections = dbConfig.waitForConnections;
-          if (dbConfig.queueLimit != null)
-            poolExtra.queueLimit = dbConfig.queueLimit;
-          if (dbConfig.enableKeepAlive != null)
-            poolExtra.enableKeepAlive = dbConfig.enableKeepAlive;
-          if (dbConfig.keepAliveInitialDelay != null)
-            poolExtra.keepAliveInitialDelay = dbConfig.keepAliveInitialDelay;
-          if (dbConfig.connectTimeout != null)
-            poolExtra.connectTimeout = dbConfig.connectTimeout;
-          // 空闲连接超时回收（毫秒）：避免池子只扩不缩
-          if (dbConfig.idleTimeout != null)
-            poolExtra.idleTimeout = dbConfig.idleTimeout;
-          return {
-            type: "mysql",
-            host: dbConfig.host || process.env.DB_HOST || "localhost",
-            port: dbConfig.port || parseInt(process.env.DB_PORT || "3306", 10),
-            username: dbConfig.username || process.env.DB_USERNAME,
-            password: dbConfig.password || process.env.DB_PASSWORD,
-            database: dbConfig.database || process.env.DB_NAME,
-            charset: dbConfig.charset || "utf8mb4",
-            timezone: dbConfig.timezone || "+08:00",
-            poolSize: dbConfig.poolSize || 20,
-            synchronize:
-              dbConfig.synchronize ??
-              (process.env.NODE_ENV === "development" ||
-                process.env.NODE_ENV === "test"),
-            logging: dbConfig.logging ?? false,
-            entities: [...entities, ...(options.extraEntities || [])],
-            autoLoadEntities: true,
-            extra: {
-              ...poolExtra,
-              ...(dbConfig.extra || {}),
-            },
-            keepConnectionAlive: true,
-            retryAttempts: 10,
-            retryDelay: 3000,
-          } as TypeOrmModuleOptions;
-        },
+        useFactory: (configService: ConfigService) =>
+          // 业务方显式配置优先，否则回退 ConfigService 中注册的 databaseConfig（来自 .env）
+          buildTypeOrmOptions({
+            database:
+              options.database || configService.get<any>("databaseConfig"),
+            extraEntities: options.extraEntities,
+          }),
         inject: [ConfigService],
       }),
       JwtModule.register({
@@ -295,9 +249,7 @@ async function createDynamicAppModule(
         secret: options.jwt?.secret || process.env.JWT_SECRET || "",
         signOptions: {
           expiresIn:
-            options.jwt?.expiresIn ||
-            process.env.JWT_EXPIRES_IN ||
-            7200,
+            options.jwt?.expiresIn || process.env.JWT_EXPIRES_IN || 7200,
           ...(options.jwt?.signOptions || {}),
         },
       }),

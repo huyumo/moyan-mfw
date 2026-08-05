@@ -55,7 +55,7 @@ export interface DatabaseConfig {
   charset?: string;
   /** 时区，默认 +08:00 */
   timezone?: string;
-  /** 连接池大小，默认 100 */
+  /** 连接池大小，默认 20 */
   poolSize?: number;
   /** 是否自动同步 schema（生产环境应关闭） */
   synchronize?: boolean;
@@ -76,6 +76,8 @@ export interface DatabaseConfig {
   keepAliveInitialDelay?: number;
   /** 建立连接超时（ms） */
   connectTimeout?: number;
+  /** 空闲连接超时回收（ms），避免连接池只扩不缩 */
+  idleTimeout?: number;
   /** 是否允许多语句执行，默认 true */
   multipleStatements?: boolean;
 
