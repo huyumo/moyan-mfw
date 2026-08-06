@@ -3,7 +3,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DocumentType, DocumentStatus, ExtValueType } from 'moyan-mfw-extension-document/shared';
+import { DocumentType, DocumentStatus, ExtValueType, DocumentImage } from 'moyan-mfw-extension-document/shared';
 
 /** 扩展字段响应 */
 export class DocumentExtResponseDto {
@@ -55,8 +55,8 @@ export class DocumentResponseDto {
   @ApiProperty({ description: '类型', enum: DocumentType })
   type: string;
 
-  @ApiPropertyOptional({ description: '图片 URL 列表' })
-  images: string[];
+  @ApiPropertyOptional({ description: '图片资源列表（{src,width,height}）' })
+  images: DocumentImage[];
 
   @ApiPropertyOptional({ description: '视频 URL', nullable: true })
   video: string | null;

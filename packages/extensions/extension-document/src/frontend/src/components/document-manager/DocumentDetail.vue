@@ -46,10 +46,10 @@
       <!-- 图片画廊 -->
       <section v-if="doc.images?.length" class="mfw-document-detail__gallery">
         <el-image
-          v-for="(src, i) in doc.images"
+          v-for="(img, i) in doc.images"
           :key="i"
-          :src="src"
-          :preview-src-list="doc.images"
+          :src="img.src"
+          :preview-src-list="doc.images.map((im) => im.src)"
           :initial-index="i"
           fit="cover"
           class="gallery-item"

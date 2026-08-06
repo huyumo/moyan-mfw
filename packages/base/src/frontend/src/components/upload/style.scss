@@ -178,6 +178,11 @@
     &:hover {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
+
+    // 隐藏 Element Plus 默认的"按 Delete 键可删除"提示文字
+    .el-icon--close-tip {
+      display: none !important;
+    }
   }
 
   .upload-placeholder {

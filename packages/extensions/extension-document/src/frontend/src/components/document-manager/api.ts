@@ -4,6 +4,7 @@
  */
 
 import { getAccessToken, getCurrentAppId } from 'moyan-mfw-base/frontend';
+import type { DocumentImage } from 'moyan-mfw-extension-document/shared';
 
 const BASE = '/api/ext/document';
 
@@ -53,7 +54,7 @@ export interface DocumentData {
   content?: string;
   summary?: string;
   type?: string;
-  images?: string[];
+  images?: DocumentImage[];
   video?: string;
   tags?: string;
   status?: number;

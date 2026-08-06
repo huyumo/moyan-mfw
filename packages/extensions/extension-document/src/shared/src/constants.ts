@@ -3,6 +3,19 @@
  */
 
 /**
+ * 文档图片资源
+ * @description 文档 images 字段的元素类型，与前端 ImageResource 对齐
+ */
+export interface DocumentImage {
+  /** 图片 URL */
+  src: string;
+  /** 图片宽度（像素），可选 */
+  width?: number;
+  /** 图片高度（像素），可选 */
+  height?: number;
+}
+
+/**
  * 文档类型枚举
  * @description 文档内容的形式
  */

@@ -9,6 +9,7 @@ import type {
   SearchTemplateItem,
 } from 'moyan-mfw-base/frontend';
 import { ExtValueType } from 'moyan-mfw-extension-document/shared';
+import type { DocumentImage } from 'moyan-mfw-extension-document/shared';
 
 /** 文档主表内置字段键 */
 export type DocumentBuiltinFieldKey =
@@ -172,7 +173,7 @@ export interface DocumentData {
   content?: string;
   summary?: string;
   type?: string;
-  images?: string[];
+  images?: DocumentImage[];
   video?: string;
   tags?: string;
   status?: number;

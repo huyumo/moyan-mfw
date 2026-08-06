@@ -9,7 +9,25 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaginationQueryDto } from 'moyan-mfw-base/backend';
-import { DocumentType, DocumentStatus, ExtValueType } from 'moyan-mfw-extension-document/shared';
+import { DocumentType, DocumentStatus, ExtValueType, DocumentImage } from 'moyan-mfw-extension-document/shared';
+
+/** 图片资源项（用于 class-transformer 正确转换嵌套对象） */
+export class DocumentImageDto implements DocumentImage {
+  @ApiProperty({ description: '图片 URL' })
+  @IsNotEmpty({ message: '图片 URL 不能为空' })
+  @IsString()
+  src: string;
+
+  @ApiPropertyOptional({ description: '图片宽度（像素）' })
+  @IsOptional()
+  @IsNumber()
+  width?: number;
+
+  @ApiPropertyOptional({ description: '图片高度（像素）' })
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+}
 
 /** 扩展字段项 */
 export class ExtFieldItemDto {
@@ -75,10 +93,12 @@ export class CreateDocumentDto {
   @IsEnum(DocumentType)
   type?: DocumentType;
 
-  @ApiPropertyOptional({ description: '图片 URL 列表', type: [String] })
+  @ApiPropertyOptional({ description: '图片资源列表（{src,width,height}）', type: () => DocumentImageDto })
   @IsOptional()
   @IsArray()
-  images?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => DocumentImageDto)
+  images?: DocumentImage[];
 
   @ApiPropertyOptional({ description: '视频 URL' })
   @IsOptional()
@@ -150,10 +170,12 @@ export class UpdateDocumentDto {
   @IsEnum(DocumentType)
   type?: DocumentType;
 
-  @ApiPropertyOptional({ description: '图片 URL 列表', type: [String] })
+  @ApiPropertyOptional({ description: '图片资源列表（{src,width,height}）', type: () => DocumentImageDto })
   @IsOptional()
   @IsArray()
-  images?: string[];
+  @ValidateNested({ each: true })
+  @Type(() => DocumentImageDto)
+  images?: DocumentImage[];
 
   @ApiPropertyOptional({ description: '视频 URL' })
   @IsOptional()

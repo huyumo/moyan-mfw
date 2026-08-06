@@ -5,7 +5,7 @@
 
 import { Entity, PrimaryGeneratedColumn, Column, Index, AfterLoad } from 'typeorm';
 import { Base } from 'moyan-mfw-base/backend';
-import { DocumentType, DocumentStatus } from 'moyan-mfw-extension-document/shared';
+import { DocumentType, DocumentStatus, DocumentImage } from 'moyan-mfw-extension-document/shared';
 
 @Entity('mfw_document')
 @Index('idx_app_dockey', ['appId', 'docKey'])
@@ -41,8 +41,8 @@ export class Document extends Base {
   @Column({ type: 'varchar', length: 16, default: DocumentType.IMAGE_TEXT, comment: '类型：图文/视频' })
   type: string;
 
-  @Column({ type: 'json', nullable: true, comment: '图片 URL 列表' })
-  images?: string[];
+  @Column({ type: 'json', nullable: true, comment: '图片资源列表（{src,width,height}）' })
+  images?: DocumentImage[];
 
   @Column({ type: 'text', nullable: true, comment: '视频 URL' })
   video?: string;
