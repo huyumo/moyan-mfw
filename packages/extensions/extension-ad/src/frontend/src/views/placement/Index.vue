@@ -22,6 +22,7 @@
       :search-template="searchTemplate"
       :load-data="loadData"
       render-mode="card"
+      :card-grid="{ minWidth: 340 }"
       empty-text="暂无广告位"
     >
       <template #card-item="{ item }">
@@ -29,6 +30,7 @@
           :placement="item"
           :ads="item.ads || []"
           :ad-count="item.adCount || 0"
+          :dev-mode-only="props.devModeOnly"
           @manage-ads="handleManageAds(item)"
           @edit="handleEdit(item)"
           @delete="handleDelete(item)"
@@ -50,15 +52,13 @@ import {
   ApiAdPlacementUpdate,
   ApiAdPlacementDelete,
 } from '../../apis/ad'
-import { StatusDict } from 'moyan-mfw-base/shared'
 import MfwAdPlacementForm from '../../components/ad-placement-form/Index.vue'
 import MfwAdPlacementDetail from '../../components/ad-placement-detail/Index.vue'
 import MfwAdPlacementCard from '../../components/ad-placement-card/Index.vue'
 
-const STATUS = { ENABLED: StatusDict.ENABLED, DISABLED: StatusDict.DISABLED }
 defineOptions({ name: 'MfwAdPlacementList' })
 
-withDefaults(defineProps<{ devModeOnly?: boolean }>(), { devModeOnly: false })
+const props = withDefaults(defineProps<{ devModeOnly?: boolean }>(), { devModeOnly: false })
 const authStore = useAuthStore()
 
 const cardListPage = ref<MfwCardListPageInstance>()
@@ -78,20 +78,7 @@ const searchTemplate = [
     type: 'input' as const,
     testId: 'placement-search-code',
     placeholder: '请输入编码',
-  },
-  {
-    key: 'status',
-    label: '状态',
-    type: 'select' as const,
-    testId: 'placement-search-status',
-    placeholder: '请选择状态',
-    elProps: {
-      options: [
-        { label: '启用', value: STATUS.ENABLED },
-        { label: '禁用', value: STATUS.DISABLED },
-      ],
-    },
-  },
+  }
 ]
 
 const loadData = async (params: Record<string, unknown>) => {
@@ -103,6 +90,7 @@ const handleAdd = () => {
     title: '新建广告位',
     type: 'dialog',
     component: MfwAdPlacementForm,
+    elProps: { devModeOnly: props.devModeOnly },
     popupProps: { width: 550 },
     on: { confirm: cardListPage.value?.refresh },
   })
@@ -117,7 +105,7 @@ const handleEdit = (row: any) => {
     title: '编辑广告位',
     type: 'dialog',
     component: MfwAdPlacementForm,
-    elProps: { ...row },
+    elProps: { ...row, devModeOnly: props.devModeOnly },
     popupProps: { width: 550 },
     on: { confirm: cardListPage.value?.refresh },
   })

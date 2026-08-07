@@ -11,6 +11,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { MfwFormCard } from 'moyan-mfw-base/frontend'
+import { useAuthStore } from 'moyan-mfw-base/frontend'
 import type { MfwFormCardInstance, FormItemConfig } from 'moyan-mfw-base/frontend'
 import { ApiAdPlacementCreate, ApiAdPlacementUpdate } from '../../apis/ad'
 
@@ -22,9 +23,11 @@ const props = defineProps<{
   height?: number
   description?: string
   sortOrder?: number
+  devModeOnly?: boolean
 }>()
 defineOptions({ name: 'MfwAdPlacementForm' })
 const formRef = ref<MfwFormCardInstance>()
+const authStore = useAuthStore()
 const isEdit = computed(() => !!props?.id)
 
 const form = reactive({
@@ -58,7 +61,7 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   {
     key: 'code', label: '广告位编码', component: 'el-input',
     rules: [{ required: true, message: '请输入广告位编码', trigger: 'blur' }],
-    elProps: { placeholder: '如 home-top-banner', clearable: true }
+    elProps: { placeholder: '如 home-top-banner', clearable: true, disabled: props.devModeOnly && !authStore.isDevModeActive }
   },
   {
     key: 'width', label: '宽度(px)', component: 'el-input-number',

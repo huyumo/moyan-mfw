@@ -5,7 +5,11 @@
  */
 -->
 <template>
-  <el-card class="ad-placement-card" shadow="hover">
+  <el-card
+    class="ad-placement-card"
+    shadow="hover"
+    :body-style="{ padding: 0, display: 'flex', flexDirection: 'column', height: '100%' }"
+  >
     <div class="ad-placement-card__media">
       <el-carousel
         v-if="mediaAds.length > 0"
@@ -66,6 +70,7 @@
         编辑
       </el-button>
       <el-button
+        v-if="!devModeOnly || authStore.isDevModeActive"
         type="danger"
         size="small"
         @click="handleDelete"
@@ -81,15 +86,18 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { Picture } from '@element-plus/icons-vue'
+import { useAuthStore } from 'moyan-mfw-base/frontend'
 import type { AdPlacementResponseDto, AdResponseDto } from '../../apis/ad/schemas'
 
 interface Props {
   placement: AdPlacementResponseDto
   ads: AdResponseDto[]
   adCount: number
+  devModeOnly?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), { devModeOnly: false })
+const authStore = useAuthStore()
 
 interface Emits {
   (e: 'manage-ads', placement: AdPlacementResponseDto): void
@@ -147,7 +155,7 @@ const handleDelete = () => {
 .ad-placement-card {
   display: flex;
   flex-direction: column;
-  min-width: 340px;
+  height: 100%;
 }
 
 .ad-placement-card__media {
