@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-cli",
-  "version": "1.2.0-beta.46",
+  "version": "1.2.0-beta.47",
   "description": "MFW framework CLI — extension scaffolding, validation, and publishing tools",
   "type": "module",
   "bin": {
