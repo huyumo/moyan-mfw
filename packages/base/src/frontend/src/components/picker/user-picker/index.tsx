@@ -174,8 +174,16 @@ export default defineComponent({
 
     watch(
       () => props.modelValue,
-      (newVal, oldVal) => {
-        if (newVal !== oldVal && newVal && !active.value?.id) {
+      (newVal) => {
+        if (!newVal) {
+          // 外部清空（如表单重置、弹窗复用）时同步清空选中，
+          // 避免界面仍显示旧用户而表单值已为空，导致提交校验失败
+          if (active.value) {
+            active.value = undefined
+          }
+          return
+        }
+        if (!active.value?.id || active.value.id !== newVal) {
           loadUserById()
         }
       }
