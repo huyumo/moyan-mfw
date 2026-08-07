@@ -8,6 +8,8 @@
 
 .mfw-image-format {
   display: inline-block;
+  overflow: hidden;
+  border-radius: 5px;
 
   &-multi {
     display: inline-flex;
