@@ -61,7 +61,11 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   {
     key: 'code', label: '广告位编码', component: 'el-input',
     rules: [{ required: true, message: '请输入广告位编码', trigger: 'blur' }],
-    elProps: { placeholder: '如 home-top-banner', clearable: true, disabled: props.devModeOnly && !authStore.isDevModeActive }
+    // disabled 必须通过 FormItemConfig.disabled 声明：MfwFormCard 的 renderComponent 会用
+    // disabledItem(item) 覆盖 elProps.disabled。用函数形式确保 render 时实时读取 authStore，
+    // 避免 initTemplate 浅拷贝把布尔值冻结成快照后响应丢失。
+    disabled: () => props.devModeOnly && !authStore.isDevModeActive,
+    elProps: { placeholder: '如 home-top-banner', clearable: true }
   },
   {
     key: 'width', label: '宽度(px)', component: 'el-input-number',
