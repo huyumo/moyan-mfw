@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw",
-  "version": "1.2.0-beta.49",
+  "version": "1.2.0-beta.50",
   "description": "Moyan backend management framework",
   "private": true,
   "type": "module",
