@@ -6,7 +6,6 @@
 import type { Router, RouteLocationNormalized } from "vue-router";
 import { useAuthStore, TOKEN_KEY } from "../store/auth-store";
 import { useAppLoadingStore } from "../store/app-loading-store";
-import { ElMessage } from "element-plus";
 
 /** 白名单路由（无需登录即可访问） */
 const WHITE_LIST = ["/login", "/install", "/403", "/404"];
@@ -177,13 +176,6 @@ export function setupRouteGuard(router: Router): void {
       if (to.meta.requiresAuth !== false) {
         const hasPermission = checkPagePermission(to, authStore);
         if (!hasPermission) {
-          const appTypeCode = authStore.currentApp?.appTypeCode;
-          const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
-          if (to.path !== homePath && to.path !== "/") {
-            ElMessage.warning("当前应用无此页面的访问权限，已跳转到首页");
-            next({ path: homePath });
-            return;
-          }
           next({ path: "/403" });
           return;
         }
@@ -204,6 +196,18 @@ export function setupRouteGuard(router: Router): void {
 }
 
 /**
+ * 从路由路径中提取 AppType 编码。
+ * @description 路由路径格式统一为 `/{appTypeCode}/...`（如 `/system/sys/user`），
+ * 取第一段作为 AppType 编码。用于跨应用类型访问隔离校验。
+ * @param path - 路由路径
+ * @returns AppType 编码；无法提取时返回 undefined
+ */
+function extractAppTypeFromPath(path: string): string | undefined {
+  const match = path.match(/^\/([^/]+)/);
+  return match?.[1];
+}
+
+/**
  * 检查页面权限
  * @param to 目标路由
  * @param authStore 认证 Store
@@ -217,6 +221,18 @@ function checkPagePermission(
     return true;
   }
 
+  // AppType 隔离校验：用户当前选中的应用类型与目标路由所属应用类型必须一致，
+  // 防止用户通过直接输入 URL 跨应用类型访问无权限的页面。
+  const currentAppType = authStore.currentApp?.appTypeCode;
+  if (currentAppType) {
+    const routeAppType =
+      (to.meta.moduleInfo as { appTypeCode?: string } | undefined)
+        ?.appTypeCode ?? extractAppTypeFromPath(to.path);
+    if (routeAppType && routeAppType !== currentAppType) {
+      return false;
+    }
+  }
+
   // 开发者模式页面：仅开发者模式开启后可访问
   if (to.meta.showMode === 'DEV' && !authStore.isDevModeActive) {
     return false;
@@ -225,7 +241,7 @@ function checkPagePermission(
   if (to.meta.menu !== false) {
     const permissionMenu = authStore.permissionMenu;
     if (permissionMenu.length === 0) {
-      return true;
+      return false;
     }
 
     const permCode = to.meta.permCode as string | undefined;
