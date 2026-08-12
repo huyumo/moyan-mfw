@@ -118,10 +118,12 @@ export default defineComponent({
       }
       const originalFile = pendingFile.value;
       pendingFile.value = null;
-      
-      const ext = originalFile?.name?.split('.').pop() || 'jpg';
-      const fileName = originalFile?.name || `cropped-image.${ext}`;
-      const file = new File([blob], fileName, { type: blob.type || 'image/jpeg' });
+
+      const mimeType = blob.type || 'image/png';
+      const ext = mimeType.split('/')[1] || 'png';
+      const baseName = originalFile?.name?.replace(/\.[^.]+$/, '') || 'cropped-image';
+      const fileName = `${baseName}.${ext}`;
+      const file = new File([blob], fileName, { type: mimeType });
       
       await handleUpload(file);
     };

@@ -11,6 +11,7 @@ export default defineComponent({
     ratio: { type: Number, default: 1 },
     outputWidth: { type: Number, default: 200 },
     outputHeight: { type: Number, default: 200 },
+    outputType: { type: String, default: 'png' },
   },
   emits: ['confirm', 'cancel', 'update:visible'],
   setup(props, { emit }) {
@@ -83,7 +84,7 @@ export default defineComponent({
               canScale={true}
               canMove={true}
               mode="contain"
-              outputType="jpeg"
+              outputType={props.outputType}
               full={false}
             />
           </div>

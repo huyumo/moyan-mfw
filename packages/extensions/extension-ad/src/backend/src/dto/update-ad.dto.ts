@@ -7,6 +7,7 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsOptional, IsString, IsInt, IsDateString, IsIn, Min, MaxLength, IsEnum, ValidateNested, ValidateIf } from 'class-validator'
 import { Type } from 'class-transformer'
 import { ImageResourceDto, MediaResourceDto } from 'moyan-mfw-base/backend'
+import { VideoMediaDto } from './create-ad.dto'
 
 export class UpdateAdDto {
   @ApiProperty({ description: '广告标题', required: false })
@@ -22,8 +23,12 @@ export class UpdateAdDto {
 
   @ApiProperty({ description: '媒体资源（图片或视频）', required: false })
   @IsOptional()
+  @ValidateIf((o) => o.mediaType === 'image')
   @ValidateNested()
   @Type(() => ImageResourceDto)
+  @ValidateIf((o) => o.mediaType === 'video')
+  @ValidateNested()
+  @Type(() => VideoMediaDto)
   media?: ImageResourceDto | MediaResourceDto
 
   @ApiProperty({ description: '跳转类型', enum: ['none', 'miniapp', 'internal', 'external'], required: false })

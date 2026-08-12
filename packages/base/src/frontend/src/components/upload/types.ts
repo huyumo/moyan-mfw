@@ -164,4 +164,5 @@ export interface ImageCropperProps {
   ratio?: number;
   outputWidth?: number;
   outputHeight?: number;
+  outputType?: string;
 }

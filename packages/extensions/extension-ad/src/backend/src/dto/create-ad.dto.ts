@@ -25,8 +25,12 @@ export class CreateAdDto {
   mediaType: 'image' | 'video'
 
   @ApiProperty({ description: '媒体资源（图片或视频）' })
+  @ValidateIf((o) => o.mediaType === 'image')
   @ValidateNested()
   @Type(() => ImageResourceDto)
+  @ValidateIf((o) => o.mediaType === 'video')
+  @ValidateNested()
+  @Type(() => VideoMediaDto)
   media: ImageResourceDto | MediaResourceDto
 
   @ApiProperty({ description: '跳转类型', enum: ['none', 'miniapp', 'internal', 'external'], example: 'none' })
