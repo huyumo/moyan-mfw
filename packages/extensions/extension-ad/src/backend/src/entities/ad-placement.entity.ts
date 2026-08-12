@@ -29,6 +29,12 @@ export class AdPlacement extends Base {
   @Column({ type: 'varchar', length: 255, nullable: true, comment: '广告位描述' })
   description: string
 
+  @Column({ type: 'boolean', default: false, comment: '是否支持视频广告' })
+  supportVideo: boolean
+
+  @Column({ type: 'boolean', default: false, comment: '是否支持投放时间' })
+  supportSchedule: boolean
+
   @Column({ type: 'tinyint', default: StatusDict.ENABLED, comment: toDescription(StatusDict) })
   @Index()
   status: number

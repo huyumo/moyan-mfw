@@ -81,13 +81,13 @@ const loading = ref(false)
 const ads = ref<AdResponseDto[]>([])
 
 const placementIdRef = ref<string>('')
-const placementInfoRef = ref({ name: '', code: '', width: 0, height: 0 })
+const placementInfoRef = ref({ name: '', code: '', width: 0, height: 0, supportVideo: false, supportSchedule: false })
 
 const title = computed(() => `广告位: ${placementInfoRef.value.name || '未命名'}`)
 
 const open = (placementId: string, info: any) => {
   placementIdRef.value = placementId
-  placementInfoRef.value = info || { name: '', code: '', width: 0, height: 0 }
+  placementInfoRef.value = info || { name: '', code: '', width: 0, height: 0, supportVideo: false, supportSchedule: false }
   visible.value = true
   loadAds()
 }
@@ -112,6 +112,8 @@ const handleAddAd = () => {
       placementId: placementIdRef.value,
       placementWidth: placementInfoRef.value.width,
       placementHeight: placementInfoRef.value.height,
+      supportVideo: placementInfoRef.value.supportVideo,
+      supportSchedule: placementInfoRef.value.supportSchedule,
     },
     popupProps: { width: 550 },
     on: { confirm: loadAds },
@@ -127,6 +129,8 @@ const handleEditAd = (row: AdResponseDto) => {
       ...row,
       placementWidth: placementInfoRef.value.width,
       placementHeight: placementInfoRef.value.height,
+      supportVideo: placementInfoRef.value.supportVideo,
+      supportSchedule: placementInfoRef.value.supportSchedule,
     },
     popupProps: { width: 550 },
     on: { confirm: loadAds },

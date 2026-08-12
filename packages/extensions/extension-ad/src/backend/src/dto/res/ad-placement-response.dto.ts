@@ -34,6 +34,14 @@ export class AdPlacementResponseDto {
   @Expose()
   description: string
 
+  @ApiProperty({ description: '是否支持视频广告' })
+  @Expose()
+  supportVideo: boolean
+
+  @ApiProperty({ description: '是否支持投放时间' })
+  @Expose()
+  supportSchedule: boolean
+
   @ApiProperty({ description: '状态: 1=启用 0=禁用' })
   @Expose()
   status: number

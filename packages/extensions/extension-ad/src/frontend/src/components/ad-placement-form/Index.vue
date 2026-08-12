@@ -22,6 +22,8 @@ const props = defineProps<{
   width?: number
   height?: number
   description?: string
+  supportVideo?: boolean
+  supportSchedule?: boolean
   sortOrder?: number
   devModeOnly?: boolean
 }>()
@@ -36,6 +38,8 @@ const form = reactive({
   width: 750,
   height: 300,
   description: '',
+  supportVideo: false,
+  supportSchedule: false,
   sortOrder: 0,
 })
 
@@ -47,6 +51,8 @@ watch(
     form.width = p?.width ?? 750
     form.height = p?.height ?? 300
     form.description = p?.description || ''
+    form.supportVideo = p?.supportVideo ?? false
+    form.supportSchedule = p?.supportSchedule ?? false
     form.sortOrder = p?.sortOrder ?? 0
   },
   { immediate: true },
@@ -80,6 +86,14 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   {
     key: 'description', label: '描述', component: 'el-input',
     elProps: { placeholder: '请输入描述', type: 'textarea', rows: 2 }
+  },
+  {
+    key: 'supportVideo', label: '支持视频', component: 'el-switch',
+    elProps: { activeText: '是', inactiveText: '否' }
+  },
+  {
+    key: 'supportSchedule', label: '投放时间', component: 'el-switch',
+    elProps: { activeText: '是', inactiveText: '否' }
   },
   {
     key: 'sortOrder', label: '排序', component: 'el-input-number',

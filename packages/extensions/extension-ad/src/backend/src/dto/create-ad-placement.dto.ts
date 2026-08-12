@@ -4,7 +4,7 @@
  */
 
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsString, IsOptional, IsInt, Min, MaxLength } from 'class-validator'
+import { IsNotEmpty, IsString, IsOptional, IsInt, Min, MaxLength, IsBoolean } from 'class-validator'
 
 export class CreateAdPlacementDto {
   @ApiProperty({ description: '广告位名称', example: '首页顶部横幅' })
@@ -35,6 +35,16 @@ export class CreateAdPlacementDto {
   @IsOptional()
   @IsString()
   description?: string
+
+  @ApiProperty({ description: '是否支持视频广告', default: false })
+  @IsOptional()
+  @IsBoolean()
+  supportVideo?: boolean = false
+
+  @ApiProperty({ description: '是否支持投放时间', default: false })
+  @IsOptional()
+  @IsBoolean()
+  supportSchedule?: boolean = false
 
   @ApiProperty({ description: '排序号', default: 0 })
   @IsOptional()

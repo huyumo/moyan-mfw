@@ -23,6 +23,8 @@ export type CreateAdPlacementDto = {
   width: number // 宽度(px)
   height: number // 高度(px)
   description?: string // 广告位描述
+  supportVideo?: boolean // 是否支持视频广告
+  supportSchedule?: boolean // 是否支持投放时间
   sortOrder: number // 排序号
 }
 
@@ -33,6 +35,8 @@ export type AdPlacementResponseDto = {
   width: number // 宽度(px)
   height: number // 高度(px)
   description: string // 广告位描述
+  supportVideo: boolean // 是否支持视频广告
+  supportSchedule: boolean // 是否支持投放时间
   status: number // 状态: 1=启用 0=禁用
   sortOrder: number // 排序号
   createdAt: string // 创建时间
@@ -54,6 +58,8 @@ export type UpdateAdPlacementDto = {
   width?: number // 宽度(px)
   height?: number // 高度(px)
   description?: string // 广告位描述
+  supportVideo?: boolean // 是否支持视频广告
+  supportSchedule?: boolean // 是否支持投放时间
   status?: number // 状态: 1=启用 0=禁用
   sortOrder?: number // 排序号
 }

@@ -22,6 +22,8 @@ const props = defineProps<{
   placementId: string
   placementWidth?: number
   placementHeight?: number
+  supportVideo?: boolean
+  supportSchedule?: boolean
   id?: string
   mediaType?: MediaType
   media?: ImageResource | MediaResource
@@ -63,10 +65,13 @@ const form = reactive({
 
 const linkTypeOptions = Object.entries(LINK_TYPE_LABELS).map(([k, v]) => ({ label: v, value: k }))
 
-const mediaTypeOptions = [
-  { label: '图片', value: 'image' },
-  { label: '视频', value: 'video' },
-]
+const mediaTypeOptions = computed(() => {
+  const options = [{ label: '图片', value: 'image' }]
+  if (props.supportVideo) {
+    options.push({ label: '视频', value: 'video' })
+  }
+  return options
+})
 
 const formTemplate = computed<FormItemConfig[]>(() => [
   {
@@ -76,8 +81,9 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   },
   {
     key: 'mediaType', label: '媒体类型', component: MfwRadioGroup,
+    show: () => props.supportVideo === true,
     rules: [{ required: true, message: '请选择媒体类型', trigger: 'change' }],
-    elProps: { options: mediaTypeOptions }
+    elProps: { options: mediaTypeOptions.value }
   },
   {
     key: 'media', label: '广告图片', component: MfwImageSingle,
@@ -93,39 +99,42 @@ const formTemplate = computed<FormItemConfig[]>(() => [
   },
   {
     key: 'linkType', label: '跳转方式', component: 'el-select',
+    show: (data) => data.mediaType === 'image',
     rules: [{ required: true, message: '请选择跳转方式', trigger: 'change' }],
     elProps: { placeholder: '请选择跳转方式', options: linkTypeOptions }
   },
   {
     key: 'linkUrl', label: '跳转链接', component: 'el-input',
-    show: (data) => data.linkType === LINK_TYPE.EXTERNAL,
+    show: (data) => data.mediaType === 'image' && data.linkType === LINK_TYPE.EXTERNAL,
     rules: [{ required: true, message: '请输入跳转链接', trigger: 'blur' }],
     elProps: { placeholder: 'https://...', clearable: true }
   },
   {
     key: 'miniAppId', label: '小程序 AppId', component: 'el-input',
-    show: (data) => data.linkType === LINK_TYPE.MINIAPP,
+    show: (data) => data.mediaType === 'image' && data.linkType === LINK_TYPE.MINIAPP,
     rules: [{ required: true, message: '请输入小程序 AppId', trigger: 'blur' }],
     elProps: { placeholder: 'wx...', clearable: true }
   },
   {
     key: 'miniAppPath', label: '小程序路径', component: 'el-input',
-    show: (data) => data.linkType === LINK_TYPE.MINIAPP,
+    show: (data) => data.mediaType === 'image' && data.linkType === LINK_TYPE.MINIAPP,
     rules: [{ required: true, message: '请输入小程序路径', trigger: 'blur' }],
     elProps: { placeholder: 'pages/index/index', clearable: true }
   },
   {
     key: 'internalRoute', label: 'App内部路由', component: 'el-input',
-    show: (data) => data.linkType === LINK_TYPE.INTERNAL,
+    show: (data) => data.mediaType === 'image' && data.linkType === LINK_TYPE.INTERNAL,
     rules: [{ required: true, message: '请输入 App 内部路由路径', trigger: 'blur' }],
     elProps: { placeholder: '/pages/goods/detail?id=xxx', clearable: true }
   },
   {
     key: 'startTime', label: '开始时间', component: 'el-date-picker',
+    show: () => props.supportSchedule === true,
     elProps: { type: 'datetime', placeholder: '选择开始时间', valueFormat: 'YYYY-MM-DDTHH:mm:ss' }
   },
   {
     key: 'endTime', label: '结束时间', component: 'el-date-picker',
+    show: () => props.supportSchedule === true,
     elProps: { type: 'datetime', placeholder: '选择结束时间', valueFormat: 'YYYY-MM-DDTHH:mm:ss' }
   },
   {
