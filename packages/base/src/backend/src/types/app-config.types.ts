@@ -101,6 +101,7 @@ export interface HookConfig {
   onDatabaseReady?: (ctx: AppContext) => Promise<void>;
   beforeLogin?: (ctx: AppContext, credentials: any) => Promise<void>;
   afterLogin?: (ctx: AppContext, user: any, token: string) => Promise<void>;
+  beforeRegister?: (ctx: AppContext, registerDto: any) => Promise<void>;
   afterRegister?: (ctx: AppContext, user: any) => Promise<void>;
   beforeClose?: (ctx: AppContext) => Promise<void>;
 }

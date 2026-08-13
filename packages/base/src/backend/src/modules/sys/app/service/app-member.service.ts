@@ -14,6 +14,8 @@ import { App } from '../entities/app.entity';
 import { AppType } from '../../app-type/entities/app-type.entity';
 import { AddMemberDto, UpdateMemberRolesDto, QueryMemberDto } from '../dto';
 import { PaginationX, WhereBuilder, PaginationResult } from '../../../../common';
+// 注意：直接导入具体文件而非 '../../spi' 聚合导出，避免与 spi/impl 产生循环 require
+import { SpiEventBus } from '../../spi/events/event-bus';
 
 /**
  * 成员服务
@@ -32,6 +34,7 @@ export class AppMemberService {
     @InjectRepository(AppType)
     private appTypeRepository: Repository<AppType>,
     private dataSource: DataSource,
+    private eventBus: SpiEventBus,
   ) {}
 
   /**
@@ -81,7 +84,12 @@ export class AppMemberService {
     }
 
     const member = this.appMemberRepository.create({ appId, userId });
-    return this.appMemberRepository.save(member);
+    const saved = await this.appMemberRepository.save(member);
+
+    // SPI 事件：成员添加（框架层入口，业务方监听）
+    await this.eventBus.emitMemberAdded({ appId, userId });
+
+    return saved;
   }
 
   /**
@@ -228,6 +236,9 @@ export class AppMemberService {
         );
       }
     });
+
+    // SPI 事件：成员角色变更（框架层入口，业务方监听）
+    await this.eventBus.emitMemberRolesChanged({ appId, userId, roleIds });
   }
 
   /**
@@ -264,6 +275,9 @@ export class AppMemberService {
 
       await manager.delete(AppMember, { appId, userId });
     });
+
+    // SPI 事件：成员移除（框架层入口，业务方监听）
+    await this.eventBus.emitMemberRemoved({ appId, userId });
   }
 
   /**

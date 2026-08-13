@@ -20,6 +20,8 @@ import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { flatToTree } from '@/common/utils/tree.util';
 import { App } from '../app/entities/app.entity';
 import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
+// 注意：直接导入具体文件而非 '../spi' 聚合导出，避免与 spi/impl 产生循环 require
+import { SpiEventBus } from '../spi/events/event-bus';
 
 /**
  * 角色服务
@@ -33,6 +35,7 @@ export class RoleService {
     private roleRepository: Repository<Role>,
     @InjectRepository(RolePermission)
     private rolePermissionRepository: Repository<RolePermission>,
+    private eventBus: SpiEventBus,
   ) { }
 
   /**
@@ -64,7 +67,18 @@ export class RoleService {
 
     // 创建角色
     const role = this.roleRepository.create(createRoleDto);
-    return this.roleRepository.save(role);
+    const saved = await this.roleRepository.save(role);
+
+    // SPI 事件：角色创建（框架层入口，业务方监听）
+    await this.eventBus.emitRoleCreated({
+      roleId: saved.id,
+      roleCode: saved.roleCode,
+      roleName: saved.roleName,
+      appId: saved.appId,
+      appTypeId: saved.appTypeId,
+    });
+
+    return saved;
   }
 
   /**
@@ -152,7 +166,16 @@ export class RoleService {
 
     // 更新角色信息
     Object.assign(role, updateRoleDto);
-    return this.roleRepository.save(role);
+    const saved = await this.roleRepository.save(role);
+
+    // SPI 事件：角色更新（框架层入口，业务方监听）
+    await this.eventBus.emitRoleUpdated({
+      roleId: saved.id,
+      roleCode: saved.roleCode,
+      roleName: saved.roleName,
+    });
+
+    return saved;
   }
 
   /**
@@ -176,6 +199,13 @@ export class RoleService {
 
     // 使用软删除
     await this.roleRepository.softDelete(id);
+
+    // SPI 事件：角色删除（框架层入口，业务方监听）
+    await this.eventBus.emitRoleDeleted({
+      roleId: role.id,
+      roleCode: role.roleCode,
+      roleName: role.roleName,
+    });
   }
 
   /**
@@ -209,7 +239,7 @@ export class RoleService {
     roleId: string,
     assignPermissionsDto: AssignPermissionsDto,
   ): Promise<void> {
-    return this.entityManager.transaction(async (manager) => {
+    await this.entityManager.transaction(async (manager) => {
 
       // 删除角色所有权限
       await manager.delete(RolePermission, { roleId });
@@ -228,6 +258,9 @@ export class RoleService {
       })
       await manager.save(datas);
     });
+
+    // SPI 事件：角色权限变更（框架层入口，业务方监听）
+    await this.eventBus.emitRolePermissionsChanged({ roleId });
   }
 
   /**

@@ -35,6 +35,10 @@ export { AuditLog } from './modules/sys/audit-log/entities/audit-log.entity';
 
 // === 核心服务 ===
 export { AuthService } from './modules/sys/auth/auth.service';
+export type {
+  AuthHookType,
+  AuthHookFn,
+} from './modules/sys/auth/auth.service';
 export { UserService } from './modules/sys/user/user.service';
 export { RoleService } from './modules/sys/role/role.service';
 export { PermissionService } from './modules/sys/permission/permission.service';
@@ -43,6 +47,42 @@ export { AppService } from './modules/sys/app/service/app.service';
 export { AppMemberService } from './modules/sys/app/service/app-member.service';
 export { AuditLogService } from './modules/sys/audit-log/audit-log.service';
 export { InstallService } from './modules/sys/install/install.service';
+
+// === 管理 SPI（业务方集成：抽象类=业务层入口 / 监听器接口=框架层入口）===
+export { SpiEventBus } from './modules/sys/spi';
+export {
+  AppEntitySpi,
+  UserEntitySpi,
+  RoleEntitySpi,
+  AppTypeEntitySpi,
+  DefaultAppEntitySpi,
+  DefaultUserEntitySpi,
+  DefaultRoleEntitySpi,
+  DefaultAppTypeEntitySpi,
+} from './modules/sys/spi';
+export type {
+  CreateAppSpiInput,
+  UpdateAppSpiInput,
+  AppSpiResult,
+  CreateUserSpiInput,
+  CreateRoleSpiInput,
+  AssignPermissionsSpiInput,
+} from './modules/sys/spi';
+export type {
+  MemberEventListener,
+  MemberAddedEvent,
+  MemberRemovedEvent,
+  MemberRolesChangedEvent,
+  UserEventListener,
+  UserCreatedEvent,
+  UserUpdatedEvent,
+  UserDeletedEvent,
+  RoleEventListener,
+  RoleCreatedEvent,
+  RoleUpdatedEvent,
+  RoleDeletedEvent,
+  RolePermissionsChangedEvent,
+} from './modules/sys/spi';
 
 // === 类型定义 ===
 export type { LoginDto } from './modules/sys/auth/dto';

@@ -9,6 +9,7 @@ import {
 import { appTypesConfig } from "./app-types.config";
 import { AppModule } from "./app.modules";
 import { SupplierModule } from "./modules/supplier/supplier.module";
+import { MerchantModule } from "./modules/merchant/merchant.module";
 import {
   AdModule,
   AD_EXTENSION_PERMISSION_VALUES,
@@ -29,6 +30,12 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     title: "供应商API文档",
     description: "供应商管理相关 API",
     include: [SupplierModule],
+  },
+  {
+    name: "merchant",
+    title: "商家管理API文档（SPI 示例）",
+    description: "商家管理：演示业务层通过框架 SPI 同步应用/用户状态",
+    include: [MerchantModule],
   },
   {
     name: "ad-extension",
@@ -65,6 +72,16 @@ async function bootstrap() {
     hooks: {
       onAppInit: async (ctx) => {
         console.log("[Backend] 应用初始化完成");
+      },
+      // 演示：登录/注册前后钩子（HookConfig 已接通到 AuthService）
+      beforeLogin: async (_ctx, credentials) => {
+        console.log(`[钩子] 用户登录前: ${credentials?.username}`);
+      },
+      afterLogin: async (_ctx, user) => {
+        console.log(`[钩子] 用户登录成功: ${user?.username}`);
+      },
+      afterRegister: async (_ctx, user) => {
+        console.log(`[钩子] 新用户注册成功: ${user?.username}`);
       },
     },
   });

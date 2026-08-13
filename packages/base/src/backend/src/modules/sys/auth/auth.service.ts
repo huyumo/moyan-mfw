@@ -37,11 +37,29 @@ import { randomUUID } from 'crypto';
 import { REDIS_ONLY_SERVICE } from '../../../cache/cache.module';
 import { IRedisOnlyService } from '../../../cache/interfaces/cache-service.interface';
 
+/** 认证钩子类型 */
+export type AuthHookType =
+  | 'beforeLogin'
+  | 'afterLogin'
+  | 'beforeRegister'
+  | 'afterRegister';
+
+/** 认证钩子函数签名（参数随场景不同，见具体注册处） */
+export type AuthHookFn = (...args: any[]) => Promise<void>;
+
 /**
  * 认证服务
  */
 @Injectable()
 export class AuthService {
+  /** 认证钩子集合（业务方或工厂注册，登录/注册前后触发） */
+  private readonly authHooks: Record<AuthHookType, AuthHookFn[]> = {
+    beforeLogin: [],
+    afterLogin: [],
+    beforeRegister: [],
+    afterRegister: [],
+  };
+
   constructor(
     @InjectEntityManager()
     private entityManager: EntityManager,
@@ -72,11 +90,32 @@ export class AuthService {
   }
 
   /**
+   * 注册认证钩子（登录/注册前、后）
+   * @param type - 钩子类型
+   * @param fn - 钩子函数（异常会向上传播，可阻止登录/注册流程）
+   */
+  registerAuthHook(type: AuthHookType, fn: AuthHookFn): void {
+    this.authHooks[type].push(fn);
+  }
+
+  /**
+   * 执行认证钩子
+   */
+  private async runAuthHooks(type: AuthHookType, ...args: any[]): Promise<void> {
+    for (const fn of this.authHooks[type]) {
+      await fn(...args);
+    }
+  }
+
+  /**
    * 用户登录
    * @param loginDto - 登录请求参数
    * @returns 登录响应（包含 Token）
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
+    // 登录前钩子（异常可阻止登录流程）
+    await this.runAuthHooks('beforeLogin', loginDto);
+
     const { username, password } = loginDto;
 
     // 查找用户
@@ -120,7 +159,7 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: jwtConfig.refreshExpiresIn });
 
-    return {
+    const result: LoginResponseDto = {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
@@ -132,6 +171,11 @@ export class AuthService {
         isDeveloper: user.isDeveloper === 1,
       },
     };
+
+    // 登录后钩子
+    await this.runAuthHooks('afterLogin', result.user, accessToken);
+
+    return result;
   }
 
   /**
@@ -362,6 +406,9 @@ export class AuthService {
    * @returns 登录响应（包含 Token）
    */
   async register(registerDto: RegisterDto): Promise<LoginResponseDto> {
+    // 注册前钩子（异常可阻止注册流程）
+    await this.runAuthHooks('beforeRegister', registerDto);
+
     const { username, password, nickname, email, phone } = registerDto;
 
     // 检查用户名是否已存在
@@ -425,7 +472,7 @@ export class AuthService {
     const refreshExpiresIn = jwtConfig.refreshExpiresIn;
     const refreshToken = await this.jwtService.signAsync(payload, { expiresIn: refreshExpiresIn });
 
-    return {
+    const result: LoginResponseDto = {
       accessToken,
       refreshToken,
       tokenType: 'Bearer',
@@ -437,6 +484,11 @@ export class AuthService {
         isDeveloper: user.isDeveloper === 1,
       },
     };
+
+    // 注册后钩子
+    await this.runAuthHooks('afterRegister', user);
+
+    return result;
   }
 
   /**

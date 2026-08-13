@@ -21,4 +21,14 @@ export const appTypesConfig: AppTypeConfig[] = [
     ],
     
   },
+  {
+    typeName: '商家',
+    typeCode: 'merchant',
+    typeDesc: '商家应用类型，用于管理商家相关业务（SPI 示例）',
+    multiAppEnabled: 1,
+    builtinRole: [
+      { roleCode: 'merchant_admin', roleName: '商家管理员', isOwner: 1 },
+      { roleCode: 'merchant_member', roleName: '商家成员' },
+    ],
+  },
 ];

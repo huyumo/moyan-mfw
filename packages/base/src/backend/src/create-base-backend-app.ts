@@ -49,6 +49,7 @@ import { DatabaseHealthService } from "./database/database-health.service";
 import { buildTypeOrmOptions, entities } from "./database/typeorm-options";
 import { AuthGuard } from "./common/guards/auth.guard";
 import { PermissionGuard } from "./common/guards/permission.guard";
+import { AuthService } from "./modules/sys/auth/auth.service";
 import { RolePermission } from "./modules/sys/role/entities/role-permission.entity";
 import { UserRole } from "./modules/sys/role/entities/user-role.entity";
 import { PermissionValueSyncService } from "./modules/sys/permission/permission-value-sync.service";
@@ -128,6 +129,21 @@ export async function createBaseBackendApp(
 
   const hooksExecutor = new HooksExecutor(options.hooks || {});
   hooksExecutor.initContext(app, dataSource);
+
+  // 接通登录/注册钩子到 AuthService（此前 HookConfig 定义了 beforeLogin/afterLogin/afterRegister 但从未被调用）
+  const authService = app.get(AuthService);
+  authService.registerAuthHook('beforeLogin', (credentials: any) =>
+    hooksExecutor.beforeLogin(credentials),
+  );
+  authService.registerAuthHook('afterLogin', (user: any, token: string) =>
+    hooksExecutor.afterLogin(user, token),
+  );
+  authService.registerAuthHook('beforeRegister', (registerDto: any) =>
+    hooksExecutor.beforeRegister(registerDto),
+  );
+  authService.registerAuthHook('afterRegister', (user: any) =>
+    hooksExecutor.afterRegister(user),
+  );
 
   await hooksExecutor.onDatabaseReady();
 

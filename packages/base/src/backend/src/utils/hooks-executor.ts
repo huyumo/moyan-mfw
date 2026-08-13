@@ -95,6 +95,14 @@ export class HooksExecutor {
   }
 
   /**
+   * 执行注册前钩子
+   */
+  async beforeRegister(registerDto: any): Promise<void> {
+    if (!this.ctx) return;
+    await executeHook(this.hooks.beforeRegister, this.ctx, registerDto);
+  }
+
+  /**
    * 执行注册后钩子
    */
   async afterRegister(user: any): Promise<void> {

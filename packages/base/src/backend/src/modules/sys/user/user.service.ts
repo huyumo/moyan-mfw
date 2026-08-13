@@ -14,6 +14,8 @@ import { hashPassword } from '../../../common/utils/encrypt';
 import { NotFoundError } from '../../../common/exceptions/not-found.exception';
 import { PaginationResult, PaginationX, WhereBuilder } from '../../../common';
 import { Cacheable, CacheEvict } from '../../../cache/decorators/cache.decorator';
+// 注意：直接导入具体文件而非 '../spi' 聚合导出，避免与 spi/impl 产生循环 require
+import { SpiEventBus } from '../spi/events/event-bus';
 
 /**
  * 用户服务
@@ -27,6 +29,7 @@ export class UserService {
     private userRoleRepository: Repository<UserRole>,
     private dataSource: DataSource,
     private configService: ConfigService,
+    private eventBus: SpiEventBus,
   ) {}
 
   /**
@@ -48,19 +51,31 @@ export class UserService {
     }
 
     // 使用事务创建用户
-    return this.dataSource.transaction(async (manager) => {
+    const user = await this.dataSource.transaction(async (manager) => {
       const hashedPassword = await hashPassword(password);
 
-      const user = manager.create(User, {
+      const created = manager.create(User, {
         username,
         password: hashedPassword,
         ...rest,
       });
 
-      await manager.save(user);
+      await manager.save(created);
 
-      return user;
+      return created;
     });
+
+    // SPI 事件：用户创建（框架层入口，业务方监听）
+    await this.eventBus.emitUserCreated({
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      phone: user.phone,
+      email: user.email,
+      userStatus: user.userStatus,
+    });
+
+    return user;
   }
 
   async adminCreate(dto: AdminCreateUserDto): Promise<User> {
@@ -134,9 +149,9 @@ export class UserService {
    */
   @Cacheable({ key: 'sys:user:username:{#username}' })
   async findByUsername(username: string): Promise<User | null> {
+    // 注意：User.roles 为普通属性（经 UserRole 查询填充），非 ORM 关联，不能用 relations 加载
     return this.userRepository.findOne({
       where: { username },
-      relations: ['roles'],
     });
   }
 
@@ -173,18 +188,43 @@ export class UserService {
    */
   @CacheEvict({ keys: ['sys:user:{#id}', 'sys:user:username:*'] })
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    return this.dataSource.transaction(async (manager) => {
-      const user = await manager.findOne(User, { where: { id } });
+    const before = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'nickname', 'phone', 'email', 'userStatus'],
+    });
 
-      if (!user) {
+    const user = await this.dataSource.transaction(async (manager) => {
+      const found = await manager.findOne(User, { where: { id } });
+
+      if (!found) {
         throw new NotFoundError('用户');
       }
 
-      Object.assign(user, updateUserDto);
-      await manager.save(user);
+      Object.assign(found, updateUserDto);
+      await manager.save(found);
 
-      return user;
+      return found;
     });
+
+    // SPI 事件：用户更新（框架层入口，业务方监听）
+    await this.eventBus.emitUserUpdated({
+      id: user.id,
+      username: user.username,
+      nickname: user.nickname,
+      phone: user.phone,
+      email: user.email,
+      userStatus: user.userStatus,
+      before: before
+        ? {
+            nickname: before.nickname,
+            phone: before.phone,
+            email: before.email,
+            userStatus: before.userStatus,
+          }
+        : undefined,
+    });
+
+    return user;
   }
 
   /**
@@ -207,6 +247,9 @@ export class UserService {
 
     // 使用软删除
     await this.userRepository.softDelete(id);
+
+    // SPI 事件：用户删除（框架层入口，业务方监听）
+    await this.eventBus.emitUserDeleted({ id, username: user.username });
   }
 
   /**
@@ -225,8 +268,22 @@ export class UserService {
       throw new NotFoundError('用户');
     }
 
+    const beforeStatus = user.userStatus;
     user.userStatus = status;
-    return this.userRepository.save(user);
+    const saved = await this.userRepository.save(user);
+
+    // SPI 事件：用户状态变更（框架层入口，业务方监听）
+    await this.eventBus.emitUserUpdated({
+      id: saved.id,
+      username: saved.username,
+      nickname: saved.nickname,
+      phone: saved.phone,
+      email: saved.email,
+      userStatus: saved.userStatus,
+      before: { userStatus: beforeStatus },
+    });
+
+    return saved;
   }
 
   /**
