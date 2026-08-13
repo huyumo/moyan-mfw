@@ -69,4 +69,12 @@
       background-color: inherit;
     }
   }
+
+  // 限制表格溢出 Tooltip 的最大宽度，避免撑满浏览器窗口
+  .el-tooltip.el-popper {
+    max-width: 600px;
+    white-space: normal;
+    word-break: break-all;
+    line-height: 1.6;
+  }
 }

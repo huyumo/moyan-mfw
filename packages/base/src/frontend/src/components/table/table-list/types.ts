@@ -24,6 +24,8 @@ export interface TableColumnConfig {
   render?: (scope: any) => VNode | string;
   /** 格式化函数 */
   formatter?: (row: any) => any;
+  /** 内容超长时是否显示 Tooltip */
+  showOverflowTooltip?: boolean;
   /** 子列 */
   children?: TableColumnConfig[];
 }
