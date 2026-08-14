@@ -21,6 +21,10 @@ import {
 import {
   SCHEDULER_EXTENSION_PERMISSION_VALUES,
 } from "moyan-mfw-extension-scheduler/backend";
+import {
+  LEDGER_EXTENSION_PERMISSION_VALUES,
+} from "moyan-mfw-extension-ledger/backend";
+import { DemoLedgerModule } from "./modules/ledger-demo/demo-ledger.module";
 import { DemoSchedulerModule } from "./modules/scheduler/demo-scheduler.module";
 import "./permissions";
 
@@ -55,6 +59,12 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     description: "Cron周期任务 + 延迟任务管理 API",
     include: [DemoSchedulerModule],
   },
+  {
+    name: "ledger-demo",
+    title: "借贷记账SPI示例",
+    description: "账本扩展包 5 个 SPI + 账户实体扩展 + 业务服务的完整调用用例",
+    include: [DemoLedgerModule],
+  },
 ];
 
 async function bootstrap() {
@@ -68,6 +78,7 @@ async function bootstrap() {
       ...AD_EXTENSION_PERMISSION_VALUES,
       ...DOCUMENT_PERMISSION_VALUES,
       ...SCHEDULER_EXTENSION_PERMISSION_VALUES,
+      ...LEDGER_EXTENSION_PERMISSION_VALUES,
     ],
     hooks: {
       onAppInit: async (ctx) => {

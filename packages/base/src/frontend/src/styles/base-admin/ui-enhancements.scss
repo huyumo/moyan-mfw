@@ -396,3 +396,18 @@ html.dark .mfw-floating-card {
     }
   }
 }
+// ── 可复制文本（renderCopyableText，点击即复制，无图标） ──
+.mfw-copyable-text {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--el-color-primary);
+    text-decoration: underline;
+  }
+}

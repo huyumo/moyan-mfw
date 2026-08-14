@@ -1,0 +1,34 @@
+{
+  "name": "@internal/ledger-backend",
+  "private": true,
+  "version": "0.1.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && tsc-alias",
+    "dev": "nest start --config nest-cli.json --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@internal/base-shared": "workspace:*",
+    "@internal/ledger-shared": "workspace:*",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-ledger": "workspace:*",
+    "@nestjs/common": "catalog:",
+    "@nestjs/core": "catalog:",
+    "@nestjs/typeorm": "catalog:",
+    "@nestjs/swagger": "catalog:",
+    "typeorm": "catalog:",
+    "class-transformer": "catalog:",
+    "class-validator": "catalog:",
+    "reflect-metadata": "catalog:",
+    "rxjs": "catalog:",
+    "redis": "^4.7.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "catalog:",
+    "@nestjs/schematics": "catalog:",
+    "tsc-alias": "catalog:",
+    "typescript": "catalog:"
+  }
+}

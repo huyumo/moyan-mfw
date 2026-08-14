@@ -48,6 +48,7 @@
           ref="tableRef"
           :data="data ?? []"
           :columns="columns ?? []"
+          :formatters="formatters"
           :action-column="actionColumn"
           :loading="loading"
           :border="border"
@@ -99,6 +100,7 @@ import type { MfwBaseListPageInstance } from '../base-list-page/types';
 const props = withDefaults(defineProps<MfwListPageProps>(), {
   searchTemplate: () => [],
   columns: () => [],
+  formatters: () => ({}),
   actionColumn: undefined,
   loadData: undefined,
   searchTrigger: undefined,

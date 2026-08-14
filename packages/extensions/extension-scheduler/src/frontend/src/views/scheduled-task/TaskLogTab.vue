@@ -10,6 +10,7 @@
     ref="listPageRef"
     :search-template="searchTemplate"
     :columns="columns"
+    :formatters="formatters"
     :action-column="actionColumn"
     :load-data="loadData"
     :show-search="true"
@@ -22,7 +23,6 @@ import { ElTag } from 'element-plus'
 import { View } from '@element-plus/icons-vue'
 import {
   MfwListPage,
-  MfwDateFormat,
   MfwPopup,
   renderActionButtons,
 } from 'moyan-mfw-base/frontend'
@@ -33,7 +33,6 @@ import { ApiSchedulerListLogs, ApiSchedulerGetLog } from '../../apis/scheduler'
 import {
   runStatusTagType, runStatusLabel,
   triggerTypeLabel,
-  renderCopyableText,
 } from './shared'
 
 defineOptions({ name: 'MfwTaskLogTab' })
@@ -55,16 +54,13 @@ const searchTemplate = [
 ]
 
 const columns: TableColumnConfig[] = [
-  { prop: 'id', label: '日志ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
-  {
-    prop: 'instanceId', label: '实例ID', minWidth: 340,
-    render: ({ row }) => (row.instanceId ? renderCopyableText(row.instanceId) : '-'),
-  },
+  { prop: 'id', label: '日志ID', minWidth: 340, cp: true },
+  { prop: 'instanceId', label: '实例ID', minWidth: 340, cp: true },
   { prop: 'taskName', label: '任务名称', minWidth: 220 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 200, render: ({ row }) => renderCopyableText(row.taskCode) },
+  { prop: 'taskCode', label: '任务编码', minWidth: 200, cp: true },
   {
     prop: 'triggerType', label: '触发方式', width: 80, align: 'center' as const,
-    render: ({ row }) => triggerTypeLabel[row.triggerType] || '-',
+    formatter: 'triggerType',
   },
   {
     prop: 'status', label: '状态', width: 80, align: 'center' as const,
@@ -72,7 +68,7 @@ const columns: TableColumnConfig[] = [
   },
   {
     prop: 'startedAt', label: '开始时间', width: 180,
-    render: ({ row }) => h(MfwDateFormat, { value: row.startedAt }),
+    formatter: 'dateTime',
   },
   { prop: 'durationMs', label: '耗时(ms)', width: 100, align: 'right' as const },
   {
@@ -80,6 +76,11 @@ const columns: TableColumnConfig[] = [
     render: ({ row }) => row.errorMessage ? h(ElTag, { type: 'danger', size: 'small' }, () => row.errorMessage.substring(0, 50)) : '-',
   },
 ]
+
+/** 命名格式化方法表（MfwListPage 注入，列配置 formatter 按名查找） */
+const formatters = {
+  triggerType: (value: number) => triggerTypeLabel[value] || '-',
+}
 
 const actionColumn: ActionColumnConfig = {
   label: '操作', width: 80, fixed: 'right' as const,

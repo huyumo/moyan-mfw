@@ -20,6 +20,7 @@
     "moyan-mfw-extension-ad": "workspace:*",
     "moyan-mfw-extension-config": "workspace:*",
     "moyan-mfw-extension-document": "workspace:*",
+    "moyan-mfw-extension-ledger": "workspace:*",
     "moyan-mfw-extension-scheduler": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",

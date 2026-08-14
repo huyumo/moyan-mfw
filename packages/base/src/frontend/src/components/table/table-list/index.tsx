@@ -10,6 +10,7 @@ import {
   ref,
   computed,
   withDirectives,
+  h,
   type PropType
 } from 'vue';
 import {
@@ -17,7 +18,17 @@ import {
   ElTableColumn,
   ElLoading
 } from 'element-plus';
-import type {  MfwTableListInstance, TableColumnConfig, ActionColumnConfig } from './types';
+import { renderCopyableText } from '../../../utils/clipboard';
+import MfwDateFormat from '../../display/mfw-format/date-format';
+import type { MfwTableListInstance, TableColumnConfig, ActionColumnConfig, ColumnFormatter } from './types';
+
+/** 内置命名格式化器（页面注入的 formatters 同名时优先） */
+const BUILTIN_FORMATTERS: Record<string, ColumnFormatter> = {
+  /** 可点击复制文本（等价于列配置 cp: true） */
+  copyable: (value) => renderCopyableText(value),
+  /** 日期时间格式化（MfwDateFormat，空值显示 '--'） */
+  dateTime: (value) => h(MfwDateFormat, { value }),
+};
 
 export default defineComponent({
   name: 'MfwTableList',
@@ -32,6 +43,11 @@ export default defineComponent({
     columns: {
       type: Array as PropType<TableColumnConfig[]>,
       default: () => []
+    },
+    /** 命名格式化方法表（列配置 formatter 为字符串时按名查找，内置 copyable/dateTime 之外的自定义方法） */
+    formatters: {
+      type: Object as PropType<Record<string, ColumnFormatter>>,
+      default: () => ({})
     },
     /** 是否加载中 */
     loading: {
@@ -111,23 +127,38 @@ export default defineComponent({
         const prop = column.prop || '';
 
         if (column.children && column.children.length > 0) {
+          const { render, formatter, cp, ...columnProps } = column;
           return (
             <ElTableColumn
               key={prop}
-              {...column}
+              {...columnProps}
             >
               {() => renderColumns(column.children)}
             </ElTableColumn>
           );
         }
 
+        const { render, formatter, cp, ...columnProps } = column;
         return (
           <ElTableColumn
             key={prop}
             prop={prop}
-            {...column}
+            {...columnProps}
           >
-            {(scope: any) => column.render ? column.render(scope) : scope.row[prop]}
+            {(scope: any) => {
+              if (column.render) return column.render(scope);
+              if (typeof column.formatter === 'function') {
+                return column.formatter(scope.row[prop], scope.row);
+              }
+              const name = typeof column.formatter === 'string'
+                ? column.formatter
+                : column.cp ? 'copyable' : null;
+              if (name) {
+                const fn = (props.formatters ?? {})[name] ?? BUILTIN_FORMATTERS[name];
+                if (fn) return fn(scope.row[prop], scope.row);
+              }
+              return scope.row[prop];
+            }}
           </ElTableColumn>
         );
       });

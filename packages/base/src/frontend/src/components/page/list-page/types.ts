@@ -3,7 +3,7 @@
  */
 
 import type { VNode, Component } from 'vue';
-import type { TableColumnConfig, ActionColumnConfig } from '../../table/table-list/types';
+import type { TableColumnConfig, ActionColumnConfig, ColumnFormatter } from '../../table/table-list/types';
 
 /** 搜索表单项类型 */
 export type SearchItemType =
@@ -90,6 +90,11 @@ export interface MfwListPageProps {
   searchTemplate?: SearchTemplateItem[];
   /** 表格列配置 */
   columns?: TableColumnConfig[];
+  /**
+   * 命名格式化方法表：列配置 formatter 为字符串时按名在此查找（内置 copyable/dateTime 之外的扩展）
+   * 方法签名 (value, row) => 渲染内容
+   */
+  formatters?: Record<string, ColumnFormatter>;
   /** 操作列配置 */
   actionColumn?: ActionColumnConfig;
   /** 数据加载函数 */

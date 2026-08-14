@@ -1,11 +1,9 @@
 /**
  * @fileoverview 定时任务管理 — 共享常量与工具函数
  * @description 供 TaskDefinitionTab / TaskInstanceTab / TaskLogTab 复用
+ *   复制能力统一由 moyan-mfw-base/frontend 提供（copyToClipboard / renderCopyableText）
  */
 
-import { h } from 'vue'
-import { ElIcon, ElMessage } from 'element-plus'
-import { CopyDocument } from '@element-plus/icons-vue'
 import {
   TaskTypeDict,
   TaskInstanceStatusDict,
@@ -87,59 +85,8 @@ export const crashRecoveryLabel: Record<number, string> = {
   [CrashRecoveryStrategyDict.MARK_TIMEOUT_ORPHAN]: '标记未归档',
 }
 
-// ── 工具函数 ──
-
-/** 复制文本到剪贴板（兼容非 HTTPS 环境） */
-export function copyToClipboard(text: string): void {
-  const label = text.length > 30 ? text.substring(0, 30) + '...' : text
-
-  if (navigator.clipboard?.writeText) {
-    navigator.clipboard.writeText(text).then(() => {
-      ElMessage.success(`已复制: ${label}`)
-    }).catch(() => {
-      fallbackCopy(text, label)
-    })
-  } else {
-    fallbackCopy(text, label)
-  }
-}
-
-function fallbackCopy(text: string, label: string): void {
-  const textarea = document.createElement('textarea')
-  textarea.value = text
-  textarea.style.position = 'fixed'
-  textarea.style.opacity = '0'
-  document.body.appendChild(textarea)
-  textarea.select()
-  try {
-    // 降级方案：非 HTTPS 环境下 navigator.clipboard 不可用
-    // execCommand 虽已弃用，但在无 Clipboard API 的环境下仍为唯一可用手段
-    document.execCommand('copy')
-    ElMessage.success(`已复制: ${label}`)
-  } catch {
-    ElMessage.error('复制失败')
-  }
-  document.body.removeChild(textarea)
-}
-
-/** 渲染可复制文本（值 + 复制图标），不换行不裁剪 */
-export function renderCopyableText(text: string | null | undefined) {
-  if (!text) return '-'
-  return h('span', {
-    style: 'display: inline-flex; align-items: center; gap: 4px; cursor: pointer;',
-    onClick: (e: Event) => { e.stopPropagation(); copyToClipboard(text) },
-  }, [
-    h('span', {
-      style: 'overflow: hidden; text-overflow: ellipsis; white-space: nowrap;',
-      title: text,
-    }, text),
-    h(ElIcon, {
-      size: 14,
-      style: 'color: var(--el-color-primary); flex-shrink: 0;',
-      title: '点击复制',
-    }, () => h(CopyDocument)),
-  ])
-}
+// ── 复制工具（统一由 moyan-mfw-base/frontend 提供） ──
+export { copyToClipboard, renderCopyableText } from 'moyan-mfw-base/frontend'
 
 /** 格式化日期 */
 export function formatDate(val: any): string {

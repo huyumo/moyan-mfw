@@ -25,7 +25,10 @@
       "moyan-mfw-extension-document/shared": ["../../packages/extensions/extension-document/src/shared/src/index.ts"],
       "moyan-mfw-extension-scheduler/frontend": ["../../packages/extensions/extension-scheduler/src/frontend/src/index.ts"],
       "moyan-mfw-extension-scheduler/frontend/*": ["../../packages/extensions/extension-scheduler/src/frontend/src/*"],
-      "moyan-mfw-extension-scheduler/shared": ["../../packages/extensions/extension-scheduler/src/shared/src/index.ts"]
+      "moyan-mfw-extension-scheduler/shared": ["../../packages/extensions/extension-scheduler/src/shared/src/index.ts"],
+      "moyan-mfw-extension-ledger/frontend": ["../../packages/extensions/extension-ledger/src/frontend/src/index.ts"],
+      "moyan-mfw-extension-ledger/frontend/*": ["../../packages/extensions/extension-ledger/src/frontend/src/*"],
+      "moyan-mfw-extension-ledger/shared": ["../../packages/extensions/extension-ledger/src/shared/src/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue", "src/**/*.d.ts"],

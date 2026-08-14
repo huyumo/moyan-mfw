@@ -15,6 +15,7 @@
 import type { FrontendAppTypeMenuConfig } from "moyan-mfw-base/frontend";
 import { AdPlacementList ,} from 'moyan-mfw-extension-ad/frontend'
 import { MfwScheduledTaskPage } from 'moyan-mfw-extension-scheduler/frontend'
+import { MfwLedgerPage } from 'moyan-mfw-extension-ledger/frontend'
 import { SysAppTypePage, SysAppPage, SysUserPage, SysRolePage, SysMemberPage, SysPermissionPage, SysAuditLogPage } from 'moyan-mfw-base/frontend'
 import SysDashboardPage from '@/views/dashboard/Index.vue'
 import SupplierDashboardPage from '@/views/dashboard/Index.vue'
@@ -108,6 +109,14 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           permCode: "ext:scheduler:task",
           permissions: ["编辑", "执行"],
           component: MfwScheduledTaskPage,
+        },
+        {
+          path: "ledger",
+          name: "借贷记账管理",
+          icon: "Wallet",
+          permCode: "ext:ledger",
+          permissions: ["审核", "冲正", "对账"],
+          component: MfwLedgerPage,
         },
       ],
     },

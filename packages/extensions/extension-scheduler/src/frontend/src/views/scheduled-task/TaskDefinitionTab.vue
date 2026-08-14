@@ -10,6 +10,7 @@
     ref="listPageRef"
     :search-template="searchTemplate"
     :columns="columns"
+    :formatters="formatters"
     :action-column="actionColumn"
     :load-data="loadData"
     :show-search="true"
@@ -33,7 +34,6 @@ import { ApiSchedulerListTasks, ApiSchedulerTriggerTask, ApiSchedulerCreateInsta
 import {
   taskTypeTagType, taskTypeLabel,
   runStatusTagType, runStatusLabel,
-  renderCopyableText,
 } from './shared'
 
 defineOptions({ name: 'MfwTaskDefinitionTab' })
@@ -53,9 +53,9 @@ const searchTemplate = [
 ]
 
 const columns: TableColumnConfig[] = [
-  { prop: 'id', label: '任务ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'id', label: '任务ID', minWidth: 340, cp: true },
   { prop: 'taskName', label: '任务名称', minWidth: 220 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 200, render: ({ row }) => renderCopyableText(row.taskCode) },
+  { prop: 'taskCode', label: '任务编码', minWidth: 200, cp: true },
   {
     prop: 'taskType', label: '类型', width: 100, align: 'center' as const,
     render: ({ row }) => h(ElTag, { type: taskTypeTagType[row.taskType] as any, size: 'small' }, () => taskTypeLabel[row.taskType] || '-'),
@@ -70,11 +70,11 @@ const columns: TableColumnConfig[] = [
   },
   {
     prop: 'lastRunAt', label: '上次执行', width: 180,
-    render: ({ row }) => row.lastRunAt ? h(MfwDateFormat, { value: row.lastRunAt }) : '-',
+    formatter: 'runAt',
   },
   {
     prop: 'nextRunAt', label: '下次执行', width: 180,
-    render: ({ row }) => row.nextRunAt ? h(MfwDateFormat, { value: row.nextRunAt }) : '-',
+    formatter: 'runAt',
   },
   {
     prop: 'lastRunStatus', label: '状态', width: 80, align: 'center' as const,
@@ -83,6 +83,11 @@ const columns: TableColumnConfig[] = [
       : h(ElTag, { type: 'info', size: 'small' }, () => '未执行'),
   },
 ]
+
+/** 命名格式化方法表（MfwListPage 注入，列配置 formatter 按名查找） */
+const formatters = {
+  runAt: (value: string) => (value ? h(MfwDateFormat, { value }) : '-'),
+}
 
 const actionColumn: ActionColumnConfig = {
   label: '操作', width: 160, fixed: 'right' as const,

@@ -13,6 +13,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { SchedulerModule } from 'moyan-mfw-extension-scheduler/backend'
+import { DemoLedgerModule } from '../ledger-demo/demo-ledger.module'
 import { RedisLock } from './adapters/redis-lock.adapter'
 import { RedisPubSubNotify } from './adapters/redis-pubsub-notify.adapter'
 import { DemoSchedulerController } from './controllers/demo-scheduler.controller'
@@ -25,6 +26,7 @@ import { DemoTimeoutTaskHandler } from './handlers/demo-timeout-task.handler'
 import { StressWorkerHandler } from './handlers/stress-worker.handler'
 import { OrderAutoCancelHandler } from './handlers/order-auto-cancel.handler'
 import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
+import { LedgerDailyReconcileHandler } from './handlers/ledger-daily-reconcile.handler'
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
       lockImpl: RedisLock,            // Redis 分布式锁（替代 DbLock）
       notifyImpl: RedisPubSubNotify,  // Redis pub/sub 即时通知（替代 PollingNotify）
     }),
+    // 导入账本演示模块以获取 LedgerReconcileService（账本对账 Handler 依赖）
+    DemoLedgerModule,
   ],
   controllers: [DemoSchedulerController, DemoOrderController],
   providers: [
@@ -46,6 +50,7 @@ import { PaymentCallbackHandler } from './handlers/payment-callback.handler'
     StressWorkerHandler,      // 压测工作处理器
     OrderAutoCancelHandler,    // 订单超时自动取消处理器
     PaymentCallbackHandler,  // 支付回调递增重试处理器
+    LedgerDailyReconcileHandler, // 账本每日对账（账本对账能力对接 scheduler 示例）
   ],
   exports: [DemoCronTaskHandler, DemoDelayTaskHandler],
 })

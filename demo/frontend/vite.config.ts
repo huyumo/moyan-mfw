@@ -22,6 +22,8 @@ export default defineConfig({
       'moyan-mfw-extension-document/shared': resolve(__dirname, '../../packages/extensions/extension-document/src/shared/src/index.ts'),
       'moyan-mfw-extension-scheduler/frontend': resolve(__dirname, '../../packages/extensions/extension-scheduler/src/frontend/src'),
       'moyan-mfw-extension-scheduler/shared': resolve(__dirname, '../../packages/extensions/extension-scheduler/src/shared/src/index.ts'),
+      'moyan-mfw-extension-ledger/frontend': resolve(__dirname, '../../packages/extensions/extension-ledger/src/frontend/src'),
+      'moyan-mfw-extension-ledger/shared': resolve(__dirname, '../../packages/extensions/extension-ledger/src/shared/src/index.ts'),
       '@shared': resolve(__dirname, '../../packages/extensions/extension-config/src/shared/src/index.ts'),
       '@internal/config-shared': resolve(__dirname, '../../packages/extensions/extension-config/src/shared/src/index.ts'),
     },

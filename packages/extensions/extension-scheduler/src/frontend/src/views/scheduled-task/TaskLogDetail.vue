@@ -17,11 +17,11 @@
         </div>
         <div class="info-row">
           <span class="info-label">任务编码</span>
-          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}</span>
         </div>
         <div class="info-row full">
           <span class="info-label">实例ID</span>
-          <span class="info-value mono copyable" @click="copyToClipboard(detail.instanceId)">{{ detail.instanceId || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.instanceId)">{{ detail.instanceId || '-' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">执行状态</span>
@@ -35,7 +35,7 @@
         </div>
         <div class="info-row">
           <span class="info-label">执行实例</span>
-          <span class="info-value copyable" @click="copyToClipboard(detail.instanceId)" >{{ detail.executor || '-' }}<el-icon v-if="detail.instanceId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value copyable" @click="copyToClipboard(detail.instanceId)" >{{ detail.executor || '-' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">耗时</span>
@@ -60,7 +60,7 @@
           <span class="info-label">业务实体ID</span>
           <span class="info-value mono copyable" @click="copyToClipboard(detail.instanceData.entityId)">
             {{ detail.instanceData.entityId }}
-            <el-icon class="copy-icon"><CopyDocument /></el-icon>
+            
           </span>
         </div>
         <div class="info-row" v-if="detail.instanceData?.retryCount !== undefined">
@@ -74,25 +74,22 @@
     <section class="detail-section" v-if="detail.instanceData?.payload">
       <h4 class="section-title">
         调用参数
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.instanceData.payload))"><CopyDocument /></el-icon>
       </h4>
-      <pre class="json-block">{{ formatJson(detail.instanceData.payload) }}</pre>
+      <pre class="json-block copyable-json" title="点击复制" @click="copyToClipboard(formatJson(detail.instanceData.payload))">{{ formatJson(detail.instanceData.payload) }}</pre>
     </section>
 
     <!-- 执行结果 -->
     <section class="detail-section" v-if="detail.result">
       <h4 class="section-title">
         执行结果
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.result))"><CopyDocument /></el-icon>
       </h4>
-      <pre class="json-block">{{ formatJson(detail.result) }}</pre>
+      <pre class="json-block copyable-json" title="点击复制" @click="copyToClipboard(formatJson(detail.result))">{{ formatJson(detail.result) }}</pre>
     </section>
 
     <!-- 错误信息 -->
     <section class="detail-section" v-if="detail.errorMessage">
       <h4 class="section-title">
         错误信息
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorMessage)"><CopyDocument /></el-icon>
       </h4>
       <div class="error-message">{{ detail.errorMessage }}</div>
     </section>
@@ -101,7 +98,6 @@
     <section class="detail-section" v-if="detail.errorStack">
       <h4 class="section-title">
         错误堆栈
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(detail.errorStack)"><CopyDocument /></el-icon>
       </h4>
       <pre class="json-block error-stack">{{ detail.errorStack }}</pre>
     </section>
@@ -110,7 +106,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CopyDocument } from '@element-plus/icons-vue'
 import {
   TaskRunStatusDict,
   TaskTriggerTypeDict,
@@ -216,31 +211,17 @@ const triggerTypeLabel = computed(() => {
 
   &.copyable {
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
 
-    &:hover .copy-icon {
+    &:hover {
       color: var(--el-color-primary);
     }
-  }
-}
-
-.copy-icon {
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
-  flex-shrink: 0;
-  transition: color 0.2s;
-
-  &.title-copy {
-    margin-left: 8px;
-    font-size: 16px;
   }
 }
 
 // ── JSON 块 ──
 .json-block {
   background: #f5f7fa;
+  cursor: pointer;
   border: 1px solid #e4e7ed;
   border-radius: 4px;
   padding: 12px;
@@ -273,3 +254,8 @@ const triggerTypeLabel = computed(() => {
   color: #f56c6c;
 }
 </style>
+
+.copyable-json:hover {
+  color: var(--el-color-primary);
+  border-color: var(--el-color-primary) !important;
+}

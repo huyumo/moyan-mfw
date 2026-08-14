@@ -22,7 +22,6 @@ import { ElTag, ElMessageBox } from 'element-plus'
 import { Close, View, RefreshRight } from '@element-plus/icons-vue'
 import {
   MfwListPage,
-  MfwDateFormat,
   MfwPopup,
   renderActionButtons,
 } from 'moyan-mfw-base/frontend'
@@ -34,7 +33,6 @@ import {
   instanceStatusTagType, instanceStatusLabel,
   taskTypeTagType, taskTypeLabel,
   triggerTypeLabel,
-  renderCopyableText,
 } from './shared'
 
 defineOptions({ name: 'MfwTaskInstanceTab' })
@@ -56,9 +54,9 @@ const searchTemplate = [
 ]
 
 const columns: TableColumnConfig[] = [
-  { prop: 'id', label: '实例ID', minWidth: 340, render: ({ row }) => renderCopyableText(row.id) },
+  { prop: 'id', label: '实例ID', minWidth: 340, cp: true },
   { prop: 'taskName', label: '任务名称', minWidth: 200 },
-  { prop: 'taskCode', label: '任务编码', minWidth: 180, render: ({ row }) => renderCopyableText(row.taskCode) },
+  { prop: 'taskCode', label: '任务编码', minWidth: 180, cp: true },
   // {
   //   prop: 'taskType', label: '任务类型', width: 90, align: 'center' as const,
   //   render: ({ row }) => row.taskType
@@ -82,10 +80,10 @@ const columns: TableColumnConfig[] = [
       return h(ElTag, { type: 'warning', size: 'small' }, () => text)
     },
   },
-  { prop: 'entityId', label: '实体ID', minWidth: 160, render: ({ row }) => renderCopyableText(row.entityId) },
+  { prop: 'entityId', label: '实体ID', minWidth: 160, cp: true },
   {
     prop: 'executeAt', label: '应执行时间', width: 170,
-    render: ({ row }) => h(MfwDateFormat, { value: row.executeAt }),
+    formatter: 'dateTime',
   },
   {
     prop: 'status', label: '状态', width: 90, align: 'center' as const,

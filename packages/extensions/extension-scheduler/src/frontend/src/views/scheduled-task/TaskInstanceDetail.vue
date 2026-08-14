@@ -13,7 +13,7 @@
       <div class="info-grid">
         <div class="info-row full">
           <span class="info-label">实例ID</span>
-          <span class="info-value mono copyable" @click="copyToClipboard(detail.id)">{{ detail.id }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.id)">{{ detail.id }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">任务名称</span>
@@ -21,11 +21,11 @@
         </div>
         <div class="info-row">
           <span class="info-label">任务编码</span>
-          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}<el-icon class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.taskCode)">{{ detail.taskCode }}</span>
         </div>
         <div class="info-row full">
           <span class="info-label">实体ID</span>
-          <span class="info-value mono copyable" @click="copyToClipboard(detail.entityId)">{{ detail.entityId || '-' }}<el-icon v-if="detail.entityId" class="copy-icon"><CopyDocument /></el-icon></span>
+          <span class="info-value mono copyable" @click="copyToClipboard(detail.entityId)">{{ detail.entityId || '-' }}</span>
         </div>
         <div class="info-row">
           <span class="info-label">状态</span>
@@ -46,10 +46,7 @@
 
     <!-- 业务数据 -->
     <section class="detail-section" v-if="detail.payload">
-      <h4 class="section-title">
-        业务数据
-        <el-icon class="copy-icon title-copy" @click="copyToClipboard(formatJson(detail.payload))"><CopyDocument /></el-icon>
-      </h4>
+      <h4 class="section-title">业务数据</h4>
       <pre class="json-block">{{ formatJson(detail.payload) }}</pre>
     </section>
   </div>
@@ -57,7 +54,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { CopyDocument } from '@element-plus/icons-vue'
 import { TaskInstanceStatusDict } from 'moyan-mfw-extension-scheduler/shared'
 import { copyToClipboard, formatDate, formatJson } from './shared'
 
@@ -154,28 +150,6 @@ const statusLabel = computed(() => {
     font-family: 'Courier New', monospace;
   }
 
-  &.copyable {
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-
-    &:hover .copy-icon {
-      color: var(--el-color-primary);
-    }
-  }
-}
-
-.copy-icon {
-  font-size: 14px;
-  color: var(--el-text-color-placeholder);
-  flex-shrink: 0;
-  transition: color 0.2s;
-
-  &.title-copy {
-    margin-left: 8px;
-    font-size: 16px;
-  }
 }
 
 // ── JSON 块 ──
