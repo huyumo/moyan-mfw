@@ -18,10 +18,13 @@
     "typecheck:ad-shared": "pnpm --filter @internal/ad-shared typecheck",
     "typecheck:ad-backend": "pnpm --filter @internal/ad-backend typecheck",
     "typecheck:ad-frontend": "pnpm --filter @internal/ad-frontend typecheck",
+    "typecheck:ledger-shared": "pnpm --filter @internal/ledger-shared typecheck",
+    "typecheck:ledger-backend": "pnpm --filter @internal/ledger-backend typecheck",
+    "typecheck:ledger-frontend": "pnpm --filter @internal/ledger-frontend typecheck",
     "typecheck:vue": "pnpm --filter moyan-mfw-frontend typecheck",
     "typecheck:e2e": "tsc --noEmit -p e2e/tsconfig.json",
     "typecheck:backend": "pnpm --filter moyan-mfw-backend typecheck",
-    "typecheck": "pnpm run typecheck:base-shared && pnpm run typecheck:ad-shared && pnpm run typecheck:base-backend && pnpm run typecheck:base-tests && pnpm run typecheck:ad-backend && pnpm run typecheck:base-frontend && pnpm run typecheck:ad-frontend && pnpm run typecheck:vue && pnpm run typecheck:backend && pnpm run typecheck:e2e",
+    "typecheck": "pnpm run typecheck:base-shared && pnpm run typecheck:ad-shared && pnpm run typecheck:ledger-shared && pnpm run typecheck:base-backend && pnpm run typecheck:base-tests && pnpm run typecheck:ad-backend && pnpm run typecheck:ledger-backend && pnpm run typecheck:base-frontend && pnpm run typecheck:ad-frontend && pnpm run typecheck:ledger-frontend && pnpm run typecheck:vue && pnpm run typecheck:backend && pnpm run typecheck:e2e",
     "typecheck:scripts": "tsc --project scripts/tsconfig.json",
     "gen": "plop --plopfile scripts/generators/plopfile.ts",
     "gen:module": "plop --plopfile scripts/generators/plopfile.ts backend-module",
@@ -43,7 +46,9 @@
     "publish:ad": "cd packages/extensions/extension-ad && npm publish --access public",
     "publish:config": "cd packages/extensions/extension-config && npm publish --access public",
     "publish:document": "cd packages/extensions/extension-document && npm publish --access public",
-    "publish:all": "pnpm run publish:base && pnpm run publish:cli && pnpm run publish:ad && pnpm run publish:config && pnpm run publish:document"
+    "publish:scheduler": "cd packages/extensions/extension-scheduler && npm publish --access public",
+    "publish:ledger": "cd packages/extensions/extension-ledger && npm publish --access public",
+    "publish:all": "pnpm run publish:base && pnpm run publish:cli && pnpm run publish:ad && pnpm run publish:config && pnpm run publish:document && pnpm run publish:scheduler && pnpm run publish:ledger"
   },
   "devDependencies": {
     "@eslint/js": "^9.38.0",

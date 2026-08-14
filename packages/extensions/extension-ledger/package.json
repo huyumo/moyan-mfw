@@ -53,7 +53,9 @@
     "typecheck:shared": "pnpm --filter @internal/ledger-shared typecheck",
     "typecheck:backend": "pnpm --filter @internal/ledger-backend typecheck",
     "typecheck:frontend": "pnpm --filter @internal/ledger-frontend typecheck",
-    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend"
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "verify": "pnpm run verify:dist"
   },
   "license": "MIT",
   "keywords": [
