@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-extension-document",
-  "version": "1.2.0-beta.56",
+  "version": "1.2.0-beta.57",
   "description": "MFW 通用文档管理扩展包",
   "readme": "# moyan-mfw-extension-document\n\nMFW 通用文档管理扩展包，提供前后端统一的文档管理能力。",
   "exports": {
