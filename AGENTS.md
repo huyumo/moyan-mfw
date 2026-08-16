@@ -16,7 +16,7 @@ Moyan MFW (墨焱管理框架) is a full-stack admin management framework with a
 
 ### Build & Development
 ```bash
-pnpm build                  # Build all workspace packages
+pnpm build                  # Build all publishable packages + dist checks (name-glob filters, new extensions auto-included)
 pnpm dev:frontend           # Start frontend dev server (Vite on port 5173)
 pnpm dev:examples           # Start examples service
 ```

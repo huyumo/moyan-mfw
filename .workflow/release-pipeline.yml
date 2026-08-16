@@ -30,7 +30,9 @@ stages:
           - npm config set registry https://registry.npmmirror.com
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
-          - pnpm -r --filter moyan-mfw-base --filter moyan-mfw-cli --filter "moyan-mfw-extension-*" build
+          # 两阶段构建：base/cli 先行（扩展前端编译依赖 base dist 类型），扩展随后可并行
+          - pnpm --filter moyan-mfw-base --filter moyan-mfw-cli build
+          - pnpm -r --filter "moyan-mfw-extension-*" build
           - pnpm --filter moyan-mfw-shared build
           - pnpm run typecheck
           - pnpm run verify:dist
@@ -38,4 +40,3 @@ stages:
           - npm config set registry https://registry.npmjs.org
           - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
           - pnpm changeset publish
-          - git push origin --tags || echo "  ⚠ tag 回推失败（changesets 可能已删除本地 tag），可忽略"

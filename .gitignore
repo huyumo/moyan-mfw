@@ -38,3 +38,6 @@ temp/
 console.log('ERR
 scripts/stress/logs/
 scripts/stress/results/
+
+# vite temporary config files (vite.config.mts.timestamp-*.mjs)
+*.timestamp-*.mjs

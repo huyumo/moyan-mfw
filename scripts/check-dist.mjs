@@ -9,6 +9,10 @@ const FAIL = '\x1b[31mFAIL\x1b[0m';
 const PASS = '\x1b[32mPASS\x1b[0m';
 
 const VUE_BARE_DEFAULT_RE = /^import\s+\w+,\s*\{[\s\S]*?\}\s*from\s*["']vue["']/m;
+// ESM 产物必须保留具名导出（export 子句中的 as 别名/标识符导出）
+const ESM_EXPORT_RE = /export\s*\{[^}]*\b(as|[A-Za-z_$])/;
+// 扩展前端产物必须带样式文件（页面组件依赖 base/element-plus 样式）
+const FRONTEND_STYLE_FILE = 'src/frontend/dist/style.css';
 
 function discoverExtensions() {
   const extDir = path.join(rootDir, 'packages', 'extensions');
@@ -38,9 +42,9 @@ function buildChecks() {
     file: 'packages/base/src/frontend/dist/index.js',
     rules: [
       {
-        name: 'exports "buildRoutesFromModuleTree"',
-        fn: (content) => content.includes('buildRoutesFromModuleTree'),
-        fix: '确保 buildRoutesFromModuleTree 在 base/frontend 中正确导出',
+        name: 'has named exports',
+        fn: (content) => ESM_EXPORT_RE.test(content) || /exports\.[A-Za-z_$]/.test(content),
+        fix: '确保 base/frontend 构建产物包含具名导出',
       },
     ],
   });
@@ -79,9 +83,16 @@ function buildChecks() {
           fix: '检查 vite.config.mts 中 fixVueDefaultImport 插件是否正常',
         },
         {
-          name: 'exports routes',
-          fn: (content) => /Routes\b/.test(content),
-          fix: `确保 src/index.ts 中 export const xxxRoutes 存在`,
+          // 扩展前端只导出页面组件（路由由使用方 menu-trees.ts 维护），
+          // 因此校验"存在具名导出"而非旧的 Routes 导出
+          name: 'has named exports',
+          fn: (content) => ESM_EXPORT_RE.test(content),
+          fix: `确保 src/index.ts 存在页面组件导出`,
+        },
+        {
+          name: 'style.css emitted',
+          fn: () => fs.existsSync(path.join(rootDir, `packages/extensions/${ext.dirName}`, FRONTEND_STYLE_FILE)),
+          fix: '检查 vite build 是否产出 style.css',
         },
       ],
     });

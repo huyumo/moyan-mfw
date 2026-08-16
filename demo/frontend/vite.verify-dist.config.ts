@@ -5,7 +5,7 @@ import { resolve } from 'path';
 import { readdirSync, existsSync } from 'fs';
 
 function discoverExtensions(baseDir: string): { dirName: string; name: string }[] {
-  const extDir = resolve(baseDir, '../packages/extensions');
+  const extDir = resolve(baseDir, '../../packages/extensions');
   if (!existsSync(extDir)) return [];
   return readdirSync(extDir, { withFileTypes: true })
     .filter(d => d.isDirectory() && d.name.startsWith('extension-'))
@@ -17,11 +17,11 @@ function buildExtensionAliases() {
   for (const ext of discoverExtensions(__dirname)) {
     aliases[`moyan-mfw-${ext.dirName}/frontend`] = resolve(
       __dirname,
-      `../packages/extensions/${ext.dirName}/src/frontend/dist/index.mjs`,
+      `../../packages/extensions/${ext.dirName}/src/frontend/dist/index.mjs`,
     );
     aliases[`moyan-mfw-${ext.dirName}/shared`] = resolve(
       __dirname,
-      `../packages/extensions/${ext.dirName}/src/shared/src/index.ts`,
+      `../../packages/extensions/${ext.dirName}/src/shared/src/index.ts`,
     );
   }
   return aliases;
@@ -33,8 +33,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      'moyan-mfw-base/frontend': resolve(__dirname, '../packages/base/src/frontend/src'),
-      'moyan-mfw-base/shared': resolve(__dirname, '../packages/base/src/shared/src/index.ts'),
+      'moyan-mfw-base/frontend': resolve(__dirname, '../../packages/base/src/frontend/dist/index.mjs'),
+      'moyan-mfw-base/shared': resolve(__dirname, '../../packages/base/src/shared/src/index.ts'),
       ...buildExtensionAliases(),
     },
   },

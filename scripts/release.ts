@@ -123,6 +123,16 @@ async function main() {
   const tags = [];
   for (const pkg of bumped) {
     const tag = `${pkg.name}@${pkg.version}`;
+    let existsLocally = false;
+    try {
+      execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
+      existsLocally = true;
+    } catch { /* tag 不存在 */ }
+    if (existsLocally) {
+      console.log(`  = ${tag} 已存在，跳过（重跑场景）`);
+      tags.push(tag);
+      continue;
+    }
     sh(`git tag ${tag}`, { inherit: true });
     tags.push(tag);
   }

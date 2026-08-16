@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "prebuild": "pnpm -r --filter moyan-mfw-base --filter moyan-mfw-cli --filter \"moyan-mfw-extension-*\" build && pnpm --filter moyan-mfw-shared build",
+    "prebuild": "pnpm --filter moyan-mfw-base --filter moyan-mfw-cli build && pnpm -r --filter \"moyan-mfw-extension-*\" build && pnpm --filter moyan-mfw-shared build",
     "dev": "pnpm run prebuild && nest start --watch",
     "build": "nest build",
     "typecheck:backend": "tsc --noEmit -p tsconfig.json",

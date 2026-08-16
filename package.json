@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev:frontend": "pnpm --filter moyan-mfw-frontend dev",
-    "build": "pnpm -r --filter moyan-mfw-base --filter moyan-mfw-cli --filter \"moyan-mfw-extension-*\" build && pnpm run verify:dist",
+    "build": "pnpm --filter moyan-mfw-base --filter moyan-mfw-cli build && pnpm -r --filter \"moyan-mfw-extension-*\" build && pnpm --filter moyan-mfw-shared build && pnpm run verify:dist",
     "build:frontend": "pnpm --filter moyan-mfw-frontend build",
     "verify:dist": "node scripts/check-dist.mjs && pnpm --filter moyan-mfw-frontend verify-dist",
     "format": "prettier . --write",

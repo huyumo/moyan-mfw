@@ -26,5 +26,6 @@ stages:
           - npm config set registry https://registry.npmmirror.com
           - npm install -g pnpm@10.14.0
           - pnpm install --frozen-lockfile --config.node-linker=hoisted
-          - pnpm -r --filter moyan-mfw-base --filter moyan-mfw-cli --filter "moyan-mfw-extension-*" build
+          - pnpm --filter moyan-mfw-base --filter moyan-mfw-cli build
+          - pnpm -r --filter "moyan-mfw-extension-*" build
           - pnpm run typecheck
