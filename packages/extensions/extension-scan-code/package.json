@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-extension-scan-code",
-  "version": "1.2.0-beta.58",
+  "version": "1.2.0-beta.59",
   "description": "MFW 扫码扩展包（通用二维码生成/解析/核销 + 生成策略配置入库）",
   "exports": {
     "./backend": {

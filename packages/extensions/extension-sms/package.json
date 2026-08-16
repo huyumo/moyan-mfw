@@ -1,6 +1,6 @@
 {
   "name": "moyan-mfw-extension-sms",
-  "version": "1.2.0-beta.58",
+  "version": "1.2.0-beta.59",
   "description": "MFW 短信扩展包（运营商配置入库 + 模板管理 + 验证码服务）",
   "exports": {
     "./backend": {
