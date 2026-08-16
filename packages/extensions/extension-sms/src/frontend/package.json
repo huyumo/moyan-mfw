@@ -1,0 +1,38 @@
+{
+  "name": "@internal/sms-frontend",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "vite build --config vite.config.mts && vue-tsc --emitDeclarationOnly -p tsconfig.json",
+    "dev": "vite --config vite.config.mts",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json",
+    "build:api": "tsx api.build.cjs",
+    "verify-dist": "node ../../scripts/verify-dist.mjs"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "catalog:",
+    "@internal/sms-shared": "workspace:*",
+    "@internal/base-shared": "workspace:*",
+    "@vueuse/core": "catalog:",
+    "axios": "catalog:",
+    "element-plus": "catalog:",
+    "moyan-api": "catalog:",
+    "moyan-mfw-base": "workspace:*",
+    "moyan-mfw-extension-sms": "workspace:*",
+    "pinia": "catalog:",
+    "vue": "catalog:",
+    "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "catalog:",
+    "@vitejs/plugin-vue-jsx": "catalog:",
+    "sass": "catalog:",
+    "sass-embedded": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}

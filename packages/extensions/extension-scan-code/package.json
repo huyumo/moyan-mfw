@@ -1,0 +1,85 @@
+{
+  "name": "moyan-mfw-extension-scan-code",
+  "version": "1.2.0-beta.58",
+  "description": "MFW 扫码扩展包（通用二维码生成/解析/核销 + 生成策略配置入库）",
+  "exports": {
+    "./backend": {
+      "types": "./src/backend/dist/index.d.ts",
+      "import": "./src/backend/dist/index.js",
+      "require": "./src/backend/dist/index.js"
+    },
+    "./backend/*": {
+      "types": "./src/backend/dist/*.d.ts",
+      "import": "./src/backend/dist/*.js",
+      "require": "./src/backend/dist/*"
+    },
+    "./frontend": {
+      "types": "./src/frontend/dist/index.d.ts",
+      "import": "./src/frontend/dist/index.mjs",
+      "require": "./src/frontend/dist/index.mjs",
+      "style": "./src/frontend/dist/style.css"
+    },
+    "./frontend/*": {
+      "types": "./src/frontend/dist/*.d.ts",
+      "import": "./src/frontend/dist/*",
+      "require": "./src/frontend/dist/*"
+    },
+    "./shared": {
+      "types": "./src/shared/dist/index.d.ts",
+      "import": "./src/shared/dist/index.js",
+      "require": "./src/shared/dist/index.js"
+    },
+    "./shared/*": {
+      "types": "./src/shared/dist/*.d.ts",
+      "import": "./src/shared/dist/*",
+      "require": "./src/shared/dist/*"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./src/*/dist/*.d.ts",
+        "./src/*/dist/index.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @internal/scan-code-shared build",
+    "build:backend": "pnpm --filter moyan-mfw-base run build:shared && pnpm --filter moyan-mfw-base run build:backend && pnpm --filter @internal/scan-code-backend build",
+    "build:frontend": "pnpm --filter @internal/scan-code-frontend build",
+    "build": "pnpm run build:shared && pnpm run build:backend && pnpm run build:frontend",
+    "dev:backend": "pnpm --filter @internal/scan-code-backend dev",
+    "dev:frontend": "pnpm --filter @internal/scan-code-frontend dev",
+    "typecheck:shared": "pnpm --filter @internal/scan-code-shared typecheck",
+    "typecheck:backend": "pnpm --filter @internal/scan-code-backend typecheck",
+    "typecheck:frontend": "pnpm --filter @internal/scan-code-frontend typecheck",
+    "typecheck": "pnpm run typecheck:shared && pnpm run typecheck:backend && pnpm run typecheck:frontend",
+    "verify:dist": "node scripts/verify-dist.mjs",
+    "verify": "pnpm run verify:dist"
+  },
+  "license": "MIT",
+  "keywords": [
+    "moyan",
+    "mfw",
+    "extension",
+    "scan-code",
+    "qrcode",
+    "扫码",
+    "核销"
+  ],
+  "files": [
+    "src/backend/dist",
+    "src/frontend/dist",
+    "src/shared/dist",
+    "database/migrations",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org",
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

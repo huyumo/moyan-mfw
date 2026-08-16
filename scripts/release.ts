@@ -19,6 +19,8 @@ const PACKAGES = [
   'packages/extensions/extension-document',
   'packages/extensions/extension-scheduler',
   'packages/extensions/extension-ledger',
+  'packages/extensions/extension-sms',
+  'packages/extensions/extension-scan-code',
 ];
 
 function getCurrentVersion(): string {

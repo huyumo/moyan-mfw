@@ -22,6 +22,8 @@
     "moyan-mfw-extension-document": "workspace:*",
     "moyan-mfw-extension-ledger": "workspace:*",
     "moyan-mfw-extension-scheduler": "workspace:*",
+    "moyan-mfw-extension-sms": "workspace:*",
+    "moyan-mfw-extension-scan-code": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",
     "vue-advanced-cropper": "catalog:",

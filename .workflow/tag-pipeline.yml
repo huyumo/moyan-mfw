@@ -32,6 +32,8 @@ stages:
           - pnpm --filter moyan-mfw-extension-document build
           - pnpm --filter moyan-mfw-extension-scheduler build
           - pnpm --filter moyan-mfw-extension-ledger build
+          - pnpm --filter moyan-mfw-extension-sms build
+          - pnpm --filter moyan-mfw-extension-scan-code build
           - pnpm --filter moyan-mfw-cli build
           - pnpm run typecheck
           - VERSION=$(node -p "require('./package.json').version")
@@ -44,5 +46,7 @@ stages:
           - cd ../extension-document && npm publish --access public
           - cd ../extension-scheduler && npm publish --access public
           - cd ../extension-ledger && npm publish --access public
+          - cd ../extension-sms && npm publish --access public
+          - cd ../extension-scan-code && npm publish --access public
           - cd ../../cli && npm publish --access public
           - echo "✅ v${VERSION} 所有包发布完成！"

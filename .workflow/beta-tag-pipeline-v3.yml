@@ -35,6 +35,8 @@ stages:
           - pnpm --filter moyan-mfw-extension-document build
           - pnpm --filter moyan-mfw-extension-scheduler build
           - pnpm --filter moyan-mfw-extension-ledger build
+          - pnpm --filter moyan-mfw-extension-sms build
+          - pnpm --filter moyan-mfw-extension-scan-code build
           - pnpm --filter moyan-mfw-cli build
           - pnpm --filter moyan-mfw-shared build
           - pnpm run typecheck
@@ -48,6 +50,8 @@ stages:
           - cd ../extension-document && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-document already published, skipping"
           - cd ../extension-scheduler && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-scheduler already published, skipping"
           - cd ../extension-ledger && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-ledger already published, skipping"
+          - cd ../extension-sms && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-sms already published, skipping"
+          - cd ../extension-scan-code && npm publish --access public --tag beta 2>&1 || echo "  ⚠ extension-scan-code already published, skipping"
           - cd ../../cli && npm publish --access public --tag beta 2>&1 || echo "  ⚠ cli already published, skipping"
           - echo "✅ v${VERSION} Beta 包发布完成！"
         caches: []

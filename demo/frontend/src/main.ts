@@ -16,12 +16,14 @@ import { menuTrees } from "./menu-trees";
 import { AD_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ad/shared";
 import { SCHEDULER_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-scheduler/shared";
 import { LEDGER_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-ledger/shared";
+import { SMS_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-sms/shared";
+import { SCAN_CODE_EXTENSION_PERMISSION_VALUES } from "moyan-mfw-extension-scan-code/shared";
 import pkg from "../package.json";
 import "./permissions";
 // 业务层注册借贷记账扩展筛选动态下拉选项加载器（campaigns 等）
 import "./ledger-option-loaders";
 
-registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES, ...SCHEDULER_EXTENSION_PERMISSION_VALUES, ...LEDGER_EXTENSION_PERMISSION_VALUES]);
+registerPermissionValues([...AD_EXTENSION_PERMISSION_VALUES, ...SCHEDULER_EXTENSION_PERMISSION_VALUES, ...LEDGER_EXTENSION_PERMISSION_VALUES, ...SMS_EXTENSION_PERMISSION_VALUES, ...SCAN_CODE_EXTENSION_PERMISSION_VALUES]);
 
 // 配置高德地图凭证
 configureAmap({

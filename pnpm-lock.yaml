@@ -263,9 +263,15 @@ importers:
       moyan-mfw-extension-ledger:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-ledger
+      moyan-mfw-extension-scan-code:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-scan-code
       moyan-mfw-extension-scheduler:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-scheduler
+      moyan-mfw-extension-sms:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-sms
       moyan-mfw-shared:
         specifier: workspace:*
         version: link:../shared
@@ -330,9 +336,15 @@ importers:
       moyan-mfw-extension-ledger:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-ledger
+      moyan-mfw-extension-scan-code:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-scan-code
       moyan-mfw-extension-scheduler:
         specifier: workspace:*
         version: link:../../packages/extensions/extension-scheduler
+      moyan-mfw-extension-sms:
+        specifier: workspace:*
+        version: link:../../packages/extensions/extension-sms
       moyan-mfw-shared:
         specifier: workspace:*
         version: link:../shared
@@ -1211,6 +1223,140 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
+  packages/extensions/extension-scan-code: {}
+
+  packages/extensions/extension-scan-code/src/backend:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/scan-code-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: 'catalog:'
+        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)
+      '@nestjs/typeorm':
+        specifier: 'catalog:'
+        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))
+      class-transformer:
+        specifier: 'catalog:'
+        version: 0.5.1
+      class-validator:
+        specifier: 'catalog:'
+        version: 0.14.4
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-scan-code:
+        specifier: workspace:*
+        version: link:../..
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      typeorm:
+        specifier: 'catalog:'
+        version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
+    devDependencies:
+      '@nestjs/cli':
+        specifier: 'catalog:'
+        version: 10.4.9
+      '@nestjs/schematics':
+        specifier: 'catalog:'
+        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.3)
+      tsc-alias:
+        specifier: 'catalog:'
+        version: 1.8.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/extensions/extension-scan-code/src/frontend:
+    dependencies:
+      '@element-plus/icons-vue':
+        specifier: 'catalog:'
+        version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/scan-code-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@vueuse/core':
+        specifier: 'catalog:'
+        version: 14.2.1(vue@3.5.30(typescript@5.9.3))
+      axios:
+        specifier: 'catalog:'
+        version: 1.13.6
+      element-plus:
+        specifier: 'catalog:'
+        version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      moyan-api:
+        specifier: 'catalog:'
+        version: 2.1.19
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-scan-code:
+        specifier: workspace:*
+        version: link:../..
+      pinia:
+        specifier: 'catalog:'
+        version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.30(typescript@5.9.3)
+      vue-router:
+        specifier: 'catalog:'
+        version: 4.6.4(vue@3.5.30(typescript@5.9.3))
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 5.2.4(vite@5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      '@vitejs/plugin-vue-jsx':
+        specifier: 'catalog:'
+        version: 5.1.5(vite@5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      sass:
+        specifier: 'catalog:'
+        version: 1.98.0
+      sass-embedded:
+        specifier: 'catalog:'
+        version: 1.100.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: 'catalog:'
+        version: 5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 2.2.12(typescript@5.9.3)
+
+  packages/extensions/extension-scan-code/src/shared:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
   packages/extensions/extension-scheduler: {}
 
   packages/extensions/extension-scheduler/src/backend:
@@ -1339,6 +1485,140 @@ importers:
         version: 2.2.12(typescript@5.9.3)
 
   packages/extensions/extension-scheduler/src/shared:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/extensions/extension-sms: {}
+
+  packages/extensions/extension-sms/src/backend:
+    dependencies:
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/sms-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@nestjs/common':
+        specifier: 'catalog:'
+        version: 10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/core':
+        specifier: 'catalog:'
+        version: 10.4.22(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/platform-express@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)
+      '@nestjs/swagger':
+        specifier: 'catalog:'
+        version: 7.4.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)
+      '@nestjs/typeorm':
+        specifier: 'catalog:'
+        version: 10.0.2(@nestjs/common@10.4.22(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.1.14)(rxjs@7.8.2))(@nestjs/core@10.4.22)(reflect-metadata@0.1.14)(rxjs@7.8.2)(typeorm@0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3)))
+      class-transformer:
+        specifier: 'catalog:'
+        version: 0.5.1
+      class-validator:
+        specifier: 'catalog:'
+        version: 0.14.4
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-sms:
+        specifier: workspace:*
+        version: link:../..
+      reflect-metadata:
+        specifier: 'catalog:'
+        version: 0.1.14
+      rxjs:
+        specifier: 'catalog:'
+        version: 7.8.2
+      typeorm:
+        specifier: 'catalog:'
+        version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
+    devDependencies:
+      '@nestjs/cli':
+        specifier: 'catalog:'
+        version: 10.4.9
+      '@nestjs/schematics':
+        specifier: 'catalog:'
+        version: 10.2.3(chokidar@3.6.0)(typescript@5.9.3)
+      tsc-alias:
+        specifier: 'catalog:'
+        version: 1.8.17
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+
+  packages/extensions/extension-sms/src/frontend:
+    dependencies:
+      '@element-plus/icons-vue':
+        specifier: 'catalog:'
+        version: 2.3.2(vue@3.5.30(typescript@5.9.3))
+      '@internal/base-shared':
+        specifier: workspace:*
+        version: link:../../../../base/src/shared
+      '@internal/sms-shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@vueuse/core':
+        specifier: 'catalog:'
+        version: 14.2.1(vue@3.5.30(typescript@5.9.3))
+      axios:
+        specifier: 'catalog:'
+        version: 1.13.6
+      element-plus:
+        specifier: 'catalog:'
+        version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      moyan-api:
+        specifier: 'catalog:'
+        version: 2.1.19
+      moyan-mfw-base:
+        specifier: workspace:*
+        version: link:../../../../base
+      moyan-mfw-extension-sms:
+        specifier: workspace:*
+        version: link:../..
+      pinia:
+        specifier: 'catalog:'
+        version: 2.3.1(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
+      vue:
+        specifier: 'catalog:'
+        version: 3.5.30(typescript@5.9.3)
+      vue-router:
+        specifier: 'catalog:'
+        version: 4.6.4(vue@3.5.30(typescript@5.9.3))
+    devDependencies:
+      '@vitejs/plugin-vue':
+        specifier: 'catalog:'
+        version: 5.2.4(vite@5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      '@vitejs/plugin-vue-jsx':
+        specifier: 'catalog:'
+        version: 5.1.5(vite@5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1))(vue@3.5.30(typescript@5.9.3))
+      sass:
+        specifier: 'catalog:'
+        version: 1.98.0
+      sass-embedded:
+        specifier: 'catalog:'
+        version: 1.100.0
+      tsx:
+        specifier: 'catalog:'
+        version: 4.21.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite:
+        specifier: 'catalog:'
+        version: 5.4.21(@types/node@22.19.15)(sass-embedded@1.100.0)(sass@1.98.0)(terser@5.46.1)
+      vue-tsc:
+        specifier: 'catalog:'
+        version: 2.2.12(typescript@5.9.3)
+
+  packages/extensions/extension-sms/src/shared:
     dependencies:
       '@internal/base-shared':
         specifier: workspace:*
@@ -4530,7 +4810,6 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
-    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@10.5.0:
@@ -10627,7 +10906,7 @@ snapshots:
       minimatch: 3.1.5
       node-abort-controller: 3.1.1
       schema-utils: 3.3.0
-      semver: 7.7.4
+      semver: 7.8.5
       tapable: 2.3.2
       typescript: 5.7.2
       webpack: 5.97.1

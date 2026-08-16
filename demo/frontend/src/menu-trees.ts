@@ -16,6 +16,8 @@ import type { FrontendAppTypeMenuConfig } from "moyan-mfw-base/frontend";
 import { AdPlacementList ,} from 'moyan-mfw-extension-ad/frontend'
 import { MfwScheduledTaskPage } from 'moyan-mfw-extension-scheduler/frontend'
 import { MfwLedgerPage } from 'moyan-mfw-extension-ledger/frontend'
+import { MfwSmsConfigPage } from 'moyan-mfw-extension-sms/frontend'
+import { MfwScanCodeConfigPage } from 'moyan-mfw-extension-scan-code/frontend'
 import { SysAppTypePage, SysAppPage, SysUserPage, SysRolePage, SysMemberPage, SysPermissionPage, SysAuditLogPage } from 'moyan-mfw-base/frontend'
 import SysDashboardPage from '@/views/dashboard/Index.vue'
 import SupplierDashboardPage from '@/views/dashboard/Index.vue'
@@ -117,6 +119,22 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           permCode: "ext:ledger",
           permissions: ["审核", "冲正", "对账"],
           component: MfwLedgerPage,
+        },
+        {
+          path: "sms-config",
+          name: "短信配置",
+          icon: "Message",
+          permCode: "ext:sms:config",
+          permissions: ["编辑"],
+          component: MfwSmsConfigPage,
+        },
+        {
+          path: "scan-code-config",
+          name: "扫码配置",
+          icon: "FullScreen",
+          permCode: "ext:scan-code:config",
+          permissions: ["编辑"],
+          component: MfwScanCodeConfigPage,
         },
       ],
     },

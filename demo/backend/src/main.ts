@@ -24,8 +24,16 @@ import {
 import {
   LEDGER_EXTENSION_PERMISSION_VALUES,
 } from "moyan-mfw-extension-ledger/backend";
+import {
+  SMS_EXTENSION_PERMISSION_VALUES,
+} from "moyan-mfw-extension-sms/backend";
+import {
+  SCAN_CODE_EXTENSION_PERMISSION_VALUES,
+} from "moyan-mfw-extension-scan-code/backend";
 import { DemoLedgerModule } from "./modules/ledger-demo/demo-ledger.module";
 import { DemoSchedulerModule } from "./modules/scheduler/demo-scheduler.module";
+import { DemoSmsModule } from "./modules/sms-demo/demo-sms.module";
+import { DemoScanCodeModule } from "./modules/scan-code-demo/demo-scan-code.module";
 import "./permissions";
 
 const swaggerGroups: SwaggerGroupConfig[] = [
@@ -65,6 +73,18 @@ const swaggerGroups: SwaggerGroupConfig[] = [
     description: "账本扩展包 5 个 SPI + 账户实体扩展 + 业务服务的完整调用用例",
     include: [DemoLedgerModule],
   },
+  {
+    name: "sms-extension",
+    title: "短信扩展API文档",
+    description: "运营商凭证/模板配置管理 + 验证码演示（demo/sms）",
+    include: [DemoSmsModule],
+  },
+  {
+    name: "scan-code-extension",
+    title: "扫码扩展API文档",
+    description: "码生成策略配置管理 + 生成/解析/核销演示（demo/scan-code）",
+    include: [DemoScanCodeModule],
+  },
 ];
 
 async function bootstrap() {
@@ -79,6 +99,8 @@ async function bootstrap() {
       ...DOCUMENT_PERMISSION_VALUES,
       ...SCHEDULER_EXTENSION_PERMISSION_VALUES,
       ...LEDGER_EXTENSION_PERMISSION_VALUES,
+      ...SMS_EXTENSION_PERMISSION_VALUES,
+      ...SCAN_CODE_EXTENSION_PERMISSION_VALUES,
     ],
     hooks: {
       onAppInit: async (ctx) => {
