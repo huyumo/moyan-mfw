@@ -1,5 +1,9 @@
 # Changelog
 
+> **迁移公告**：自 changesets 体系上线起，版本变更记录迁移至**分包 CHANGELOG**
+> （`packages/*/CHANGELOG.md`），本文件不再随发版更新。
+> 历史（<= 1.2.0-beta.59，lockstep 统一版本时期）见下方归档与 git tag。
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),

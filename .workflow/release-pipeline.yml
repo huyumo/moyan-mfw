@@ -1,0 +1,41 @@
+version: '1.0'
+name: release-pipeline
+displayName: ReleasePipeline
+# 统一发布流水线（正式 + beta）：
+# - 触发：推送 moyan-mfw-*@<version> 格式的 tag（由 pnpm release 逐包创建）
+# - 构建/类型检查全部动态化（--filter 通配），新增扩展包零配置接入
+# - 发布用 changeset publish：幂等，registry 已存在的版本自动跳过，无需 || echo 吞错
+# - dist-tag 由 changesets pre 模式决定：pre enter beta 期间发的版本自动带 beta tag
+triggers:
+  trigger: auto
+  push:
+    tags:
+      prefix:
+        - moyan-mfw-
+variables:
+  global:
+    - NPM_TOKEN
+stages:
+  - name: release
+    displayName: 构建并发布
+    strategy: naturally
+    trigger: auto
+    steps:
+      - step: build@nodejs
+        name: build_and_publish
+        displayName: 类型检查、构建与发布
+        nodeVersion: 22.3.0
+        commands:
+          - set -e
+          - npm config set registry https://registry.npmmirror.com
+          - npm install -g pnpm@10.14.0
+          - pnpm install --frozen-lockfile --config.node-linker=hoisted
+          - pnpm -r --filter moyan-mfw-base --filter moyan-mfw-cli --filter "moyan-mfw-extension-*" build
+          - pnpm --filter moyan-mfw-shared build
+          - pnpm run typecheck
+          - pnpm run verify:dist
+          - echo ">>> 执行 changeset publish（幂等，已发布版本自动跳过）"
+          - npm config set registry https://registry.npmjs.org
+          - npm config set //registry.npmjs.org/:_authToken ${NPM_TOKEN}
+          - pnpm changeset publish
+          - git push origin --tags || echo "  ⚠ tag 回推失败（changesets 可能已删除本地 tag），可忽略"

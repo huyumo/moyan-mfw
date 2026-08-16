@@ -53,6 +53,24 @@ mfw create extension <name> # Create a new extension package
 mfw create business <name>  # Create a new business project (backend + frontend + shared)
 ```
 
+### Release (Changesets)
+```bash
+pnpm release                # Full release: gen changesets -> version -> commit -> tag -> push
+pnpm release --yes          # Same, skip confirmation
+pnpm changesets:gen         # Pre-fill .changeset/*.md from conventional commits only
+pnpm changesets:status      # Show pending version bumps
+pnpm preenter               # Enter beta prerelease mode (changeset pre enter beta)
+pnpm preexit                # Exit prerelease mode (next release is stable)
+```
+
+- Independent versions per package; `moyan-mfw-base` and `moyan-mfw-cli` are a fixed group.
+- Extensions declare a **static peer range** on `moyan-mfw-base` (not workspace/catalog):
+  bump it manually only when base compatibility changes (see docs/部署/base-重构发布Runbook.md).
+- Pushing `moyan-mfw-*@<version>` tags triggers `.workflow/release-pipeline.yml`, which builds
+  all packages (name-glob filters, zero-config for new extensions) and runs `changeset publish`
+  (idempotent; already-published versions are skipped).
+- Never publish manually from a package directory; CI is the only publish path.
+
 ## Architecture
 
 ### Package Structure (pnpm workspace)

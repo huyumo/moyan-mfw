@@ -1,50 +1,32 @@
 /**
- * @fileoverview 统一版本号管理脚本
- * @description 同步更新所有包的版本号到根 package.json 的版本
+ * @fileoverview Changesets 发布封装脚本（本地准备阶段）
+ * @description 流程：changesets:gen（从提交预填）-> 人工确认 -> changeset version
+ *   -> 提交 release commit -> 为每个新版本包打 moyan-mfw-*@<version> tag -> push。
+ *   push 后由 release-pipeline 自动构建并执行 changeset publish（幂等）。
  *
- * 安全机制：
- * - 发布前自动 stash 未提交的改动，防止 pre-commit 失败导致代码被误回滚
- * - 失败时仅回滚版本号变更，恢复原始工作区改动
+ * 用法：
+ *   pnpm release            # 交互确认后执行完整流程
+ *   pnpm release --yes      # 跳过确认（CI/脚本场景）
+ *
+ * 与旧版（lockstep + beta-v* tag）的区别：
+ * - 版本 bump 由 .changeset/ 内容决定，只发有变更的包；
+ * - tag 格式为逐包的 <pkg-name>@<version>，发布幂等可重跑；
+ * - beta 通道改用 `pnpm changeset pre enter/exit beta` 控制。
  */
 
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join } from 'path';
 
-const PACKAGES = [
-  'packages/base',
-  'packages/cli',
-  'packages/extensions/extension-ad',
-  'packages/extensions/extension-config',
-  'packages/extensions/extension-document',
-  'packages/extensions/extension-scheduler',
-  'packages/extensions/extension-ledger',
-  'packages/extensions/extension-sms',
-  'packages/extensions/extension-scan-code',
-];
-
-function getCurrentVersion(): string {
-  const rootPackage = JSON.parse(readFileSync('package.json', 'utf-8'));
-  return rootPackage.version;
+function sh(cmd: string, opts: { inherit?: boolean } = {}): string {
+  return execSync(cmd, {
+    encoding: 'utf-8',
+    stdio: opts.inherit ? 'inherit' : 'pipe',
+    maxBuffer: 64 * 1024 * 1024,
+  });
 }
 
-function updatePackageVersion(packagePath: string, version: string): boolean {
-  const packageJsonPath = join(packagePath, 'package.json');
-  const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
-
-  const oldVersion = packageJson.version;
-  if (oldVersion === version) {
-    console.log(`  ${packageJson.name}: 已是 ${version}，无需更新`);
-    return false;
-  }
-
-  packageJson.version = version;
-  writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
-  console.log(`✓ ${packageJson.name}: ${oldVersion} → ${version}`);
-  return true;
-}
-
-function hasUncommittedChanges(): boolean {
+function hasUncommittedChanges() {
   try {
     execSync('git diff --quiet', { stdio: 'pipe' });
     execSync('git diff --cached --quiet', { stdio: 'pipe' });
@@ -54,150 +36,108 @@ function hasUncommittedChanges(): boolean {
   }
 }
 
-function tagExists(tag: string): boolean {
-  try {
-    execSync(`git rev-parse ${tag}`, { stdio: 'pipe' });
-    return true;
-  } catch {
-    return false;
-  }
+function listPendingChangesets() {
+  return readdirSync('.changeset').filter((f) => f.endsWith('.md') && f !== 'README.md');
 }
 
-function main() {
-  const releaseType = process.argv[2];
+/** 读取 changeset version 之后被 bump 的包：对比 git HEAD 中各 package.json 的版本差异 */
+function bumpedPackages() {
+  const dirs = [
+    'packages/base',
+    'packages/cli',
+    ...readdirSync('packages/extensions', { withFileTypes: true })
+      .filter((d) => d.isDirectory() && d.name.startsWith('extension-'))
+      .map((d) => `packages/extensions/${d.name}`),
+  ];
+  const result = [];
+  for (const dir of dirs) {
+    const file = join(dir, 'package.json');
+    const current = JSON.parse(readFileSync(file, 'utf-8'));
+    if (current.private === true) continue;
+    let old = null;
+    try {
+      old = JSON.parse(sh(`git show HEAD:${file.replace(/\\/g, '/')}`));
+    } catch {
+      /* 新包，HEAD 中不存在 */
+    }
+    if (!old || old.version !== current.version) {
+      result.push({ name: current.name, version: current.version });
+    }
+  }
+  return result;
+}
 
-  if (!releaseType || !['patch', 'minor', 'major', 'prerelease'].includes(releaseType)) {
-    console.error('Usage: pnpm release:<type>');
-    console.error('  patch      - 1.0.0 → 1.0.1 (bug fixes)');
-    console.error('  minor      - 1.0.0 → 1.1.0 (new features)');
-    console.error('  major      - 1.0.0 → 2.0.0 (breaking changes)');
-    console.error('  prerelease - 1.0.0 → 1.0.1-beta.0 (beta release)');
+async function main() {
+  const skipConfirm = process.argv.includes('--yes');
+
+  console.log('🦋 Changesets 发布流程\n');
+
+  // 0. 前置检查：工作区必须干净（避免把未提交改动卷进 release commit）
+  if (hasUncommittedChanges()) {
+    console.error('❌ 工作区存在未提交改动，请先提交或贮藏后再发版');
+    console.error('   （旧版脚本的自动 stash 已移除：release commit 应只包含版本变更）');
     process.exit(1);
   }
 
-  console.log(`🚀 开始发布新版本 (${releaseType})...\n`);
+  // 1. 预填 changeset（从 conventional commits 生成，人工应在此前已过目）
+  console.log('1️⃣  从提交记录预填 changeset...');
+  sh('node scripts/gen-changesets.mjs', { inherit: true });
 
-  let originalHead = '';
-  let tagName = '';
-  let tagCreated = false;
-  let stashed = false;
+  const pending = listPendingChangesets();
+  if (pending.length === 0) {
+    console.log('\n没有待发版 changeset（无发布范围变更），流程结束。');
+    process.exit(0);
+  }
 
-  try {
-    // 保存当前 HEAD
-    originalHead = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
+  console.log(`\n待发版 changeset（${pending.length} 个）：`);
+  for (const f of pending) console.log(`  - .changeset/${f}`);
 
-    // 暂存未提交的改动，防止发布失败时被一起回滚
-    if (hasUncommittedChanges()) {
-      console.log('💾 暂存工作区未提交的改动...');
-      execSync('git stash push -m "release: pre-bump auto stash"', { stdio: 'inherit' });
-      stashed = true;
-      console.log('  ✓ 已暂存\n');
-    }
-
-    // 1. 更新根版本号
-    console.log('1️⃣  更新根 package.json 版本...');
-    if (releaseType === 'prerelease') {
-      execSync('npm version prerelease --preid=beta --no-git-tag-version', { stdio: 'inherit' });
-    } else {
-      execSync(`npm version ${releaseType} --no-git-tag-version`, { stdio: 'inherit' });
-    }
-    const newVersion = getCurrentVersion();
-
-    // 2. 同步所有包的版本
-    console.log('\n2️⃣  同步所有包的版本...');
-    let hasUpdates = false;
-    PACKAGES.forEach((pkg) => {
-      if (updatePackageVersion(pkg, newVersion)) {
-        hasUpdates = true;
-      }
-    });
-
-    // 3. 提交更改
-    const tagPrefix = releaseType === 'prerelease' ? 'beta-v' : 'v';
-
-    // 仅暂存 package.json 版本变更（避免 git add -A 引入不该提交的文件）
-    execSync('git add package.json', { stdio: 'inherit' });
-    PACKAGES.forEach((pkg) => {
-      execSync(`git add ${pkg}/package.json`, { stdio: 'inherit' });
-    });
-
-    if (hasUpdates) {
-      console.log('\n3️⃣  提交版本更新...');
-      execSync(`git commit -m "chore: release ${tagPrefix}${newVersion}" --no-verify`, { stdio: 'inherit' });
-    } else {
-      console.log('\n3️⃣  版本号已同步，无需提交');
-    }
-
-    // 4. 创建标签
-    tagName = `${tagPrefix}${newVersion}`;
-    console.log(`\n4️⃣  创建 Git 标签 ${tagName}...`);
-    if (tagExists(tagName)) {
-      console.log(`  标签 ${tagName} 已存在，删除重建...`);
-      execSync(`git tag -d ${tagName}`, { stdio: 'inherit' });
-      execSync(`git push origin :refs/tags/${tagName}`, { stdio: 'inherit' });
-    }
-    execSync(`git tag ${tagName}`, { stdio: 'inherit' });
-    tagCreated = true;
-
-    // 5. 推送当前分支 + 标签
-    console.log('\n5️⃣  推送到远程...');
-    execSync('git push origin HEAD --tags', { stdio: 'inherit' });
-
-    console.log(`\n✅ 发布完成！`);
-    console.log(`   新版本：${tagName}`);
-    console.log(`\n   TagPipeline 将自动构建并发布到 npm`);
-  } catch (error) {
-    console.error(`\n❌ 发布失败：${error instanceof Error ? error.message : String(error)}`);
-
-    // 回滚版本号变更（仅回滚 package.json，保护原始工作区改动）
-    console.error('\n🔄 回滚版本号变更...');
-    if (originalHead) {
-      try {
-        // 仅检出 package.json 文件到原始版本
-        execSync(`git checkout ${originalHead} -- package.json`, { stdio: 'pipe' });
-        PACKAGES.forEach((pkg) => {
-          execSync(`git checkout ${originalHead} -- ${pkg}/package.json`, { stdio: 'pipe' });
-        });
-        // 取消所有暂存
-        execSync('git reset HEAD -- package.json', { stdio: 'pipe' });
-        PACKAGES.forEach((pkg) => {
-          try {
-            execSync(`git reset HEAD -- ${pkg}/package.json`, { stdio: 'pipe' });
-          } catch { /* 文件可能未被暂存，忽略 */ }
-        });
-        console.error('  ✓ 版本号已回滚');
-      } catch {
-        console.error('  ⚠ 回滚版本号失败，请手动检查 git status');
-      }
-    }
-
-    // 删除远程标签（如果需要）
-    if (tagCreated && tagName) {
-      try {
-        execSync(`git tag -d ${tagName}`, { stdio: 'pipe' });
-        console.error(`  ✓ 已删除本地标签 ${tagName}`);
-      } catch {
-        // 标签可能不存在，忽略
-      }
-    }
-
-    console.error(`\n💡 提示：如果远程已有残留更改，可执行：`);
-    console.error(`   git push origin :refs/tags/${tagName || 'TAG_NAME'}`);
-    console.error(`   然后人工确认远程状态。`);
-
-    process.exit(1);
-  } finally {
-    // 恢复之前 stash 的未提交改动
-    if (stashed) {
-      try {
-        console.log('\n💾 恢复暂存的工作区改动...');
-        execSync('git stash pop', { stdio: 'inherit' });
-        console.log('  ✓ 已恢复');
-      } catch {
-        console.error('  ⚠ 恢复 stash 失败，请手动执行 git stash list 检查');
-      }
+  if (!skipConfirm) {
+    const { createInterface } = await import('readline/promises');
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await rl.question('\n确认发版？(y/N) ');
+    rl.close();
+    if (!/^y(es)?$/i.test(answer.trim())) {
+      console.log('已取消。（可先人工调整 .changeset/ 后重新执行）');
+      process.exit(0);
     }
   }
+
+  // 2. 应用版本变更（bump + 生成 CHANGELOG + 消费 .changeset/*.md）
+  console.log('\n2️⃣  执行 changeset version...');
+  sh('pnpm changeset version', { inherit: true });
+
+  // 3. 提交 release commit
+  const bumped = bumpedPackages();
+  if (bumped.length === 0) {
+    console.log('\n版本未发生变化（changeset 均为空变更？），流程结束。');
+    process.exit(0);
+  }
+  const summary = bumped.map((b) => `${b.name}@${b.version}`).join(', ');
+  console.log(`\n3️⃣  提交 release commit：${summary}`);
+  sh('git add .changeset packages', { inherit: true });
+  sh(`git commit -m "chore: release ${summary}" --no-verify`, { inherit: true });
+
+  // 4. 逐包打 tag（changesets 风格 <pkg>@<version>，触发 release-pipeline）
+  console.log('\n4️⃣  创建发布 tag...');
+  const tags = [];
+  for (const pkg of bumped) {
+    const tag = `${pkg.name}@${pkg.version}`;
+    sh(`git tag ${tag}`, { inherit: true });
+    tags.push(tag);
+  }
+
+  // 5. 推送
+  console.log('\n5️⃣  推送到远程...');
+  sh(`git push origin HEAD ${tags.map((t) => `refs/tags/${t}`).join(' ')}`, { inherit: true });
+
+  console.log('\n✅ 发布准备完成！');
+  console.log('   release-pipeline 将自动构建并发布到 npm（changeset publish，幂等）。');
+  console.log('   已推送 tag：');
+  for (const t of tags) console.log(`   - ${t}`);
 }
 
-main();
+main().catch((error) => {
+  console.error(`\n❌ 发布失败：${error instanceof Error ? error.message : String(error)}`);
+  process.exit(1);
+});

@@ -75,6 +75,9 @@
     "README.md",
     "LICENSE"
   ],
+  "peerDependencies": {
+    "moyan-mfw-base": "^1.2.0-beta.59"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org",
     "access": "public"

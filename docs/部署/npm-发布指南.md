@@ -1,106 +1,103 @@
-# npm 发布指南
+# npm 发布指南（Changesets 版）
+
+> 自 beta.59 之后，发布体系从"lockstep 统一版本 + 全量发包"迁移到 **Changesets 独立版本**。
+> 迁移前的原始状态备份在分支 `backup/beta-v1.2.0-beta.59`。
 
 ## 发布包清单
 
-| 包名 | 位置 | npm 页面 |
-|------|------|----------|
-| `moyan-mfw-base` | `packages/base/` | https://www.npmjs.com/package/moyan-mfw-base |
-| `moyan-mfw-cli` | `packages/cli/` | https://www.npmjs.com/package/moyan-mfw-cli |
-| `moyan-mfw-extension-ad` | `packages/extensions/extension-ad/` | https://www.npmjs.com/package/moyan-mfw-extension-ad |
-| `moyan-mfw-extension-config` | `packages/extensions/extension-config/` | https://www.npmjs.com/package/moyan-mfw-extension-config |
+发布包 = 动态发现的非私有包，无需在任何清单里登记：
 
-> `moyan-mfw-frontend`（`frontend/`）为 `private: true` 的应用层包，不发布到 npm。
+| 包名 | 位置 |
+|------|------|
+| `moyan-mfw-base` | `packages/base/`（与 cli 绑定 fixed 组，同版本） |
+| `moyan-mfw-cli` | `packages/cli/` |
+| `moyan-mfw-extension-*` | `packages/extensions/extension-*/`（独立版本） |
 
-## 发布流程
+- 新增扩展包：放入 `packages/extensions/extension-xxx/`（`mfw create extension`）即自动进入
+  build / typecheck / 发布链路，**零配置**。
+- `@internal/*` 子包、demo、根包均为 private，不参与版本管理与发布
+  （changesets 配置 `privatePackages.version: false`）。
 
-### 1. 正式版发布（latest tag）
+## 版本策略
 
-```bash
-# 选择一个 release 类型
-pnpm release:patch    # 1.1.9 → 1.1.10（Bug 修复）
-pnpm release:minor    # 1.1.9 → 1.2.0（新功能）
-pnpm release:major    # 1.1.9 → 2.0.0（破坏性变更）
-```
+- **独立版本**：只有出现变更（有 changeset）的包才会 bump + 发布。
+- **base + cli**：fixed 组，始终同版本发布。
+- **扩展对 base 的依赖**：静态 peer 范围（`^1.2.0-beta.59` 起步），不随 base 发版联动重发。
+  仅当出现兼容性变化（如 base 出 2.0）时人工调整为 `^1.2.0 || ^2.0.0` 之类。
 
-执行后自动完成：
-1. 更新根 + 4 个子包的版本号
-2. `git commit` 提交版本变更
-3. `git tag v{version}` 创建标签
-4. `git push origin main --tags` 推送
-
-### 2. Beta 版发布（beta tag）
+## 日常发版流程
 
 ```bash
-pnpm release:prerelease   # 1.1.9 → 1.1.10-beta.0
-                           # 再执行 → 1.1.10-beta.1
+pnpm release            # 交互确认
+pnpm release --yes      # 免确认（等价 pnpm release:yes）
 ```
 
-> 用户可以 `npm install moyan-mfw-base@beta` 安装测试版。
+脚本（`scripts/release.ts`）依次执行：
 
-## CI/CD 自动发布（TagPipeline）
+1. 校验工作区干净（不再自动 stash，release commit 应只含版本变更）；
+2. `pnpm changesets:gen` -- 从上次 release 以来的 conventional commits 自动预填
+   `.changeset/auto-*.md`（feat→minor / fix|perf→patch / BREAKING→major，按文件路径归属包）；
+3. 确认后 `changeset version` -- bump 受影响包 + 生成分包 `CHANGELOG.md`；
+4. 提交 `chore: release <pkg>@<ver>, ...`；
+5. 为每个新版本包打 tag：`moyan-mfw-xxx@<version>`；
+6. push。**ReleasePipeline** 被这些 tag 触发，自动构建 + `changeset publish`。
 
-推送 `v*` 前缀标签后，TagPipeline 自动触发：
+> gen 只是预填，发版前请过目 `.changeset/`，可改 bump 级别和描述；也可以随时
+> `pnpm changeset` 手工补充。
 
-```
-TagPipeline 触发条件：推送 v* 标签
-  │
-  ├─ 构建: moyan-mfw-base → extension-ad → extension-config → cli
-  ├─ 类型检查: pnpm run typecheck
-  └─ 发布:
-       ├─ 版本含 '-' → --tag beta
-       └─ 版本不含 '-' → --tag latest
-```
+## beta 通道
 
-### 流水线关键代码
-
-`.workflow/tag-pipeline.yml` 中的 tag 判断逻辑：
-
-```yaml
-- NPM_TAG=$(node -p "require('./package.json').version.includes('-') ? 'beta' : 'latest'")
-- npm publish --access public --tag ${NPM_TAG}
+```bash
+pnpm preenter           # changeset pre enter beta（进入预发布模式）
+pnpm release            # 版本号形如 1.3.0-beta.0，npm dist-tag 自动为 beta
+pnpm preexit            # 退出 pre 模式，下一次 release 出正式版本（latest）
 ```
 
-## 版本号与 npm dist-tag 对照
+- pre 模式期间所有 bump 都是 `x.y.z-beta.n`，`changeset publish` 自动打 beta dist-tag，
+  不会再出现"beta 版本误发 latest"的问题（旧流水线的已知坑）。
+- 用户安装：`npm install moyan-mfw-base@beta`。
 
-| Git Tag | package.json version | npm dist-tag | 安装方式 |
-|---------|---------------------|:--:|----------|
-| `v1.1.9` | `1.1.9` | `latest` | `npm install moyan-mfw-base` |
-| `v1.1.10` | `1.1.10` | `latest` | `npm install moyan-mfw-base` |
-| `v1.1.10-beta.0` | `1.1.10-beta.0` | `beta` | `npm install moyan-mfw-base@beta` |
-| `v1.2.0` | `1.2.0` | `latest` | `npm install moyan-mfw-base` |
+## CI 流水线
 
-**规则**：版本号含 `-` → `beta` 标签；不含 `-` → `latest` 标签。
+| 流水线 | 触发 | 作用 |
+|--------|------|------|
+| `release-pipeline.yml` | 推送 `moyan-mfw-*@*` tag | 动态构建 9 包 -> typecheck -> verify:dist -> `changeset publish`（幂等，失败直接红，不吞错） |
+| `branch-pipeline.yml` | 任意分支 push | 敏感信息扫描 + 动态构建 + typecheck |
+| `pr-pipeline.yml` | PR -> master | 同上 |
+
+发布阶段关键点：
+
+- 构建/检查全部使用包名通配（`--filter "moyan-mfw-extension-*"` 等），新增包自动纳入；
+- `changeset publish` 只发布 registry 上不存在的版本，**流水线重跑安全**；
+- 若发布后流水线又跑了一次（tag 重推），已发布版本被跳过，不会报错。
 
 ## 发布后验证
 
 ```bash
-# 1. 查看所有版本
-npm info moyan-mfw-base versions
+# 只发有变更的包：查看每个包的最新版本
+npm info moyan-mfw-base dist-tags        # beta 通道确认 beta 指向新版本、latest 未动
+npm info moyan-mfw-extension-sms versions
 
-# 2. 查看 dist-tags（确认 beta 指向 beta 版，latest 不变）
-npm info moyan-mfw-base dist-tags
-# 预期输出：
-# { latest: '1.1.9', beta: '1.1.10-beta.0' }
-
-# 3. 测试安装 beta 版
-npm install moyan-mfw-base@beta
-# → 应安装 1.1.10-beta.0
-
-# 4. 确认 latest 不受影响
-npm install moyan-mfw-base
-# → 应安装 latest 版本（非 beta）
-
-# 5. CI 日志确认
-# 查看 TagPipeline 日志，应有：
-# >>> 发布版本：v1.1.10-beta.0
-# >>> npm tag: beta
+# 重跑幂等性：观察 ReleasePipeline 日志应出现
+# "X packages are already published" 类跳过信息
 ```
+
+## 与旧流程对照
+
+| 旧（<= beta.59） | 新 |
+|------------------|-----|
+| `pnpm release:patch/minor/...` 统一 bump 9 包 | `pnpm release`，由 changeset 内容决定，只 bump 有变更的包 |
+| tag `beta-v1.2.0-beta.59`（单 tag 全量） | 逐包 tag `moyan-mfw-xxx@<ver>` |
+| TagPipeline / BetaTagPipeline 两条流水线硬编码包列表 | ReleasePipeline 一条，动态发现 |
+| `|| echo already published` 吞错 | `changeset publish` 幂等跳过，错误真实暴露 |
+| npm dist-tag 靠人工区分（有误发 latest 风险） | pre 模式自动 beta tag |
 
 ## 相关文件
 
 | 文件 | 用途 |
 |------|------|
-| `scripts/release.ts` | 版本号管理 + Git tag 创建 |
-| `.workflow/tag-pipeline.yml` | CI 自动构建发布 |
-| `.npmrc` | npm 发布配置 |
-| 根 `package.json` | 版本号基准（`release:prerelease` 脚本入口） |
+| `.changeset/config.json` | changesets 配置（fixed 组、access、baseBranch） |
+| `scripts/gen-changesets.mjs` | 从 conventional commits 预填 changeset |
+| `scripts/release.ts` | 发版封装（gen -> version -> commit -> tag -> push） |
+| `.workflow/release-pipeline.yml` | CI 构建与幂等发布 |
+| `docs/部署/base-重构发布Runbook.md` | base 重构时的版本/依赖操作手册 |

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [["moyan-mfw-base", "moyan-mfw-cli"]],
+  "linked": [],
+  "updateInternalDependencies": "patch",
+  "access": "public",
+  "baseBranch": "origin/main",
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  }
+}
