@@ -47,8 +47,8 @@ extension-xxx/
 // 后端：启动应用、装饰器、工具函数
 import { createExtensionBackendApp, AuthGuard, RequirePermission } from 'moyan-mfw-base/backend'
 
-// 前端：组件、路由构建、应用创建
-import { createExtensionFrontendApp, buildExtensionRoutes, MfwPageWrapper } from 'moyan-mfw-base/frontend'
+// 前端：组件、菜单树、应用创建
+import { createExtensionFrontendApp, MfwPageWrapper } from 'moyan-mfw-base/frontend'
 
 // 共享：类型定义、字典装饰器、常量
 import { DictMeta, DictEntry, StatusDict, Base, toDescription } from 'moyan-mfw-base/shared'
@@ -206,17 +206,16 @@ extension-ad/
 │   │   ├── api.build.cjs                 #   moyan-api 生成配置
 │   │   └── src/
 │   │       ├── main.ts                   #     启动入口（createExtensionFrontendApp）
-│   │       ├── index.ts                  #     路由导出（buildExtensionRoutes）
+│   │       ├── index.ts                  #     页面组件导出（供 menuTrees 引入）
 │   │       ├── env.d.ts                  #     环境类型声明
 │   │       ├── apis/                     #     【自动生成】API 调用代码
 │   │       │   └── ad/
 │   │       │       ├── index.ts
 │   │       │       └── schemas.ts
 │   │       ├── views/                    #     页面组件（路由级）
-│   │       │   ├── index.ts              #       路由扫描入口
+│   │       │   ├── index.ts              #       页面组件导出（可选）
 │   │       │   └── placement/            #       广告位管理页
-│   │       │           ├── Index.vue
-│   │       │           └── index.ts      #         definePageConfig
+│   │       │           └── Index.vue    #        页面组件（menuTrees 内联引用）
 │   │       └── components/               #     可复用组件（非路由级）
 │   │           ├── ad-card/              #       广告卡片
 │   │           │   └── Index.vue
@@ -257,8 +256,8 @@ extension-ad/
 | `src/backend/src/entities/*.ts` | ✅ | TypeORM 实体 |
 | `src/backend/src/dto/*.ts` | ✅ | 请求/响应数据传输对象 |
 | `src/frontend/src/main.ts` | ✅ | 前端启动入口，调用 `createExtensionFrontendApp` |
-| `src/frontend/src/index.ts` | ✅ | 路由构建，使用 `buildExtensionRoutes` |
-| `src/frontend/src/views/**/index.ts` | ✅ | 页面配置（definePageConfig） |
+| `src/frontend/src/index.ts` | ✅ | 页面组件导出（供业务方 menuTrees 引入） |
+| `src/frontend/src/index.ts` | ✅ | 页面组件导出（供 menuTrees 引入） |
 | `src/frontend/src/components/**/Index.vue` | ✅ | 可复用组件（Mfw 命名） |
 | `src/frontend/api.build.cjs` | ✅ | moyan-api 生成配置 |
 | `src/shared/src/constants.ts` | ✅ | 前后端共用常量 |
@@ -787,63 +786,44 @@ components/
     └── Index.vue          # MfwAdPlacementForm
 ```
 
-### 7.3 页面配置（definePageConfig）
-
-**实际代码（extension-ad）**：
-
-```typescript
-// views/placement/index.ts
-import { definePageConfig } from 'moyan-mfw-base/frontend'
-import PlacementList from './Index.vue'
-
-export default definePageConfig({
-  page: PlacementList,
-  path: 'placement',
-  name: '广告位管理',
-  icon: 'CollectionTag',
-  auth: true,
-  order: 1,
-  permCode:'ext:ad:placement',
-  permissions: ['添加', '编辑', '删除'],
-})
-```
-
-**参数说明**：
-
-| 参数 | 类型 | 说明 |
-|------|------|------|
-| `page` | `Component` | 页面组件引用 |
-| `path` | `string` | 路由路径（相对路径） |
-| `name` | `string` | 页面名称（中文） |
-| `icon` | `string` | 菜单图标（Element Plus Icon 名称） |
-| `auth` | `boolean` | 是否需要登录 |
-| `order` | `number` | 菜单排序 |
-| `permCode` | `string` | 权限编码前缀 |
-| `permissions` | `string[]` | 该页面需要的权限标签 |
-
-### 7.4 路由构建（buildExtensionRoutes）
+### 7.3 页面组件导出
 
 **实际代码（extension-ad）**：
 
 ```typescript
 // src/frontend/src/index.ts
-import { buildExtensionRoutes } from 'moyan-mfw-base/frontend'
-
-const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-})
-
-export const adRoutes = buildExtensionRoutes(allConfigs, 'ad', {
-  namespaceName: '广告管理',
-})
+/**
+ * 扩展包仅导出页面组件，菜单路由由框架使用者在前端 menu-trees.ts 中统一维护
+ */
+export { default as AdPlacementList } from './views/placement/Index.vue'
 ```
 
-**工作原理**：
+> 旧版 `definePageConfig` + `import.meta.glob` 自动扫描的方式已废弃，扩展包页面不再需要 `views/**/index.ts` 配置。
 
-1. `import.meta.glob` 扫描 `views/` 下所有 `index.ts` 文件
-2. `buildExtensionRoutes` 将扫描结果转换为 Vue Router 路由数组
-3. 路由自动挂载到 `/ext/ad` 前缀下
+### 7.4 菜单树（menuTrees）
+
+扩展包页面由业务方在 `menu-trees.ts` 中按 AppType 挂载（或扩展包独立运行时自建菜单树）：
+
+```typescript
+// 业务层 menu-trees.ts（引用扩展包页面组件）
+import { AdPlacementList } from 'moyan-mfw-extension-ad/frontend'
+
+const adMenuTree: FrontendAppTypeMenuConfig = {
+  appTypeCode: 'ad',
+  label: '广告管理',
+  icon: 'Notification',
+  children: [
+    {
+      path: 'placement',
+      name: '广告位管理',
+      icon: 'CollectionTag',
+      permCode: 'ext:ad:placement',
+      permissions: ['添加', '编辑', '删除'],
+      component: AdPlacementList,
+    },
+  ],
+}
+```
 
 ### 7.5 应用创建（createExtensionFrontendApp）
 
@@ -852,12 +832,14 @@ export const adRoutes = buildExtensionRoutes(allConfigs, 'ad', {
 ```typescript
 // src/frontend/src/main.ts
 import 'moyan-mfw-base/frontend/styles/base-admin.scss'
-import { createExtensionFrontendApp } from 'moyan-mfw-base/frontend'
-import { adRoutes } from './index'
+import { createExtensionFrontendApp, type FrontendAppTypeMenuConfig } from 'moyan-mfw-base/frontend'
+import { AdPlacementList } from './index'
+
+const menuTrees: FrontendAppTypeMenuConfig[] = [/* ...见 7.4... */]
 
 const app = createExtensionFrontendApp({
   name: '广告管理',
-  routes: adRoutes,
+  menuTrees,
 })
 
 app.mount('#app')
@@ -866,9 +848,8 @@ app.mount('#app')
 **规范要点**：
 
 - 必须导入基础样式 `base-admin.scss`
-- 传入路由数组和扩展名称
+- 传入 `menuTrees`（组件内联在节点上）与扩展名称
 - 挂载到 `#app` DOM 节点
-
 ### 7.6 api.build.cjs 配置
 
 **实际代码（extension-ad）**：
@@ -1023,20 +1004,23 @@ const handleDelete = async (row: any) => {
 
 ## 第 7 章：路由与权限
 
-### 8.1 definePageConfig 权限配置
+### 8.1 菜单树权限配置
 
-页面级别的权限在 `definePageConfig` 中声明：
+页面级别的权限在 `menu-trees.ts` 的页面节点中声明（`permissions` / `permCode`）：
 
 ```typescript
-export default definePageConfig({
-  // ...
-  permCode: 'ext:ad:placement',
-  permissions: ['添加', '编辑', '删除'],
-})
+children: [
+  {
+    path: 'placement',
+    name: '广告位管理',
+    permCode: 'ext:ad:placement',       // 自定义权限编码
+    permissions: ['添加', '编辑', '删除'], // 操作权限位
+    component: AdPlacementList,
+  },
+]
 ```
 
-- `permCode`：该页面资源的权限编码前缀
-- `permissions`：该页面需要的权限标签列表（与 `permission-values.ts` 中声明的标签对应）
+权限数据通过 RouteSyncButton 同步到后端。
 
 ### 8.2 v-permission 指令（前端按钮级权限）
 
@@ -1213,7 +1197,7 @@ pnpm typecheck:frontend
 - [ ] **6. Entity 继承 Base**：所有实体类继承 `moyan-mfw-base/backend` 的 `Base` 类
 - [ ] **7. Controller 使用 base API**：使用 `AuthGuard`、`RequirePermission`、`ApiResponseUtil` 等
 - [ ] **8. 组件 Mfw 命名**：`components/` 下所有组件使用 `Mfw` 前缀（如 `MfwAdCard`）
-- [ ] **9. 页面 definePageConfig**：`views/` 下每个页面都有对应的 `index.ts` 配置
+- [ ] **9. 页面菜单树**：所有页面组件已在业务方 `menu-trees.ts` 中挂载并声明权限
 - [ ] **10. Swagger 装饰器来源正确**：从 `moyan-mfw-core` 导入（非 `@nestjs/swagger` 直接导入）
 
 #### ✅ 安全性（3 项）

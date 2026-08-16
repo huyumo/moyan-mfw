@@ -132,13 +132,12 @@ src/frontend/src/views/
 
 ```
 src/frontend/src/
-├── views/                  # 仅存放页面级组件（路由组件）
+├── index.ts                # 页面组件导出（供业务方 menuTrees 引入）
+├── views/                  # 仅存放页面级组件
 │   ├── placement/
-│   │   ├── Index.vue       # 页面主组件
-│   │   └── index.ts        # definePageConfig 配置
+│   │   └── Index.vue       # 页面主组件
 │   └── content/
-│       ├── Index.vue
-│       └── index.ts
+│       └── Index.vue
 │
 └── components/             # 存放可复用组件
     ├── placement-card/     # Mfw 命名前缀

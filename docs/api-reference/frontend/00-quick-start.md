@@ -2,7 +2,7 @@
 
 ## 目录
 
-* [`createBaseAdminApp()`](#createbaseadminapp) — 创建管理后台应用
+* [`createBaseAdminApp()`](#createbaseadminapp) — 创建管理后台应用（menuTrees 必填）
 
 * [`createExtensionFrontendApp()`](#createextensionfrontendapp) — 创建扩展包前端
 
@@ -39,13 +39,13 @@ interface BaseAdminAppInstance {
 | ------------------ | -------------------------------- | --------------------------------- |
 | `history`          | `RouterHistory`                  | 路由历史实现，默认 `createWebHistory`      |
 | `base`             | `string`                         | 路由基础路径                            |
-| `routes`           | `RouteRecordRaw[]`               | 业务层路由配置（用于 `definePageConfig` 结果） |
+| `menuTrees`        | `FrontendAppTypeMenuConfig[]`    | **必填**。菜单树配置（路由 + 权限唯一数据源，见 01-routing.md） |
 | `title`            | `string`                         | 页面标题后缀                            |
 | `pinia`            | `Pinia`                          | 外部注入的 Pinia 实例                    |
 | `layout`           | `Partial<LayoutStyleConfig>`     | 布局样式配置                            |
 | `navigation`       | `Partial<AdminNavigationConfig>` | 导航配置                              |
 | `layoutExtensions` | `LayoutExtensionComponents`      | 布局扩展组件                            |
-| `loginExtensions`  | `LoginExtensionComponents`       | 登录页扩展组件                           |
+| `loginComponent`   | `Component \| (() => Promise<unknown>)` | 自定义登录页组件（默认内置登录页） |
 
 ### 布局样式配置 `LayoutStyleConfig`
 
@@ -85,17 +85,14 @@ interface LayoutExtensionComponents {
 }
 ```
 
-### 登录页扩展组件 `LoginExtensionComponents`
+### 自定义登录页 `loginComponent`
 
 ```typescript
-interface LoginExtensionComponents {
-  methods?: ExtensionComponentInput    // 登录方式扩展
-  aside?: ExtensionComponentInput      // 侧边区域扩展
-  footer?: ExtensionComponentInput     // 底部扩展
-}
+loginComponent: () => import('./views/custom-login/index.vue')  // 组件或懒加载函数
 ```
 
-> `ExtensionComponentInput` 可以是 `Component`（同步）或 `AsyncExtensionComponent`（异步加载：`{ loader, timeout? }`）。
+> 旧版 `loginExtensions`（登录页局部扩展）已移除。自定义登录页可复用 `useLoginPage()` composable 获得完整登录编排。
+
 
 ### 完整示例
 
@@ -116,9 +113,7 @@ const { app, mount, router } = createBaseAdminApp({
       { key: 'doc', label: '文档', href: 'https://example.com/docs' },
     ],
   },
-  routes: [
-    // 业务层页面路由
-  ],
+  menuTrees,        // 菜单树（必填），见 01-routing.md
 })
 
 await mount('#app')
@@ -142,8 +137,8 @@ function createExtensionFrontendApp(
 
 ```typescript
 interface CreateExtensionFrontendAppOptions {
-  name: string        // 扩展名
-  routes: RouteRecordRaw[]  // 扩展路由
+  name: string                 // 扩展名
+  menuTrees: FrontendAppTypeMenuConfig[]  // 扩展包菜单树（组件内联在节点上）
   layout?: Partial<LayoutStyleConfig>
   port?: number
 }
@@ -156,9 +151,8 @@ import { createExtensionFrontendApp } from 'moyan-mfw-base/frontend'
 
 const { mount } = createExtensionFrontendApp({
   name: 'ad',
-  routes: [/* 广告管理页路由 */],
+  menuTrees: adMenuTrees,
 })
 
 await mount('#app')
 ```
-

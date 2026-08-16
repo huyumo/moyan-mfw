@@ -44,25 +44,15 @@ interface BaseBackendAppInstance {
 | `redis` | [`RedisConfig`](#redisconfig) | — | Redis 连接配置 |
 | `jwt` | [`JwtConfig`](#jwtconfig) | — | JWT 密钥与过期时间 |
 | `cors` | `CorsOptions \| boolean` | `false` | CORS 配置，`true` 开启默认 CORS |
-| `security` | `SecurityConfig` | — | Helmet / RateLimit 安全配置 |
-| `logger` | `LoggerConfig` | — | 日志级别和格式 |
 | `appTypes` | `AppTypeConfig[]` | `[]` | 业务应用类型配置 |
 | `syncAppTypes` | `boolean` | `false` | 是否在启动时同步 `appTypes` 到数据库 |
-| `userAttributes` | `UserAttributeConfig[]` | `[]` | 用户扩展属性 |
-| `memberAttributes` | `MemberAttributeConfig[]` | `[]` | 成员扩展属性 |
 | `permissionValues` | `string[]` | `[]` | 业务层权限名称数组，注册到全局权限系统 |
-| `seeds` | `SeedConfig[]` | `[]` | 种子数据配置 |
 | `modules` | `Type<any>[]` | `[]` | 额外 NestJS 模块 |
 | `moduleRoutes` | `{ path: string; module: Type<any> }[]` | `[]` | 模块路由前缀（如 `'{ path: "ext/ad", module: AdModule }'`） |
 | `extraEntities` | `Array<new () => any>` | `[]` | 额外 TypeORM 实体 |
 | `providers` | `Provider[]` | `[]` | 额外 NestJS Provider |
-| `middlewares` | `NestMiddleware[]` | `[]` | 额外中间件 |
-| `exceptionFilters` | `ExceptionFilter[]` | `[]` | 额外异常过滤器 |
-| `interceptors` | `NestInterceptor[]` | `[]` | 额外拦截器 |
-| `migrations` | `MigrationConfig` | — | 数据库迁移配置 |
 | `swagger` | [`SwaggerGroupConfig[]`](#swaggergroupconfig) | `[]` | Swagger 文档分组 |
 | `hooks` | [`HookConfig`](#hookconfig) | — | 生命周期钩子 |
-| `auditLog` | `AuditLogConfig` | — | 审计日志配置 |
 
 ### 配置子类型
 

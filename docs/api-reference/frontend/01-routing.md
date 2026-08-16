@@ -347,7 +347,7 @@ createBaseAdminApp({ menuTrees, ... })
 | `layout` | `Partial<LayoutStyleConfig>` | 否 | 布局样式配置 |
 | `navigation` | `Partial<AdminNavigationConfig>` | 否 | 导航配置（品牌名、首页路径等） |
 | `layoutExtensions` | `LayoutExtensionComponents` | 否 | 布局扩展组件 |
-| `loginExtensions` | `LoginExtensionComponents` | 否 | 登录页扩展组件 |
+| `loginComponent` | `Component \| (() => Promise<unknown>)` | 否 | 自定义登录页组件 |
 
 ---
 

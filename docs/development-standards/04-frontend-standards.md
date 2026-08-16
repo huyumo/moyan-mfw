@@ -148,35 +148,33 @@ MfwPopup.open({
 
 ---
 
-## 页面配置标准
+## 页面配置标准（menuTrees）
+
+> 当前版本路由基于 **menuTrees** 配置，旧版 `definePageConfig` / `defineModuleConfig` 已废弃。
 
 ```typescript
-import { definePageConfig } from 'moyan-mfw-base/frontend'
-import XxxList from './Index.vue'
+// src/menu-trees.ts
+import type { FrontendAppTypeMenuConfig } from 'moyan-mfw-base/frontend'
+import XxxList from './views/xxx/Index.vue'
 
-export default definePageConfig({
-  page: XxxList,
-  path: 'xxx',
-  name: 'XXX管理',
+const xxxMenuTree: FrontendAppTypeMenuConfig = {
+  appTypeCode: 'xxx',
+  roleCode: 'xxx_admin',
+  label: 'XXX管理',
   icon: 'Document',
-  auth: true,
-  order: 1,
-  permissions: ['添加', '编辑', '删除'],
-})
+  children: [
+    {
+      path: 'list',
+      name: 'XXX列表',
+      icon: 'Document',
+      permissions: ['添加', '编辑', '删除'],
+      component: XxxList,
+    },
+  ],
+}
 ```
 
-## 模块配置标准
-
-```typescript
-import { defineModuleConfig } from 'moyan-mfw-base/frontend'
-
-export default defineModuleConfig({
-  type: 'module',
-  name: '模块名称',
-  icon: 'Setting',
-  order: 100,
-})
-```
+页面节点字段：`path`（相对路径）/ `name` / `icon` / `component`（PAGE 必填）/ `permissions` / `permCode` / `hidden` / `auth` / `showMode`。有 `children` 的节点为 MENU 分组，无需 `component`。
 
 ---
 

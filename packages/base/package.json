@@ -68,6 +68,7 @@
     "src/backend/dist",
     "src/frontend/dist",
     "src/shared/dist",
+    "docs",
     "README.md",
     "LICENSE"
   ],

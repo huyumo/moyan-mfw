@@ -1,5 +1,7 @@
 # v1.2.0-beta.1 升级指南
 
+> **补充说明（当前版本）**：菜单树已进一步演进为**组件内联**方式——`FrontendAppTypeMenuConfig` 的 PAGE 节点直接携带 `component` 字段（见 `packages/base/docs/04-frontend/routing.md`），中间版本使用的 `componentMap` / `defineComponentMap` 映射表方案已不再需要。本指南保留用于说明迁移背景。
+
 ## 概述
 
 v1.2.0 重构了页面路由系统，从基于 `import.meta.glob` 的自动扫描改为**手动菜单树配置**。这是不向后兼容的重大变更（Breaking Change）。

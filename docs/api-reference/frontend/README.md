@@ -15,7 +15,7 @@ import { createBaseAdminApp } from 'moyan-mfw-base/frontend'
 | 文档 | 内容 |
 |------|------|
 | [00-quick-start.md](./00-quick-start.md) | 应用工厂函数、扩展包启动、配置选项、应用实例 API |
-| [01-routing.md](./01-routing.md) | 路由体系：`createBaseAdminRouter` / `definePageConfig` / `defineModuleConfig` / 守卫 |
+| [01-routing.md](./01-routing.md) | 路由体系：`menuTrees` / `createBaseAdminRouter` / 守卫 / RouteSyncButton |
 | [02-layout.md](./02-layout.md) | 布局体系：`AdminLayout` / 面板组件 / 布局配置 / `useAdminLayout` |
 | [03-components-display.md](./03-components-display.md) | 展示组件：`MfwCardPanel` / `MfwDetail` / `MfwFormat` / `ParticleBackground` |
 | [04-components-feedback.md](./04-components-feedback.md) | 反馈/表单/上传：`MfwPopup` / `MfwFormCard` / `MfwUpload` / `ImageCropper` |
@@ -38,8 +38,8 @@ createBaseAdminApp()
   ├── setupPlugins (ElementPlus + MoAxios)
   ├── pinia (状态管理)
   ├── createBaseAdminRouter()
-  │     ├── 基包路由扫描 (import.meta.glob)
-  │     ├── 业务路由注入
+  │     ├── buildRoutesFromMenuTrees(menuTrees) → 路由
+  │     ├── 业务路由合并 (options.routes 覆盖)
   │     └── setupRouteGuard (认证 + 权限守卫)
   └── layoutStore (布局 + 导航 + 主题)
 ```
@@ -51,8 +51,12 @@ import { createBaseAdminApp } from 'moyan-mfw-base/frontend'
 
 const { app, router, mount } = createBaseAdminApp({
   title: '我的管理后台',
+  menuTrees,                        // 必填：菜单树
   layout: { layoutMode: 'sidebar' },
 })
+
+const values = await admin.fetchPermissionValues()
+admin.initPermissionCache(values)
 
 await mount('#app')
 ```

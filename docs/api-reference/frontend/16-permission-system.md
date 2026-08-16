@@ -40,7 +40,7 @@ import type {
 
 ## `createBusinessPageConfigFn(businessPermissions)`
 
-业务层创建带类型推断的 `definePageConfig` 函数。自动注册业务权限并返回配置工厂。
+注册业务权限值并返回带类型推断的页面配置函数（当前版本路由已不依赖它，主要用于注册业务权限值；页面权限请在 menuTrees 节点中声明）。
 
 ```typescript
 import { createBusinessPageConfigFn } from 'moyan-mfw-base/frontend'
@@ -49,18 +49,6 @@ import { createBusinessPageConfigFn } from 'moyan-mfw-base/frontend'
 export const BUSINESS_PERMISSION_VALUES = ['发货', '充值', '接待', '指派'] as const
 export const defineBusinessPageConfig =
   createBusinessPageConfigFn(BUSINESS_PERMISSION_VALUES)
-
-// business/src/views/order/index.ts
-import { defineBusinessPageConfig } from '../permissions'
-
-export default defineBusinessPageConfig({
-  page: OrderList,
-  path: 'order',
-  name: '订单管理',
-  permissions: ['发货', '充值', '添加'],  // 完整类型推断
-})
-```
-
 ---
 
 ## `buildPerValue(names)`

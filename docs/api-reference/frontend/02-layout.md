@@ -129,7 +129,7 @@ const {
 
 ## 布局扩展
 
-通过 `layoutExtensions` 和 `loginExtensions` 在框架默认布局中注入自定义组件。
+通过 `layoutExtensions` 在框架默认布局中注入自定义组件。
 
 ```typescript
 const { mount } = createBaseAdminApp({
@@ -137,21 +137,9 @@ const { mount } = createBaseAdminApp({
     headerCommon: MyHeaderWidget,    // 顶部通用区
     headerAvatar: MyAvatarWidget,    // 头像区
     headerUserMenu: MyUserMenu,     // 用户菜单
-  },
-  loginExtensions: {
-    aside: MyLoginAside,             // 登录页侧边
-    footer: MyLoginFooter,           // 登录页底部
+    sidebarFooter: RouteSyncButton,  // 侧边栏底部
   },
 })
 ```
 
-异步加载扩展组件：
-
-```typescript
-loginExtensions: {
-  aside: {
-    loader: () => import('./MyLoginAside.vue'),
-    timeout: 5000,
-  },
-}
-```
+> 旧版 `loginExtensions`（登录页局部扩展）已移除，自定义登录页请使用 `loginComponent` 选项传入整个登录页组件，并复用 `useLoginPage()` composable。

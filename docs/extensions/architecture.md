@@ -236,52 +236,36 @@ HTTP Response
 │                                                          │
 │    import 'moyan-mfw-base/frontend/styles/base-admin.scss'│
 │    import { createExtensionFrontendApp } from 'moyan-mfw-base/frontend' │
-│    import { adRoutes } from './index'                    │
+│    import { menuTrees } from './index'                   │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
 │ 2. 加载 src/frontend/src/index.ts                        │
 │                                                          │
-│    import { buildExtensionRoutes } from 'moyan-mfw-base/frontend' │
+│    // 扩展包仅导出页面组件                                 │
+│    export { default as AdPlacementList }                 │
+│      from './views/placement/Index.vue'                  │
 │                                                          │
-│    const allConfigs = import.meta.glob(                  │
-│      './views/**/index.{ts,tsx}',                        │
-│      { eager: true, import: 'default' }                  │
-│    )                                                     │
-│                                                          │
-│    export const adRoutes = buildExtensionRoutes(          │
-│      allConfigs, 'ad', { namespaceName: '广告管理' }     │
-│    )                                                     │
+│    // 菜单树由业务方 menu-trees.ts 维护（或 main.ts 内联）  │
+│    const menuTrees = [{ appTypeCode: 'ad', ... }]        │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 3. import.meta.glob 静态扫描                              │
+│ 3. createExtensionFrontendApp({ name, menuTrees })       │
 │                                                          │
-│    扫描结果（eager 模式，构建时确定）：                     │
-│    {                                                      │
-│      './views/placement/index.ts': {                     │
-│        page: PlacementList,                              │
-│        path: 'placement',                                │
-│        name: '广告位管理',                                │
-│        permissions: ['添加', '编辑', '删除'],            │
-│        // ...                                            │
-│      }                                                   │
-│    }                                                     │
+│    createBaseAdminApp 内部：                              │
+│    buildRoutesFromMenuTrees(menuTrees) → RouteRecordRaw[]│
+│    （PAGE 节点使用内联 component 字段）                    │
 └──────────────────────┬──────────────────────────────────┘
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────┐
-│ 4. buildExtensionRoutes() 构建 Vue Router 配置           │
-│                                                          │
-│    输入: allConfigs + namespace + options                 │
-│    输出: RouteRecordRaw[]                                 │
-│                                                          │
-│    生成的路由结构：                                        │
+│ 4. 生成的路由结构：                                        │
 │    [                                                      │
 │      {                                                    │
-│        path: '/ext/ad/placement',                         │
+│        path: '/ad/placement',                             │
 │        name: 'ad-placement',                             │
 │        component: PlacementList,                          │
 │        meta: {                                           │
@@ -324,37 +308,32 @@ HTTP Response
 
 ### 关键代码路径
 
-**路由构建** ([index.ts](../../../packages/extensions/extension-ad/src/frontend/src/index.ts))：
+**页面组件导出** ([index.ts](../../../packages/extensions/extension-ad/src/frontend/src/index.ts))：
 
 ```typescript
-import { buildExtensionRoutes } from 'moyan-mfw-base/frontend'
-
-const allConfigs = import.meta.glob('./views/**/index.{ts,tsx}', {
-  eager: true,
-  import: 'default',
-})
-
-export const adRoutes = buildExtensionRoutes(allConfigs, 'ad', {
-  namespaceName: '广告管理',
-})
+// 扩展包仅导出页面组件，菜单路由由框架使用者在前端 menu-trees.ts 中统一维护
+export { default as AdPlacementList } from './views/placement/Index.vue'
 ```
 
-**页面配置** ([views/placement/index.ts](../../../packages/extensions/extension-ad/src/frontend/src/views/placement/index.ts))：
+**菜单树挂载**（业务层 menu-trees.ts 或扩展包独立运行的 main.ts）：
 
 ```typescript
-import { definePageConfig } from 'moyan-mfw-base/frontend'
-import PlacementList from './Index.vue'
+import type { FrontendAppTypeMenuConfig } from 'moyan-mfw-base/frontend'
+import { AdPlacementList } from 'moyan-mfw-extension-ad/frontend'
 
-export default definePageConfig({
-  page: PlacementList,
-  path: 'placement',
-  name: '广告位管理',
-  icon: 'CollectionTag',
-  auth: true,
-  order: 1,
-  permCode:'ext:ad:placement',
-  permissions: ['添加', '编辑', '删除'],
-})
+const menuTrees: FrontendAppTypeMenuConfig[] = [{
+  appTypeCode: 'ad',
+  label: '广告管理',
+  icon: 'Notification',
+  children: [{
+    path: 'placement',
+    name: '广告位管理',
+    icon: 'CollectionTag',
+    permCode: 'ext:ad:placement',
+    permissions: ['添加', '编辑', '删除'],
+    component: AdPlacementList,
+  }],
+}]
 ```
 
 **应用创建** ([main.ts](../../../packages/extensions/extension-ad/src/frontend/src/main.ts))：
@@ -362,15 +341,16 @@ export default definePageConfig({
 ```typescript
 import 'moyan-mfw-base/frontend/styles/base-admin.scss'
 import { createExtensionFrontendApp } from 'moyan-mfw-base/frontend'
-import { adRoutes } from './index'
 
 const app = createExtensionFrontendApp({
   name: '广告管理',
-  routes: adRoutes,
+  menuTrees,
 })
 
 app.mount('#app')
 ```
+
+> 旧版 `buildExtensionRoutes` + `import.meta.glob` + `definePageConfig` 自动扫描方式已废弃。
 
 ### 路由扫描机制
 
