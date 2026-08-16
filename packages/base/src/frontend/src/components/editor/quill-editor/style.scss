@@ -3,14 +3,18 @@
  */
 
 .mfw-quill-editor {
+  position: relative;
   display: flex;
   flex-direction: column;
-
+  overflow: hidden;
+  width: 100%;
   .mfw-quill-editor-container {
     flex: 1;
     display: flex;
     flex-direction: column;
     background: #fff;
+    overflow: hidden;
+    width: 100%;
 
     .ql-container {
       flex: 1;
