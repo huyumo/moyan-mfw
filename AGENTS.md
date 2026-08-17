@@ -69,6 +69,9 @@ pnpm preexit                # Exit prerelease mode (next release is stable)
 - Pushing `moyan-mfw-*@<version>` tags triggers `.workflow/release-pipeline.yml`, which builds
   all packages (name-glob filters, zero-config for new extensions) and runs `changeset publish`
   (idempotent; already-published versions are skipped).
+- CI runner 是 Node 22.3.0（无 require(esm)），changesets 依赖链通过 pnpm-workspace.yaml 的
+  `overrides` 钉住 `human-id@1.0.2`（CJS）——`@changesets/write@0.4.0` 用 CJS require 加载它，
+  human-id@^4 仅提供 ESM，升级 changesets/human-id 前先确认 Node ≥ 22.12。
 - Never publish manually from a package directory; CI is the only publish path.
 
 ## Architecture

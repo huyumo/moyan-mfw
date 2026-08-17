@@ -25,7 +25,9 @@ stages:
         name: build_and_publish
         displayName: 类型检查、构建与发布
         # 保持 22.3.0：runner 仅支持有限 Node 版本（22.14.0 会导致 npm: command not found）。
-        # @changesets/cli 锁定 v2：v3 的 bin.js 依赖 module.enableCompileCache（Node 22.8+）
+        # @changesets/cli 锁定 v2：v3 的 bin.js 依赖 module.enableCompileCache（Node 22.8+）。
+        # changesets 依赖链钉死 human-id@1.0.2（CJS，见 pnpm-workspace.yaml overrides）：
+        # write@0.4.0 的 CJS require('human-id') 在 Node<22.12 无 require(esm) 会 ERR_REQUIRE_ESM。
         nodeVersion: 22.3.0
         commands:
           - set -e

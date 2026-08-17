@@ -80,6 +80,12 @@ catalog:
   vue-router: ^4.5.1
   vue-tsc: ^2.2.12
 
+# 修复 CI(Node 22.3.0) 下 changeset publish 的 ERR_REQUIRE_ESM：
+# @changesets/write@0.4.0 为 CJS 却 require('human-id')，而 human-id@^4 仅提供 ESM，
+# 需要 Node>=22.12 的 require(esm) 支持。override 钉回 CJS 版 1.0.2（与调用点 API 兼容）。
+overrides:
+  human-id: 1.0.2
+
 ignoredBuiltDependencies:
   - '@nestjs/core'
   - '@parcel/watcher'
