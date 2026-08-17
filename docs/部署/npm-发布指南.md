@@ -56,6 +56,12 @@ pnpm preexit            # 退出 pre 模式，下一次 release 出正式版本�
 - pre 模式期间所有 bump 都是 `x.y.z-beta.n`，`changeset publish` 自动打 beta dist-tag，
   不会再出现"beta 版本误发 latest"的问题（旧流水线的已知坑）。
 - 用户安装：`npm install moyan-mfw-base@beta`。
+- **only-pre 特例**：从未发过稳定版的包（如 beta 期新增的扩展），changesets 会把预发布
+  直接打到 `latest`（否则 `npm i 包名` 无任何可装版本）。此类包发版后建议手动同步
+  beta tag 保持一致：`npm dist-tag add <pkg>@<version> beta`。
+- **工具版本约束**：`@changesets/cli` 锁定 **v2** -- v3 的 bin.js 依赖
+  `module.enableCompileCache()`（Node 22.8+），而 CI runner 的 nodeVersion 22.3.0
+  是已验证可用的版本（更高版本在 runner 上不可用，会报 npm: command not found）。
 
 ## CI 流水线
 

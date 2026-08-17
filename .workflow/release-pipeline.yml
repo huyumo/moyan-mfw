@@ -24,9 +24,9 @@ stages:
       - step: build@nodejs
         name: build_and_publish
         displayName: 类型检查、构建与发布
-        # @changesets/cli@3 的 bin.js 依赖 module.enableCompileCache（Node 22.8+），
-        # 22.3.0 会报 "enableCompileCache is not a function"
-        nodeVersion: 22.14.0
+        # 保持 22.3.0：runner 仅支持有限 Node 版本（22.14.0 会导致 npm: command not found）。
+        # @changesets/cli 锁定 v2：v3 的 bin.js 依赖 module.enableCompileCache（Node 22.8+）
+        nodeVersion: 22.3.0
         commands:
           - set -e
           - npm config set registry https://registry.npmmirror.com
