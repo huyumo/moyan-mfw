@@ -107,6 +107,11 @@ async function main() {
   console.log('\n2️⃣  执行 changeset version...');
   sh('pnpm changeset version', { inherit: true });
 
+  // 2.5 同步 lockfile：changesets 改写 peer/依赖范围后必须刷新 pnpm-lock.yaml，
+  //     否则 CI 的 --frozen-lockfile 会因 specifier 不一致直接失败
+  console.log('\n2️⃣.5 同步 pnpm-lock.yaml...');
+  sh('pnpm install --lockfile-only', { inherit: true });
+
   // 3. 提交 release commit
   const bumped = bumpedPackages();
   if (bumped.length === 0) {
@@ -115,7 +120,7 @@ async function main() {
   }
   const summary = bumped.map((b) => `${b.name}@${b.version}`).join(', ');
   console.log(`\n3️⃣  提交 release commit：${summary}`);
-  sh('git add .changeset packages', { inherit: true });
+  sh('git add .changeset packages pnpm-lock.yaml', { inherit: true });
   sh(`git commit -m "chore: release ${summary}" --no-verify`, { inherit: true });
 
   // 4. 逐包打 tag（changesets 风格 <pkg>@<version>，触发 release-pipeline）

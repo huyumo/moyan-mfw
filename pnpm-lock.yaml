@@ -637,8 +637,8 @@ importers:
   packages/extensions/extension-ad:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
 
   packages/extensions/extension-ad/src/backend:
     dependencies:
@@ -790,8 +790,8 @@ importers:
         specifier: '>=2.0.0'
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
       typeorm:
         specifier: '>=0.3.0'
         version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
@@ -955,8 +955,8 @@ importers:
         specifier: '>=2.0.0'
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
       typeorm:
         specifier: '>=0.3.0'
         version: 0.3.28(mysql2@3.20.0(@types/node@22.19.15))(redis@4.7.1)(ts-node@10.9.2(@types/node@22.19.15)(typescript@5.9.3))
@@ -1096,8 +1096,8 @@ importers:
   packages/extensions/extension-ledger:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
 
   packages/extensions/extension-ledger/src/backend:
     dependencies:
@@ -1237,8 +1237,8 @@ importers:
   packages/extensions/extension-scan-code:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
 
   packages/extensions/extension-scan-code/src/backend:
     dependencies:
@@ -1375,8 +1375,8 @@ importers:
   packages/extensions/extension-scheduler:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
 
   packages/extensions/extension-scheduler/src/backend:
     dependencies:
@@ -1519,8 +1519,8 @@ importers:
   packages/extensions/extension-sms:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.59
-        version: 1.2.0-beta.59(moyan-api@2.1.19)
+        specifier: ^1.2.0-beta.60
+        version: link:../../base
 
   packages/extensions/extension-sms/src/backend:
     dependencies:
@@ -5810,12 +5810,6 @@ packages:
 
   moyan-file-model@1.0.18:
     resolution: {integrity: sha512-ZHNhxn3Fu88Ethv6/ZpBk3V6qt/9PK2adCR7Vh7B90k16h8kCnHaeQvhCVl3OE0U9KH4iEKQdUvjKre7a54Vnw==}
-
-  moyan-mfw-base@1.2.0-beta.59:
-    resolution: {integrity: sha512-KZHm52xx5tL/Uwre0GDhJPmWdBdJu4aO1MDVOUc+oAtX2i2toFqrUZMNGYWMEt9cvAJys/ydaPmAfbkTszaDVw==}
-    engines: {node: '>=20.0.0'}
-    peerDependencies:
-      moyan-api: ^2.1.19
 
   ms@2.0.0:
     resolution: {integrity: sha512-Tpp60P6IUJDTuOq/5Z8cdskzJujfwqfOTkrwIwj7IRISpnkJnT6SyJ4PCPnGMoFjC9ddhal5KVIYtAt97ix05A==}
@@ -12407,10 +12401,6 @@ snapshots:
     dependencies:
       ejs: 2.7.4
       prettier: 2.8.8
-
-  moyan-mfw-base@1.2.0-beta.59(moyan-api@2.1.19):
-    dependencies:
-      moyan-api: 2.1.19
 
   ms@2.0.0: {}
 
