@@ -621,9 +621,6 @@ importers:
       '@types/inquirer':
         specifier: ^9.0.0
         version: 9.0.9
-      '@types/prettier':
-        specifier: ^3.0.0
-        version: 3.0.0
       tsup:
         specifier: ^8.0.0
         version: 8.5.1(postcss@8.5.8)(tsx@4.21.0)(typescript@5.9.3)(yaml@2.9.0)
@@ -3203,10 +3200,6 @@ packages:
 
   '@types/picomatch@4.0.3':
     resolution: {integrity: sha512-iG0T6+nYJ9FAPmx9SsUlnwcq1ZVRuCXcVEvWnntoPlrOpwtSTKNDC9uVAxTsC3PUvJ+99n4RpAcNgBbHX3JSnQ==}
-
-  '@types/prettier@3.0.0':
-    resolution: {integrity: sha512-mFMBfMOz8QxhYVbuINtswBp9VL2b4Y0QqYHwqLz3YbgtfAcat2Dl6Y1o4e22S/OVE6Ebl9m7wWiMT2lSbAs1wA==}
-    deprecated: This is a stub types definition. prettier provides its own type definitions, so you do not need this installed.
 
   '@types/qs@6.15.1':
     resolution: {integrity: sha512-GZHUBZR9hckSUhrxmp1nG6NwdpM9fCunJwyThLW1X3AyHgd9IlHb6VANpQQqDr2o/qQp6McZ3y/IA2rVzKzSbw==}
@@ -9440,10 +9433,6 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/picomatch@4.0.3': {}
-
-  '@types/prettier@3.0.0':
-    dependencies:
-      prettier: 3.8.3
 
   '@types/qs@6.15.1': {}
 
