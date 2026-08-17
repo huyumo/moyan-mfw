@@ -1,4 +1,41 @@
 {
   "mode": "pre",
-  "tag": "beta"
+  "tag": "beta",
+  "changesets": [
+    "auto-ec14a79d-base"
+  ],
+  "initialVersions": {
+    "moyan-mfw-backend": "1.0.0",
+    "moyan-mfw-frontend": "1.0.0",
+    "moyan-mfw-shared": "0.1.0",
+    "moyan-mfw-base": "1.2.0-beta.60",
+    "@internal/base-backend": "1.0.0",
+    "@internal/base-shared": "1.0.0",
+    "moyan-mfw-cli": "1.2.0-beta.60",
+    "moyan-mfw-extension-ad": "1.2.0-beta.60",
+    "@internal/ad-backend": "0.1.0",
+    "@internal/ad-shared": "0.1.0",
+    "moyan-mfw-extension-config": "1.2.0-beta.60",
+    "@internal/config-backend": "0.1.0",
+    "@internal/config-frontend": "0.1.0",
+    "@internal/config-shared": "0.1.0",
+    "moyan-mfw-extension-document": "1.2.0-beta.60",
+    "@internal/document-backend": "0.1.0",
+    "@internal/document-frontend": "0.1.0",
+    "@internal/document-shared": "0.1.0",
+    "moyan-mfw-extension-ledger": "1.2.0-beta.60",
+    "@internal/ledger-backend": "0.1.0",
+    "@internal/ledger-frontend": "0.1.0",
+    "@internal/ledger-shared": "0.1.0",
+    "moyan-mfw-extension-scan-code": "1.2.0-beta.60",
+    "@internal/scan-code-backend": "0.1.0",
+    "@internal/scan-code-shared": "0.1.0",
+    "moyan-mfw-extension-scheduler": "1.2.0-beta.60",
+    "@internal/scheduler-backend": "0.1.0",
+    "@internal/scheduler-frontend": "0.1.0",
+    "@internal/scheduler-shared": "0.1.0",
+    "moyan-mfw-extension-sms": "1.2.0-beta.60",
+    "@internal/sms-backend": "0.1.0",
+    "@internal/sms-shared": "0.1.0"
+  }
 }
