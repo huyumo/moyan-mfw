@@ -1,5 +1,5 @@
 /**
- * @fileoverview MfwUpload 上传组件类型定义
+ * @fileoverview 上传组件类型定义
  * @description 提供文件上传组件的类型定义
  */
 
@@ -70,41 +70,49 @@ export interface UploadFileInfo extends Omit<UploadUserFile, 'status'> {
   status?: 'ready' | 'uploading' | 'success' | 'error';
 }
 
-/** MfwUpload 组件 Props */
-export interface MfwUploadProps {
-  modelValue?: ResourceValue | ResourceValue[];
-  resourceType?: ResourceType;
-  uploadType?: UploadType;
-  multiple?: boolean;
-  limit?: number;
+/** MfwUploadFile 组件 Props（按钮式单文件上传） */
+export interface MfwUploadFileProps {
+  modelValue?: FileResource | string;
+  uploadType?: UploadMethodType;
   disabled?: boolean;
   maxSize?: number;
+  fileType?: string[];
   accept?: string;
-  fileTypes?: string[];
-  beforeUpload?: (file: File) => boolean | Promise<File>;
-  httpRequest?: (options: any) => Promise<UploadResult>;
-  elProps?: Partial<UploadProps>;
-  listType?: 'text' | 'picture' | 'picture-card';
-  showDelete?: boolean;
-  emptyText?: string;
-  uploadUrl?: string;
   businessType?: string;
+  elProps?: Partial<UploadProps>;
+  limit?: number;
 }
 
-/** MfwUpload 组件事件 */
-export interface MfwUploadEmits {
-  (e: 'update:modelValue', value: ResourceValue | ResourceValue[]): void;
-  (e: 'change', file: UploadFileInfo | UploadFileInfo[]): void;
-  (e: 'success', result: UploadResult, file: UploadFileInfo): void;
-  (e: 'error', error: Error, file: UploadFileInfo): void;
-  (e: 'remove', file: UploadFileInfo): void;
+/** MfwUploadFile 组件事件 */
+export interface MfwUploadFileEmits {
+  (e: 'update:modelValue', value: FileResource | string): void;
+  (e: 'change', value: FileResource | string): void;
+  (e: 'success', result: UploadResult, file: UploadFile): void;
+  (e: 'error', error: Error, file: UploadFile): void;
+  (e: 'remove', file: UploadFile): void;
 }
 
-/** MfwUpload 组件实例 */
-export interface MfwUploadInstance {
-  clear: () => void;
-  submit: () => void;
-  uploadFiles: UploadFileInfo[];
+/** MfwUploadFileDrag 组件 Props（拖拽式多文件上传） */
+export interface MfwUploadFileDragProps {
+  modelValue?: FileResource[];
+  uploadType?: UploadMethodType;
+  multiple?: boolean;
+  disabled?: boolean;
+  limit?: number;
+  maxSize?: number;
+  fileType?: string[];
+  accept?: string;
+  businessType?: string;
+  elProps?: Partial<UploadProps>;
+}
+
+/** MfwUploadFileDrag 组件事件 */
+export interface MfwUploadFileDragEmits {
+  (e: 'update:modelValue', value: FileResource[]): void;
+  (e: 'change', value: FileResource[]): void;
+  (e: 'success', result: UploadResult, file: UploadFile): void;
+  (e: 'error', error: Error, file: UploadFile): void;
+  (e: 'remove', file: UploadFile): void;
 }
 
 /** 上传方式类型（从环境变量配置） */

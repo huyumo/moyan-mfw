@@ -27,6 +27,7 @@ import SupplierOverviewPage from '@/views/monitor/overview/Index.vue'
 import FormCardDottedKeyTestPage from '@/views/test/form-card-on-test/Index.vue'
 import AlimapPickerTestPage from '@/views/test/alimap-picker/Index.vue'
 import DevModeTestPage from '@/views/test/dev-mode/Index.vue'
+import UploadTestPage from '@/views/test/upload/Index.vue'
 
 /**
  * 系统管理（system AppType）的菜单树
@@ -161,6 +162,12 @@ const systemMenuTree: FrontendAppTypeMenuConfig = {
           icon: "Cpu",
           showMode: "DEV",
           component: DevModeTestPage,
+        },
+        {
+          path: "upload",
+          name: "上传组件演示",
+          icon: "Upload",
+          component: UploadTestPage,
         },
       ],
     },
