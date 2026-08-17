@@ -45,6 +45,37 @@ pnpm release --yes      # 免确认（等价 pnpm release:yes）
 > gen 只是预填，发版前请过目 `.changeset/`，可改 bump 级别和描述；也可以随时
 > `pnpm changeset` 手工补充。
 
+## 单包发版（独立版本的核心用法）
+
+只改了一个包、只想发一个包时，**不需要任何额外配置**，流程与全量发版完全相同：
+
+```bash
+# 例：只修了 extension-sms 的一个 bug
+git commit -am "fix(sms): 修复验证码校验超时"   # 1. 正常提交（conventional 格式）
+pnpm release                                  # 2. 走标准发版流程
+```
+
+会发生什么：
+
+- gen-changesets 按文件路径归属，只生成 `moyan-mfw-extension-sms` 的 changeset
+  （commit 触达了哪些包目录，就给哪些包生成；想手动指定用 `pnpm changeset`）；
+- `changeset version` 只 bump sms 的版本、只更新它的 CHANGELOG；
+- 只打一个 tag：`moyan-mfw-extension-sms@<新版本>`；
+- CI 仍会全量构建 + typecheck（有意的安全网，改动 base 时尤其重要），但
+  `changeset publish` 只发布 registry 上不存在的版本 -- 其余 8 个包自动跳过，
+  实际只发 sms。
+
+### 两个例外
+
+1. **base 不完全独立**：base 与 cli 是 fixed 组，动 base 必然带 cli 同版本。另外若
+   base 新版本**超出扩展的 peer 范围**（如 1.2.0-beta.60 -> 1.3.0-beta.0），changesets
+   会自动联动 bump 受影响扩展并改写其 peer floor；而 patch 或同号位 beta 递增
+   （1.2.0-beta.60 -> 1.2.0-beta.61）时扩展零联动。"改 base 是否牵连扩展"由 peer
+   范围自动裁决：只有可能不兼容时才联动。
+2. **纯 beta 历史的包**（beta 期新增的扩展）：pre 模式下预发布进 latest tag，发完补
+   `npm dist-tag add <pkg>@<版本> beta` 同步 beta tag（见上文 only-pre 特例），
+   `preexit` 出首个稳定版后此问题消失。
+
 ## beta 通道
 
 ```bash
