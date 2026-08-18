@@ -305,6 +305,23 @@ createBaseBackendApp({
 })
 ```
 
+#### ⚠ HTTP 端点权限语义（当前版本）
+
+当前版本各 HTTP 端点的权限声明如下（与 `@RequirePermission` 的框架权限方案存在已知缺陷有关，详见后文"待办"）：
+
+| 端点 | 当前权限 |
+|---|---|
+| `POST /transfers`（制单）、`POST /accounts`（开户） | `@SkipPermission` / 无装饰器——**任何已登录用户可调用**（登录即放行） |
+| `GET /transfers`、`GET /accounts`、`GET /entries` 及详情 | `@SkipPermission`——已登录可读 |
+| `POST /transfers/audit`、`PUT /repost`、`PUT /batch-repost`、`PUT /cancel` | 声明 `审核` |
+| `POST /transfers/reverse` | 声明 `冲正` |
+| `POST /reconcile`、`GET /reports`、`GET /account/:id`、`PUT /fix/:id` | 声明 `对账` |
+| `GET /entries/export` | 声明 `导出` |
+
+> **限制（重要）**：基础框架的 `@RequirePermission` 权限方案存在缺陷（如无装饰器端点被 `PermissionGuard` 直接放行、权限值声明方式待重构），**当前版本不依赖 HTTP 端点的权限声明做安全边界**。安全建议：
+> 1. 业务代码请优先走**服务层**（`LedgerAccountService` / `LedgerTransferService` / `LedgerWithdrawService`，进程内 DI，无 HTTP 暴露面）；
+> 2. 如需对外暴露 HTTP 端点，请在网关/路由层自行鉴权，或等待 `moyan-mfw-base` 权限方案重构后本扩展包升级补齐。
+
 ### 数据库迁移
 
 本扩展包提供 3 个迁移文件：
@@ -314,6 +331,7 @@ createBaseBackendApp({
 | `20260814000000-create-ledger-tables.ts` | 建表：账户表、交易单表、分录表（KEY 分区 64）、归档表（RANGE 月分区）、对账报告表 |
 | `20260814010000-add-transfer-ext-columns.ts` | 交易单表新增 extCol1~4 预留索引位列 + 索引 |
 | `20260814020000-add-entry-currency.ts` | 分录表新增 currency 列 |
+| `20260818000000-backfill-open-account-entry-currency.ts` | 回填历史开户合成单分录的 currency（存量 NULL → 交易单币种） |
 
 **引入方式：**
 
@@ -322,11 +340,13 @@ createBaseBackendApp({
 import { CreateLedgerTables20260814000000 } from 'moyan-mfw-extension-ledger/database/migrations/20260814000000-create-ledger-tables'
 import { AddTransferExtColumns20260814010000 } from 'moyan-mfw-extension-ledger/database/migrations/20260814010000-add-transfer-ext-columns'
 import { AddEntryCurrency20260814020000 } from 'moyan-mfw-extension-ledger/database/migrations/20260814020000-add-entry-currency'
+import { BackfillOpenAccountEntryCurrency20260818000000 } from 'moyan-mfw-extension-ledger/database/migrations/20260818000000-backfill-open-account-entry-currency'
 
 export const migrations = [
   CreateLedgerTables20260814000000,
   AddTransferExtColumns20260814010000,
   AddEntryCurrency20260814020000,
+  BackfillOpenAccountEntryCurrency20260818000000,
 ]
 ```
 
@@ -534,6 +554,8 @@ interface SelectOptionItem {
 | `bizType` | `string` | 是 | 业务类型 |
 | `description` | `string` | 否 | 备注 |
 | `extra` | `Record<string, unknown>` | 否 | 扩展附录 |
+
+> **限制**：当前版本冲正**仅支持一对一原单**（`toAccounts` 单收款方），一对多原单（ONE_TO_MANY）冲正只反向首个收款方、其余金额不还原，会破坏账户恒等式——业务侧请勿对一对多单发起冲正；一对多冲正（逐收款方生成冲正单）排期待办。
 
 #### PUT /transfers/repost/:transferNo - 人工重推
 
@@ -1001,6 +1023,8 @@ interface SelectOptionItem {
 
 计算账户恒等式差异：`Σ(signed_amount)` vs `(balance + frozen + pendingOut)`。
 
+> **恒等式定义（重要）**：对账按**账户**校验 `balance + frozen + pendingOut ≡ Σ(signed_amount)`（全状态机成立），**不校验全局借贷平衡（Σ 借方 = Σ 贷方）**。原因：开户初始余额（注资/期初封装）只写一条 DEBIT 分录、无对手方（如系统资金户 1e14 注资），全局 dr=cr 天然不成立属设计如此。使用方做对账/审计时请按账户口径，勿用全局借贷平衡校验。
+
 **返回**：`Promise<{ totalAccounts: number; diffs: ReconcileDiffItem[] }>`
 
 **`ReconcileDiffItem` 字段：**
@@ -1031,6 +1055,8 @@ interface SelectOptionItem {
 ##### archiveTransfers(before, batchSize?, manager?)
 
 联动归档交易单（分录归档完成后调用）。
+
+> **限制（审计）**：当前版本对终态交易单（POSTED/FAILED/CANCELLED/REJECTED）执行**直接 DELETE**，**无归档副本表**（与分录归档 copy-then-delete 到 `ext_ledger_entry_archive` 不一致）。归档窗口（默认 90 天）内不触发；如需审计追溯完整性，建议保持默认关闭归档或等待二期增加 `ext_ledger_transfer_archive`（copy-then-delete）。
 
 **返回**：`Promise<{ archived: number; hasMore: boolean }>`
 

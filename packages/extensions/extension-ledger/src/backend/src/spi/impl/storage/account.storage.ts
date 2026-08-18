@@ -118,6 +118,7 @@ export class AccountStorage {
         signedAmount: initial.toString(),
         balanceBefore: '0',
         balanceAfter: initial.toString(),
+        currency: account.currency, // 币种（与交易单一致，保证流水展示/恒等式口径自洽）
         extra: { type: 'open_account' },
       } as any)
     }
