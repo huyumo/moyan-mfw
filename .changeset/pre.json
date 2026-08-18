@@ -2,7 +2,8 @@
   "mode": "pre",
   "tag": "beta",
   "changesets": [
-    "auto-ec14a79d-base"
+    "auto-ec14a79d-base",
+    "ledger-slim-api"
   ],
   "initialVersions": {
     "moyan-mfw-backend": "1.0.0",
