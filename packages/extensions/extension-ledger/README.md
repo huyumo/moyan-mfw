@@ -11,6 +11,7 @@ MFW 通用借贷记账管理扩展包。基于「纯异步入账 + 同步预占 
 - **SPI 全可替换**：存储/锁/队列/通知/字段校验 5 个扩展点，默认实现零外部依赖（单实例），多实例切 Redis
 - **业务扩展字段索引化**：bizExtMappings 映射到预留索引位（extCol1~4），制单/查询均走索引
 - **对账能力内置**：恒等式校验 + 增量修复（原子写调整分录），对接 extension-scheduler 定时调度
+- **业务层极简接入**：懒开户（ensureAccount）、一行式制单（createBizTransfer）、审核流模板（LedgerWithdrawService，提现全流程 6 方法覆盖）、读侧类型化（TransferView/AccountView/WithdrawView）、查询聚合（sumTransfers + holder 维度）——业务层无需写任何账本 SQL
 
 ## 目录
 
@@ -1277,13 +1278,21 @@ LedgerModule.forRoot({
 
 ## 业务服务参考
 
-`LedgerModule` 导出 3 个业务服务，业务层直接注入使用。
+`LedgerModule` 导出 4 个业务服务，业务层直接注入使用。
 
 ### LedgerAccountService
 
 #### openAccount(input: OpenAccountInput)
 
-开户（幂等）；tag 注册制校验 + 扩展字段校验。
+开户（幂等 + 并发安全：唯一键冲突自动重查返回）；tag 注册制校验 + 扩展字段校验。
+
+#### ensureAccount(input: HolderRef & { extra? })
+
+懒开户：账户不存在则开（余额 0），存在返回已有。记账前调用无需关心开户流程（幂等、并发安全）。
+
+#### ensureSystemAccounts(accounts: Array<HolderRef & { extra? }>)
+
+批量系统户初始化（幂等；`onModuleInit` 调用一次即可）。
 
 #### getAccount(accountId: string)
 
@@ -1292,6 +1301,16 @@ LedgerModule.forRoot({
 #### findAccount(holderId: string, holderType?: string, tag?: string, currency?: string)
 
 按 holder + tag + currency 查账户。默认值：`holderType='system'`, `tag='default'`, `currency='CNY'`。
+
+**返回**：`Promise<AccountView | null>`
+
+#### getBalance(holderId, holderType?, tag?, currency?)
+
+查可用余额（不存在返回 `'0'`；最小单位字符串）。
+
+#### getAccountSnapshot(holderId, holderType?, tag?, currency?)
+
+账户快照（不存在返回 null）。
 
 #### queryAccounts(filter: AccountQueryFilter)
 
@@ -1303,7 +1322,22 @@ LedgerModule.forRoot({
 
 制单（幂等 by bizRef；免审入队，需审冻结）。
 
-**返回**：`Promise<{ transfer: any; created: boolean }>`
+**返回**：`Promise<{ transfer: TransferView; created: boolean }>`
+
+#### createBizTransfer(input: CreateBizTransferInput, maker?)
+
+一行式制单：账户用 holder 三元组定位（`from`/`to`），内部懒开户，无需先查账户 ID。
+
+```typescript
+const { transfer, created } = await transferService.createBizTransfer({
+  bizRef: `order-${orderNo}`,
+  bizType: 'order_pay',
+  from: { holderId: 'u-1', holderType: 'user', tag: 'user' },
+  to: { holderId: 'm-1', holderType: 'merchant', tag: 'merchant' },
+  amount: '2000',               // 20.00 元（最小单位）
+  extFields: { channel: 'wechat' },
+})
+```
 
 #### audit(input: AuditTransferInput, auditor?: { id?: string; text?: string })
 
@@ -1315,7 +1349,7 @@ LedgerModule.forRoot({
 
 全额冲正。
 
-**返回**：`Promise<{ transfer: any; created: boolean }>`
+**返回**：`Promise<{ transfer: TransferView; created: boolean }>`
 
 #### repost(transferNo: string)
 
@@ -1337,19 +1371,62 @@ LedgerModule.forRoot({
 
 #### getTransfer(transferNo: string)
 
-查交易单。
+查交易单。**返回**：`Promise<TransferView | null>`
 
 #### findByBizRef(bizRef: string, bizType: string)
 
-按幂等键查交易单。
+按幂等键查交易单。**返回**：`Promise<TransferView | null>`
+
+#### findByExtField(bizType: string, field: string, value: string)
+
+按业务扩展字段定位（如按外部单号查提现单；须 bizType + bizExtMappings 已配置）。**返回**：`Promise<TransferView | null>`
 
 #### queryTransfers(filter: TransferQueryFilter)
 
-交易单分页查询。
+交易单分页查询。**返回**：`Promise<{ items: TransferView[]; total: number }>`
+
+filter 支持 `fromAccountType`（转出账户主体类型）、`fromAccountHolderIds`（主体 ID 集合）、`postStatusExclude`（排除状态）。
+
+#### sumTransfers(filter: TransferQueryFilter)
+
+交易单聚合（COUNT + SUM(amount)），过滤条件与 queryTransfers 一致。**返回**：`Promise<{ totalCount: number; totalAmount: AmountString }>`
 
 #### queryEntries(filter: EntryQueryFilter)
 
 流水分页查询。
+
+### LedgerWithdrawService（审核流模板）
+
+两段式审核业务（提现/打款/退款）全流程模板：预占（冻结待审）→ 审核通过/驳回 → 按外部单号定位 → 分页查询 → 汇总。业务语义（读侧状态映射、字段映射、成功口径）内置，`bizType`/字段名/文案可配置复用。
+
+配置（`LedgerModuleOptions.withdraw`，全部可选）：
+
+| 配置 | 默认值 | 说明 |
+|---|---|---|
+| `bizType` | `'withdraw'` | 审核流业务类型（须在 bizTypes 白名单） |
+| `externalNoField` | `'wxTransferNo'` | 外部单号语义字段名（须在 bizExtMappings[bizType] 声明） |
+| `typeField` | `'withdrawType'` | 类型语义字段名（须在 bizExtMappings[bizType] 声明） |
+| `statusTexts` | `{1:'处理中',2:'成功',3:'失败'}` | 读侧状态文案 |
+
+```typescript
+// 业务层完整用法（提现场景）——6 个方法覆盖全生命周期
+const { transferNo } = await withdrawService.reserve({
+  bizRef: 'W1001',                       // 提现单 ID（幂等键）
+  from: { holderId: 'u-1', holderType: 'user', tag: 'user' },
+  to: { holderId: 'system', holderType: 'system', tag: 'funding' },
+  amount: '3000',
+  wxTransferNo: '20260818001',           // 微信 out_batch_no → extCol1
+  withdrawType: 'balance',               // → extCol2
+})
+await withdrawService.approve('W1001', { id: 'op', text: '操作员' })   // 通过（入队入账）
+await withdrawService.reject('W1001', '重复申请', { id: 'op', text: '操作员' })  // 驳回（解冻）
+await withdrawService.findByExternalNo('20260818001')  // 微信回调定位 → WithdrawView | null
+await withdrawService.queryWithdrawals({ fromHolderType: 'user', status: 2, page: 1, pageSize: 20 })
+await withdrawService.sumWithdrawn({ fromHolderType: 'user' })
+// → { totalCount, withdrawn（成功金额，最小单位）, pendingCount（处理中笔数） }
+```
+
+读侧状态映射：1=处理中（NOT_READY/PENDING/POSTING）、2=成功（POSTED+APPROVED）、3=失败（FAILED/CANCELLED/REJECTED）；返回项透传 `rawPostStatus`/`rawAuditStatus` 供业务层扩展。字段映射：`id=bizRef`、`externalNo`=外部单号、`transferredAt=auditTime`、`failReason=auditNotes`。`endDate` 为纯日期时按当天全天（含边界）处理。
 
 ### LedgerReconcileService
 
@@ -1448,6 +1525,82 @@ type AmountString = string
 | `makerId` | `string` | 否 | 制单人 ID |
 | `makerText` | `string` | 否 | 制单人名称 |
 | `extra` | `Record<string, unknown>` | 否 | 扩展附录 |
+
+### HolderRef（账户定位）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `holderId` | `string` | 持有者 ID |
+| `holderType` | `string` | 主体类型（默认 `'system'`） |
+| `tag` | `string` | 账户标签（默认 `'default'`） |
+| `currency` | `string` | 币种（默认 `'CNY'`） |
+
+`createBizTransfer` / `LedgerWithdrawService` 等高层 API 用 holder 三元组定位账户，内部懒开户。
+
+### TransferView（交易单视图）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `transferNo` | `string` | 交易单号 |
+| `bizRef` / `bizType` | `string` | 幂等键组合 |
+| `fromAccountId` | `string` | 转出账户 ID |
+| `toAccounts` | `TransferTargetItem[]` | 收款方明细 |
+| `amount` | `AmountString` | 流动总金额（最小单位） |
+| `currency` | `string` | 币种 |
+| `needReview` | `boolean` | 是否需审 |
+| `auditStatus` / `postStatus` | `number` | 审核/入账状态（字典值） |
+| `auditTime` / `auditNotes` | `Date \| null` / `string \| null` | 审核信息 |
+| `makerId` / `makerText` / `auditorId` / `auditorText` | `string \| null` | 操作人 |
+| `retryCount` | `number` | 重试次数 |
+| `createdAt` | `Date` | 创建时间 |
+| `reversedFromTransferNo` | `string \| null` | 冲正关联 |
+| `extFields` | `Record<string, string>` | 业务扩展字段（预留索引位语义化） |
+
+所有查询/制单返回均为 TransferView（不再 any）；extCol1~4 物理列已翻译为 `extFields` 语义对象。
+
+### AccountView（账户视图）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | `string` | 账户 ID |
+| `sysAccountKey` | `string \| null` | 系统账户键 |
+| `holderId` / `holderType` / `tag` / `currency` | `string` | 账户定位 |
+| `balance` / `frozen` / `pendingOut` | `AmountString` | 余额/冻结/在途 |
+| `totalIncome` / `totalOutcome` | `AmountString` | 累计收支 |
+| `extra` | `Record<string, unknown> \| null` | 扩展数据 |
+| `createdAt` | `Date` | 创建时间 |
+
+### EntryView（分录视图）
+
+流水分页返回项：`id` / `accountId` / `entryNo` / `transferNo` / `direction`（1借2贷）/ `signedAmount` / `balanceBefore` / `balanceAfter` / `extra` / `createdAt` / `currency?`。
+
+### WithdrawView（审核流交易视图）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `id` | `string` | 业务幂等键（bizRef，提现单 ID） |
+| `holderId` | `string` | 提现方主体 ID |
+| `amount` | `AmountString` | 金额（最小单位） |
+| `status` | `1 \| 2 \| 3` | 读侧状态（处理中/成功/失败） |
+| `statusText` | `string` | 状态文案（配置或默认） |
+| `externalNo` | `string \| null` | 外部单号（微信 out_batch_no） |
+| `withdrawType` | `string \| null` | 类型字段值 |
+| `createdAt` | `Date` | 申请时间 |
+| `transferredAt` | `Date \| null` | 到账时间（auditTime） |
+| `failReason` | `string \| null` | 失败原因（auditNotes） |
+| `rawPostStatus` / `rawAuditStatus` | `number` | 原始账本状态（透传） |
+
+---
+
+## 共享工具参考
+
+### amountToYuan(amount: AmountString | number | bigint): string
+
+最小单位金额 → 元展示（2 位小数，BigInt 除 100 避免浮点误差）。`amountToYuan('123456') === '1234.56'`
+
+### buildCompositeBizRef(parts: (string | number)[]): string
+
+多维度业务幂等键 MD5 摘要（32 位 hex，适配 bizRef varchar(64)）。如分润键 `buildCompositeBizRef([orderId, 'm', merchantId, referrerType])`。
 
 ---
 

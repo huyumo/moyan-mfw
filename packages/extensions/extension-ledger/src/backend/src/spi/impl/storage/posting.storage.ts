@@ -18,6 +18,7 @@ import {
 import { StorageContext } from './storage-context'
 import { parseAmount } from '../../../services/amount.util'
 import { generateEntryNo } from '../../../services/id-generator'
+import { toTransferView } from './view.mapper'
 import type {
   ClaimResult,
   PostResult,
@@ -49,7 +50,7 @@ export class PostingStorage {
       .execute()
     if (result.affected === 0) return { affected: 0 }
     const transfer = await this.ctx.transferRepo(em).findOne({ where: { transferNo } })
-    return { affected: 1, transfer }
+    return { affected: 1, transfer: toTransferView(transfer, this.ctx.options.bizExtMappings) }
   }
 
   /**

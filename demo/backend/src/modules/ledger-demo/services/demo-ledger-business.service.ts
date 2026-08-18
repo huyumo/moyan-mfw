@@ -20,6 +20,7 @@ import {
   LedgerAccountService,
   LedgerTransferService,
   LedgerReconcileService,
+  LedgerWithdrawService,
   LEDGER_STORAGE,
   LEDGER_LOCK,
   LEDGER_QUEUE,
@@ -40,6 +41,8 @@ import { DemoLedgerQueue } from '../spi/demo-ledger-queue'
 /** 演示商家/用户固定 holder（幂等：重复 setup 命中已有账户） */
 const MERCHANT_HOLDER = { holderId: 'demo-merchant-001', holderType: 'merchant', tag: 'merchant' }
 const USER_HOLDER = { holderId: 'demo-user-001', holderType: 'user', tag: 'user' }
+/** 提现收款方：资金池系统户（懒开户演示） */
+const FUNDING_HOLDER = { holderId: 'system', holderType: 'system', tag: 'funding' }
 
 @Injectable()
 export class DemoLedgerBusinessService {
@@ -49,6 +52,7 @@ export class DemoLedgerBusinessService {
     private readonly accountService: LedgerAccountService,
     private readonly transferService: LedgerTransferService,
     private readonly reconcileService: LedgerReconcileService,
+    private readonly withdrawService: LedgerWithdrawService,
     private readonly notifyListener: DemoLedgerNotifyListener,
     @Inject(LEDGER_STORAGE) private readonly storage: ILedgerStorage,
     @Inject(LEDGER_LOCK) private readonly lock: ILedgerLock,
@@ -521,6 +525,55 @@ export class DemoLedgerBusinessService {
       lockStats: this.lockStats(),
       listenerEvents: this.notifyListener.events.slice(-20),
     }
+  }
+
+  // ── 用例6：提现审核流模板（LedgerWithdrawService：预占/审核/驳回/定位/分页/汇总 全流程一行式） ──
+
+  /** 提现预占：用户 → 资金池系统户（冻结待审；wxTransferNo/withdrawType 走 extCol 索引位） */
+  async withdrawReserve(bizRef: string, amount: string, wxTransferNo: string, withdrawType = 'balance') {
+    const result = await this.withdrawService.reserve({
+      bizRef,
+      from: USER_HOLDER,
+      to: FUNDING_HOLDER,
+      amount,
+      wxTransferNo,
+      withdrawType,
+      description: '演示提现',
+    })
+    return result
+  }
+
+  /** 提现审核通过（幂等：非 NOT_READY 返回 null） */
+  async withdrawApprove(bizRef: string) {
+    const result = await this.withdrawService.approve(bizRef, { id: 'demo-operator', text: '演示操作员' })
+    return result ?? { affected: 0, action: 'skipped（非待审核状态）' }
+  }
+
+  /** 提现驳回（解冻；幂等） */
+  async withdrawReject(bizRef: string, reason: string) {
+    const result = await this.withdrawService.reject(bizRef, reason, { id: 'demo-operator', text: '演示操作员' })
+    return result ?? { affected: 0, action: 'skipped（非待审核状态）' }
+  }
+
+  /** 按微信转账单号定位提现单（回调入口） */
+  async withdrawFindByNo(wxTransferNo: string) {
+    return this.withdrawService.findByExternalNo(wxTransferNo)
+  }
+
+  /** 提现记录分页（读侧状态 1 处理中 / 2 成功 / 3 失败） */
+  async withdrawList(status?: number) {
+    return this.withdrawService.queryWithdrawals({
+      fromHolderType: USER_HOLDER.holderType,
+      withdrawType: null,
+      status,
+      page: 1,
+      pageSize: 20,
+    })
+  }
+
+  /** 提现汇总（totalCount 全部 / withdrawn 成功金额 / pendingCount 处理中） */
+  async withdrawSum() {
+    return this.withdrawService.sumWithdrawn({ fromHolderType: USER_HOLDER.holderType })
   }
 
   // ── 内部工具 ──

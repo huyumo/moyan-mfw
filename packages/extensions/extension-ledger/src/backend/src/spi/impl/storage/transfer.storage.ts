@@ -18,6 +18,7 @@ import { StorageContext } from './storage-context'
 import { parseAmount, gte } from '../../../services/amount.util'
 import { generateTransferNo } from '../../../services/id-generator'
 import { mapExtFieldsToColumns } from './ext-columns.util'
+import { toTransferView } from './view.mapper'
 
 /** 余额不足错误（制单/冲正预占失败） */
 export class InsufficientBalanceError extends Error {
@@ -57,7 +58,7 @@ export class TransferStorage {
 
       // 1. 幂等检查
       const existing = await transferRepo.findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
-      if (existing) return { transfer: existing, created: false }
+      if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
 
       // 2. 校验
       this.validateTransferInput(input)
@@ -133,7 +134,7 @@ export class TransferStorage {
       } as any)
       await transferRepo.save(transfer)
 
-      return { transfer, created: true }
+      return { transfer: toTransferView(transfer, this.ctx.options.bizExtMappings), created: true }
     })
   }
 
@@ -254,7 +255,7 @@ export class TransferStorage {
 
       // 幂等
       const existing = await transferRepo.findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
-      if (existing) return { transfer: existing, created: false }
+      if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
 
       const original = await transferRepo.findOne({ where: { transferNo: input.originalTransferNo } })
       if (!original) throw new InvalidTransferError(`原交易单不存在: ${input.originalTransferNo}`)

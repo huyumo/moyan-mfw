@@ -7,10 +7,15 @@ export { LedgerModule, LedgerModule as default } from './ledger.module'
 export {
   LedgerAccountService,
   LedgerTransferService,
+  LedgerWithdrawService,
   PostingConsumerService,
   ScavengerService,
   LedgerReconcileService,
   InsufficientBalanceError,
+  type CreateBizTransferInput,
+  type WithdrawReserveInput,
+  type WithdrawQueryInput,
+  type WithdrawSumInput,
 } from './services'
 export {
   generateTransferNo,
@@ -19,6 +24,7 @@ export {
   generateExecutorId,
   parseAmount,
   amountToString,
+  buildCompositeBizRef,
   MAX_AMOUNT,
 } from './services'
 export {
@@ -74,7 +80,16 @@ export type {
   CreateTransferInput,
   AuditTransferInput,
   ReverseTransferInput,
+  HolderRef,
+  TransferView,
+  AccountView,
+  EntryView,
+  AuditFlowStatus,
+  WithdrawView,
 } from 'moyan-mfw-extension-ledger/shared'
+
+// 共享工具（从 shared 层再导出）
+export { amountToYuan } from 'moyan-mfw-extension-ledger/shared'
 
 // 权限值（从 shared 层再导出）
 export { LEDGER_EXTENSION_PERMISSION_VALUES } from 'moyan-mfw-extension-ledger/shared'

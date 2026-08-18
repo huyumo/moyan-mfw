@@ -10,7 +10,7 @@ export {
   LEDGER_FIELD_EXTENSION,
   LEDGER_OPTIONS,
 } from './tokens'
-export type { LedgerModuleOptions, BizTypeMetaConfig } from './tokens'
+export type { LedgerModuleOptions, WithdrawModuleOptions, BizTypeMetaConfig } from './tokens'
 
 export type { ILedgerStorage, ClaimResult, PostResult, ScavengeItem, OpenAccountInput, ScavenigeResult, EntryQueryFilter, TransferQueryFilter, AccountQueryFilter, ReconcileDiffItem } from './ledger-storage.interface'
 export type { ILedgerLock } from './ledger-lock.interface'

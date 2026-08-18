@@ -37,14 +37,15 @@ import { DemoLedgerSpiController } from './controllers/demo-ledger-spi.controlle
       notifierImpl: DemoLedgerNotifier,
       fieldExtensionImpl: DemoFieldExtension,
       // ── 业务注册制白名单 ──
-      accountTags: ['default', 'merchant', 'user', 'system'],
-      bizTypes: ['order_pay', 'refund', 'recharge', 'reverse', 'promo_reward', 'task_reward', 'exchange'],
+      accountTags: ['default', 'merchant', 'user', 'system', 'funding'],
+      bizTypes: ['order_pay', 'refund', 'recharge', 'reverse', 'promo_reward', 'task_reward', 'exchange', 'withdraw'],
       // ── 业务扩展字段 → 预留索引位映射（不同交易类型字段不同，映射到固定 4 个索引位） ──
       bizExtMappings: {
         recharge:     { channel: 'extCol1', outTradeNo: 'extCol2' },
         promo_reward: { promoterId: 'extCol1', campaignId: 'extCol2', region: 'extCol3' },
         task_reward:  { taskId: 'extCol1' },
         exchange:     { goodsId: 'extCol1', storeId: 'extCol2' },
+        withdraw:     { wxTransferNo: 'extCol1', withdrawType: 'extCol2' },
       },
       // ── 业务类型展示元数据（经 GET /api/ext/ledger/biz-types 下发前端，前端零配置） ──
       bizTypeMetas: {
@@ -111,11 +112,32 @@ import { DemoLedgerSpiController } from './controllers/demo-ledger-spi.controlle
           search: [{ key: 'taskId', label: '任务ID' }],
           columns: [{ prop: 'taskId', label: '任务ID', width: 130, cp: true }],
         },
+        withdraw: {
+          label: '提现',
+          search: [
+            { key: 'wxTransferNo', label: '微信转账单号' },
+            {
+              key: 'withdrawType',
+              label: '提现类型',
+              type: 'select',
+              options: [
+                { value: 'balance', label: '余额提现' },
+                { value: 'bonus', label: '奖励提现' },
+              ],
+            },
+          ],
+          columns: [
+            { prop: 'wxTransferNo', label: '微信转账单号', width: 190, cp: true },
+            { prop: 'withdrawType', label: '提现类型', width: 110 },
+          ],
+        },
       },
       // ── 消费参数 ──
       consumerConcurrency: 10,
       maxRetry: 3,
       retryBackoffMs: 1000,
+      // ── 审核流模板（LedgerWithdrawService；字段名/文案可配，默认即提现场景） ──
+      withdraw: { bizType: 'withdraw' },
     }),
   ],
   controllers: [DemoLedgerSpiController],

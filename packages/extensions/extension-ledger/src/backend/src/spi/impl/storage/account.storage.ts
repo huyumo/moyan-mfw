@@ -9,18 +9,23 @@ import { AuditStatusDict, PostStatusDict, HoldTypeDict, TransferModeDict, Direct
 import { StorageContext } from './storage-context'
 import { parseAmount } from '../../../services/amount.util'
 import { generateTransferNo, generateEntryNo } from '../../../services/id-generator'
+import { toAccountView } from './view.mapper'
 import type { OpenAccountInput } from '../../interfaces'
 import type { EntityManager } from 'typeorm'
 
 const DIR = { DEBIT: DirectionDict.DEBIT, CREDIT: DirectionDict.CREDIT } as const
+
+/** MySQL 唯一键冲突错误码（ER_DUP_ENTRY） */
+const ER_DUP_ENTRY = 1062
 
 @Injectable()
 export class AccountStorage {
   constructor(private readonly ctx: StorageContext) {}
 
   /**
-   * 开户（幂等）
+   * 开户（幂等 + 并发安全）
    * - holderId+holderType+tag+currency 命中 -> 返回已有账户
+   * - 并发窗口（两进程同时未命中）-> 唯一键冲突捕获后重查返回
    * - 初始余额 > 0 -> 同步入账（balance=initial + 写「开户调整」交易单+分录），不走队列
    */
   async openAccount(input: OpenAccountInput, manager?: EntityManager) {
@@ -33,7 +38,7 @@ export class AccountStorage {
         currency: input.currency ?? 'CNY',
       } as any,
     })
-    if (existing) return existing
+    if (existing) return toAccountView(existing)
 
     const initial = input.initialBalance ? parseAmount(input.initialBalance, 'initialBalance') : 0n
     const account: any = repo.create({
@@ -50,7 +55,23 @@ export class AccountStorage {
       totalOutcome: '0',
       extra: input.extra ?? null,
     })
-    await repo.save(account)
+    try {
+      await repo.save(account)
+    } catch (err: any) {
+      // 并发冲突：唯一键 uk_ledger_account_holder_tag_currency 兜底，重查返回
+      if (err?.driverError?.errno === ER_DUP_ENTRY) {
+        const winner = await repo.findOne({
+          where: {
+            holderId: input.holderId,
+            holderType: input.holderType ?? 'system',
+            tag: input.tag ?? 'default',
+            currency: input.currency ?? 'CNY',
+          } as any,
+        })
+        if (winner) return toAccountView(winner)
+      }
+      throw err
+    }
 
     // 初始余额同步写「开户调整」分录（保证恒等式从零成立）
     if (initial > 0n) {
@@ -101,16 +122,18 @@ export class AccountStorage {
       } as any)
     }
 
-    return account
+    return toAccountView(account)
   }
 
   async getAccount(accountId: string, manager?: EntityManager) {
-    return this.ctx.accountRepo(manager).findOne({ where: { id: accountId } as any })
+    const row = await this.ctx.accountRepo(manager).findOne({ where: { id: accountId } as any })
+    return toAccountView(row)
   }
 
   async findAccount(holderId: string, holderType: string, tag: string, currency: string, manager?: EntityManager) {
-    return this.ctx.accountRepo(manager).findOne({
+    const row = await this.ctx.accountRepo(manager).findOne({
       where: { holderId, holderType, tag, currency } as any,
     })
+    return toAccountView(row)
   }
 }

@@ -13,6 +13,7 @@ export {
 export { LEDGER_EXTENSION_PERMISSION_VALUES } from './permission-values'
 export type { LedgerExtensionPermissionName } from './permission-values'
 export { LEDGER_PATHS } from './paths'
+export { amountToYuan } from './utils'
 export type {
   AmountString,
   TransferTargetItem,
@@ -20,4 +21,10 @@ export type {
   CreateTransferInput,
   AuditTransferInput,
   ReverseTransferInput,
+  HolderRef,
+  TransferView,
+  AccountView,
+  EntryView,
+  AuditFlowStatus,
+  WithdrawView,
 } from './types'

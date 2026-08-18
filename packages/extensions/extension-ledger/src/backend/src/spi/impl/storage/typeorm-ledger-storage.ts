@@ -107,6 +107,9 @@ export class TypeOrmLedgerStorage implements ILedgerStorage {
   queryReports(filter: any, manager?: EntityManager) {
     return this.query.queryReports(filter, manager)
   }
+  sumTransfers(filter: any, manager?: EntityManager) {
+    return this.query.sumTransfers(filter, manager)
+  }
 
   // ── 对账 ──
   computeReconcileDiffs(accountIds?: string[], manager?: EntityManager) {

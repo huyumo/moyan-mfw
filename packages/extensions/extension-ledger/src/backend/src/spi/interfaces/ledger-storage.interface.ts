@@ -16,6 +16,9 @@ import type {
   AuditTransferInput,
   ReverseTransferInput,
   AmountString,
+  AccountView,
+  TransferView,
+  EntryView,
 } from 'moyan-mfw-extension-ledger/shared'
 
 /** 对账差异项（结构定义，避免与实体层循环引用） */
@@ -33,7 +36,7 @@ export interface ClaimResult {
   /** 影响行数：1=认领成功可继续；0=已被处理/他人认领/不存在（须 XACK 跳过） */
   affected: number
   /** 认领到的交易单（affected=1 时有值） */
-  transfer?: any
+  transfer?: TransferView
 }
 
 /** 入账事务执行结果 */
@@ -57,19 +60,19 @@ export interface ScavengeItem {
  */
 export interface ILedgerStorage {
   // ── 账户 ──
-  /** 开户（幂等：holderId+holderType+tag+currency 命中返回已有）；初始余额同步入账 */
-  openAccount(input: OpenAccountInput, manager?: EntityManager): Promise<any>
+  /** 开户（幂等：holderId+holderType+tag+currency 命中返回已有；并发冲突自动重查）；初始余额同步入账 */
+  openAccount(input: OpenAccountInput, manager?: EntityManager): Promise<AccountView>
   /** 查账户 */
-  getAccount(accountId: string, manager?: EntityManager): Promise<any | null>
+  getAccount(accountId: string, manager?: EntityManager): Promise<AccountView | null>
   /** 按 holder + tag + currency 查账户 */
-  findAccount(holderId: string, holderType: string, tag: string, currency: string, manager?: EntityManager): Promise<any | null>
+  findAccount(holderId: string, holderType: string, tag: string, currency: string, manager?: EntityManager): Promise<AccountView | null>
 
   // ── 制单（同步事务：插单 + 预占） ──
   /**
    * 制单（幂等 + 预占）
    * @returns { transfer, created } created=false 表示 bizRef 命中返回已有单
    */
-  createTransferWithReserve(input: CreateTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: any; created: boolean }>
+  createTransferWithReserve(input: CreateTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: TransferView; created: boolean }>
 
   // ── 审核 ──
   /** 审核通过（NOT_READY->PENDING 单条原子写）；驳回（解冻+REJECTED）。返回影响行数 */
@@ -77,7 +80,7 @@ export interface ILedgerStorage {
 
   // ── 冲正 ──
   /** 创建冲正单（原单须 POSTED 且未冲正；唯一索引防双冲正） */
-  createReversal(input: ReverseTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: any; created: boolean }>
+  createReversal(input: ReverseTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: TransferView; created: boolean }>
 
   // ── 消费入账协议（CAS fencing） ──
   /** 认领（PENDING->POSTING + claim_token + claim_at，影响 0 行=已被处理） */
@@ -115,17 +118,22 @@ export interface ILedgerStorage {
 
   // ── 查询 ──
   /** 查交易单 */
-  getTransfer(transferNo: string, manager?: EntityManager): Promise<any | null>
+  getTransfer(transferNo: string, manager?: EntityManager): Promise<TransferView | null>
   /** 按幂等键查交易单 */
-  findTransferByBizRef(bizRef: string, bizType: string, manager?: EntityManager): Promise<any | null>
+  findTransferByBizRef(bizRef: string, bizType: string, manager?: EntityManager): Promise<TransferView | null>
   /** 流水分页（必带 account_id，单分区裁剪） */
-  queryEntries(filter: EntryQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }>
+  queryEntries(filter: EntryQueryFilter, manager?: EntityManager): Promise<{ items: EntryView[]; total: number }>
   /** 交易单分页 */
-  queryTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }>
+  queryTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ items: TransferView[]; total: number }>
   /** 账户分页 */
-  queryAccounts(filter: AccountQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }>
+  queryAccounts(filter: AccountQueryFilter, manager?: EntityManager): Promise<{ items: AccountView[]; total: number }>
   /** 对账报告分页 */
   queryReports(filter: { status?: number; page?: number; pageSize?: number }, manager?: EntityManager): Promise<{ items: any[]; total: number }>
+  /**
+   * 交易单聚合（COUNT + SUM(amount)，与 queryTransfers 同源过滤条件）
+   * 供读侧汇总（如提现成功金额/笔数）；filter 支持 postStatusExclude 排除口径
+   */
+  sumTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ totalCount: number; totalAmount: AmountString }>
 
   // ── 对账 ──
   /** 计算账户恒等式差异：Σ(signed_amount) vs (balance+frozen+pendingOut) */
@@ -175,9 +183,15 @@ export interface EntryQueryFilter {
 /** 交易单查询过滤 */
 export interface TransferQueryFilter {
   postStatus?: number | number[]
+  /** 排除指定入账状态（NOT IN 语义；如成功口径 = postStatus NOT IN (FAILED,CANCELLED,REJECTED)） */
+  postStatusExclude?: number[]
   auditStatus?: number | number[]
   bizType?: string
   fromAccountId?: string
+  /** 转出账户主体类型等值筛选（JOIN ext_ledger_account，如 holderType='user'） */
+  fromAccountType?: string
+  /** 转出账户主体 ID 集合筛选（JOIN ext_ledger_account，如用户 ID 列表） */
+  fromAccountHolderIds?: string[]
   startDate?: Date
   endDate?: Date
   /**

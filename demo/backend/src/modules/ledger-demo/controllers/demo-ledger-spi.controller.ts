@@ -74,6 +74,20 @@
  *   # 查看监听器收到的事件（ILedgerNotifier.registerListener 调用案例）
  *   curl http://localhost:3000/api/demo/ledger-spi/notifier-events \
  *     -H "Authorization: Bearer <token>"
+ *
+ *   # 用例9：提现审核流模板（LedgerWithdrawService：预占冻结 -> 审核通过/驳回 -> 定位/分页/汇总）
+ *   curl -X POST http://localhost:3000/api/demo/ledger-spi/withdraw-reserve \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"bizRef":"W1001","amount":"3000","wxTransferNo":"20260818001","withdrawType":"balance"}'
+ *   curl -X POST http://localhost:3000/api/demo/ledger-spi/withdraw-approve \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"bizRef":"W1001"}'
+ *   curl "http://localhost:3000/api/demo/ledger-spi/withdraw-by-no?no=20260818001" \
+ *     -H "Authorization: Bearer <token>"
+ *   curl "http://localhost:3000/api/demo/ledger-spi/withdraw-list?status=2" \
+ *     -H "Authorization: Bearer <token>"
+ *   curl http://localhost:3000/api/demo/ledger-spi/withdraw-sum \
+ *     -H "Authorization: Bearer <token>"
  */
 
 import {
@@ -140,6 +154,43 @@ class FieldValidateDto {
   @IsOptional()
   @IsObject()
   extra?: Record<string, unknown>
+}
+
+/** 提现审核流模板 DTO */
+class WithdrawReserveDto {
+  @ApiProperty({ description: '提现单 ID（幂等键）' })
+  @IsNotEmpty()
+  @IsString()
+  bizRef: string
+
+  @ApiProperty({ description: '金额（最小单位字符串）' })
+  @IsNotEmpty()
+  @IsString()
+  amount: string
+
+  @ApiProperty({ description: '微信转账单号（写入 extCol1）' })
+  @IsNotEmpty()
+  @IsString()
+  wxTransferNo: string
+
+  @ApiProperty({ description: '提现类型（写入 extCol2；默认 balance）', required: false })
+  @IsOptional()
+  @IsString()
+  withdrawType?: string
+}
+
+class WithdrawRefDto {
+  @ApiProperty({ description: '提现单 ID（bizRef）' })
+  @IsNotEmpty()
+  @IsString()
+  bizRef: string
+}
+
+class WithdrawRejectDto extends WithdrawRefDto {
+  @ApiProperty({ description: '驳回原因' })
+  @IsNotEmpty()
+  @IsString()
+  reason: string
 }
 
 /** 积分场景制单 DTO（多交易类型扩展字段） */
@@ -428,9 +479,52 @@ export class DemoLedgerSpiController {
 
   /** 动态级联选项数据源：省市区树（扩展筛选 optionsSource='regions' 的加载目标） */
   @Get('regions')
-  @ApiOperation({ summary: '省市区级联数据', description: '扩展筛选动态级联选项数据源（promo_reward.region）' })
+  @ApiOperation({ summary: '区域级联选项（optionsSource=regions 数据源示例）', description: '前端 registerSearchOptionLoader 注册后自动加载' })
   @SkipPermission()
   regions() {
     return this.demo.listRegions()
+  }
+
+  /** 用例9：提现审核流模板（LedgerWithdrawService） */
+  @Post('withdraw-reserve')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '提现预占', description: '用户 → 资金池系统户（needReview=true 冻结待审；wxTransferNo/withdrawType 写 extCol 索引位）' })
+  withdrawReserve(@Body() dto: WithdrawReserveDto) {
+    return this.demo.withdrawReserve(dto.bizRef, dto.amount, dto.wxTransferNo, dto.withdrawType)
+  }
+
+  @Post('withdraw-approve')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '提现审核通过', description: 'NOT_READY->PENDING 入队入账；幂等（非待审核返回 null）' })
+  withdrawApprove(@Body() dto: WithdrawRefDto) {
+    return this.demo.withdrawApprove(dto.bizRef)
+  }
+
+  @Post('withdraw-reject')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '提现驳回', description: '解冻 + REJECTED 终态；幂等' })
+  withdrawReject(@Body() dto: WithdrawRejectDto) {
+    return this.demo.withdrawReject(dto.bizRef, dto.reason)
+  }
+
+  @Get('withdraw-by-no')
+  @ApiOperation({ summary: '按微信转账单号定位提现单', description: 'findByExternalNo（extCol1 索引定位，微信回调入口）' })
+  @SkipPermission()
+  withdrawByNo(@Query('no') no: string) {
+    return this.demo.withdrawFindByNo(no)
+  }
+
+  @Get('withdraw-list')
+  @ApiOperation({ summary: '提现记录分页', description: '读侧状态 1 处理中 / 2 成功 / 3 失败' })
+  @SkipPermission()
+  withdrawList(@Query('status') status?: string) {
+    return this.demo.withdrawList(status ? Number(status) : undefined)
+  }
+
+  @Get('withdraw-sum')
+  @ApiOperation({ summary: '提现汇总', description: 'totalCount 全部 / withdrawn 成功金额（最小单位）/ pendingCount 处理中笔数' })
+  @SkipPermission()
+  withdrawSum() {
+    return this.demo.withdrawSum()
   }
 }

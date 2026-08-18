@@ -32,6 +32,7 @@ import { DefaultLedgerAccount, LedgerTransfer, LedgerEntry, LedgerReconcileRepor
 import {
   LedgerAccountService,
   LedgerTransferService,
+  LedgerWithdrawService,
   PostingConsumerService,
   ScavengerService,
   LedgerReconcileService,
@@ -74,6 +75,7 @@ export class LedgerModule {
         // 核心服务
         LedgerAccountService,
         LedgerTransferService,
+        LedgerWithdrawService,
         PostingConsumerService,
         ScavengerService,
         LedgerReconcileService,
@@ -81,6 +83,7 @@ export class LedgerModule {
       exports: [
         LedgerAccountService,
         LedgerTransferService,
+        LedgerWithdrawService,
         LedgerReconcileService,
         // SPI token 导出：业务层可注入任意 SPI（注册 notifier 监听器、查队列长度、直接用锁/存储/字段校验）
         LEDGER_STORAGE,

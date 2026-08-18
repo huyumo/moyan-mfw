@@ -59,51 +59,51 @@ const searchTemplate: SearchTemplateItem[] = [
 
 const columns: TableColumnConfig[] = [
   { prop: 'id', label: '账户ID', width: 300, cp: true },
-  { prop: 'holderId', label: '持有者', width: 260, cp: true },
+  { prop: 'holderId', label: '持有者', width: 300, cp: true },
   { prop: 'tag', label: '标签', width: 100 },
   { prop: 'currency', label: '币种', width: 70 },
   {
     prop: 'balance',
     label: '可用余额',
-    width: 130,
+    width: 180,
     align: 'right',
     formatter: 'formatAmount',
   },
   {
     prop: 'frozen',
     label: '审核冻结',
-    width: 130,
+    width: 180,
     align: 'right',
     formatter: 'formatAmount',
   },
   {
     prop: 'pendingOut',
     label: '在途预占',
-    width: 130,
+    width: 180,
     align: 'right',
     formatter: 'formatAmount',
   },
   {
     prop: 'totalIncome',
     label: '累计转入',
-    width: 130,
+    width: 180,
     align: 'right',
     formatter: 'formatAmount',
   },
   {
     prop: 'totalOutcome',
     label: '累计转出',
-    width: 130,
+    minWidth: 180,
     align: 'right',
     formatter: 'formatAmount',
   },
-  {
-    prop: 'extra',
-    label: '扩展字段',
-    minWidth: 180,
-    showOverflowTooltip: true,
-    render: ({ row }) => h('span', {}, (row as LedgerAccountItem).extra ? JSON.stringify((row as LedgerAccountItem).extra) : '-'),
-  },
+  // {
+  //   prop: 'extra',
+  //   label: '扩展字段',
+  //   minWidth: 280,
+  //   showOverflowTooltip: true,
+  //   render: ({ row }) => h('span', {}, (row as LedgerAccountItem).extra ? JSON.stringify((row as LedgerAccountItem).extra) : '-'),
+  // },
 ]
 
 /** 命名格式化方法表（MfwListPage 注入，列配置 formatter 按名查找；formatter 契约为 (value, row)） */

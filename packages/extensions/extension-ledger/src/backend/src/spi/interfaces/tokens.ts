@@ -49,6 +49,18 @@ export interface BizTypeMetaConfig {
   detail?: { key: string; label: string; span?: 1 | 2 }[]
 }
 
+/** 审核流（提现）模板配置（LedgerWithdrawService；打款/退款等两段式审核业务改配置复用） */
+export interface WithdrawModuleOptions {
+  /** 审核流业务类型（默认 'withdraw'；须在 bizTypes 白名单） */
+  bizType?: string
+  /** 外部单号语义字段名（默认 'wxTransferNo'；须在 bizExtMappings[bizType] 声明） */
+  externalNoField?: string
+  /** 类型语义字段名（默认 'withdrawType'；须在 bizExtMappings[bizType] 声明） */
+  typeField?: string
+  /** 读侧状态文案（键 1=处理中 2=成功 3=失败；默认 {1:'处理中',2:'成功',3:'失败'}） */
+  statusTexts?: Record<number, string>
+}
+
 /** 借贷记账模块配置选项 */
 export interface LedgerModuleOptions {
   /** 账户实体类（继承 LedgerAccountBase；默认 DefaultLedgerAccount）。扩展字段时注入子类 */
@@ -125,4 +137,7 @@ export interface LedgerModuleOptions {
   maxTargetsPerTransfer?: number
   /** 单笔金额上限（最小单位，默认 1e15） */
   maxAmountPerTransfer?: string
+
+  /** 审核流模板配置（LedgerWithdrawService；不配则使用默认值） */
+  withdraw?: WithdrawModuleOptions
 }

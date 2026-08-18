@@ -1,11 +1,12 @@
 /**
  * @fileoverview 账本（账户）服务 - 业务层入口
- * @description 开户（幂等 + 同步初始余额入账）、查询；注入 storage SPI
+ * @description 开户（幂等+并发安全）、懒开户、系统户初始化、查询；注入 storage SPI
  */
 
 import { Injectable, Inject } from '@nestjs/common'
 import { LEDGER_STORAGE, LEDGER_FIELD_EXTENSION, LEDGER_OPTIONS, type LedgerModuleOptions } from '../spi/interfaces'
 import type { ILedgerStorage, ILedgerFieldExtension, OpenAccountInput } from '../spi/interfaces'
+import type { AccountView, AmountString, HolderRef } from 'moyan-mfw-extension-ledger/shared'
 
 @Injectable()
 export class LedgerAccountService {
@@ -15,8 +16,8 @@ export class LedgerAccountService {
     @Inject(LEDGER_OPTIONS) private readonly options: LedgerModuleOptions,
   ) {}
 
-  /** 开户（幂等；初始余额同步入账） */
-  async openAccount(input: OpenAccountInput) {
+  /** 开户（幂等 + 并发安全；初始余额同步入账） */
+  async openAccount(input: OpenAccountInput): Promise<AccountView> {
     // tag 注册制校验
     const tag = input.tag ?? 'default'
     if (this.options.accountTags && this.options.accountTags.length > 0) {
@@ -29,14 +30,48 @@ export class LedgerAccountService {
     return this.storage.openAccount(input)
   }
 
+  /**
+   * 懒开户：账户不存在则开（余额 0），存在返回已有
+   * 业务层记账前调用无需关心开户流程（幂等、并发安全）
+   */
+  async ensureAccount(input: HolderRef & { extra?: Record<string, unknown> }): Promise<AccountView> {
+    return this.openAccount({
+      holderId: input.holderId,
+      holderType: input.holderType,
+      tag: input.tag,
+      currency: input.currency,
+      extra: input.extra,
+    })
+  }
+
+  /** 批量系统户初始化（幂等；业务层 onModuleInit 调用一次） */
+  async ensureSystemAccounts(accounts: Array<HolderRef & { extra?: Record<string, unknown> }>): Promise<AccountView[]> {
+    const result: AccountView[] = []
+    for (const item of accounts) {
+      result.push(await this.ensureAccount(item))
+    }
+    return result
+  }
+
   /** 查账户 */
-  async getAccount(accountId: string) {
+  async getAccount(accountId: string): Promise<AccountView | null> {
     return this.storage.getAccount(accountId)
   }
 
   /** 按 holder + tag + currency 查账户 */
-  async findAccount(holderId: string, holderType = 'system', tag = 'default', currency = 'CNY') {
+  async findAccount(holderId: string, holderType = 'system', tag = 'default', currency = 'CNY'): Promise<AccountView | null> {
     return this.storage.findAccount(holderId, holderType, tag, currency)
+  }
+
+  /** 查可用余额（不存在返回 '0'；最小单位字符串） */
+  async getBalance(holderId: string, holderType = 'system', tag = 'default', currency = 'CNY'): Promise<AmountString> {
+    const account = await this.findAccount(holderId, holderType, tag, currency)
+    return account?.balance ?? '0'
+  }
+
+  /** 账户快照（不存在返回 null） */
+  async getAccountSnapshot(holderId: string, holderType = 'system', tag = 'default', currency = 'CNY'): Promise<AccountView | null> {
+    return this.findAccount(holderId, holderType, tag, currency)
   }
 
   /** 账户分页 */

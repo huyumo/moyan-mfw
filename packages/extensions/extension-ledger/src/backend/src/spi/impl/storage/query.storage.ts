@@ -4,23 +4,26 @@
  */
 
 import { Injectable } from '@nestjs/common'
-import type { EntityManager } from 'typeorm'
+import type { EntityManager, SelectQueryBuilder } from 'typeorm'
 import { randomUUID } from 'node:crypto'
-import { PostStatusDict, DirectionDict } from 'moyan-mfw-extension-ledger/shared'
+import { PostStatusDict, DirectionDict, type AmountString } from 'moyan-mfw-extension-ledger/shared'
 import { StorageContext } from './storage-context'
 import type { EntryQueryFilter, TransferQueryFilter, AccountQueryFilter, ReconcileDiffItem } from '../../interfaces'
-import { mapExtFieldsToQuery, mapColumnsToExtFields } from './ext-columns.util'
+import { mapExtFieldsToQuery } from './ext-columns.util'
+import { toTransferView, toAccountView } from './view.mapper'
 
 @Injectable()
 export class QueryStorage {
   constructor(private readonly ctx: StorageContext) {}
 
   async getTransfer(transferNo: string, manager?: EntityManager) {
-    return this.ctx.transferRepo(manager).findOne({ where: { transferNo } })
+    const row = await this.ctx.transferRepo(manager).findOne({ where: { transferNo } })
+    return toTransferView(row, this.ctx.options.bizExtMappings)
   }
 
   async findTransferByBizRef(bizRef: string, bizType: string, manager?: EntityManager) {
-    return this.ctx.transferRepo(manager).findOne({ where: { bizRef, bizType } })
+    const row = await this.ctx.transferRepo(manager).findOne({ where: { bizRef, bizType } })
+    return toTransferView(row, this.ctx.options.bizExtMappings)
   }
 
   /** 流水分页（必带 account_id 单分区裁剪） */
@@ -38,18 +41,53 @@ export class QueryStorage {
     const pageSize = filter.pageSize ?? 20
     qb.skip((page - 1) * pageSize).take(pageSize)
     const [items, total] = await qb.getManyAndCount()
-    return { items, total }
+    return { items: items as any[], total }
   }
 
   async queryTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }> {
     const em = manager ?? this.ctx.dataSource.manager
     const qb = this.ctx.transferRepo(em).createQueryBuilder('t')
+    this.applyTransferFilter(qb, filter)
+    qb.orderBy('t.createdAt', 'DESC')
+    const page = filter.page ?? 1
+    const pageSize = filter.pageSize ?? 20
+    qb.skip((page - 1) * pageSize).take(pageSize)
+    const [items, total] = await qb.getManyAndCount()
+    return {
+      items: items.map((item: any) => toTransferView(item, this.ctx.options.bizExtMappings)),
+      total,
+    }
+  }
+
+  /**
+   * 交易单聚合（COUNT + SUM(amount)，与 queryTransfers 同源过滤条件）
+   * 金额为最小单位字符串；供读侧汇总（提现成功金额/笔数等）
+   */
+  async sumTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ totalCount: number; totalAmount: AmountString }> {
+    const em = manager ?? this.ctx.dataSource.manager
+    const qb = this.ctx.transferRepo(em).createQueryBuilder('t')
+    this.applyTransferFilter(qb, filter)
+    const row = await qb
+      .select('COUNT(*)', 'totalCount')
+      .addSelect('COALESCE(SUM(t.amount), 0)', 'totalAmount')
+      .getRawOne()
+    return {
+      totalCount: Number(row?.totalCount ?? 0),
+      totalAmount: String(row?.totalAmount ?? 0),
+    }
+  }
+
+  /** 交易单过滤条件公共构建（queryTransfers / sumTransfers 共用） */
+  private applyTransferFilter(qb: SelectQueryBuilder<any>, filter: TransferQueryFilter): void {
     if (filter.postStatus !== undefined) {
       if (Array.isArray(filter.postStatus)) {
         qb.andWhere('t.postStatus IN (:...postStatus)', { postStatus: filter.postStatus })
       } else {
         qb.andWhere('t.postStatus = :postStatus', { postStatus: filter.postStatus })
       }
+    }
+    if (filter.postStatusExclude && filter.postStatusExclude.length > 0) {
+      qb.andWhere('t.postStatus NOT IN (:...postStatusExclude)', { postStatusExclude: filter.postStatusExclude })
     }
     if (filter.auditStatus !== undefined) {
       if (Array.isArray(filter.auditStatus)) {
@@ -60,6 +98,14 @@ export class QueryStorage {
     }
     if (filter.bizType) qb.andWhere('t.bizType = :bizType', { bizType: filter.bizType })
     if (filter.fromAccountId) qb.andWhere('t.fromAccountId = :fromAccountId', { fromAccountId: filter.fromAccountId })
+    // 按转出账户主体筛选（JOIN 账户表；排除软删账户）
+    if (filter.fromAccountType || (filter.fromAccountHolderIds && filter.fromAccountHolderIds.length > 0)) {
+      qb.innerJoin(this.ctx.accountEntityCtor, 'a', 'a.id = t.fromAccountId AND a.deleteAt IS NULL')
+      if (filter.fromAccountType) qb.andWhere('a.holderType = :fromAccountType', { fromAccountType: filter.fromAccountType })
+      if (filter.fromAccountHolderIds && filter.fromAccountHolderIds.length > 0) {
+        qb.andWhere('a.holderId IN (:...fromAccountHolderIds)', { fromAccountHolderIds: filter.fromAccountHolderIds })
+      }
+    }
     if (filter.startDate) qb.andWhere('t.createdAt >= :startDate', { startDate: filter.startDate })
     if (filter.endDate) qb.andWhere('t.createdAt < :endDate', { endDate: filter.endDate })
     // 业务扩展字段筛选（bizExtMappings 翻译到预留索引列，须配 bizType）
@@ -78,24 +124,6 @@ export class QueryStorage {
         }
       }
     }
-    qb.orderBy('t.createdAt', 'DESC')
-    const page = filter.page ?? 1
-    const pageSize = filter.pageSize ?? 20
-    qb.skip((page - 1) * pageSize).take(pageSize)
-    const [items, total] = await qb.getManyAndCount()
-    // 预留列 → 语义对象（前端按语义名展示；无映射返回空对象）
-    const list = items.map((item: any) => {
-      const { extCol1, extCol2, extCol3, extCol4, ...rest } = item
-      return {
-        ...rest,
-        extFields: mapColumnsToExtFields(
-          { extCol1, extCol2, extCol3, extCol4 },
-          item.bizType,
-          this.ctx.options.bizExtMappings,
-        ),
-      }
-    })
-    return { items: list, total }
   }
 
   async queryAccounts(filter: AccountQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }> {
@@ -109,7 +137,7 @@ export class QueryStorage {
     const pageSize = filter.pageSize ?? 20
     qb.skip((page - 1) * pageSize).take(pageSize)
     const [items, total] = await qb.getManyAndCount()
-    return { items, total }
+    return { items: items.map((item: any) => toAccountView(item)), total }
   }
 
   /** 对账报告分页 */

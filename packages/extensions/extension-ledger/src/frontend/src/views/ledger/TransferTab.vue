@@ -169,13 +169,13 @@ watch(
 const columns = computed<TableColumnConfig[]>(() => {
   const base: TableColumnConfig[] = [
     { prop: 'transferNo', label: '交易单号', width: 270, cp: true },
-    { prop: 'bizRef', label: '业务幂等键', width: 200, cp: true },
+    { prop: 'bizRef', label: '业务幂等键', width: 300, cp: true },
     { prop: 'bizType', label: '业务类型', width: 120 },
     { prop: 'fromAccountId', label: '转出方', width: 300, cp: true },
     {
       prop: 'amount',
       label: '金额',
-      width: 130,
+      width: 180,
       align: 'right',
       formatter: 'transferAmount',
     },
@@ -218,7 +218,7 @@ const columns = computed<TableColumnConfig[]>(() => {
 
 /** 命名格式化方法表（MfwListPage 注入，列配置 formatter 按名查找） */
 const formatters = {
-  transferAmount: (value: string, row: LedgerTransferItem) => `${formatAmount(value, row.currency)} ${row.currency}`,
+  transferAmount: (value: string, row: LedgerTransferItem) => `${formatAmount(value, row.currency)}`,
   holdType: (value: number) => holdTypeLabel[value] ?? '-',
 }
 
