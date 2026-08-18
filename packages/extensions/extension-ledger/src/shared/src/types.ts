@@ -118,8 +118,12 @@ export interface TransferView {
   auditorText: string | null
   retryCount: number
   createdAt: Date
+  /** 关联业务单号（审计展示用） */
+  associatedOrder?: string | null
   /** 冲正单：被冲正的原单号；原单被冲正后：冲正单 bizRef */
   reversedFromTransferNo?: string | null
+  /** 扩展附录（制单时 extra 原样返回；对账豁免等业务判断用） */
+  extra?: Record<string, unknown> | null
   /** 业务扩展字段（语义键值，由预留索引位翻译；无映射时为空对象） */
   extFields?: Record<string, string>
 }
