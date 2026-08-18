@@ -31,21 +31,22 @@ export class LedgerAccountService {
   }
 
   /**
-   * 懒开户：账户不存在则开（余额 0），存在返回已有
+   * 懒开户：账户不存在则开（可带初始余额，默认 0），存在返回已有
    * 业务层记账前调用无需关心开户流程（幂等、并发安全）
    */
-  async ensureAccount(input: HolderRef & { extra?: Record<string, unknown> }): Promise<AccountView> {
+  async ensureAccount(input: HolderRef & { initialBalance?: AmountString; extra?: Record<string, unknown> }): Promise<AccountView> {
     return this.openAccount({
       holderId: input.holderId,
       holderType: input.holderType,
       tag: input.tag,
       currency: input.currency,
+      initialBalance: input.initialBalance,
       extra: input.extra,
     })
   }
 
   /** 批量系统户初始化（幂等；业务层 onModuleInit 调用一次） */
-  async ensureSystemAccounts(accounts: Array<HolderRef & { extra?: Record<string, unknown> }>): Promise<AccountView[]> {
+  async ensureSystemAccounts(accounts: Array<HolderRef & { initialBalance?: AmountString; extra?: Record<string, unknown> }>): Promise<AccountView[]> {
     const result: AccountView[] = []
     for (const item of accounts) {
       result.push(await this.ensureAccount(item))

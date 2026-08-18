@@ -172,6 +172,8 @@ export type AuditFlowStatus = 1 | 2 | 3
 export interface WithdrawView {
   /** 业务幂等键（提现单 ID） */
   id: string
+  /** 账本交易单号 */
+  transferNo: string
   holderId: string
   amount: AmountString
   status: AuditFlowStatus

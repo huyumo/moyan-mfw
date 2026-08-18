@@ -65,7 +65,7 @@ export class LedgerWithdrawService {
   }
 
   /** 提现预占（needReview=true 冻结待审；幂等：bizRef 命中返回已有单） */
-  async reserve(input: WithdrawReserveInput): Promise<{ transferNo: string; created: boolean }> {
+  async reserve(input: WithdrawReserveInput, maker?: { id?: string; text?: string }): Promise<{ transferNo: string; created: boolean }> {
     const extFields: Record<string, string> = {}
     if (input.wxTransferNo) extFields[this.externalNoField] = input.wxTransferNo
     if (input.withdrawType) extFields[this.typeField] = input.withdrawType
@@ -79,7 +79,7 @@ export class LedgerWithdrawService {
       description: input.description,
       extra: input.extra,
       extFields,
-    })
+    }, maker)
     return { transferNo: transfer.transferNo, created }
   }
 
@@ -211,6 +211,7 @@ export class LedgerWithdrawService {
     }
     return {
       id: t.bizRef,
+      transferNo: t.transferNo,
       holderId: t.fromAccountId,
       amount: t.amount,
       status,
