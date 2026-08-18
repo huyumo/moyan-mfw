@@ -650,6 +650,8 @@ interface SelectOptionItem {
 - 有差异（diffCount>0）的报告为 `1=差异待处理`，待人工 applyFix；
 - 对某账户执行 `PUT /reconcile/fix/:accountId` 修复成功后，包含该账户差异的待处理报告自动联动置为 `2=已处理`。
 
+**触发方式（triggerType）**：`1=手动触发`（HTTP 手动触发或 runAll() 无参调用）、`2=外部调度`（定时任务调用 `runAll('scheduler')`）。
+
 #### GET /reconcile/account/:accountId - 单账户对账
 
 **权限**：`对账`

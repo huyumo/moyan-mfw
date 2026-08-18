@@ -39,8 +39,10 @@ export class LedgerReconcileService {
 
       // 写报告（通过 storage 的 dataSource 落库；此处简化用 entity manager）
       // 注：报告实体由 module forFeature 注册，此处直接用 storage.ctx 落库
+      // triggerType：1=手动触发 2=外部调度（按 triggerBy 来源判定，如调度器传入 'scheduler'）
       // status：1=差异待处理（有差异账户，等人工 applyFix）；2=已处理（无差异，无需处理）
-      const report = { id: reportId, triggerType: 1, triggerBy: triggerBy ?? null, totalAccounts, diffCount: diffs.length, diffs, status: diffs.length > 0 ? 1 : 2 }
+      const triggerType = triggerBy === 'scheduler' ? 2 : 1
+      const report = { id: reportId, triggerType, triggerBy: triggerBy ?? null, totalAccounts, diffCount: diffs.length, diffs, status: diffs.length > 0 ? 1 : 2 }
       await this.persistReport(report)
 
       if (diffs.length > 0) {
