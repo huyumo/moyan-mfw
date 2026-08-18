@@ -39,7 +39,8 @@ export class LedgerReconcileService {
 
       // 写报告（通过 storage 的 dataSource 落库；此处简化用 entity manager）
       // 注：报告实体由 module forFeature 注册，此处直接用 storage.ctx 落库
-      const report = { id: reportId, triggerType: 1, triggerBy: triggerBy ?? null, totalAccounts, diffCount: diffs.length, diffs, status: 1 }
+      // status：1=差异待处理（有差异账户，等人工 applyFix）；2=已处理（无差异，无需处理）
+      const report = { id: reportId, triggerType: 1, triggerBy: triggerBy ?? null, totalAccounts, diffCount: diffs.length, diffs, status: diffs.length > 0 ? 1 : 2 }
       await this.persistReport(report)
 
       if (diffs.length > 0) {
@@ -73,15 +74,36 @@ export class LedgerReconcileService {
 
   /**
    * 增量修复（人工确认后执行）
-   * - 先锁账户行 -> 重读 Σ -> UPDATE balance + INSERT 调整分录 原子执行 -> 复验
+   * - 先锁账户行 -> 重读 Σ -> INSERT 调整分录 原子执行 -> 复验
    * - 大额 diff 只告警转人工
+   * - 修复成功后把包含该账户差异的报告标记为已处理（status=2）
    */
   async applyFix(accountId: string, operator?: { id?: string; text?: string }): Promise<{ fixed: boolean; diff: string }> {
     const result = await this.storage.applyFix(accountId, operator)
     if (!result.fixed) {
       this.logger.error(`修复失败或需人工介入: account=${accountId}, diff=${result.diff}`)
+      return result
     }
+    // 联动：包含该账户差异的待处理报告置为已处理（SQL 匹配报告 diffs JSON 中的 accountId）
+    await this.markReportsHandled(accountId)
     return result
+  }
+
+  /** 标记包含指定账户差异的报告为已处理（diffs JSON 数组按 accountId 匹配） */
+  private async markReportsHandled(accountId: string): Promise<void> {
+    const storage = this.storage as any
+    if (!storage?.ctx?.reportRepo) return
+    const repo = storage.ctx.reportRepo()
+    try {
+      await repo
+        .createQueryBuilder()
+        .update()
+        .set({ status: 2 })
+        .where(`status = 1 AND JSON_CONTAINS(diffs, JSON_OBJECT('accountId', :accountId))`, { accountId })
+        .execute()
+    } catch (err: any) {
+      this.logger.warn(`报告状态联动更新失败（不影响修复结果）: ${err?.message}`)
+    }
   }
 
   /** 持久化报告（通过 storage context） */

@@ -94,7 +94,11 @@
     <section class="detail-section">
       <h4 class="section-title">收款方明细</h4>
       <el-table :data="detail.toAccounts" size="small" border>
-        <el-table-column prop="account" label="账户ID" min-width="180" show-overflow-tooltip />
+        <el-table-column label="账户ID" min-width="180">
+          <template #default="{ row }">
+            <span class="mono copyable" title="点击复制" @click="copyToClipboard(row.account)">{{ row.account }}</span>
+          </template>
+        </el-table-column>
         <el-table-column label="金额" width="160" align="right">
           <template #default="{ row }">{{ formatAmount(row.amount, detail.currency) }}</template>
         </el-table-column>

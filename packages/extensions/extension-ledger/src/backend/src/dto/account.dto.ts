@@ -45,6 +45,11 @@ export class OpenAccountDto {
 
 /** 账户查询 DTO */
 export class QueryAccountDto {
+  @ApiPropertyOptional({ description: '账户ID（精确筛选）' })
+  @IsOptional()
+  @IsString()
+  id?: string
+
   @ApiPropertyOptional({ description: '持有者ID' })
   @IsOptional()
   @IsString()

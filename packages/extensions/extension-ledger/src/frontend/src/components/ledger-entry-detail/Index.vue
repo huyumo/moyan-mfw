@@ -42,13 +42,43 @@
         </div>
         <div class="info-row">
           <span class="info-label">变更后余额</span>
-          <span class="info-value">{{ formatAmount(detail.balanceAfter, detail.currency || 'CNY') }}</span>
+          <span class="info-value">
+            {{ formatAmount(detail.balanceAfter, detail.currency || 'CNY') }}
+            <el-tooltip
+              v-if="detail.balanceBefore === detail.balanceAfter"
+              content="出账方余额在制单预占时已扣减，入账时仅释放占用，故前后不变"
+              placement="top"
+            >
+              <el-tag size="small" type="info" style="margin-left: 6px; cursor: help">预占已扣</el-tag>
+            </el-tooltip>
+          </span>
         </div>
         <div class="info-row">
           <span class="info-label">入账时间</span>
           <span class="info-value">
             <MfwDateFormat :value="detail.createdAt" />
           </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 对方账户（同交易单的另一侧分录；异步拉取同单分录匹配） -->
+    <section v-if="counterpart" class="detail-section">
+      <h4 class="section-title">对方账户</h4>
+      <div class="info-grid">
+        <div class="info-row full">
+          <span class="info-label">对方账户ID</span>
+          <span class="info-value mono copyable" title="点击复制" @click="copyToClipboard(counterpart.accountId)">{{ counterpart.accountId }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">对方方向</span>
+          <span class="info-value">
+            <el-tag :type="directionTagType[counterpart.direction] as any" size="small">{{ directionLabel[counterpart.direction] || '-' }}</el-tag>
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">对方符号金额</span>
+          <span class="info-value">{{ formatAmount(counterpart.signedAmount, counterpart.currency || detail.currency || 'CNY') }}</span>
         </div>
       </div>
     </section>
@@ -61,15 +91,30 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { MfwDateFormat } from 'moyan-mfw-base/frontend'
 import { formatAmount, copyToClipboard, directionLabel, directionTagType } from '../../views/ledger/shared'
+import { ApiLedgerListEntries, type LedgerEntryItem } from '../../apis/ledger'
 
 defineOptions({ name: 'MfwLedgerEntryDetail' })
 
 /** MfwPopup 传入属性：整行分录数据 */
 const props = defineProps<{ detail: Record<string, any> }>()
 
-void props
+/** 对方账户分录（同交易单、账户不同；无则隐藏区块） */
+const counterpart = ref<LedgerEntryItem | null>(null)
+
+onMounted(async () => {
+  try {
+    const res = await new ApiLedgerListEntries({
+      query: { transferNo: props.detail.transferNo, page: 1, pageSize: 20 },
+    })
+    const other = (res?.items ?? []).find((e: LedgerEntryItem) => e.accountId !== props.detail.accountId)
+    counterpart.value = other ?? null
+  } catch {
+    counterpart.value = null // 拉取失败静默（对方账户为增强展示，不影响主信息）
+  }
+})
 </script>
 
 <style scoped>

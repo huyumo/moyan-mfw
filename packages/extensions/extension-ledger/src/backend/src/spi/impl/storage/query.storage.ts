@@ -129,6 +129,7 @@ export class QueryStorage {
   async queryAccounts(filter: AccountQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }> {
     const em = manager ?? this.ctx.dataSource.manager
     const qb = this.ctx.accountRepo(em).createQueryBuilder('a')
+    if (filter.id) qb.andWhere('a.id = :id', { id: filter.id })
     if (filter.holderId) qb.andWhere('a.holderId = :holderId', { holderId: filter.holderId })
     if (filter.tag) qb.andWhere('a.tag = :tag', { tag: filter.tag })
     if (filter.currency) qb.andWhere('a.currency = :currency', { currency: filter.currency })

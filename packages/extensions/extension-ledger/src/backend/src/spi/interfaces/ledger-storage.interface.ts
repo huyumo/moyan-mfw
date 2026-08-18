@@ -206,6 +206,8 @@ export interface TransferQueryFilter {
 
 /** 账户查询过滤 */
 export interface AccountQueryFilter {
+  /** 账户 ID 精确筛选（管理端按 ID 定位账户） */
+  id?: string
   holderId?: string
   tag?: string
   currency?: string

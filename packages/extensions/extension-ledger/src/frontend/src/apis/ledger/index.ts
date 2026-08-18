@@ -145,7 +145,7 @@ export class ApiLedgerOpenAccount extends ApiCall<{ body: OpenAccountParams }, a
 
 /** 账户分页列表 */
 export class ApiLedgerListAccounts extends ApiCall<
-  { query: PageQueryParams & { holderId?: string; tag?: string; currency?: string } },
+  { query: PageQueryParams & { id?: string; holderId?: string; tag?: string; currency?: string } },
   PageResult<LedgerAccountItem>
 > {
   readonly path = '/api/ext/ledger/accounts'

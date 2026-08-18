@@ -8,16 +8,16 @@
   <MfwPageWrapper>
     <el-tabs v-model="activeTab" class="ledger-tabs">
       <el-tab-pane label="账本管理" name="accounts" lazy>
-        <AccountTab v-if="activeTab === 'accounts'" />
+        <AccountTab  />
       </el-tab-pane>
       <el-tab-pane label="交易单" name="transfers" lazy>
-        <TransferTab v-if="activeTab === 'transfers'" />
+        <TransferTab  />
       </el-tab-pane>
       <el-tab-pane label="分录流水" name="entries" lazy>
-        <EntryTab v-if="activeTab === 'entries'" />
+        <EntryTab  />
       </el-tab-pane>
       <el-tab-pane label="对账报告" name="reconcile" lazy>
-        <ReconcileTab v-if="activeTab === 'reconcile'" />
+        <ReconcileTab  />
       </el-tab-pane>
     </el-tabs>
   </MfwPageWrapper>

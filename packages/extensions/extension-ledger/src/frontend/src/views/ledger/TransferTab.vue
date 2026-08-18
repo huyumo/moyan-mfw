@@ -113,6 +113,14 @@ const searchTemplate = computed<SearchTemplateItem[]>(() => {
   })
   return [
     {
+      key: 'fromAccountId',
+      label: '转出方账户ID',
+      type: 'input' as const,
+      placeholder: '转出方账户ID',
+      elProps: { clearable: true },
+      testId: 'ledger-transfer-search-from-account',
+    },
+    {
       key: 'postStatus',
       label: '入账状态',
       type: 'select' as const,
@@ -294,6 +302,7 @@ async function loadData(params: LoadParams): Promise<TableData> {
   }
   const res = await new ApiLedgerListTransfers({
     query: {
+      fromAccountId: (params.fromAccountId as string) || undefined,
       postStatus: params.postStatus !== undefined && params.postStatus !== null && params.postStatus !== '' ? String(params.postStatus) : undefined,
       bizType,
       extFields: Object.keys(extFields).length > 0 ? JSON.stringify(extFields) : undefined,

@@ -40,6 +40,14 @@ const listPageRef = ref<MfwListPageInstance>()
 
 const searchTemplate: SearchTemplateItem[] = [
   {
+    key: 'id',
+    label: '账户ID',
+    type: 'input' as const,
+    placeholder: '账户ID',
+    elProps: { clearable: true },
+    testId: 'ledger-account-search-id',
+  },
+  {
     key: 'holderId',
     label: '持有者ID',
     type: 'input' as const,
@@ -140,6 +148,7 @@ function handleDetail(row: LedgerAccountItem): void {
 async function loadData(params: LoadParams): Promise<TableData> {
   const res = await new ApiLedgerListAccounts({
     query: {
+      id: (params.id as string) || undefined,
       holderId: (params.holderId as string) || undefined,
       tag: (params.tag as string) || undefined,
       page: params.page,
