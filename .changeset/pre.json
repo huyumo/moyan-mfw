@@ -1,9 +1,7 @@
 {
   "mode": "pre",
   "tag": "beta",
-  "changesets": [
-    "auto-ec14a79d-base"
-  ],
+  "changesets": [],
   "initialVersions": {
     "moyan-mfw-backend": "1.0.0",
     "moyan-mfw-frontend": "1.0.0",
