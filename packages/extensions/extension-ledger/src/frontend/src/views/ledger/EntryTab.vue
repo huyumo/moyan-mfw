@@ -3,6 +3,7 @@
  * @fileoverview 分录流水 Tab
  * @description MfwListPage 列表（账户ID 必填单分区裁剪）；借贷方向筛选；导出（31 天限时）
  *   账户ID 直接输入查询（避免大账户量下拉加载问题）；行操作「详情」抽屉
+ *   变更前后相同时标注「预占已扣」（出账方余额在制单预占时已扣，入账时不变）
  */
 -->
 <template>
@@ -25,11 +26,11 @@
 
 <script setup lang="ts">
 import { h, ref } from 'vue'
-import { ElButton, ElMessage, ElTag } from 'element-plus'
+import { ElButton, ElMessage, ElTag, ElTooltip } from 'element-plus'
 import { MfwPageWrapper, MfwListPage, MfwPopup } from 'moyan-mfw-base/frontend'
 import type { SearchTemplateItem, TableColumnConfig, ActionColumnConfig, LoadParams, TableData, MfwListPageInstance } from 'moyan-mfw-base/frontend'
 import { ApiLedgerListEntries, ApiLedgerExportEntries, type LedgerEntryItem } from '../../apis/ledger'
-import { formatAmount, directionLabel, directionTagType } from './shared'
+import { formatAmount, copyToClipboard, directionLabel, directionTagType } from './shared'
 import LedgerEntryDetail from '../../components/ledger-entry-detail/Index.vue'
 
 defineOptions({ name: 'MfwLedgerEntryTab' })
@@ -63,12 +64,36 @@ const searchTemplate: SearchTemplateItem[] = [
     elProps: { clearable: true, options: Object.entries(directionLabel).map(([value, label]) => ({ value: Number(value), label })) },
     testId: 'ledger-entry-search-direction',
   },
+  {
+    key: 'bizType',
+    label: '交易类型',
+    type: 'input' as const,
+    placeholder: '交易类型（如 withdraw）',
+    elProps: { clearable: true },
+    testId: 'ledger-entry-search-biz',
+  },
 ]
 
 const columns: TableColumnConfig[] = [
-  { prop: 'entryNo', label: '分录单号', width: 300, cp: true },
+  {
+    prop: 'entryNo',
+    label: '分录单号',
+    width: 320,
+    render: ({ row }) =>
+      h(
+        'div',
+        { style: 'display:flex;align-items:center;gap:6px' },
+        [
+          h('span', { class: 'mono copyable', title: '点击复制', onClick: () => copyToClipboard(row.entryNo) }, row.entryNo),
+          (row as LedgerEntryItem).isReversal
+            ? h(ElTag, { size: 'small', type: 'warning' }, () => '冲正')
+            : null,
+        ],
+      ),
+  },
   { prop: 'transferNo', label: '交易单号', width: 300, cp: true },
   { prop: 'accountId', label: '账户ID', width: 300, cp: true },
+  { prop: 'bizType', label: '业务类型', width: 120 },
   {
     prop: 'direction',
     label: '方向',
@@ -95,7 +120,25 @@ const columns: TableColumnConfig[] = [
     label: '变更后',
     width: 180,
     align: 'right',
-    formatter: 'formatAmount',
+    render: ({ row }) =>
+      row.balanceBefore === row.balanceAfter
+        ? h(
+            ElTooltip,
+            { content: '出账方余额在制单预占时已扣减，入账时仅释放占用，故前后不变', placement: 'top' },
+            {
+              default: () => [
+                formatAmount(row.balanceAfter, row.currency ?? 'CNY'),
+                h(ElTag, { size: 'small', type: 'info', style: { marginLeft: '6px', cursor: 'help' } }, () => '预占已扣'),
+              ],
+            },
+          )
+        : formatAmount(row.balanceAfter, row.currency ?? 'CNY'),
+  },
+  {
+    prop: 'note',
+    label: '备注',
+    minWidth: 180,
+    render: ({ row }) => (row.note ? String(row.note) : '-'),
   },
   { prop: 'createdAt', label: '时间', minWidth: 170, formatter: 'dateTime' },
 ]
@@ -141,6 +184,7 @@ async function loadData(params: LoadParams): Promise<TableData> {
       accountId: params.accountId as string,
       transferNo: (params.transferNo as string) || undefined,
       direction: params.direction !== undefined && params.direction !== null && params.direction !== '' ? Number(params.direction) : undefined,
+      bizType: (params.bizType as string) || undefined,
       page: params.page,
       pageSize: params.pageSize,
     },

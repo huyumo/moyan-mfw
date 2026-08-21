@@ -9,6 +9,7 @@ export {
   PostStatusDict,
   HoldTypeDict,
   TransferModeDict,
+  ReversalStatusDict,
 } from './enums/ledger'
 export { LEDGER_EXTENSION_PERMISSION_VALUES } from './permission-values'
 export type { LedgerExtensionPermissionName } from './permission-values'
@@ -23,6 +24,7 @@ export type {
   ReverseTransferInput,
   HolderRef,
   TransferView,
+  ReversalView,
   AccountView,
   EntryView,
   AuditFlowStatus,

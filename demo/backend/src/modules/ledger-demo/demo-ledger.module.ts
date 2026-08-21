@@ -37,7 +37,7 @@ import { DemoLedgerSpiController } from './controllers/demo-ledger-spi.controlle
       notifierImpl: DemoLedgerNotifier,
       fieldExtensionImpl: DemoFieldExtension,
       // ── 业务注册制白名单 ──
-      accountTags: ['default', 'merchant', 'user', 'system', 'funding'],
+      accountTags: ['default', 'merchant', 'user', 'system', 'funding', 'stress'],
       bizTypes: ['order_pay', 'refund', 'recharge', 'reverse', 'promo_reward', 'task_reward', 'exchange', 'withdraw'],
       // ── 业务扩展字段 → 预留索引位映射（不同交易类型字段不同，映射到固定 4 个索引位） ──
       bizExtMappings: {
@@ -132,8 +132,8 @@ import { DemoLedgerSpiController } from './controllers/demo-ledger-spi.controlle
           ],
         },
       },
-      // ── 消费参数 ──
-      consumerConcurrency: 10,
+      // ── 消费参数（consumerConcurrency 可经环境变量调大，供并发压测验证入账吞吐上限） ──
+      consumerConcurrency: Number(process.env.LEDGER_CONSUMER_CONCURRENCY ?? 10),
       maxRetry: 3,
       retryBackoffMs: 1000,
       // ── 审核流模板（LedgerWithdrawService；字段名/文案可配，默认即提现场景） ──

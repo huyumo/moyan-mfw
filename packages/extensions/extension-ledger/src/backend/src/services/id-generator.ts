@@ -13,6 +13,14 @@ export function generateTransferNo(): string {
   return `T${date}${rand}`
 }
 
+/** 生成冲正单号：R + yyyyMMdd + 16位随机 hex（共 25 字符） */
+export function generateReversalNo(): string {
+  const d = new Date()
+  const date = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`
+  const rand = randomBytes(8).toString('hex').toUpperCase()
+  return `R${date}${rand}`
+}
+
 /** 生成分录单号：transferNo + -D{n} / -C{n}（借/贷 + 序号） */
 export function generateEntryNo(transferNo: string, direction: number, seq: number): string {
   const prefix = direction === 1 ? 'D' : 'C'

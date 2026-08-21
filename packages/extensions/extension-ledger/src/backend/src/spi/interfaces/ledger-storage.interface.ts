@@ -18,6 +18,7 @@ import type {
   AmountString,
   AccountView,
   TransferView,
+  ReversalView,
   EntryView,
 } from 'moyan-mfw-extension-ledger/shared'
 
@@ -75,12 +76,30 @@ export interface ILedgerStorage {
   createTransferWithReserve(input: CreateTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: TransferView; created: boolean }>
 
   // ── 审核 ──
-  /** 审核通过（NOT_READY->PENDING 单条原子写）；驳回（解冻+REJECTED）。返回影响行数 */
+  /**
+   * 审核通过（NOT_READY->PENDING 单条原子写）；驳回（解冻+REJECTED）。返回影响行数
+   * 契约：入参 AuditTransferInput.accountNotes（accountId -> { note, noteExtra }）须持久化到交易单
+   * （默认实现写入 accountNotes 列），供流水查询按账户派生展示；不影响 auditNotes 语义
+   */
   audit(input: AuditTransferInput, auditor?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ affected: number; action: 'approved' | 'rejected' }>
 
-  // ── 冲正 ──
-  /** 创建冲正单（原单须 POSTED 且未冲正；唯一索引防双冲正） */
-  createReversal(input: ReverseTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ transfer: TransferView; created: boolean }>
+  // ── 冲正（独立冲正记录，同步事务，不入 ext_ledger_transfer） ──
+  /**
+   * 冲正（原单须 POSTED 且未冲正；同步事务完成，**不入 ext_ledger_transfer**）
+   * 契约：
+   *   - 全额冲正：原单各收款方将其收款金额各自退回原转出方（fromAccountId）
+   *   - 持久化到 ext_ledger_reversal（reversalNo 主键；originalTransferNo 唯一=防双冲正；bizRef+bizType 唯一=幂等）
+   *   - 冲正腿分录写入分录表（isReversal=1，transferNo 挂原单号），保证对账恒等式与账户流水连续
+   *   - **不更新账户 totalIncome/totalOutcome**（资金回流非新增收支，不影响累计转入/转出）
+   *   - 原单 reversedFromTransferNo 永久记录冲正单号；失败整体回滚（含余额不足校验）
+   *   - 幂等：bizRef+bizType 命中返回已有记录（created=false）
+   * @returns { reversal, created }
+   */
+  createReversal(input: ReverseTransferInput, maker?: { id?: string; text?: string }, manager?: EntityManager): Promise<{ reversal: ReversalView; created: boolean }>
+  /** 查冲正记录 */
+  getReversal(reversalNo: string, manager?: EntityManager): Promise<ReversalView | null>
+  /** 冲正记录分页（审计入口；冲正不入交易单表，故与 queryTransfers 独立） */
+  queryReversals(filter: ReversalQueryFilter, manager?: EntityManager): Promise<{ items: ReversalView[]; total: number }>
 
   // ── 消费入账协议（CAS fencing） ──
   /** 认领（PENDING->POSTING + claim_token + claim_at，影响 0 行=已被处理） */
@@ -121,16 +140,24 @@ export interface ILedgerStorage {
   getTransfer(transferNo: string, manager?: EntityManager): Promise<TransferView | null>
   /** 按幂等键查交易单 */
   findTransferByBizRef(bizRef: string, bizType: string, manager?: EntityManager): Promise<TransferView | null>
-  /** 流水分页（必带 account_id，单分区裁剪） */
+  /**
+   * 流水分页（必带 account_id，单分区裁剪）
+   * 契约：返回**富化分录**（EntryView），携带交易单上下文（bizType/description/fromAccountId/toAccounts）
+   * 与按账户派生的审核备注（note/noteExtra，取自交易单 accountNotes[accountId]）；实现方式自由（JOIN/反规范化/分片内聚）
+   */
   queryEntries(filter: EntryQueryFilter, manager?: EntityManager): Promise<{ items: EntryView[]; total: number }>
-  /** 交易单分页 */
+  /**
+   * 交易单分页
+   * 契约：支持 from 侧（fromAccountId/fromAccountType/fromAccountHolderIds）与 to 侧（toAccountId/toHolderId/toHolderIds）
+   * 双向过滤；to 侧命中"任一收款方为该账户"的交易单（默认实现经分录表 direction=借 达成）
+   */
   queryTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ items: TransferView[]; total: number }>
   /** 账户分页 */
   queryAccounts(filter: AccountQueryFilter, manager?: EntityManager): Promise<{ items: AccountView[]; total: number }>
   /** 对账报告分页 */
   queryReports(filter: { status?: number; page?: number; pageSize?: number }, manager?: EntityManager): Promise<{ items: any[]; total: number }>
   /**
-   * 交易单聚合（COUNT + SUM(amount)，与 queryTransfers 同源过滤条件）
+   * 交易单聚合（COUNT + SUM(amount)，与 queryTransfers 同源过滤条件，含 from/to 双侧）
    * 供读侧汇总（如提现成功金额/笔数）；filter 支持 postStatusExclude 排除口径
    */
   sumTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ totalCount: number; totalAmount: AmountString }>
@@ -170,9 +197,12 @@ export interface ScavenigeResult {
 
 /** 流水查询过滤 */
 export interface EntryQueryFilter {
+  /** 账户ID（**必填**，分区裁剪前提；契约层面约束，无 accountId 视为不支持/全表扫） */
   accountId?: string
   transferNo?: string
   direction?: number
+  /** 交易类型筛选（按交易单 bizType 匹配；实现方可经 transferNo JOIN 交易单达成） */
+  bizType?: string
   /** 时间范围（必填以利用分区/索引） */
   startDate?: Date
   endDate?: Date
@@ -182,6 +212,10 @@ export interface EntryQueryFilter {
 
 /** 交易单查询过滤 */
 export interface TransferQueryFilter {
+  /** 交易单号精确筛选（管理端按单号定位） */
+  transferNo?: string
+  /** 业务幂等键精确筛选（管理端按业务幂等键定位；与 bizType 组合唯一） */
+  bizRef?: string
   postStatus?: number | number[]
   /** 排除指定入账状态（NOT IN 语义；如成功口径 = postStatus NOT IN (FAILED,CANCELLED,REJECTED)） */
   postStatusExclude?: number[]
@@ -192,6 +226,15 @@ export interface TransferQueryFilter {
   fromAccountType?: string
   /** 转出账户主体 ID 集合筛选（JOIN ext_ledger_account，如用户 ID 列表） */
   fromAccountHolderIds?: string[]
+  /**
+   * 收款方账户 ID 精确筛选（to 侧）：命中"任一收款方为该账户"的交易单
+   * 契约语义：一对多转账中只要某收款方命中即返回该交易单；实现方可经分录表（direction=借 的分录 accountId）达成
+   */
+  toAccountId?: string
+  /** 收款方主体 ID 精确筛选（to 侧，JOIN ext_ledger_account 按 holderId 匹配） */
+  toHolderId?: string
+  /** 收款方主体 ID 集合筛选（to 侧） */
+  toHolderIds?: string[]
   startDate?: Date
   endDate?: Date
   /**
@@ -211,6 +254,22 @@ export interface AccountQueryFilter {
   holderId?: string
   tag?: string
   currency?: string
+  page?: number
+  pageSize?: number
+}
+
+/** 冲正记录查询过滤 */
+export interface ReversalQueryFilter {
+  /** 冲正单号精确筛选 */
+  reversalNo?: string
+  /** 被冲正的原交易单号精确筛选 */
+  originalTransferNo?: string
+  /** 冲正操作类型（如 reverse） */
+  bizType?: string
+  /** 原转出方账户 ID（资金退回目的地） */
+  fromAccountId?: string
+  startDate?: Date
+  endDate?: Date
   page?: number
   pageSize?: number
 }

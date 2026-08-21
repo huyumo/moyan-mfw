@@ -13,7 +13,7 @@ import {
   type LedgerModuleOptions,
 } from '../spi/interfaces'
 import type { ILedgerStorage, ILedgerQueue, ILedgerNotifier, ILedgerFieldExtension, TransferQueryFilter } from '../spi/interfaces'
-import type { CreateTransferInput, AuditTransferInput, ReverseTransferInput, TransferView, AccountView, AmountString, HolderRef, EntryView } from 'moyan-mfw-extension-ledger/shared'
+import type { CreateTransferInput, AuditTransferInput, ReverseTransferInput, TransferView, ReversalView, AccountView, AmountString, HolderRef, EntryView } from 'moyan-mfw-extension-ledger/shared'
 import { InsufficientBalanceError, InvalidTransferError } from '../spi/impl/storage/transfer.storage'
 import { LedgerAccountService } from './ledger-account.service'
 
@@ -130,18 +130,12 @@ export class LedgerTransferService {
     return { affected, action }
   }
 
-  /** 冲正（原单须 POSTED；复用制单+预占+消费管线） */
-  async reverse(input: ReverseTransferInput, maker?: { id?: string; text?: string }): Promise<{ transfer: TransferView; created: boolean }> {
-    const { transfer, created } = await this.storage.createReversal(input, maker)
-    if (created) {
-      try {
-        await this.queue.enqueue(transfer.transferNo)
-        await this.storage.markEnqueued(transfer.transferNo)
-      } catch (err: any) {
-        this.logger.warn(`冲正单入队失败 ${transfer.transferNo}（兜底扫描将补发）: ${err?.message}`)
-      }
-    }
-    return { transfer, created }
+  /**
+   * 冲正（原单须 POSTED；同步事务完成，不入 ext_ledger_transfer、不更新累计转入/转出）
+   * 全额冲正：原单各收款方将其收款金额各自退回原转出方；幂等 bizRef+bizType 命中返回已有记录
+   */
+  async reverse(input: ReverseTransferInput, maker?: { id?: string; text?: string }): Promise<{ reversal: ReversalView; created: boolean }> {
+    return this.storage.createReversal(input, maker)
   }
 
   /** 人工重推（FAILED/CANCELLED->PENDING + 重置 retry + 入队） */
@@ -203,6 +197,16 @@ export class LedgerTransferService {
   /** 流水分页 */
   async queryEntries(filter: any): Promise<{ items: EntryView[]; total: number }> {
     return this.storage.queryEntries(filter)
+  }
+
+  /** 冲正记录分页（审计入口；冲正不入交易单表，独立查询） */
+  async queryReversals(filter: any): Promise<{ items: ReversalView[]; total: number }> {
+    return this.storage.queryReversals(filter)
+  }
+
+  /** 查冲正记录 */
+  async getReversal(reversalNo: string): Promise<ReversalView | null> {
+    return this.storage.getReversal(reversalNo)
   }
 }
 

@@ -68,3 +68,13 @@ export class TransferModeDict {
   /** 一对多转账（最多 100 个收款方） */
   @DictEntry({ label: '一对多', type: 'warning' }) static ONE_TO_MANY = 2
 }
+
+/**
+ * 冲正状态（冲正记录表状态）
+ * 冲正为同步事务完成（低频管理操作），成功即 POSTED；失败整体回滚无中间态
+ */
+@DictMeta({ key: 'ledger_reversal_status', label: '冲正状态', module: '记账' })
+export class ReversalStatusDict {
+  /** 已冲正（资金已按原单反向退回） */
+  @DictEntry({ label: '已冲正', type: 'success' }) static POSTED = 1
+}

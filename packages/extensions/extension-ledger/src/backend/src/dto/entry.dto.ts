@@ -21,6 +21,11 @@ export class QueryEntryDto {
   @IsNumber()
   direction?: number
 
+  @ApiPropertyOptional({ description: '交易类型（按交易单 bizType 过滤；须带 accountId）' })
+  @IsOptional()
+  @IsString()
+  bizType?: string
+
   @ApiPropertyOptional({ description: '起始时间（导出强制必填，单次最多31天）' })
   @IsOptional()
   @IsDateString()

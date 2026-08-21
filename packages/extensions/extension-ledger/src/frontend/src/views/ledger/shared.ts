@@ -10,6 +10,7 @@ import {
   PostStatusDict,
   HoldTypeDict,
   TransferModeDict,
+  ReversalStatusDict,
 } from 'moyan-mfw-extension-ledger/shared'
 
 /** 借贷方向：标签 */
@@ -70,6 +71,16 @@ export const holdTypeLabel: Record<number, string> = {
 export const transferModeLabel: Record<number, string> = {
   [TransferModeDict.ONE_TO_ONE]: '一对一',
   [TransferModeDict.ONE_TO_MANY]: '一对多',
+}
+
+/** 冲正状态：标签 */
+export const reversalStatusLabel: Record<number, string> = {
+  [ReversalStatusDict.POSTED]: '已冲正',
+}
+
+/** 冲正状态：标签类型 */
+export const reversalStatusTagType: Record<number, string> = {
+  [ReversalStatusDict.POSTED]: 'success',
 }
 
 /**

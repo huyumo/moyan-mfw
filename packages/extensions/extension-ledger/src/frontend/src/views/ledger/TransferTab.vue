@@ -38,10 +38,12 @@ import {
   ApiLedgerReverseTransfer,
   ApiLedgerRepostTransfer,
   ApiLedgerCancelTransfer,
+  ApiLedgerGetReversal,
   type LedgerTransferItem,
 } from '../../apis/ledger'
 import {
   formatAmount,
+  copyToClipboard,
   auditStatusLabel,
   auditStatusTagType,
   postStatusLabel,
@@ -54,6 +56,7 @@ import {
 import LedgerTransferForm from '../../components/ledger-transfer-form/Index.vue'
 import LedgerAuditForm from '../../components/ledger-audit-form/Index.vue'
 import LedgerTransferDetail from '../../components/ledger-transfer-detail/Index.vue'
+import LedgerReversalDetail from '../../components/ledger-reversal-detail/Index.vue'
 
 defineOptions({ name: 'MfwLedgerTransferTab' })
 
@@ -112,6 +115,22 @@ const searchTemplate = computed<SearchTemplateItem[]>(() => {
     }
   })
   return [
+    {
+      key: 'transferNo',
+      label: '交易单号',
+      type: 'input' as const,
+      placeholder: '交易单号（精确）',
+      elProps: { clearable: true },
+      testId: 'ledger-transfer-search-transfer-no',
+    },
+    {
+      key: 'bizRef',
+      label: '业务幂等键',
+      type: 'input' as const,
+      placeholder: '业务幂等键（精确）',
+      elProps: { clearable: true },
+      testId: 'ledger-transfer-search-bizref',
+    },
     {
       key: 'fromAccountId',
       label: '转出方账户ID',
@@ -176,7 +195,22 @@ watch(
 /** 基础列 + 当前 bizType 的扩展列（值取 row.extFields 语义对象，无值显示 '-'） */
 const columns = computed<TableColumnConfig[]>(() => {
   const base: TableColumnConfig[] = [
-    { prop: 'transferNo', label: '交易单号', width: 270, cp: true },
+    {
+      prop: 'transferNo',
+      label: '交易单号',
+      width: 300,
+      render: ({ row }) =>
+        h(
+          'div',
+          { style: 'display:flex;align-items:center;gap:6px' },
+          [
+            h('span', { class: 'mono copyable', title: '点击复制', onClick: () => copyToClipboard(row.transferNo) }, row.transferNo),
+            row.reversedFromTransferNo
+              ? h(ElTag, { size: 'small', type: 'warning', style: 'cursor:pointer', title: '查看冲正记录', onClick: () => handleReversalDetail(row.reversedFromTransferNo) }, () => '已冲正')
+              : null,
+          ],
+        ),
+    },
     { prop: 'bizRef', label: '业务幂等键', width: 300, cp: true },
     { prop: 'bizType', label: '业务类型', width: 120 },
     { prop: 'fromAccountId', label: '转出方', width: 300, cp: true },
@@ -302,6 +336,8 @@ async function loadData(params: LoadParams): Promise<TableData> {
   }
   const res = await new ApiLedgerListTransfers({
     query: {
+      transferNo: (params.transferNo as string) || undefined,
+      bizRef: (params.bizRef as string) || undefined,
       fromAccountId: (params.fromAccountId as string) || undefined,
       postStatus: params.postStatus !== undefined && params.postStatus !== null && params.postStatus !== '' ? String(params.postStatus) : undefined,
       bizType,
@@ -324,14 +360,21 @@ function handleCreate(): void {
   })
 }
 
-/** 审核弹窗（通过/驳回共用，传 action） */
+/** 审核弹窗（通过/驳回共用，传 action；通过时传涉及账户列表供按账户填写备注） */
 function handleAudit(row: LedgerTransferItem, action: 1 | 2): void {
+  const accounts = [
+    { accountId: row.fromAccountId, role: '转出方' },
+    ...(row.toAccounts ?? []).map((t, i) => ({
+      accountId: t.account,
+      role: (row.toAccounts?.length ?? 0) === 1 ? '收款方' : `收款方${i + 1}`,
+    })),
+  ]
   MfwPopup.open({
     title: action === 1 ? `审核通过 - ${row.transferNo}` : `驳回 - ${row.transferNo}`,
     type: 'dialog',
     component: LedgerAuditForm,
-    elProps: { transferNo: row.transferNo, action },
-    popupProps: { width: 600 },
+    elProps: { transferNo: row.transferNo, action, accounts },
+    popupProps: { width: 680 },
     on: { confirm: () => listPageRef.value?.refresh() },
   })
 }
@@ -348,7 +391,7 @@ function handleDetail(row: LedgerTransferItem): void {
   })
 }
 
-/** 冲正（危险操作：confirm + try/catch） */
+/** 冲正（危险操作：confirm + try/catch；成功展示冲正单号） */
 async function handleReverse(row: LedgerTransferItem): Promise<void> {
   try {
     const { value } = await ElMessageBox.prompt(
@@ -359,10 +402,38 @@ async function handleReverse(row: LedgerTransferItem): Promise<void> {
         inputValidator: (v: string) => (v ? true : '必填'),
       },
     )
-    await new ApiLedgerReverseTransfer({ body: { originalTransferNo: row.transferNo, bizRef: value, bizType: 'reverse' } }, { hintSuccess: true } as any)
+    const res = await new ApiLedgerReverseTransfer({ body: { originalTransferNo: row.transferNo, bizRef: value, bizType: 'reverse' } })
+    const reversal = (res as any)?.data?.reversal
+    if (reversal?.reversalNo) {
+      ElMessage.success(`冲正成功：${reversal.reversalNo}（资金已按原单全额退回，不影响累计转入/转出）`)
+    } else {
+      ElMessage.success('冲正成功')
+    }
     listPageRef.value?.refresh()
   } catch {
     return // 用户取消或失败
+  }
+}
+
+/** 已冲正原单的联动入口：按冲正单号拉取并打开冲正记录详情抽屉 */
+async function handleReversalDetail(reversalNo: string): Promise<void> {
+  try {
+    const res = await new ApiLedgerGetReversal({ params: { reversalNo } })
+    const reversal = res as any
+    if (!reversal) {
+      ElMessage.warning(`未找到冲正记录 ${reversalNo}`)
+      return
+    }
+    MfwPopup.open({
+      title: `冲正记录 - ${reversalNo}`,
+      type: 'drawer',
+      position: 'rtl',
+      component: LedgerReversalDetail,
+      elProps: { detail: reversal },
+      popupProps: { size: 800 },
+    })
+  } catch {
+    ElMessage.warning(`加载冲正记录失败 ${reversalNo}`)
   }
 }
 

@@ -115,8 +115,11 @@ export class LedgerTransfer extends Base {
   @Column({ type: 'text', nullable: true, comment: '上次错误信息' })
   lastError: string | null
 
-  /** 冲正关联原单号（冲正单非空，唯一索引防双冲正；原单为 null） */
-  @Column({ type: 'varchar', length: 40, nullable: true, comment: '冲正关联原单号' })
+  /**
+   * 冲正单号（原单被冲正后**永久**记录，用于展示"已冲正"与关联冲正记录；NULL=未被冲正）
+   * 防双冲正主约束在 ext_ledger_reversal.originalTransferNo（唯一），本列唯一索引兜底
+   */
+  @Column({ type: 'varchar', length: 40, nullable: true, comment: '冲正单号（原单被冲正后永久记录；NULL=未被冲正）' })
   reversedFromTransferNo: string | null
 
   /** 描述/备注 */
@@ -146,6 +149,10 @@ export class LedgerTransfer extends Base {
   /** 审核备注 */
   @Column({ type: 'text', nullable: true, comment: '审核备注' })
   auditNotes: string | null
+
+  /** 审核按账户备注（accountId -> { note, noteExtra }；审核时写入，流水查询按账户派生） */
+  @Column({ type: 'json', nullable: true, comment: '审核账户备注' })
+  accountNotes: Record<string, { note?: string; noteExtra?: Record<string, unknown> }> | null
 
   /** 扩展附录 */
   @Column({ type: 'json', nullable: true, comment: '扩展附录' })

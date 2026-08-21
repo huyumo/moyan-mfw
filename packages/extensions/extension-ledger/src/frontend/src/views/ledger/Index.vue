@@ -1,7 +1,7 @@
 <!--
 /**
  * @fileoverview 借贷记账管理页面
- * @description 四视图容器：账本管理 / 交易单 / 分录流水 / 对账报告
+ * @description 五视图容器：账本管理 / 交易单 / 分录流水 / 冲正记录 / 对账报告
  */
 -->
 <template>
@@ -16,6 +16,9 @@
       <el-tab-pane label="分录流水" name="entries" lazy>
         <EntryTab  />
       </el-tab-pane>
+      <el-tab-pane label="冲正记录" name="reversals" lazy>
+        <ReversalTab  />
+      </el-tab-pane>
       <el-tab-pane label="对账报告" name="reconcile" lazy>
         <ReconcileTab  />
       </el-tab-pane>
@@ -28,6 +31,7 @@ import { onMounted, ref } from 'vue'
 import AccountTab from './AccountTab.vue'
 import TransferTab from './TransferTab.vue'
 import EntryTab from './EntryTab.vue'
+import ReversalTab from './ReversalTab.vue'
 import ReconcileTab from './ReconcileTab.vue'
 import { MfwPageWrapper } from 'moyan-mfw-base/frontend'
 import { registerBizTypeExtMeta } from './shared'

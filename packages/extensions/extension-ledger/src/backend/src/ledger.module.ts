@@ -28,7 +28,7 @@ import {
   EventNotifier,
   DefaultFieldExtension,
 } from './spi/impl'
-import { DefaultLedgerAccount, LedgerTransfer, LedgerEntry, LedgerReconcileReport } from './entities'
+import { DefaultLedgerAccount, LedgerTransfer, LedgerEntry, LedgerReconcileReport, LedgerReversal } from './entities'
 import {
   LedgerAccountService,
   LedgerTransferService,
@@ -43,6 +43,7 @@ import {
   LedgerEntryController,
   LedgerReconcileController,
   LedgerMetaController,
+  LedgerReversalController,
 } from './controller'
 
 @Module({})
@@ -53,7 +54,7 @@ export class LedgerModule {
     return {
       module: LedgerModule,
       imports: [
-        TypeOrmModule.forFeature([accountEntity, LedgerTransfer, LedgerEntry, LedgerReconcileReport]),
+        TypeOrmModule.forFeature([accountEntity, LedgerTransfer, LedgerEntry, LedgerReconcileReport, LedgerReversal]),
         RouterModule.register([{ path: 'ext/ledger', module: LedgerModule }]),
       ],
       controllers: [
@@ -62,6 +63,7 @@ export class LedgerModule {
         LedgerEntryController,
         LedgerReconcileController,
         LedgerMetaController,
+        LedgerReversalController,
       ],
       providers: [
         // SPI 绑定（可被 options 替换）

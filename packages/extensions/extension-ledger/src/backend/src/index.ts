@@ -19,6 +19,7 @@ export {
 } from './services'
 export {
   generateTransferNo,
+  generateReversalNo,
   generateEntryNo,
   generateClaimToken,
   generateExecutorId,
@@ -33,6 +34,7 @@ export {
   LedgerTransfer,
   LedgerEntry,
   LedgerReconcileReport,
+  LedgerReversal,
 } from './entities'
 
 // SPI 接口与默认实现（供自定义适配器参考）
@@ -82,6 +84,7 @@ export type {
   ReverseTransferInput,
   HolderRef,
   TransferView,
+  ReversalView,
   AccountView,
   EntryView,
   AuditFlowStatus,

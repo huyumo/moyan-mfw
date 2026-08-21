@@ -11,6 +11,7 @@ import { StorageContext } from './storage-context'
 import type { EntryQueryFilter, TransferQueryFilter, AccountQueryFilter, ReconcileDiffItem } from '../../interfaces'
 import { mapExtFieldsToQuery } from './ext-columns.util'
 import { toTransferView, toAccountView } from './view.mapper'
+import { LedgerTransfer as LedgerTransferEntityRef } from '../../../entities'
 
 @Injectable()
 export class QueryStorage {
@@ -26,7 +27,10 @@ export class QueryStorage {
     return toTransferView(row, this.ctx.options.bizExtMappings)
   }
 
-  /** 流水分页（必带 account_id 单分区裁剪） */
+  /**
+   * 流水分页（必带 account_id 单分区裁剪）
+   * SPI 契约：返回富化分录（entry + 交易单上下文 + 按账户派生的审核备注）
+   */
   async queryEntries(filter: EntryQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }> {
     const em = manager ?? this.ctx.dataSource.manager
     const repo = this.ctx.entryRepo(em)
@@ -34,6 +38,16 @@ export class QueryStorage {
     if (filter.accountId) qb.andWhere('e.accountId = :accountId', { accountId: filter.accountId })
     if (filter.transferNo) qb.andWhere('e.transferNo = :transferNo', { transferNo: filter.transferNo })
     if (filter.direction) qb.andWhere('e.direction = :direction', { direction: filter.direction })
+    // bizType 过滤：entry 驱动 + transferNo 1:1 JOIN（transferNo 为交易单主键，COUNT 不放大；
+    // 驱动侧 entry 按 accountId 分区裁剪，代价 ∝ 账户流水量，与 bizType 总量无关）
+    if (filter.bizType) {
+      qb.innerJoin(
+        LedgerTransferEntityRef,
+        't',
+        't.transferNo = e.transferNo AND t.bizType = :bizType',
+        { bizType: filter.bizType },
+      )
+    }
     if (filter.startDate) qb.andWhere('e.createdAt >= :startDate', { startDate: filter.startDate })
     if (filter.endDate) qb.andWhere('e.createdAt < :endDate', { endDate: filter.endDate })
     qb.orderBy('e.id', 'DESC')
@@ -41,7 +55,40 @@ export class QueryStorage {
     const pageSize = filter.pageSize ?? 20
     qb.skip((page - 1) * pageSize).take(pageSize)
     const [items, total] = await qb.getManyAndCount()
-    return { items: items as any[], total }
+    return { items: await this.enrichEntries(items as any[], em), total }
+  }
+
+  /** 富化分录：按本页 transferNo 批量拉交易单上下文，合并 bizType/description/fromAccountId/toAccounts，并按 accountId 派生审核备注 note/noteExtra */
+  private async enrichEntries(items: any[], em: EntityManager): Promise<any[]> {
+    if (items.length === 0) return items
+    const transferNos = [...new Set(items.map((e) => e.transferNo))]
+    const transfers = await this.ctx
+      .transferRepo(em)
+      .createQueryBuilder('t')
+      .select(['t.transferNo', 't.bizType', 't.description', 't.fromAccountId', 't.toAccounts', 't.accountNotes'])
+      .where('t.transferNo IN (:...transferNos)', { transferNos })
+      .getMany()
+    const map = new Map<string, any>(transfers.map((t) => [t.transferNo, t]))
+    for (const e of items) {
+      const t = map.get(e.transferNo)
+      if (!t) {
+        e.bizType = null
+        e.description = null
+        e.fromAccountId = null
+        e.toAccounts = null
+        e.note = null
+        e.noteExtra = null
+        continue
+      }
+      e.bizType = t.bizType ?? null
+      e.description = t.description ?? null
+      e.fromAccountId = t.fromAccountId ?? null
+      e.toAccounts = t.toAccounts ?? null
+      const accountNote = t.accountNotes?.[e.accountId]
+      e.note = accountNote?.note ?? null
+      e.noteExtra = accountNote?.noteExtra ?? null
+    }
+    return items
   }
 
   async queryTransfers(filter: TransferQueryFilter, manager?: EntityManager): Promise<{ items: any[]; total: number }> {
@@ -79,6 +126,9 @@ export class QueryStorage {
 
   /** 交易单过滤条件公共构建（queryTransfers / sumTransfers 共用） */
   private applyTransferFilter(qb: SelectQueryBuilder<any>, filter: TransferQueryFilter): void {
+    // 交易单号/业务幂等键精确筛选（主键/幂等键点查语义，走索引）
+    if (filter.transferNo) qb.andWhere('t.transferNo = :transferNo', { transferNo: filter.transferNo })
+    if (filter.bizRef) qb.andWhere('t.bizRef = :bizRef', { bizRef: filter.bizRef })
     if (filter.postStatus !== undefined) {
       if (Array.isArray(filter.postStatus)) {
         qb.andWhere('t.postStatus IN (:...postStatus)', { postStatus: filter.postStatus })
@@ -105,6 +155,21 @@ export class QueryStorage {
       if (filter.fromAccountHolderIds && filter.fromAccountHolderIds.length > 0) {
         qb.andWhere('a.holderId IN (:...fromAccountHolderIds)', { fromAccountHolderIds: filter.fromAccountHolderIds })
       }
+    }
+    // to 侧过滤：分录表即收款方索引（direction=借 的分录 accountId = 收款方），任一收款方命中即返回交易单
+    // 守卫 isReversal：冲正腿（原转出方收到的退回）挂原单 transferNo，须排除，否则原单会被误判为"收款方=原转出方"
+    if (filter.toAccountId) {
+      qb.andWhere(
+        `t.transferNo IN (SELECT e.transferNo FROM ext_ledger_entry e WHERE e.accountId = :toAccountId AND e.direction = :dirDebit AND (e.isReversal = 0 OR e.isReversal IS NULL))`,
+        { toAccountId: filter.toAccountId, dirDebit: DirectionDict.DEBIT },
+      )
+    }
+    const toSideHolderIds = filter.toHolderIds && filter.toHolderIds.length > 0 ? filter.toHolderIds : filter.toHolderId ? [filter.toHolderId] : undefined
+    if (toSideHolderIds) {
+      qb.andWhere(
+        `t.transferNo IN (SELECT e.transferNo FROM ext_ledger_entry e JOIN ext_ledger_account a ON a.id = e.accountId AND a.deleteAt IS NULL WHERE a.holderId IN (:...toSideHolderIds) AND e.direction = :dirDebit AND (e.isReversal = 0 OR e.isReversal IS NULL))`,
+        { toSideHolderIds, dirDebit: DirectionDict.DEBIT },
+      )
     }
     if (filter.startDate) qb.andWhere('t.createdAt >= :startDate', { startDate: filter.startDate })
     if (filter.endDate) qb.andWhere('t.createdAt < :endDate', { endDate: filter.endDate })
@@ -263,7 +328,7 @@ export class QueryStorage {
     // copy：INSERT IGNORE 幂等
     const copyResult = await em.query(
       `INSERT IGNORE INTO ext_ledger_entry_archive
-       SELECT id, accountId, entryNo, transferNo, direction, signedAmount, balanceBefore, balanceAfter, extra, createdAt
+       SELECT id, accountId, entryNo, transferNo, direction, signedAmount, balanceBefore, balanceAfter, extra, isReversal, createdAt
        FROM ext_ledger_entry WHERE createdAt < ? ORDER BY createdAt, id LIMIT ?`,
       [before, batchSize],
     )

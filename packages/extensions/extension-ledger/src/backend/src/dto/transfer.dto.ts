@@ -3,7 +3,7 @@
  */
 
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsString, IsOptional, IsNotEmpty, Matches, IsBoolean, ValidateNested, ArrayMaxSize, ArrayMinSize, IsIn, IsInt, IsArray } from 'class-validator'
+import { IsString, IsOptional, IsNotEmpty, Matches, IsBoolean, ValidateNested, ArrayMaxSize, ArrayMinSize, IsIn, IsInt, IsArray, IsObject } from 'class-validator'
 import { Type } from 'class-transformer'
 
 /** 收款方明细 DTO */
@@ -91,6 +91,13 @@ export class AuditTransferDto {
   @IsOptional()
   @IsString()
   auditNotes?: string
+
+  @ApiPropertyOptional({
+    description: '按交易相关账户分别编写的审核备注（accountId -> { note: 纯文本, noteExtra: 特殊信息 }）',
+  })
+  @IsOptional()
+  @IsObject()
+  accountNotes?: Record<string, { note?: string; noteExtra?: Record<string, unknown> }>
 }
 
 /** 冲正 DTO */
@@ -132,6 +139,16 @@ export class QueryTransferDto {
   @IsInt()
   auditStatus?: number
 
+  @ApiPropertyOptional({ description: '交易单号精确筛选' })
+  @IsOptional()
+  @IsString()
+  transferNo?: string
+
+  @ApiPropertyOptional({ description: '业务幂等键精确筛选（与 bizType 组合唯一）' })
+  @IsOptional()
+  @IsString()
+  bizRef?: string
+
   @ApiPropertyOptional({ description: '业务类型' })
   @IsOptional()
   @IsString()
@@ -141,6 +158,16 @@ export class QueryTransferDto {
   @IsOptional()
   @IsString()
   fromAccountId?: string
+
+  @ApiPropertyOptional({ description: '收款方账户ID（to 侧：任一收款方命中即返回）' })
+  @IsOptional()
+  @IsString()
+  toAccountId?: string
+
+  @ApiPropertyOptional({ description: '收款方主体ID集合（to 侧，逗号分隔）' })
+  @IsOptional()
+  @IsString()
+  toHolderIds?: string
 
   @ApiPropertyOptional({
     description: '业务扩展字段等值筛选（JSON 字符串，须配 bizType；如 {"promoterId":"P888"}）',
@@ -175,4 +202,32 @@ export class BatchRepostDto {
   @ArrayMaxSize(1000)
   @ArrayMinSize(1)
   transferNos: string[]
+}
+
+/** 冲正记录查询 DTO（审计入口；冲正不入交易单表，独立查询） */
+export class QueryReversalDto {
+  @ApiPropertyOptional({ description: '冲正单号' })
+  @IsOptional()
+  @IsString()
+  reversalNo?: string
+
+  @ApiPropertyOptional({ description: '被冲正的原交易单号' })
+  @IsOptional()
+  @IsString()
+  originalTransferNo?: string
+
+  @ApiPropertyOptional({ description: '冲正操作类型（如 reverse）' })
+  @IsOptional()
+  @IsString()
+  bizType?: string
+
+  @ApiPropertyOptional({ description: '页码', default: 1 })
+  @IsOptional()
+  @IsInt()
+  page?: number
+
+  @ApiPropertyOptional({ description: '每页条数', default: 20 })
+  @IsOptional()
+  @IsInt()
+  pageSize?: number
 }

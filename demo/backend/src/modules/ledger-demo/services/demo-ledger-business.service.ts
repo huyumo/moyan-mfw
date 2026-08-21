@@ -119,6 +119,43 @@ export class DemoLedgerBusinessService {
     return { transfer: result.transfer, created: result.created }
   }
 
+  /** 压测支持：打开 N 个资金池账户（tag=stress，每户初始余额 initialBalance），幂等 */
+  async openStressPool(size: number, initialBalance: string) {
+    const opened: any[] = []
+    for (let i = 0; i < size; i++) {
+      const acc = await this.accountService.openAccount({
+        holderId: `stress-pool-${i}`,
+        holderType: 'user',
+        tag: 'stress',
+        currency: 'CNY',
+        initialBalance,
+        extra: { stressPool: true },
+      })
+      opened.push(this.brief(acc))
+    }
+    return { size: opened.length, accounts: opened }
+  }
+
+  /** 压测支持：指定转出账户 → 商家（免审直通，与 pay 同路径，多账户并发分布） */
+  async payFrom(accountId: string, orderNo: string, amount: string) {
+    const to = await this.requireMerchantAccount()
+    const result = await this.transferService.createTransfer(
+      {
+        bizRef: `demo-pool-${orderNo}`,
+        bizType: 'order_pay',
+        fromAccount: accountId,
+        toAccounts: [{ account: to.id, amount }],
+        amount,
+        currency: 'CNY',
+        needReview: false,
+        associatedOrder: orderNo,
+        extra: { orderNo, pool: true },
+      },
+      { id: 'demo-operator', text: '演示操作员' },
+    )
+    return { transfer: result.transfer, created: result.created }
+  }
+
   /** 缺 orderNo 的支付：字段扩展 SPI 必须抛错（展示真实业务路径的拦截） */
   async payOrderInvalid(orderNo: string, amount: string) {
     const from = await this.requireUserAccount()
@@ -188,17 +225,152 @@ export class DemoLedgerBusinessService {
     return { transfer: result.transfer, created: result.created }
   }
 
-  /** 审核：通过（NOT_READY->PENDING 入队）或驳回（解冻） */
-  async auditTransfer(transferNo: string, approve: boolean) {
+  /** 审核：通过（NOT_READY->PENDING 入队）或驳回（解冻）；可带按账户审核备注 accountNotes */
+  async auditTransfer(
+    transferNo: string,
+    approve: boolean,
+    accountNotes?: Record<string, { note?: string; noteExtra?: Record<string, unknown> }>,
+  ) {
     const input: AuditTransferInput = {
       transferNo,
       auditStatus: approve ? 1 : 2,
       auditNotes: approve ? '演示审核通过' : '演示驳回',
+      accountNotes,
       auditorId: 'demo-auditor',
       auditorText: '演示审核员',
     }
     const result = await this.transferService.audit(input)
     return { ...result, message: approve ? '已审核通过，交易单入队入账' : '已驳回，预占已解冻' }
+  }
+
+  /**
+   * 端到端演示（新增 SPI 能力）：需审单 -> 审核通过带按账户备注 -> 入账 -> 两账户流水显示各自派生的 note/noteExtra
+   * accountNotes 固定结构存 ext_ledger_transfer.accountNotes 专用列（不占 extra）；
+   * queryEntries 富化时按 accountId 派生到每条分录
+   */
+  async demoAuditWithAccountNotes(orderNo: string, amount: string) {
+    // 1. 需审单（用户 -> 商家；order_pay 字段扩展要求 extra.orderNo）
+    const userAcct = await this.requireUserAccount()
+    const merchantAcct = await this.requireMerchantAccount()
+    const created = await this.transferService.createTransfer(
+      {
+        bizRef: orderNo,
+        bizType: 'order_pay',
+        fromAccount: userAcct.id,
+        toAccounts: [{ account: merchantAcct.id, amount }],
+        amount,
+        currency: 'CNY',
+        needReview: true,
+        associatedOrder: orderNo,
+        extra: { orderNo },
+      },
+      { id: 'demo-operator', text: '演示操作员' },
+    )
+    const transferNo = created.transfer.transferNo
+
+    // 2. 审核通过，按账户写不同备注（from + to 各一条）
+    await this.transferService.audit({
+      transferNo,
+      auditStatus: 1,
+      auditNotes: '演示审核通过（带按账户备注）',
+      accountNotes: {
+        [userAcct.id]: { note: '转出方：预占已冻结，审核通过放行', noteExtra: { side: 'from', channel: 'demo' } },
+        [merchantAcct.id]: { note: '收款方：订单入账', noteExtra: { side: 'to', orderNo } },
+      },
+      auditorId: 'demo-auditor',
+      auditorText: '演示审核员',
+    })
+
+    // 3. 等入账（in-process 队列消费）后查两账户流水，展示派生的 note/noteExtra
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const [userEntries, merchantEntries] = await Promise.all([
+      this.storage.queryEntries({ accountId: userAcct.id, page: 1, pageSize: 5 }),
+      this.storage.queryEntries({ accountId: merchantAcct.id, page: 1, pageSize: 5 }),
+    ])
+    const pick = (e: any) => ({ entryNo: e.entryNo, direction: e.direction, signedAmount: e.signedAmount, note: e.note, noteExtra: e.noteExtra })
+    return {
+      transferNo,
+      userEntries: userEntries.items.map(pick),
+      merchantEntries: merchantEntries.items.map(pick),
+    }
+  }
+
+  /**
+   * 端到端演示（冲正独立落表）：制单入账 -> 全额冲正 -> 验证不影响制单条数与累计转入/转出
+   * 冲正语义：原收款方（商家）将金额退回原转出方（用户）；冲正腿分录 isReversal=1 挂原单 transferNo；
+   * 不入 ext_ledger_transfer（制单条数不变）；不更新 totalIncome/totalOutcome（累计不变）
+   */
+  async demoReverse(orderNo: string, amount: string) {
+    // 1. 制需审单（用户 -> 商家）并入账
+    const userAcct = await this.requireUserAccount()
+    const merchantAcct = await this.requireMerchantAccount()
+    const created = await this.transferService.createTransfer(
+      {
+        bizRef: orderNo,
+        bizType: 'order_pay',
+        fromAccount: userAcct.id,
+        toAccounts: [{ account: merchantAcct.id, amount }],
+        amount,
+        currency: 'CNY',
+        needReview: true,
+        associatedOrder: orderNo,
+        extra: { orderNo },
+      },
+      { id: 'demo-operator', text: '演示操作员' },
+    )
+    const transferNo = created.transfer.transferNo
+    await this.transferService.audit({
+      transferNo,
+      auditStatus: 1,
+      auditNotes: '演示审核通过（待冲正）',
+      auditorId: 'demo-auditor',
+      auditorText: '演示审核员',
+    })
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    // 2. 冲正前快照：制单条数 / 账户累计
+    const beforeCount = (await this.storage.queryTransfers({ page: 1, pageSize: 1 })).total
+    const [userBefore, merchantBefore] = await Promise.all([
+      this.storage.getAccount(userAcct.id),
+      this.storage.getAccount(merchantAcct.id),
+    ])
+
+    // 3. 全额冲正（同步事务，不入交易单表）
+    const bizRef = `rev-${orderNo}-${Date.now()}`
+    const { reversal, created: reversalCreated } = await this.transferService.reverse(
+      { originalTransferNo: transferNo, bizRef, bizType: 'reverse', description: '演示全额冲正' },
+      { id: 'demo-operator', text: '演示操作员' },
+    )
+
+    // 4. 冲正后验证：制单条数 / 累计 / 冲正腿 / to 侧守卫
+    const afterCount = (await this.storage.queryTransfers({ page: 1, pageSize: 1 })).total
+    const [userAfter, merchantAfter] = await Promise.all([
+      this.storage.getAccount(userAcct.id),
+      this.storage.getAccount(merchantAcct.id),
+    ])
+    const userEntries = await this.storage.queryEntries({ accountId: userAcct.id, page: 1, pageSize: 10 })
+    const reversalLegs = userEntries.items.filter((e: any) => e.isReversal === 1)
+    // to 侧守卫：原转出方（user）不应再被 toAccountId 命中原单（冲正腿不参与 to 侧）
+    const toSideHit = await this.storage.queryTransfers({ toAccountId: userAcct.id, page: 1, pageSize: 10 })
+
+    return {
+      transferNo,
+      reversal,
+      reversalCreated,
+      assertions: {
+        transferCountUnchanged: beforeCount === afterCount,
+        beforeCount,
+        afterCount,
+        totalIncomeUnchanged:
+          userBefore?.totalIncome === userAfter?.totalIncome && merchantBefore?.totalIncome === merchantAfter?.totalIncome,
+        totalOutcomeUnchanged:
+          userBefore?.totalOutcome === userAfter?.totalOutcome && merchantBefore?.totalOutcome === merchantAfter?.totalOutcome,
+        userBalanceDiff: (BigInt(userAfter?.balance ?? 0n) - BigInt(userBefore?.balance ?? 0n)).toString(),
+        merchantBalanceDiff: (BigInt(merchantAfter?.balance ?? 0n) - BigInt(merchantBefore?.balance ?? 0n)).toString(),
+        reversalLegCount: reversalLegs.length,
+        toSideNoFalseHit: !toSideHit.items.some((t: any) => t.transferNo === transferNo),
+      },
+    }
   }
 
   // ── 用例4：LEDGER_QUEUE 直用（积压监控 / 延迟重投） ──
@@ -257,16 +429,33 @@ export class DemoLedgerBusinessService {
     return { total, items: items.map((a: any) => this.brief(a)) }
   }
 
-  /** 流水直查（按账户 + 近 30 天，单分区裁剪） */
-  async queryEntries(accountId: string) {
+  /** 流水直查（按账户 + 近 30 天，单分区裁剪；可选 bizType 过滤——SPI 契约返回富化分录：bizType/note/noteExtra） */
+  async queryEntries(accountId: string, bizType?: string) {
     const { items, total } = await this.storage.queryEntries({
       accountId,
+      bizType,
       startDate: new Date(Date.now() - 30 * 86400000),
       endDate: new Date(),
       page: 1,
       pageSize: 20,
     })
     return { total, items }
+  }
+
+  /** to 侧查询：按收款方账户查交易单（SPI 契约 TransferQueryFilter.toAccountId；分录表即 to 侧索引，任一收款方命中） */
+  async queryByToAccount(accountId: string) {
+    const { items, total } = await this.storage.queryTransfers({ toAccountId: accountId, page: 1, pageSize: 20 })
+    return {
+      total,
+      items: items.map((t: any) => ({
+        transferNo: t.transferNo,
+        bizType: t.bizType,
+        fromAccountId: t.fromAccountId,
+        toAccounts: t.toAccounts,
+        amount: t.amount,
+        postStatus: t.postStatus,
+      })),
+    }
   }
 
   // ── 用例7：LEDGER_FIELD_EXTENSION 直用（业务侧前置校验） ──

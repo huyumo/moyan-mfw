@@ -48,11 +48,11 @@ export class LedgerTransferController {
 
   @Post('reverse')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: '全额冲正（原单须已入账）' })
+  @ApiOperation({ summary: '全额冲正（原单须已入账；同步事务，不入交易单表，不影响累计转入/转出）' })
   @RequirePermission(PERM_REVERSE)
   async reverse(@Body() dto: ReverseTransferDto) {
     const result = await this.service.reverse(dto)
-    return { code: 0, data: result, message: result.created ? '冲正成功' : '冲正单已存在（幂等返回）' }
+    return { code: 0, data: result, message: result.created ? '冲正成功' : '冲正记录已存在（幂等返回）' }
   }
 
   @Put('repost/:transferNo')
@@ -86,6 +86,9 @@ export class LedgerTransferController {
     const filter: any = { ...query }
     if (query.postStatus) {
       filter.postStatus = String(query.postStatus).split(',').map(Number)
+    }
+    if (query.toHolderIds) {
+      filter.toHolderIds = String(query.toHolderIds).split(',').map((s) => s.trim()).filter(Boolean)
     }
     if (query.extFields) {
       try {

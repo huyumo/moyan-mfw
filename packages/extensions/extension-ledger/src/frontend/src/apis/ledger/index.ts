@@ -54,6 +54,8 @@ export interface LedgerTransferItem {
   auditorText: string | null
   auditTime: string | null
   auditNotes: string | null
+  /** 审核按账户备注（accountId -> { note, noteExtra }） */
+  accountNotes?: Record<string, { note?: string; noteExtra?: Record<string, any> }> | null
   createdAt: string
   /**
    * 业务扩展字段（预留索引位 ext_col1~4 翻译回的语义对象）
@@ -76,6 +78,37 @@ export interface LedgerEntryItem {
   balanceAfter: string | null
   /** 币种（入账时从交易单带入；NULL 历史数据按 CNY 展示） */
   currency?: string | null
+  createdAt: string
+  /** 交易类型（后端富化，来自交易单） */
+  bizType?: string | null
+  /** 制单备注（后端富化） */
+  description?: string | null
+  /** 是否冲正腿（1=冲正产生的反向分录，挂原单 transferNo） */
+  isReversal?: number
+  /** 本分录账户的审核备注（按账户派生） */
+  note?: string | null
+  /** 本分录账户的审核备注特殊信息（JSON） */
+  noteExtra?: Record<string, any> | null
+}
+
+/** 冲正记录项 */
+export interface LedgerReversalItem {
+  reversalNo: string
+  originalTransferNo: string
+  bizRef: string
+  bizType: string
+  currency: string
+  amount: string
+  /** 原转出方账户 ID（资金退回目的地） */
+  fromAccountId: string
+  /** 原收款方明细（冲正后各自退回其金额） */
+  toAccounts: TransferTargetItem[]
+  /** 冲正状态（1=已冲正） */
+  status: number
+  description: string | null
+  makerId: string | null
+  makerText: string | null
+  extra: Record<string, any> | null
   createdAt: string
 }
 
@@ -117,6 +150,8 @@ export interface AuditTransferParams {
   transferNo: string
   auditStatus: 1 | 2
   auditNotes?: string
+  /** 按交易相关账户分别编写的审核备注（accountId -> { note, noteExtra }） */
+  accountNotes?: Record<string, { note?: string; noteExtra?: Record<string, unknown> }>
 }
 
 /** 冲正请求 */
@@ -208,10 +243,18 @@ export class ApiLedgerCancelTransfer extends ApiCall<{ params: { transferNo: str
 export class ApiLedgerListTransfers extends ApiCall<
   {
     query: PageQueryParams & {
+      /** 交易单号精确筛选 */
+      transferNo?: string
+      /** 业务幂等键精确筛选 */
+      bizRef?: string
       postStatus?: string
       auditStatus?: number
       bizType?: string
       fromAccountId?: string
+      /** 收款方账户ID（to 侧） */
+      toAccountId?: string
+      /** 收款方主体ID集合（to 侧，逗号分隔） */
+      toHolderIds?: string
       /** 业务扩展字段等值筛选（JSON 字符串，如 {"promoterId":"P888"}，须配 bizType） */
       extFields?: string
     }
@@ -234,7 +277,17 @@ export class ApiLedgerGetTransfer extends ApiCall<{ params: { transferNo: string
 
 /** 流水分页 */
 export class ApiLedgerListEntries extends ApiCall<
-  { query: PageQueryParams & { accountId?: string; transferNo?: string; direction?: number; startDate?: string; endDate?: string } },
+  {
+    query: PageQueryParams & {
+      accountId?: string
+      transferNo?: string
+      direction?: number
+      /** 交易类型（按交易单 bizType 过滤；须带 accountId） */
+      bizType?: string
+      startDate?: string
+      endDate?: string
+    }
+  },
   PageResult<LedgerEntryItem>
 > {
   readonly path = '/api/ext/ledger/entries'
@@ -288,6 +341,31 @@ export class ApiLedgerApplyFix extends ApiCall<{ params: { accountId: string } }
 /** 业务类型展示元数据（服务端 forRoot({ bizTypeMetas }) 下发；驱动动态列/搜索/详情显示名） */
 export class ApiLedgerGetBizTypeMetas extends ApiCall<{}, Record<string, any>> {
   readonly path = '/api/ext/ledger/biz-types'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+// ── 冲正记录 ──
+
+/** 冲正记录分页（审计入口） */
+export class ApiLedgerListReversals extends ApiCall<
+  {
+    query: PageQueryParams & {
+      reversalNo?: string
+      originalTransferNo?: string
+      bizType?: string
+    }
+  },
+  PageResult<LedgerReversalItem>
+> {
+  readonly path = '/api/ext/ledger/reversals'
+  readonly method: MoMethod = 'GET'
+  readonly auth = true
+}
+
+/** 冲正记录详情 */
+export class ApiLedgerGetReversal extends ApiCall<{ params: { reversalNo: string } }, LedgerReversalItem> {
+  readonly path = '/api/ext/ledger/reversals/{reversalNo}'
   readonly method: MoMethod = 'GET'
   readonly auth = true
 }

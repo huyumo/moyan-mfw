@@ -11,9 +11,10 @@ import { AccountStorage } from './account.storage'
 import { TransferStorage } from './transfer.storage'
 import { PostingStorage } from './posting.storage'
 import { QueryStorage } from './query.storage'
+import { ReversalStorage } from './reversal.storage'
 
 /**
- * 默认存储适配器（聚合三个域）
+ * 默认存储适配器（聚合域 storage）
  * 注：方法委托给域 storage；保留 manager 透传支持外部事务嵌套
  */
 @Injectable()
@@ -23,6 +24,7 @@ export class TypeOrmLedgerStorage implements ILedgerStorage {
   readonly transfer: TransferStorage
   readonly posting: PostingStorage
   readonly query: QueryStorage
+  readonly reversal: ReversalStorage
 
   constructor(dataSource: DataSource, @Inject(LEDGER_OPTIONS) options: LedgerModuleOptions) {
     this.ctx = new StorageContext(dataSource, options)
@@ -30,6 +32,7 @@ export class TypeOrmLedgerStorage implements ILedgerStorage {
     this.transfer = new TransferStorage(this.ctx)
     this.posting = new PostingStorage(this.ctx)
     this.query = new QueryStorage(this.ctx)
+    this.reversal = new ReversalStorage(this.ctx)
   }
 
   // ── 账户 ──
@@ -51,7 +54,13 @@ export class TypeOrmLedgerStorage implements ILedgerStorage {
     return this.transfer.audit(input, auditor, manager)
   }
   createReversal(input: any, maker?: any, manager?: EntityManager) {
-    return this.transfer.createReversal(input, maker, manager)
+    return this.reversal.createReversal(input, maker, manager)
+  }
+  getReversal(reversalNo: string, manager?: EntityManager) {
+    return this.reversal.getReversal(reversalNo, manager)
+  }
+  queryReversals(filter: any, manager?: EntityManager) {
+    return this.reversal.queryReversals(filter, manager)
   }
   markEnqueued(transferNo: string, manager?: EntityManager) {
     return this.transfer.markEnqueued(transferNo, manager)

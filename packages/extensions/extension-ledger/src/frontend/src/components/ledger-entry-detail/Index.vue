@@ -23,9 +23,19 @@
           <span class="info-value mono copyable" title="点击复制" @click="copyToClipboard(detail.accountId)">{{ detail.accountId }}</span>
         </div>
         <div class="info-row">
+          <span class="info-label">业务类型</span>
+          <span class="info-value">{{ detail.bizType || '-' }}</span>
+        </div>
+        <div class="info-row">
           <span class="info-label">方向</span>
           <span class="info-value">
             <el-tag :type="directionTagType[detail.direction] as any" size="small">{{ directionLabel[detail.direction] || '-' }}</el-tag>
+          </span>
+        </div>
+        <div v-if="detail.isReversal" class="info-row full">
+          <span class="info-label">冲正</span>
+          <span class="info-value">
+            <el-tag type="warning" size="small">冲正腿（资金回流，不累计转入/转出）</el-tag>
           </span>
         </div>
         <div class="info-row">
@@ -58,6 +68,24 @@
           <span class="info-value">
             <MfwDateFormat :value="detail.createdAt" />
           </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 账户备注（审核时按账户编写，入账后随分录派生展示） -->
+    <section
+      v-if="detail.note || (detail.noteExtra && Object.keys(detail.noteExtra).length)"
+      class="detail-section"
+    >
+      <h4 class="section-title">账户备注</h4>
+      <div class="info-grid">
+        <div class="info-row full">
+          <span class="info-label">备注</span>
+          <span class="info-value">{{ detail.note || '-' }}</span>
+        </div>
+        <div v-if="detail.noteExtra && Object.keys(detail.noteExtra).length" class="info-row full">
+          <span class="info-label">特殊信息</span>
+          <pre class="json-block">{{ JSON.stringify(detail.noteExtra, null, 2) }}</pre>
         </div>
       </div>
     </section>

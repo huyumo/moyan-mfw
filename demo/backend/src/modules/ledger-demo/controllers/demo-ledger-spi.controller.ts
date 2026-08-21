@@ -43,6 +43,20 @@
  *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
  *     -d '{"transferNo":"<transferNo>","approve":true}'
  *
+ *   # 用例3c：审核带按账户备注（端到端：需审单 -> 审核通过带 accountNotes -> 入账 -> 两账户流水显示各自派生的 note/noteExtra）
+ *   curl -X POST http://localhost:3000/api/demo/ledger-spi/audit-with-notes \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"orderNo":"A2002","amount":"2000"}'
+ *   # 也可对已存在需审单审核时手动传 accountNotes：
+ *   curl -X POST http://localhost:3000/api/demo/ledger-spi/audit \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"transferNo":"<transferNo>","approve":true,"accountNotes":{"<fromAccountId>":{"note":"转出方备注"},"<toAccountId>":{"note":"收款方备注","noteExtra":{"k":"v"}}}}'
+ *
+ *   # 用例3d：全额冲正（端到端：制单入账 -> 冲正 -> 验证制单条数/累计转入转出不变、冲正腿落分录、to 侧守卫）
+ *   curl -X POST http://localhost:3000/api/demo/ledger-spi/reverse \
+ *     -H "Authorization: Bearer <token>" -H "Content-Type: application/json" \
+ *     -d '{"orderNo":"A2003","amount":"1500"}'
+ *
  *   # 用例4：LEDGER_QUEUE 直用（积压监控 length + 计数）
  *   curl http://localhost:3000/api/demo/ledger-spi/queue-stats \
  *     -H "Authorization: Bearer <token>"
@@ -57,6 +71,12 @@
  *   curl http://localhost:3000/api/demo/ledger-spi/accounts \
  *     -H "Authorization: Bearer <token>"
  *   curl "http://localhost:3000/api/demo/ledger-spi/entries/<accountId>" \
+ *     -H "Authorization: Bearer <token>"
+ *   # 用例6b：流水分页带 bizType 过滤（SPI 契约返回富化分录：bizType/note/noteExtra）
+ *   curl "http://localhost:3000/api/demo/ledger-spi/entries/<accountId>?bizType=order_pay" \
+ *     -H "Authorization: Bearer <token>"
+ *   # 用例6c：to 侧查交易单（按收款方账户，TransferQueryFilter.toAccountId；分录表即 to 侧索引）
+ *   curl "http://localhost:3000/api/demo/ledger-spi/transfers/to/<accountId>" \
  *     -H "Authorization: Bearer <token>"
  *
  *   # 用例7：LEDGER_FIELD_EXTENSION 直用（业务侧前置校验，成功/失败两种）
@@ -120,6 +140,37 @@ class RefundDto extends OrderTransferDto {
   reason: string
 }
 
+/** 压测资金池开户 DTO */
+class StressPoolDto {
+  @ApiProperty({ description: '资金池账户数量（≤200）' })
+  @IsInt()
+  @Min(1)
+  size: number
+
+  @ApiProperty({ description: '每户初始余额（最小单位字符串）' })
+  @IsNotEmpty()
+  @IsString()
+  initialBalance: string
+}
+
+/** 指定转出账户支付 DTO（压测多账户并发分布） */
+class PayFromDto {
+  @ApiProperty({ description: '转出账户ID' })
+  @IsNotEmpty()
+  @IsString()
+  accountId: string
+
+  @ApiProperty({ description: '业务订单号（幂等键一部分）' })
+  @IsNotEmpty()
+  @IsString()
+  orderNo: string
+
+  @ApiProperty({ description: '金额（最小单位字符串）' })
+  @IsNotEmpty()
+  @IsString()
+  amount: string
+}
+
 class AuditDto {
   @ApiProperty({ description: '交易单号' })
   @IsNotEmpty()
@@ -129,6 +180,11 @@ class AuditDto {
   @ApiProperty({ description: 'true=通过 false=驳回' })
   @IsBoolean()
   approve: boolean
+
+  @ApiProperty({ description: '按交易相关账户分别编写的审核备注（accountId -> { note, noteExtra }，可选）' })
+  @IsOptional()
+  @IsObject()
+  accountNotes?: Record<string, { note?: string; noteExtra?: Record<string, unknown> }>
 }
 
 class RequeueDto {
@@ -317,6 +373,23 @@ export class DemoLedgerSpiController {
     return this.demo.payOrderInvalid(dto.orderNo, dto.amount)
   }
 
+  /** 压测：打开资金池账户（tag=stress，每户初始余额 initialBalance） */
+  @Post('stress-pool')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '压测资金池开户', description: '打开 N 个资金池账户（tag=stress），每户初始余额 initialBalance（单边开户入账）' })
+  stressPool(@Body() dto: StressPoolDto) {
+    if (dto.size > 200) throw new Error('压测资金池账户数不能超过 200')
+    return this.demo.openStressPool(dto.size, dto.initialBalance)
+  }
+
+  /** 压测：指定转出账户 → 商家（多账户并发分布） */
+  @Post('pay-from')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '指定转出账户支付（压测）', description: '任意账户 → 商家免审直通，用于多账户并发分布压测' })
+  payFrom(@Body() dto: PayFromDto) {
+    return this.demo.payFrom(dto.accountId, dto.orderNo, dto.amount)
+  }
+
   /** 用例2c：退款 */
   @Post('refund')
   @HttpCode(HttpStatus.OK)
@@ -336,9 +409,25 @@ export class DemoLedgerSpiController {
   /** 用例3b：审核 */
   @Post('audit')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '审核需审单', description: '通过：NOT_READY->PENDING 入队入账；驳回：解冻终态' })
+  @ApiOperation({ summary: '审核需审单', description: '通过：NOT_READY->PENDING 入队入账；驳回：解冻终态；可带按账户备注 accountNotes（写 transfer.accountNotes 专用列）' })
   audit(@Body() dto: AuditDto) {
-    return this.demo.auditTransfer(dto.transferNo, dto.approve)
+    return this.demo.auditTransfer(dto.transferNo, dto.approve, dto.accountNotes)
+  }
+
+  /** 用例3c：审核带按账户备注（端到端：需审单 -> 审核通过带 accountNotes -> 入账 -> 两账户流水显示各自派生的 note/noteExtra） */
+  @Post('audit-with-notes')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '审核带按账户备注（端到端）', description: '创建需审单 -> 审核通过写 accountNotes -> 入账后查询两账户流水，展示按账户派生的 note/noteExtra' })
+  auditWithNotes(@Body() dto: OrderTransferDto) {
+    return this.demo.demoAuditWithAccountNotes(dto.orderNo, dto.amount)
+  }
+
+  /** 用例3d：全额冲正（端到端：制单入账 -> 冲正 -> 验证制单条数/累计转入转出不变、冲正腿落分录、to 侧守卫） */
+  @Post('reverse')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '全额冲正（端到端）', description: '制单入账 -> 全额冲正 -> 返回冲正记录 + 断言（制单条数/累计转入转出不变、冲正腿 isReversal=1、to 侧无误命中）' })
+  reverse(@Body() dto: OrderTransferDto) {
+    return this.demo.demoReverse(dto.orderNo, dto.amount)
   }
 
   /** 用例4：LEDGER_QUEUE 直用 */
@@ -381,10 +470,18 @@ export class DemoLedgerSpiController {
   }
 
   @Get('entries/:accountId')
-  @ApiOperation({ summary: '流水分页直查', description: 'LEDGER_STORAGE.queryEntries（按账户 + 近 30 天，单分区裁剪）' })
+  @ApiOperation({ summary: '流水分页直查', description: 'LEDGER_STORAGE.queryEntries（按账户 + 近 30 天，单分区裁剪）；可选 bizType 过滤，返回富化分录（bizType/note/noteExtra）' })
   @SkipPermission()
-  queryEntries(@Param('accountId') accountId: string) {
-    return this.demo.queryEntries(accountId)
+  queryEntries(@Param('accountId') accountId: string, @Query('bizType') bizType?: string) {
+    return this.demo.queryEntries(accountId, bizType)
+  }
+
+  /** 用例6b：to 侧查交易单（SPI 新增能力 TransferQueryFilter.toAccountId） */
+  @Get('transfers/to/:accountId')
+  @ApiOperation({ summary: 'to 侧查交易单', description: '按收款方账户查交易单（toAccountId；分录表即 to 侧索引，任一收款方命中即返回）' })
+  @SkipPermission()
+  queryByToAccount(@Param('accountId') accountId: string) {
+    return this.demo.queryByToAccount(accountId)
   }
 
   /** 用例7：LEDGER_FIELD_EXTENSION 直用 */

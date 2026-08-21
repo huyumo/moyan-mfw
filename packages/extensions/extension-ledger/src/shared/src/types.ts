@@ -60,12 +60,25 @@ export interface CreateTransferInput {
   extFields?: Record<string, string>
 }
 
+/** 审核时按账户编写的额外备注（固定结构：纯文本 + JSON 特殊信息） */
+export interface AuditAccountNote {
+  /** 纯文本备注（用户展示） */
+  note?: string
+  /** 特殊信息（JSON，自由结构） */
+  noteExtra?: Record<string, unknown>
+}
+
 /** 审核入参 */
 export interface AuditTransferInput {
   transferNo: string
   /** 1=通过 2=驳回 */
   auditStatus: 1 | 2
   auditNotes?: string
+  /**
+   * 按交易相关账户（转出方 + 各收款方）分别编写的审核备注
+   * 固定结构：accountId -> { note, noteExtra }；审核时持久化到交易单 accountNotes 列
+   */
+  accountNotes?: Record<string, AuditAccountNote>
   auditorId?: string
   auditorText?: string
 }
@@ -81,6 +94,36 @@ export interface ReverseTransferInput {
   makerId?: string
   makerText?: string
   extra?: Record<string, unknown>
+}
+
+/**
+ * 冲正记录视图（冲正独立落表，不入 ext_ledger_transfer，不影响制单条数与累计转入/转出）
+ * 冲正语义：原单各收款方将其收款金额各自退回原转出方（全额冲正）
+ *   - fromAccountId = 原转出方账户（资金退回目的地）
+ *   - toAccounts    = 原收款方明细（各自退回其金额）
+ */
+export interface ReversalView {
+  /** 冲正单号（R 前缀） */
+  reversalNo: string
+  /** 被冲正的原交易单号 */
+  originalTransferNo: string
+  /** 业务幂等键（与 bizType 组合唯一） */
+  bizRef: string
+  bizType: string
+  currency: string
+  /** 冲正总金额（最小单位字符串，= Σ toAccounts.amount = 原单 amount） */
+  amount: AmountString
+  /** 原转出方账户 ID（资金退回目的地） */
+  fromAccountId: string
+  /** 原收款方明细（冲正后各自退回其金额） */
+  toAccounts: TransferTargetItem[]
+  /** 冲正状态（ReversalStatusDict；同步事务成功即 POSTED=1） */
+  status: number
+  description: string | null
+  makerId: string | null
+  makerText: string | null
+  extra: Record<string, unknown> | null
+  createdAt: Date
 }
 
 /** 账户定位（holder 三元组，供 createBizTransfer / 审核流模板等高层 API 使用） */
@@ -110,7 +153,10 @@ export interface TransferView {
   auditStatus: number
   postStatus: number
   auditTime: Date | null
+  /** 审核备注 */
   auditNotes: string | null
+  /** 按交易相关账户分别编写的审核备注（accountId -> { note, noteExtra }；审核时写入） */
+  accountNotes?: Record<string, AuditAccountNote> | null
   description: string | null
   makerId: string | null
   makerText: string | null
@@ -163,6 +209,21 @@ export interface EntryView {
   createdAt: Date
   /** 币种（历史数据可能为 NULL，前端按 CNY 展示） */
   currency?: string | null
+  /** 是否冲正腿（1=冲正产生的反向分录，0/NULL=正常业务分录；汇总收入/支出时须排除） */
+  isReversal?: number
+  // ── 富化字段（SPI 契约：queryEntries 返回带交易单上下文的分录，实现方可用 JOIN/反规范化达成） ──
+  /** 交易类型（来自交易单；无关联交易单时为 null） */
+  bizType?: string | null
+  /** 制单备注（来自交易单） */
+  description?: string | null
+  /** 转出方账户 ID（来自交易单） */
+  fromAccountId?: string | null
+  /** 收款方明细（来自交易单） */
+  toAccounts?: TransferTargetItem[] | null
+  /** 本分录账户的审核备注（按 accountId 从交易单 accountNotes 派生） */
+  note?: string | null
+  /** 本分录账户的审核备注特殊信息（JSON，派生） */
+  noteExtra?: Record<string, unknown> | null
 }
 
 /** 审核流读侧状态：1=处理中 2=成功 3=失败 */

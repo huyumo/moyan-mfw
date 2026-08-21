@@ -10,5 +10,6 @@ export {
   ReverseTransferDto,
   QueryTransferDto,
   BatchRepostDto,
+  QueryReversalDto,
 } from './transfer.dto'
 export { QueryEntryDto, ReconcileTriggerDto } from './entry.dto'

@@ -12,7 +12,6 @@ import {
   TransferModeDict,
   type CreateTransferInput,
   type AuditTransferInput,
-  type ReverseTransferInput,
 } from 'moyan-mfw-extension-ledger/shared'
 import { StorageContext } from './storage-context'
 import { parseAmount, gte } from '../../../services/amount.util'
@@ -46,96 +45,113 @@ export class TransferStorage {
    * - 校验：账户去重、from∉to、币种一致、Σto=amount、金额正整数≤上限、收款方≤100
    * - 预占（免审：balance-=amt, pending_out+=amt WHERE balance>=amt；需审：转 frozen）
    * - 0 行抛 InsufficientBalanceError
+   * - 并发同 bizRef：insert 撞唯一键 → 事务整体回滚（预占撤销，无资金泄漏）→ 回查已有单返回 created=false
    */
   async createTransferWithReserve(
     input: CreateTransferInput,
     maker?: { id?: string; text?: string },
     manager?: EntityManager,
   ): Promise<{ transfer: any; created: boolean }> {
-    return this.ctx.tx(async (m) => {
-      const em = manager ?? m
-      const transferRepo = this.ctx.transferRepo(em)
+    try {
+      return await this.ctx.tx(async (m) => {
+        const em = manager ?? m
+        const transferRepo = this.ctx.transferRepo(em)
 
-      // 1. 幂等检查
-      const existing = await transferRepo.findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
-      if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
+        // 1. 幂等检查（顺序路径快速返回；并发路径由 catch 兜底）
+        const existing = await transferRepo.findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
+        if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
 
-      // 2. 校验
-      this.validateTransferInput(input)
-      const amount = parseAmount(input.amount)
+        // 2. 校验
+        this.validateTransferInput(input)
+        const amount = parseAmount(input.amount)
 
-      // 3. 加载 from 账户
-      const accountRepo = this.ctx.accountRepo(em)
-      const fromAccount = await accountRepo.findOne({ where: { id: input.fromAccount } as any })
-      if (!fromAccount) throw new InvalidTransferError(`转出方账户不存在: ${input.fromAccount}`)
-      if (fromAccount.currency !== input.currency) {
-        throw new InvalidTransferError(`币种不一致：from=${fromAccount.currency}, input=${input.currency}`)
+        // 3. 加载 from 账户
+        const accountRepo = this.ctx.accountRepo(em)
+        const fromAccount = await accountRepo.findOne({ where: { id: input.fromAccount } as any })
+        if (!fromAccount) throw new InvalidTransferError(`转出方账户不存在: ${input.fromAccount}`)
+        if (fromAccount.currency !== input.currency) {
+          throw new InvalidTransferError(`币种不一致：from=${fromAccount.currency}, input=${input.currency}`)
+        }
+
+        // 4. 预占（原子条件 UPDATE，防超支）
+        const holdType = input.needReview ? HoldTypeDict.FROZEN : HoldTypeDict.PENDING_OUT
+        const postStatus = input.needReview ? PostStatusDict.NOT_READY : PostStatusDict.PENDING
+        const auditStatus = input.needReview ? AuditStatusDict.PENDING_REVIEW : AuditStatusDict.APPROVED
+
+        const reserveField = input.needReview ? 'frozen' : 'pendingOut'
+        const result = await em
+          .createQueryBuilder()
+          .update(this.ctx.accountEntityCtor)
+          .set({
+            balance: () => `balance - ${amount}`,
+            [reserveField]: () => `${reserveField} + ${amount}`,
+          })
+          .where('id = :id AND balance >= :amt AND deleteAt IS NULL', { id: input.fromAccount, amt: amount.toString() })
+          .execute()
+
+        if (result.affected === 0) {
+          throw new InsufficientBalanceError(`账户余额不足: ${input.fromAccount}（需要 ${amount}，可用 ${fromAccount.balance}）`)
+        }
+
+        // 5. 插交易单
+        const transferNo = generateTransferNo()
+        const transferMode = input.toAccounts.length === 1 ? TransferModeDict.ONE_TO_ONE : TransferModeDict.ONE_TO_MANY
+        // 业务扩展字段 → 预留索引位（未映射字段抛错；extra 合并快照保审计完整）
+        const extCols = mapExtFieldsToColumns(input.bizType, input.extFields, this.ctx.options.bizExtMappings)
+        const transfer = transferRepo.create({
+          transferNo,
+          bizRef: input.bizRef,
+          bizType: input.bizType,
+          fromAccountId: input.fromAccount,
+          toAccounts: input.toAccounts.map((t) => ({ account: t.account, amount: t.amount })),
+          amount: amount.toString(),
+          currency: input.currency,
+          transferMode,
+          needReview: input.needReview,
+          holdType,
+          auditStatus,
+          postStatus,
+          associatedOrder: input.associatedOrder ?? null,
+          orderTable: null,
+          retryCount: 0,
+          claimToken: null,
+          claimAt: null,
+          nextRetryAt: null,
+          lastPushAt: null,
+          lastError: null,
+          reversedFromTransferNo: null,
+          description: input.description ?? null,
+          makerId: maker?.id ?? null,
+          makerText: maker?.text ?? null,
+          auditorId: null,
+          auditorText: null,
+          auditTime: null,
+          auditNotes: null,
+          extra: { ...(input.extra ?? {}), ...(input.extFields ?? {}) } as Record<string, unknown> | null,
+          extCol1: extCols.extCol1 ?? null,
+          extCol2: extCols.extCol2 ?? null,
+          extCol3: extCols.extCol3 ?? null,
+          extCol4: extCols.extCol4 ?? null,
+        } as any)
+        await transferRepo.save(transfer)
+
+        return { transfer: toTransferView(transfer, this.ctx.options.bizExtMappings), created: true }
+      })
+    } catch (err: any) {
+      // 并发同 bizRef 的 TOCTOU：insert 撞唯一键，事务已回滚（预占撤销、无资金泄漏）。
+      // InnoDB 唯一索引冲突会等待先提交方提交后才抛 ER_DUP_ENTRY，此时回查必能命中已提交单。
+      if (this.isDuplicateKeyError(err)) {
+        const em = manager ?? this.ctx.dataSource.manager
+        const existing = await this.ctx.transferRepo(em).findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
+        if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
       }
+      throw err
+    }
+  }
 
-      // 4. 预占（原子条件 UPDATE，防超支）
-      const holdType = input.needReview ? HoldTypeDict.FROZEN : HoldTypeDict.PENDING_OUT
-      const postStatus = input.needReview ? PostStatusDict.NOT_READY : PostStatusDict.PENDING
-      const auditStatus = input.needReview ? AuditStatusDict.PENDING_REVIEW : AuditStatusDict.APPROVED
-
-      const reserveField = input.needReview ? 'frozen' : 'pendingOut'
-      const result = await em
-        .createQueryBuilder()
-        .update(this.ctx.accountEntityCtor)
-        .set({
-          balance: () => `balance - ${amount}`,
-          [reserveField]: () => `${reserveField} + ${amount}`,
-        })
-        .where('id = :id AND balance >= :amt AND deleteAt IS NULL', { id: input.fromAccount, amt: amount.toString() })
-        .execute()
-
-      if (result.affected === 0) {
-        throw new InsufficientBalanceError(`账户余额不足: ${input.fromAccount}（需要 ${amount}，可用 ${fromAccount.balance}）`)
-      }
-
-      // 5. 插交易单
-      const transferNo = generateTransferNo()
-      const transferMode = input.toAccounts.length === 1 ? TransferModeDict.ONE_TO_ONE : TransferModeDict.ONE_TO_MANY
-      // 业务扩展字段 → 预留索引位（未映射字段抛错；extra 合并快照保审计完整）
-      const extCols = mapExtFieldsToColumns(input.bizType, input.extFields, this.ctx.options.bizExtMappings)
-      const transfer = transferRepo.create({
-        transferNo,
-        bizRef: input.bizRef,
-        bizType: input.bizType,
-        fromAccountId: input.fromAccount,
-        toAccounts: input.toAccounts.map((t) => ({ account: t.account, amount: t.amount })),
-        amount: amount.toString(),
-        currency: input.currency,
-        transferMode,
-        needReview: input.needReview,
-        holdType,
-        auditStatus,
-        postStatus,
-        associatedOrder: input.associatedOrder ?? null,
-        orderTable: null,
-        retryCount: 0,
-        claimToken: null,
-        claimAt: null,
-        nextRetryAt: null,
-        lastPushAt: null,
-        lastError: null,
-        reversedFromTransferNo: null,
-        description: input.description ?? null,
-        makerId: maker?.id ?? null,
-        makerText: maker?.text ?? null,
-        auditorId: null,
-        auditorText: null,
-        auditTime: null,
-        auditNotes: null,
-        extra: { ...(input.extra ?? {}), ...(input.extFields ?? {}) } as Record<string, unknown> | null,
-        extCol1: extCols.extCol1 ?? null,
-        extCol2: extCols.extCol2 ?? null,
-        extCol3: extCols.extCol3 ?? null,
-        extCol4: extCols.extCol4 ?? null,
-      } as any)
-      await transferRepo.save(transfer)
-
-      return { transfer: toTransferView(transfer, this.ctx.options.bizExtMappings), created: true }
-    })
+  /** 判定 MySQL 唯一键冲突（幂等竞态走回查） */
+  private isDuplicateKeyError(err: any): boolean {
+    return !!err && (err?.code === 'ER_DUP_ENTRY' || err?.errno === 1062)
   }
 
   /** 校验制单入参 */
@@ -191,6 +207,7 @@ export class TransferStorage {
             auditorText: auditor?.text ?? null,
             auditTime: () => 'NOW()',
             auditNotes: input.auditNotes ?? null,
+            accountNotes: input.accountNotes ? JSON.stringify(input.accountNotes) : null,
           })
           .where('transferNo = :no AND auditStatus = :pending AND postStatus = :notReady', {
             no: input.transferNo,
@@ -211,6 +228,7 @@ export class TransferStorage {
             auditorText: auditor?.text ?? null,
             auditTime: () => 'NOW()',
             auditNotes: input.auditNotes ?? null,
+            accountNotes: input.accountNotes ? JSON.stringify(input.accountNotes) : null,
           })
           .where('transferNo = :no AND auditStatus = :pending AND postStatus = :notReady', {
             no: input.transferNo,
@@ -236,88 +254,6 @@ export class TransferStorage {
         }
         return { affected: result.affected ?? 0, action: 'rejected' }
       }
-    })
-  }
-
-  /**
-   * 冲正（原单须 POSTED 且未冲正；唯一索引防双冲正）
-   * - 反向新单：原入账方变出账方，原出账方变入账方
-   * - 复用制单+预占+消费管线
-   */
-  async createReversal(
-    input: ReverseTransferInput,
-    maker?: { id?: string; text?: string },
-    manager?: EntityManager,
-  ): Promise<{ transfer: any; created: boolean }> {
-    return this.ctx.tx(async (m) => {
-      const em = manager ?? m
-      const transferRepo = this.ctx.transferRepo(em)
-
-      // 幂等
-      const existing = await transferRepo.findOne({ where: { bizRef: input.bizRef, bizType: input.bizType } })
-      if (existing) return { transfer: toTransferView(existing, this.ctx.options.bizExtMappings), created: false }
-
-      const original = await transferRepo.findOne({ where: { transferNo: input.originalTransferNo } })
-      if (!original) throw new InvalidTransferError(`原交易单不存在: ${input.originalTransferNo}`)
-      if (original.postStatus !== PostStatusDict.POSTED) {
-        throw new InvalidTransferError(`原单未入账，不可冲正（当前状态: ${original.postStatus}）`)
-      }
-      if (original.reversedFromTransferNo) {
-        throw new InvalidTransferError(`原单已是冲正单，不可再次冲正`)
-      }
-
-      // 原单 CAS 标记（防双冲正；唯一索引兜底）
-      const mark = await em
-        .createQueryBuilder()
-        .update(LedgerTransferEntityRef)
-        .set({ reversedFromTransferNo: input.bizRef })
-        .where('transferNo = :no AND postStatus = :posted AND reversedFromTransferNo IS NULL', {
-          no: input.originalTransferNo,
-          posted: PostStatusDict.POSTED,
-        })
-        .execute()
-      if (mark.affected === 0) {
-        // 唯一索引兜底：已被冲正
-        const refetched = await transferRepo.findOne({ where: { transferNo: input.originalTransferNo } })
-        if (refetched?.reversedFromTransferNo) {
-          throw new InvalidTransferError(`原单已被冲正（冲正单 bizRef=${refetched.reversedFromTransferNo}）`)
-        }
-        throw new InvalidTransferError(`原单状态不符，冲正失败`)
-      }
-      // 还原标记（冲正单自己的 reversedFromTransferNo 指向原单号；原单标记还原，靠冲正单唯一索引互斥）
-      await em
-        .createQueryBuilder()
-        .update(LedgerTransferEntityRef)
-        .set({ reversedFromTransferNo: null })
-        .where('transferNo = :no', { no: input.originalTransferNo })
-        .execute()
-
-      // 构造反向制单：原入账方（toAccounts[0]）变出账方，原出账方变入账方
-      const reversalInput: CreateTransferInput = {
-        bizRef: input.bizRef,
-        bizType: input.bizType,
-        fromAccount: original.toAccounts[0].account,
-        toAccounts: [{ account: original.fromAccountId, amount: original.amount }],
-        amount: original.amount,
-        currency: original.currency,
-        needReview: false,
-        description: input.description ?? `冲正 ${input.originalTransferNo}`,
-        makerId: input.makerId,
-        makerText: input.makerText,
-        extra: input.extra,
-      }
-      // 复用制单逻辑（含预占），但 reversedFromTransferNo 标记
-      const { transfer, created } = await this.createTransferWithReserve(reversalInput, maker, em)
-      if (created) {
-        await em
-          .createQueryBuilder()
-          .update(LedgerTransferEntityRef)
-          .set({ reversedFromTransferNo: input.originalTransferNo })
-          .where('transferNo = :no', { no: transfer.transferNo })
-          .execute()
-        transfer.reversedFromTransferNo = input.originalTransferNo
-      }
-      return { transfer, created }
     })
   }
 

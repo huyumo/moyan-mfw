@@ -83,6 +83,22 @@
           <span class="info-label">审核备注</span>
           <span class="info-value">{{ detail.auditNotes || '-' }}</span>
         </div>
+        <div class="info-row">
+          <span class="info-label">转出方备注</span>
+          <span class="info-value">{{ detail.accountNotes?.[detail.fromAccountId]?.note || '-' }}</span>
+        </div>
+        <div class="info-row full">
+          <span class="info-label">冲正状态</span>
+          <span class="info-value">
+            <template v-if="detail.reversedFromTransferNo">
+              <el-tag type="warning" size="small" style="margin-right: 6px; cursor: pointer" title="查看冲正记录" @click="openReversalDetail">
+                已冲正
+              </el-tag>
+              <span class="mono copyable" title="点击复制" @click="copyToClipboard(detail.reversedFromTransferNo)">{{ detail.reversedFromTransferNo }}</span>
+            </template>
+            <span v-else>未冲正</span>
+          </span>
+        </div>
       </div>
     </section>
 
@@ -101,6 +117,9 @@
         </el-table-column>
         <el-table-column label="金额" width="160" align="right">
           <template #default="{ row }">{{ formatAmount(row.amount, detail.currency) }}</template>
+        </el-table-column>
+        <el-table-column label="备注" min-width="160">
+          <template #default="{ row }">{{ detail.accountNotes?.[row.account]?.note || '-' }}</template>
         </el-table-column>
       </el-table>
     </section>
@@ -133,7 +152,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { MfwDateFormat } from 'moyan-mfw-base/frontend'
+import { ElMessage } from 'element-plus'
+import { MfwDateFormat, MfwPopup } from 'moyan-mfw-base/frontend'
 import {
   formatAmount,
   copyToClipboard,
@@ -145,11 +165,36 @@ import {
   transferModeLabel,
   bizTypeExtMeta,
 } from '../../views/ledger/shared'
+import { ApiLedgerGetReversal } from '../../apis/ledger'
+import LedgerReversalDetail from '../ledger-reversal-detail/Index.vue'
 
 defineOptions({ name: 'MfwLedgerTransferDetail' })
 
 /** MfwPopup 传入属性：整行交易单数据 */
 const props = defineProps<{ detail: Record<string, any> }>()
+
+/** 已冲正联动入口：按冲正单号拉取并打开冲正记录详情抽屉 */
+async function openReversalDetail(): Promise<void> {
+  const reversalNo = props.detail.reversedFromTransferNo
+  if (!reversalNo) return
+  try {
+    const res = await new ApiLedgerGetReversal({ params: { reversalNo } })
+    if (!res) {
+      ElMessage.warning(`未找到冲正记录 ${reversalNo}`)
+      return
+    }
+    MfwPopup.open({
+      title: `冲正记录 - ${reversalNo}`,
+      type: 'drawer',
+      position: 'rtl',
+      component: LedgerReversalDetail,
+      elProps: { detail: res },
+      popupProps: { size: 800 },
+    })
+  } catch {
+    ElMessage.warning(`加载冲正记录失败 ${reversalNo}`)
+  }
+}
 
 /** 当前业务类型的扩展字段配置（显示名由 bizExtMappings 前端元数据提供） */
 const extFieldMeta = computed(() => (props.detail.bizType ? bizTypeExtMeta[props.detail.bizType] : undefined))

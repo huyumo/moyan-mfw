@@ -324,7 +324,7 @@ createBaseBackendApp({
 
 ### 数据库迁移
 
-本扩展包提供 3 个迁移文件：
+本扩展包提供 6 个迁移文件：
 
 | 迁移文件 | 说明 |
 |---|---|
@@ -332,6 +332,8 @@ createBaseBackendApp({
 | `20260814010000-add-transfer-ext-columns.ts` | 交易单表新增 extCol1~4 预留索引位列 + 索引 |
 | `20260814020000-add-entry-currency.ts` | 分录表新增 currency 列 |
 | `20260818000000-backfill-open-account-entry-currency.ts` | 回填历史开户合成单分录的 currency（存量 NULL → 交易单币种） |
+| `20260820000000-add-account-notes-and-biz-index.ts` | 交易单表新增 accountNotes（审核账户备注，固定结构）+ (bizType, createdAt) 索引 |
+| `20260821000000-add-ledger-reversal-and-isreversal.ts` | 冲正独立落表：新增 ext_ledger_reversal（冲正记录，防双冲正唯一约束）+ 分录/归档表新增 isReversal 冲正腿标记 |
 
 **引入方式：**
 
@@ -341,12 +343,16 @@ import { CreateLedgerTables20260814000000 } from 'moyan-mfw-extension-ledger/dat
 import { AddTransferExtColumns20260814010000 } from 'moyan-mfw-extension-ledger/database/migrations/20260814010000-add-transfer-ext-columns'
 import { AddEntryCurrency20260814020000 } from 'moyan-mfw-extension-ledger/database/migrations/20260814020000-add-entry-currency'
 import { BackfillOpenAccountEntryCurrency20260818000000 } from 'moyan-mfw-extension-ledger/database/migrations/20260818000000-backfill-open-account-entry-currency'
+import { AddAccountNotesAndBizIndex20260820000000 } from 'moyan-mfw-extension-ledger/database/migrations/20260820000000-add-account-notes-and-biz-index'
+import { AddLedgerReversalAndIsReversal20260821000000 } from 'moyan-mfw-extension-ledger/database/migrations/20260821000000-add-ledger-reversal-and-isreversal'
 
 export const migrations = [
   CreateLedgerTables20260814000000,
   AddTransferExtColumns20260814010000,
   AddEntryCurrency20260814020000,
   BackfillOpenAccountEntryCurrency20260818000000,
+  AddAccountNotesAndBizIndex20260820000000,
+  AddLedgerReversalAndIsReversal20260821000000,
 ]
 ```
 
@@ -555,7 +561,20 @@ interface SelectOptionItem {
 | `description` | `string` | 否 | 备注 |
 | `extra` | `Record<string, unknown>` | 否 | 扩展附录 |
 
-> **限制**：当前版本冲正**仅支持一对一原单**（`toAccounts` 单收款方），一对多原单（ONE_TO_MANY）冲正只反向首个收款方、其余金额不还原，会破坏账户恒等式——业务侧请勿对一对多单发起冲正；一对多冲正（逐收款方生成冲正单）排期待办。
+**语义（v1.2.0-beta.67 起，冲正独立落表）**：
+
+- 冲正为**同步事务**完成：CAS 标记原单 → 账户排序锁 → 各收款方余额校验 → 动 balance → 写冲正腿分录（`isReversal=1`，挂原单 transferNo）→ 落 `ext_ledger_reversal` 冲正记录 → 原单 `reversedFromTransferNo` 永久记录冲正单号。
+- **全额冲正**：原单所有收款方（含一对多）将其收款金额**各自退回**原转出方；任一收款方余额不足则整体抛错回滚（含原单标记，全有或全无）。
+- **不入 `ext_ledger_transfer`**：制单记录条数、`queryTransfers`/`sumTransfers` 汇总不受冲正影响。
+- **不更新账户 `totalIncome`/`totalOutcome`**：资金回流非新增收支，累计转入/转出不受影响；对账恒等式（分录仍在分录表）保持成立。
+- 幂等：`bizRef+bizType` 命中返回已有冲正记录（`created=false`）；防双冲正由 `ext_ledger_reversal.originalTransferNo` 唯一约束 + 原单 CAS 双层保证。
+- 冲正记录查询（审计入口）：`GET /reversals`（分页）/ `GET /reversals/:reversalNo`（详情）。
+
+> **行为变化（相对旧版本）**：
+> - 旧版冲正是"新制单 + 走队列入账"，会新增交易单行并更新累计转入/转出；v1.2.0-beta.67 起改为独立冲正记录表 + 同步事务，**存量已产生的冲正单不回填**，仍以旧 transfer 行形态存在（其上的"已冲正"徽标语义为旧数据残留，不影响新冲正）。
+> - `queryEntries({ transferNo })` 现在返回原单腿 + 冲正腿（冲正腿带 `isReversal=1` 可辨）——"该业务事件全腿"语义。
+> - 业务侧若自行按 direction 聚合收入/支出，须过滤 `isReversal=0`；包内 `totalIncome`/`totalOutcome` 列不受冲正影响。
+> - 冲正 `to 侧过滤`（`queryTransfers({ toAccountId })`）已加 `isReversal` 守卫：原单被冲正后不会因冲正借方腿被误判为"收款方=原转出方"。
 
 #### PUT /transfers/repost/:transferNo - 人工重推
 
@@ -813,7 +832,13 @@ interface SelectOptionItem {
 
 ##### createReversal(input, maker?, manager?)
 
-创建冲正单（原单须 POSTED 且未冲正；唯一索引防双冲正）。
+冲正（**同步事务**完成，原单须 POSTED 且未冲正）。契约语义：
+- 全额冲正：原单各收款方将其收款金额**各自退回**原转出方；任一收款方余额不足则整体抛错回滚（全有或全无）
+- 持久化到 `ext_ledger_reversal`（不入 `ext_ledger_transfer`，制单条数/汇总不受影响）
+- 冲正腿分录写入分录表（`isReversal=1`，transferNo 挂原单号），对账恒等式与账户流水连续
+- **不更新账户 `totalIncome`/`totalOutcome`**（资金回流非新增收支）
+- 原单 `reversedFromTransferNo` 永久记录冲正单号；防双冲正由 `ext_ledger_reversal.originalTransferNo` 唯一约束保证
+- 幂等：`bizRef+bizType` 命中返回已有记录（`created=false`）
 
 | 参数 | 类型 | 说明 |
 |---|---|---|
@@ -821,7 +846,22 @@ interface SelectOptionItem {
 | `maker` | `{ id?: string; text?: string }?` | 制单人 |
 | `manager` | `EntityManager?` | 可选事务管理器 |
 
-**返回**：`Promise<{ transfer: any; created: boolean }>`
+**返回**：`Promise<{ reversal: ReversalView; created: boolean }>`
+
+##### queryReversals(filter, manager?)
+
+冲正记录分页（审计入口；冲正不入交易单表，故与 queryTransfers 独立）。
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `filter` | `ReversalQueryFilter` | 过滤：`reversalNo?`/`originalTransferNo?`/`bizType?`/`fromAccountId?`/`startDate?`/`endDate?`/`page`/`pageSize` |
+| `manager` | `EntityManager?` | 可选事务管理器 |
+
+**返回**：`Promise<{ items: ReversalView[]; total: number }>`
+
+##### getReversal(reversalNo, manager?)
+
+查冲正记录详情。**返回**：`Promise<ReversalView | null>`
 
 #### 消费入账协议（CAS Fencing）
 
@@ -1051,6 +1091,8 @@ interface SelectOptionItem {
 归档分录（created < cutoff 且 updated < cutoff；copy-then-delete 幂等；游标水印分批）。
 
 **返回**：`Promise<{ archived: number; hasMore: boolean }>`
+
+> 归档搬运的列清单含 `isReversal` 冲正腿标记（`ext_ledger_entry_archive` 同步加列），归档后冲正腿可辨。
 
 ##### archiveTransfers(before, batchSize?, manager?)
 
@@ -1381,9 +1423,9 @@ const { transfer, created } = await transferService.createBizTransfer({
 
 #### reverse(input: ReverseTransferInput, maker?: { id?: string; text?: string })
 
-全额冲正。
+全额冲正（同步事务完成，不入交易单表，不影响制单条数与累计转入/转出）。
 
-**返回**：`Promise<{ transfer: TransferView; created: boolean }>`
+**返回**：`Promise<{ reversal: ReversalView; created: boolean }>`
 
 #### repost(transferNo: string)
 
@@ -2256,7 +2298,7 @@ export class LedgerDailyReconcileHandler implements ScheduledTaskHandler {
 | 同步预占 | 制单事务内单条原子条件 UPDATE（`WHERE balance >= amt`），防超支 |
 | 两段式审核 | 需审单预占进 frozen 待审；免审单预占进 pending_out 直接入队 |
 | bigint 金额 | 统一最小单位；JSON 用字符串防 JS 精度丢失 |
-| 仅全额冲正 | 借贷反向 + 关联原单；唯一索引防双冲正 |
+| 冲正独立落表 | 冲正记入 `ext_ledger_reversal`，不入交易单表：制单条数/汇总不受影响；分录 `isReversal=1` 标记冲正腿（挂原单号），对账恒等式保持；不更新累计转入/转出；同步事务完成 |
 | 对账零定时 | 包内只提供能力，定时调度由业务方对接 extension-scheduler |
 | KEY 分区 | 流水表 KEY(account_id) 64 分区，用户跨月查询单分区命中 |
 

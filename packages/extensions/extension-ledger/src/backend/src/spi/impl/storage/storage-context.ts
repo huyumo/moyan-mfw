@@ -6,7 +6,7 @@
 import { Injectable, Inject } from '@nestjs/common'
 import { DataSource, EntityManager, Repository } from 'typeorm'
 import { LEDGER_OPTIONS, type LedgerModuleOptions } from '../../interfaces'
-import { DefaultLedgerAccount, LedgerTransfer, LedgerEntry, LedgerReconcileReport } from '../../../entities'
+import { DefaultLedgerAccount, LedgerTransfer, LedgerEntry, LedgerReconcileReport, LedgerReversal } from '../../../entities'
 import type { LedgerAccountBase } from '../../../entities'
 
 @Injectable()
@@ -41,6 +41,11 @@ export class StorageContext {
   reportRepo(manager?: EntityManager): Repository<LedgerReconcileReport> {
     const em = manager ?? this.dataSource.manager
     return em.getRepository(LedgerReconcileReport)
+  }
+
+  reversalRepo(manager?: EntityManager): Repository<LedgerReversal> {
+    const em = manager ?? this.dataSource.manager
+    return em.getRepository(LedgerReversal)
   }
 
   /** 事务封装（对齐 anti-patterns.md：用 dataSource.transaction()） */

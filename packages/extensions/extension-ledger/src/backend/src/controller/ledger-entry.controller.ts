@@ -26,6 +26,7 @@ export class LedgerEntryController {
       accountId: query.accountId,
       transferNo: query.transferNo,
       direction: query.direction,
+      bizType: query.bizType,
       page: query.page,
       pageSize: query.pageSize,
     }

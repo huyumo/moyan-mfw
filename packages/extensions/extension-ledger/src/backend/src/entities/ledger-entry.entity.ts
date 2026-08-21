@@ -58,6 +58,13 @@ export class LedgerEntry {
   @Column({ type: 'json', nullable: true, comment: '扩展附录' })
   extra: Record<string, unknown> | null
 
+  /**
+   * 是否冲正腿（1=冲正产生的反向分录，挂原单 transferNo；0/NULL=正常业务分录）
+   * 汇总收入/支出（按 direction 聚合）与 to 侧过滤时须排除冲正腿
+   */
+  @Column({ type: 'tinyint', default: 0, comment: '是否冲正腿: 1=是 0=否' })
+  isReversal: number
+
   /** 创建时间（DB 时钟） */
   @Index('idx_ledger_entry_created')
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP', comment: '创建时间' })
