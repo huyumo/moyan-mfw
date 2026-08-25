@@ -67,6 +67,11 @@ export interface ILedgerStorage {
   getAccount(accountId: string, manager?: EntityManager): Promise<AccountView | null>
   /** 按 holder + tag + currency 查账户 */
   findAccount(holderId: string, holderType: string, tag: string, currency: string, manager?: EntityManager): Promise<AccountView | null>
+  /**
+   * 幂等补齐期初流水（自愈历史半截账户：有账面余额但缺 open_account 期初流水）
+   * 幂等键命中即跳过；并发安全（事务 + 账户行锁 + 唯一键兜底）
+   */
+  ensureOpeningEntry(accountId: string, manager?: EntityManager): Promise<void>
 
   // ── 制单（同步事务：插单 + 预占） ──
   /**

@@ -33,7 +33,8 @@ export class LedgerAccountService {
   /**
    * 懒开户：账户不存在则开（可带初始余额，默认 0），存在返回已有
    * 已存在账户跳过字段扩展校验（校验只约束新开户）；
-   * 业务层记账前调用无需关心开户流程（幂等、并发安全）
+   * 业务层记账前调用无需关心开户流程（幂等、并发安全）；
+   * 命中已存在账户时对历史半截账户（有余额、缺 open_account 期初流水）幂等自愈补齐
    */
   async ensureAccount(input: HolderRef & { initialBalance?: AmountString; extra?: Record<string, unknown> }): Promise<AccountView> {
     const existing = await this.storage.findAccount(
@@ -42,7 +43,13 @@ export class LedgerAccountService {
       input.tag ?? 'default',
       input.currency ?? 'CNY',
     )
-    if (existing) return existing
+    if (existing) {
+      // 有账面余额才需自愈（正常账户期初交易单已存在，内部幂等键点查即返回）
+      if (BigInt(existing.balance) + BigInt(existing.frozen ?? '0') + BigInt(existing.pendingOut ?? '0') > 0n) {
+        await this.storage.ensureOpeningEntry(existing.id)
+      }
+      return existing
+    }
     return this.openAccount({
       holderId: input.holderId,
       holderType: input.holderType,

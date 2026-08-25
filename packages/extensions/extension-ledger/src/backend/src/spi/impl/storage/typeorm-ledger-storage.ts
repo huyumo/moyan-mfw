@@ -45,6 +45,9 @@ export class TypeOrmLedgerStorage implements ILedgerStorage {
   findAccount(holderId: string, holderType: string, tag: string, currency: string, manager?: EntityManager) {
     return this.account.findAccount(holderId, holderType, tag, currency, manager)
   }
+  ensureOpeningEntry(accountId: string, manager?: EntityManager) {
+    return this.account.ensureOpeningEntry(accountId, manager)
+  }
 
   // ── 制单/审核/冲正 ──
   createTransferWithReserve(input: any, maker?: any, manager?: EntityManager) {
