@@ -1,20 +1,21 @@
 /**
  * @fileoverview MfwPageWrapper 页面包装组件
- * @description 统一的页面布局容器，提供面包屑、标题、刷新等功能
+ * @description 统一的页面布局容器，提供面包屑、标题、刷新、返回顶部等功能
  */
 
 import './style.scss';
 
 import { defineComponent, computed, ref, shallowRef, provide, inject, type PropType, type Ref, type ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElTooltip } from 'element-plus';
+import { ElBreadcrumb, ElBreadcrumbItem, ElButton, ElIcon, ElTooltip, ElBacktop } from 'element-plus';
 import { Refresh, Search, ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { useAuthStore } from '../../../store/auth-store';
 import type {
   MfwPageWrapperProps,
   MfwPageWrapperEmits,
   MfwPageWrapperInstance,
-  BreadcrumbItem
+  BreadcrumbItem,
+  PageWrapperBacktopConfig
 } from './types';
 
 import type { PermissionMenuItem } from '../../../store/auth-store';
@@ -47,6 +48,9 @@ function findMenuPath(
   }
   return [];
 }
+
+/** 返回顶部按钮实例序号（用于生成唯一滚动容器 id，避免多实例/keep-alive 时选择器误匹配） */
+let backtopSeq = 0;
 
 export default defineComponent({
   name: 'MfwPageWrapper',
@@ -81,6 +85,10 @@ export default defineComponent({
     background: {
       type: String as PropType<MfwPageWrapperProps['background']>
     },
+    backtop: {
+      type: [Boolean, Object] as PropType<MfwPageWrapperProps['backtop']>,
+      default: true
+    },
     headerMode: {
       type: String as PropType<'breadcrumb' | 'title'>,
       default: 'breadcrumb'
@@ -107,6 +115,19 @@ export default defineComponent({
       refreshCallbacks.value.push(callback);
     };
     provide('mfw-page-refresh-context', { registerRefresh });
+
+    // ============================================
+    // 返回顶部
+    // ============================================
+    const contentId = `mfw-page-wrapper-content-${++backtopSeq}`;
+    const contentRef = ref<HTMLDivElement | null>(null);
+    const backtopEnabled = computed(() => props.backtop !== false);
+    const backtopConfig = computed<PageWrapperBacktopConfig>(() =>
+      props.backtop && typeof props.backtop === 'object' ? props.backtop : {}
+    );
+    const scrollToTop = () => {
+      contentRef.value?.scrollTo({ top: 0, behavior: 'smooth' });
+    };
 
     const pageTitle = computed(() => {
       if (props.title) return props.title;
@@ -171,7 +192,8 @@ export default defineComponent({
     expose<MfwPageWrapperInstance>({
       refresh: handleRefresh,
       getTitle: () => pageTitle.value,
-      getBreadcrumb: () => breadcrumbItems.value
+      getBreadcrumb: () => breadcrumbItems.value,
+      scrollToTop
     });
 
     // 渲染刷新按钮
@@ -294,7 +316,7 @@ export default defineComponent({
           );
         })()}
 
-        <div class="mfw-page-wrapper__content" style={contentStyle.value}>
+        <div id={contentId} ref={contentRef} class="mfw-page-wrapper__content" style={contentStyle.value}>
           {slots.default?.()}
         </div>
 
@@ -306,6 +328,15 @@ export default defineComponent({
             </div>
           );
         })()}
+
+        {backtopEnabled.value && (
+          <ElBacktop
+            target={`#${contentId}`}
+            visibilityHeight={backtopConfig.value.visibilityHeight ?? 200}
+            right={backtopConfig.value.right ?? 24}
+            bottom={backtopConfig.value.bottom ?? 40}
+          />
+        )}
       </div>
     );
   }

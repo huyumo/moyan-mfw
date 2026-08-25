@@ -14,6 +14,18 @@ export interface BreadcrumbItem {
   clickable?: boolean;
 }
 
+/** 返回顶部按钮配置 */
+export interface PageWrapperBacktopConfig {
+  /** 滚动超过该高度（px）后显示按钮，默认 200 */
+  visibilityHeight?: number;
+  /** 距右侧距离（px），默认 24 */
+  right?: number;
+  /** 距底部距离（px），默认 40 */
+  bottom?: number;
+  /** 自定义滚动容器选择器（默认当前页面内容区） */
+  target?: string;
+}
+
 /** MfwPageWrapper Props 接口 */
 export interface MfwPageWrapperProps {
   /** 是否显示面包屑 */
@@ -34,6 +46,8 @@ export interface MfwPageWrapperProps {
   bordered?: boolean;
   /** 背景色 */
   background?: string;
+  /** 返回顶部按钮：默认启用；false 关闭；传入对象可自定义配置 */
+  backtop?: boolean | PageWrapperBacktopConfig;
 }
 
 /** MfwPageWrapper Emits 接口 */
@@ -68,4 +82,6 @@ export interface MfwPageWrapperInstance {
   getTitle: () => string;
   /** 获取面包屑数据 */
   getBreadcrumb: () => BreadcrumbItem[];
+  /** 平滑滚动到内容区顶部 */
+  scrollToTop: () => void;
 }
