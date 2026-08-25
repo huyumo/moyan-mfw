@@ -637,7 +637,7 @@ importers:
   packages/extensions/extension-ad:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
 
   packages/extensions/extension-ad/src/backend:
@@ -790,7 +790,7 @@ importers:
         specifier: '>=2.0.0'
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
       typeorm:
         specifier: '>=0.3.0'
@@ -955,7 +955,7 @@ importers:
         specifier: '>=2.0.0'
         version: 2.13.5(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
       typeorm:
         specifier: '>=0.3.0'
@@ -1096,7 +1096,7 @@ importers:
   packages/extensions/extension-ledger:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
 
   packages/extensions/extension-ledger/src/backend:
@@ -1237,7 +1237,7 @@ importers:
   packages/extensions/extension-scan-code:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
 
   packages/extensions/extension-scan-code/src/backend:
@@ -1375,7 +1375,7 @@ importers:
   packages/extensions/extension-scheduler:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
 
   packages/extensions/extension-scheduler/src/backend:
@@ -1519,7 +1519,7 @@ importers:
   packages/extensions/extension-sms:
     dependencies:
       moyan-mfw-base:
-        specifier: ^1.2.0-beta.60
+        specifier: ^1.2.0-beta.62
         version: link:../../base
 
   packages/extensions/extension-sms/src/backend:

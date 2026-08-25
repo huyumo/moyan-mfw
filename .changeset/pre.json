@@ -1,7 +1,9 @@
 {
   "mode": "pre",
   "tag": "beta",
-  "changesets": [],
+  "changesets": [
+    "auto-8e471678-base"
+  ],
   "initialVersions": {
     "moyan-mfw-backend": "1.0.0",
     "moyan-mfw-frontend": "1.0.0",
