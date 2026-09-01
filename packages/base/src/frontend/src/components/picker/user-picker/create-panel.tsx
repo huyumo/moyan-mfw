@@ -47,7 +47,7 @@ export default defineComponent({
             username: '',
             nickname: '',
             phone: '',
-            avatar: '',
+            avatar: undefined,
           },
     );
 
@@ -61,7 +61,7 @@ export default defineComponent({
         const updateData: UpdateUserDto = {
           nickname: formData.value.nickname,
           phone: formData.value.phone,
-          avatar: formData.value.avatar,
+          avatar: formData.value.avatar || undefined,
         };
         if (props.onUpdate) {
           result = await props.onUpdate(props.context.id, updateData);
@@ -78,7 +78,7 @@ export default defineComponent({
           username: formData.value.username,
           phone: formData.value.phone,
           nickname: formData.value.nickname,
-          avatar: formData.value.avatar,
+          avatar: formData.value.avatar || undefined,
         };
         if (props.onCreate) {
           result = await props.onCreate(createData);

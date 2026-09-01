@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, Length, ValidateNested } from 'class-validator';
+import { IsOptional, IsString, Length, ValidateIf, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ImageResourceDto } from '@/common';
 
@@ -16,6 +16,7 @@ export class UserBaseDto {
 
   @ApiProperty({ description: '头像', required: false, type: ImageResourceDto })
   @IsOptional()
+  @ValidateIf((o) => o.avatar !== '')
   @ValidateNested()
   @Type(() => ImageResourceDto)
   avatar?: ImageResourceDto;
