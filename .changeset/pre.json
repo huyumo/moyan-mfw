@@ -2,7 +2,8 @@
   "mode": "pre",
   "tag": "beta",
   "changesets": [
-    "auto-11649e0e-base"
+    "auto-a2afd661-base",
+    "fix-zero-app-login-lockout"
   ],
   "initialVersions": {
     "moyan-mfw-backend": "1.0.0",
