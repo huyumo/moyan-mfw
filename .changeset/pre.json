@@ -3,6 +3,8 @@
   "tag": "beta",
   "changesets": [
     "auto-a2afd661-base",
+    "auto-c20554d5-base",
+    "fix-dev-menu-visibility",
     "fix-zero-app-login-lockout"
   ],
   "initialVersions": {
