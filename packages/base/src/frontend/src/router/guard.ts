@@ -100,6 +100,12 @@ export function setupRouteGuard(router: Router): void {
             next();
             return;
           }
+          // 已登录但未分配任何应用 → 留在登录页，
+          // 避免被踢回 / 后经 RootRedirect → /dashboard 落入 catch-all 404 死循环
+          if (authStore.isAuthenticated && !authStore.hasApps) {
+            next();
+            return;
+          }
           next({ path: "/" });
           return;
         }
@@ -160,6 +166,12 @@ export function setupRouteGuard(router: Router): void {
       // 访问根路径 → 跳转到当前应用的首页（需在认证初始化之后，
       // 否则 currentApp 尚未恢复，会误判为无应用而跳到 /dashboard → 404）
       if (to.path === "/" || to.name === "RootRedirect") {
+        // 已登录但未分配任何应用 → 回登录页
+        // （下游可能没有全局 /dashboard 路由，避免 catch-all 兜底跳 404 形成死循环）
+        if (authStore.isAuthenticated && !authStore.hasApps) {
+          next({ path: "/login" });
+          return;
+        }
         const appTypeCode = authStore.currentApp?.appTypeCode;
         const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : "/dashboard";
         next({ path: homePath });

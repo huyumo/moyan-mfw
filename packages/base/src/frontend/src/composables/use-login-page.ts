@@ -8,7 +8,6 @@ import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { nextTick, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth-store'
-import { useLayoutStore } from '../store/layout-store'
 import { useColorMode } from './use-color-mode'
 import { useThemeSwitch } from './use-theme-switch'
 import { MfwPopup } from '../components/feedback'
@@ -29,7 +28,6 @@ export function useLoginPage() {
   const route = useRoute()
   const router = useRouter()
   const authStore = useAuthStore()
-  const layoutStore = useLayoutStore()
   const { initColorMode, isDark } = useColorMode()
   const { initTheme } = useThemeSwitch()
 
@@ -84,14 +82,14 @@ export function useLoginPage() {
     await authStore.fetchUserInfo()
     await authStore.fetchUserApps()
 
-    ElMessage.success('登录成功')
-
     if (authStore.apps.length === 0) {
-      layoutStore.setNavigation({ sideMenu: [] }, { clearTabs: true })
-      const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/'
-      await router.replace(redirect)
+      // 零应用账号：清除登录态并留在登录页，避免跳 / 后经 RootRedirect → /dashboard 落入 404
+      ElMessage.warning('该账号尚未分配任何应用，请联系管理员分配后再登录')
+      authStore.clearToken()
       return
     }
+
+    ElMessage.success('登录成功')
 
     const autoSelected = await authStore.autoSelectApp()
     if (autoSelected) {

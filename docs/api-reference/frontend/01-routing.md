@@ -360,14 +360,17 @@ createBaseAdminApp({ menuTrees, ... })
   ├─ 检查系统初始化状态 → 未初始化 → /install
   ├─ 已初始化访问 /install → /login
   ├─ 白名单 (/login, /install, /403, /404) → 放行
+  │    └─ 已登录访问 /login：多应用未选择或未分配任何应用 → 放行留在登录页；否则 → /
   ├─ 无 Token → /login?redirect=xxx
   ├─ 首次进入 → initializeAuth() 初始化认证 + 多应用选择
   ├─ 多应用未选择 → /login 展示选择面板
+  ├─ 根路径 / 或 RootRedirect → 已登录未分配任何应用 → /login；
+  │    否则 → /{appTypeCode}/dashboard（无 currentApp 时 /dashboard）
   ├─ 计算 permissionValue（从 permissions 名称列表）
   ├─ 检查页面权限
   │    ├─ permCode 存在 → 递归匹配 permCode
   │    └─ permCode 不存在 → 递归匹配 routePath
-  └─ 无权限 → /dashboard（非首页）或 /403
+  └─ 无权限 → /403
 ```
 
 后置守卫：自动设置 `document.title`。
