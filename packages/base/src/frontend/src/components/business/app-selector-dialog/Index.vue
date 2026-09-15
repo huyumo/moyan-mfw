@@ -109,13 +109,11 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Monitor, OfficeBuilding, Check } from '@element-plus/icons-vue'
-import { ApiAuthGetUserApps, ApiAuthGetUserPermissions } from '../../../apis/sys'
-import type { AppInstanceItemDto, PermissionTreeNodeDto } from '../../../apis/sys/schemas'
+import { ApiAuthGetUserApps } from '../../../apis/sys'
+import type { AppInstanceItemDto } from '../../../apis/sys/schemas'
 import { useAuthStore } from '../../../store/auth-store'
-import { useLayoutStore } from '../../../store/layout-store'
 import type { PopupComponentProps } from '../../feedback/popup/types'
 import type { AppSelectorDialogData } from './types'
-import type { SideMenuItem } from '../../../types/layout-types'
 import { getImageSrc } from '../../../utils/image'
 
 defineOptions({ name: 'AppSelectorDialog' })
@@ -134,28 +132,7 @@ const loading = ref(true)
 const appList = ref<AppInstanceItemDto[]>([])
 const selectedAppId = ref<string>('')
 const authStore = useAuthStore()
-const layoutStore = useLayoutStore()
 const router = useRouter()
-
-/**
- * 将权限菜单节点转换为侧边栏菜单格式
- */
-function transformMenuNodesToSideMenu(nodes: any[]): SideMenuItem[] {
-  return nodes
-    .filter(
-      (item: any) =>
-        item.routePath || (item.children && item.children.length > 0),
-    )
-    .map((item: any) => ({
-      key: item.permCode || item.id,
-      label: item.permName,
-      to: item.routePath,
-      icon: item.iconName,
-      children: item.children
-        ? transformMenuNodesToSideMenu(item.children)
-        : undefined,
-    }));
-}
 
 /**
  * 选择应用
@@ -165,7 +142,8 @@ async function handleSelectApp(app: AppInstanceItemDto) {
   selectedAppId.value = app.appId
 
   try {
-    // 1. 保存应用选择到 auth-store
+    // 1. 保存应用选择到 auth-store（selectApp 内部经 loadPermissions 统一拉取权限、
+    //    过滤 DEV/不可见节点并更新 permissionMenu 与侧边栏，勿在此重复拉取覆盖）
     await authStore.selectApp({
       appId: app.appId,
       appName: app.appName,
@@ -177,33 +155,17 @@ async function handleSelectApp(app: AppInstanceItemDto) {
       appTypeName: app.appTypeName,
     })
 
-    // 2. 加载该应用下的权限菜单
-    const permissionsResult = await new ApiAuthGetUserPermissions({
-      query: { appId: app.appId },
-    })
-
-    // 3. 设置权限菜单
-    const menuNodes = permissionsResult.menuTree || []
-    const permissionMenu = transformMenuNodes(menuNodes)
-    authStore.setPermissionMenu(permissionMenu)
-
-    // 4. 同步到侧边栏菜单
-    const sideMenu = transformMenuNodesToSideMenu(permissionMenu)
-    layoutStore.setNavigation({ sideMenu })
-
-    console.log('已更新侧边栏菜单:', sideMenu)
-
-    // 5. 调用成功回调
+    // 2. 调用成功回调
     dialogData.value.onSelect?.(app)
 
-    // 6. 调用弹窗关闭方法（如果有 popupRef）
+    // 3. 关闭弹窗（如果有 popupRef）
     if (props.popupRef) {
       props.popupRef.close()
     }
 
     ElMessage.success(`已进入应用: ${app.appName}`)
 
-    // 7. 跳转到新应用的首页
+    // 4. 跳转到新应用的首页
     const appTypeCode = app.appTypeCode
     const homePath = appTypeCode ? `/${appTypeCode}/dashboard` : '/dashboard'
     router.push(homePath)
@@ -211,20 +173,6 @@ async function handleSelectApp(app: AppInstanceItemDto) {
     const err = error as { response?: { data?: { message?: string } }; message?: string }
     ElMessage.error(err?.response?.data?.message || err?.message || '切换应用失败')
   }
-}
-
-/**
- * 将权限菜单节点转换为 auth-store 格式
- */
-function transformMenuNodes(nodes: PermissionTreeNodeDto[]): any[] {
-  return nodes.map(node => ({
-    id: node.id,
-    permName: node.permName,
-    permCode: node.permCode,
-    routePath: node.routePath,
-    iconName: node.iconName,
-    children: node.children ? transformMenuNodes(node.children) : undefined,
-  }))
 }
 
 /**

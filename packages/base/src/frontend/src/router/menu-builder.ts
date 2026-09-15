@@ -44,6 +44,12 @@ export function createMenuTreeFromRoutes(
       continue;
     }
 
+    // 跳过 DEV 页面：启动菜单构建先于认证初始化（开发者模式必然未开启），
+    // 开发者模式开启后的菜单由 loadPermissions 按服务端权限树重建
+    if (meta.showMode === "DEV") {
+      continue;
+    }
+
     const menuPath =
       typeof (route.meta as Record<string, unknown> | undefined)?.menuPath ===
       "string"
