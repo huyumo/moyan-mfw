@@ -5,6 +5,7 @@
 
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString, IsOptional, IsEmail, Length, Matches } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { UserBaseDto } from './user-base.dto';
 
 /**
@@ -28,8 +29,8 @@ export class CreateUserDto extends UserBaseDto {
 
   @ApiProperty({ description: '手机号', required: false })
   @IsOptional()
-  @IsString()
-  @Length(0, 20, { message: '手机号长度应在 20 字符以内' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() || null : value))
+  @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
   phone?: string;
 
   @ApiProperty({ description: '邮箱', required: false })

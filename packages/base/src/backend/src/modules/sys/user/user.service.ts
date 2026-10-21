@@ -41,13 +41,26 @@ export class UserService {
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { username, password, ...rest } = createUserDto;
 
-    // 检查用户名是否存在
+    // 检查用户名是否存在（唯一索引横跨软删除行，需 withDeleted 一并排查）
     const existingUser = await this.userRepository.findOne({
       where: { username },
+      withDeleted: true,
     });
 
     if (existingUser) {
-      throw new ConflictException('用户名已存在');
+      throw new ConflictException(this.usernameConflictMessage(existingUser));
+    }
+
+    // 检查手机号是否已被占用（同上，软删除用户仍占唯一索引）
+    if (createUserDto.phone) {
+      const existingByPhone = await this.userRepository.findOne({
+        where: { phone: createUserDto.phone },
+        withDeleted: true,
+      });
+
+      if (existingByPhone) {
+        throw new ConflictException(this.phoneConflictMessage(existingByPhone));
+      }
     }
 
     // 使用事务创建用户
@@ -60,7 +73,15 @@ export class UserService {
         ...rest,
       });
 
-      await manager.save(created);
+      try {
+        await manager.save(created);
+      } catch (error) {
+        // 并发下预检与插入之间存在窗口，唯一键冲突兜底翻译为 409
+        if (this.isDuplicateKeyError(error)) {
+          throw new ConflictException('用户名或手机号已被占用');
+        }
+        throw error;
+      }
 
       return created;
     });
@@ -96,6 +117,22 @@ export class UserService {
     }
 
     return value;
+  }
+
+  private usernameConflictMessage(existing: User): string {
+    return existing.deleteAt ? '该用户名已被已注销账号占用' : '用户名已存在';
+  }
+
+  private phoneConflictMessage(existing: User): string {
+    if (existing.deleteAt) {
+      return '该手机号已被已注销账号占用';
+    }
+    return `该手机号已被用户【${existing.nickname || existing.username}】使用`;
+  }
+
+  private isDuplicateKeyError(error: unknown): boolean {
+    const code = (error as { driverError?: { code?: string } })?.driverError?.code;
+    return code === 'ER_DUP_ENTRY';
   }
 
   async findOneByKeyword(keyword: string, searchBy: 'username' | 'phone' | 'both'): Promise<User | null> {
@@ -200,8 +237,29 @@ export class UserService {
         throw new NotFoundError('用户');
       }
 
+      // 手机号变更时预检（软删除用户仍占唯一索引，需 withDeleted 一并排查）
+      if (updateUserDto.phone && updateUserDto.phone !== found.phone) {
+        const existingByPhone = await manager.findOne(User, {
+          where: { phone: updateUserDto.phone },
+          withDeleted: true,
+        });
+
+        if (existingByPhone && existingByPhone.id !== id) {
+          throw new ConflictException(this.phoneConflictMessage(existingByPhone));
+        }
+      }
+
       Object.assign(found, updateUserDto);
-      await manager.save(found);
+
+      try {
+        await manager.save(found);
+      } catch (error) {
+        // 并发下预检与保存之间存在窗口，唯一键冲突兜底翻译为 409
+        if (this.isDuplicateKeyError(error)) {
+          throw new ConflictException('用户名或手机号已被占用');
+        }
+        throw error;
+      }
 
       return found;
     });

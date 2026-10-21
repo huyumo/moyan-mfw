@@ -51,7 +51,13 @@ export default defineComponent({
           },
     );
 
+    const trimText = (value: unknown) => (typeof value === 'string' ? value.trim() : value);
+
     const onConfirm = async () => {
+      // 提交前归一化：粘贴可能带入首尾空格（maxlength 挡不住），先 trim 再校验
+      formData.value.username = trimText(formData.value.username);
+      formData.value.phone = trimText(formData.value.phone);
+
       const valid = await formCardRef.value?.validate();
       if (!valid) throw new Error('validate failed');
 
