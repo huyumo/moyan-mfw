@@ -2,10 +2,7 @@
   "mode": "pre",
   "tag": "beta",
   "changesets": [
-    "auto-a2afd661-base",
-    "auto-c20554d5-base",
-    "fix-dev-menu-visibility",
-    "fix-zero-app-login-lockout"
+    "auto-685754f8-base"
   ],
   "initialVersions": {
     "moyan-mfw-backend": "1.0.0",
